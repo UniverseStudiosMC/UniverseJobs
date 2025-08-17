@@ -1,81 +1,81 @@
-# 📖 Guide de configuration du Wiki GitBook
+# 📖 GitBook Wiki Setup Guide
 
-Ce guide vous explique comment configurer et déployer le wiki GitBook de JobsAdventure.
+This guide explains how to configure and deploy the GitBook wiki for JobsAdventure.
 
-## 🎯 Structure du projet
+## 🎯 Project Structure
 
-La documentation est organisée dans le dossier `docs/` avec la structure suivante :
+The documentation is organized in the `docs/` folder with the following structure:
 
 ```
 docs/
-├── README.md              # Page d'accueil du wiki
-├── SUMMARY.md             # Table des matières GitBook
-├── book.json              # Configuration GitBook classique
-├── .gitbook.yaml          # Configuration GitBook moderne
-├── introduction/          # Guides d'introduction
-├── installation/          # Guides d'installation
-├── player-guide/          # Guides pour les joueurs
-├── admin-guide/           # Guides d'administration
-├── jobs-configuration/    # Configuration des métiers
-├── rewards/               # Système de récompenses
-├── integrations/          # Intégrations de plugins
-├── reference/             # Références et API
-├── troubleshooting/       # Dépannage
-└── appendix/              # Annexes et FAQ
+├── README.md              # Wiki homepage
+├── SUMMARY.md             # GitBook table of contents
+├── book.json              # Classic GitBook configuration
+├── .gitbook.yaml          # Modern GitBook configuration
+├── introduction/          # Introduction guides
+├── installation/          # Installation guides
+├── player-guide/          # Player guides
+├── admin-guide/           # Administration guides
+├── jobs-configuration/    # Job configuration
+├── rewards/               # Reward system
+├── integrations/          # Plugin integrations
+├── reference/             # References and API
+├── troubleshooting/       # Troubleshooting
+└── appendix/              # Appendices and FAQ
 ```
 
-## 🚀 Options de déploiement
+## 🚀 Deployment Options
 
-### Option 1 : GitBook.com (Recommandé)
+### Option 1: GitBook.com (Recommended)
 
-1. **Créez un compte** sur [GitBook.com](https://www.gitbook.com/)
+1. **Create an account** on [GitBook.com](https://www.gitbook.com/)
 
-2. **Créez un nouveau livre** :
-   - Titre : "JobsAdventure Wiki"
-   - Description : "Documentation complète pour JobsAdventure"
+2. **Create a new book**:
+   - Title: "JobsAdventure Wiki"
+   - Description: "Complete documentation for JobsAdventure"
 
-3. **Connectez votre repository GitHub** :
-   - Allez dans les paramètres du livre
-   - Connectez votre repository
-   - Sélectionnez le dossier `docs/` comme racine
+3. **Connect your GitHub repository**:
+   - Go to book settings
+   - Connect your repository
+   - Select the `docs/` folder as root
 
-4. **Configuration automatique** :
-   - GitBook détectera automatiquement le fichier `.gitbook.yaml`
-   - La synchronisation se fera automatiquement à chaque commit
+4. **Automatic configuration**:
+   - GitBook will automatically detect the `.gitbook.yaml` file
+   - Synchronization will happen automatically on each commit
 
-### Option 2 : GitBook CLI (Local)
+### Option 2: GitBook CLI (Local)
 
-1. **Installez GitBook CLI** :
+1. **Install GitBook CLI**:
    ```bash
    npm install -g gitbook-cli
    ```
 
-2. **Initialisez le livre** :
+2. **Initialize the book**:
    ```bash
    cd docs/
    gitbook init
    ```
 
-3. **Servez localement** :
+3. **Serve locally**:
    ```bash
    gitbook serve
    ```
-   Accessible à : http://localhost:4000
+   Accessible at: http://localhost:4000
 
-4. **Générez le site statique** :
+4. **Generate static site**:
    ```bash
    gitbook build
    ```
 
-### Option 3 : GitHub Pages
+### Option 3: GitHub Pages
 
-1. **Créez une branche `gh-pages`** :
+1. **Create a `gh-pages` branch**:
    ```bash
    git checkout --orphan gh-pages
    ```
 
-2. **Configurez GitHub Actions** :
-   Créez `.github/workflows/gitbook.yml` :
+2. **Configure GitHub Actions**:
+   Create `.github/workflows/gitbook.yml`:
    ```yaml
    name: Build and Deploy GitBook
    on:
@@ -104,23 +104,23 @@ docs/
            publish_dir: ./docs/_book
    ```
 
-### Option 4 : Hébergement personnalisé
+### Option 4: Custom Hosting
 
-1. **Générez le site** :
+1. **Generate the site**:
    ```bash
    cd docs/
    gitbook build
    ```
 
-2. **Uploadez le dossier `_book/`** sur votre serveur web
+2. **Upload the `_book/` folder** to your web server
 
-## 🎨 Personnalisation
+## 🎨 Customization
 
-### Thème et style
+### Theme and Style
 
-Créez `docs/styles/website.css` :
+Create `docs/styles/website.css`:
 ```css
-/* Personnalisation du thème */
+/* Theme customization */
 .book-summary {
     background: #f8f9fa;
 }
@@ -130,14 +130,14 @@ Créez `docs/styles/website.css` :
     color: white;
 }
 
-/* Style pour les codes */
+/* Code styling */
 code {
     background: #f4f4f4;
     padding: 2px 4px;
     border-radius: 3px;
 }
 
-/* Amélioration des tableaux */
+/* Table improvements */
 table {
     border-collapse: collapse;
     width: 100%;
@@ -154,17 +154,17 @@ th {
 }
 ```
 
-### Logo et favicon
+### Logo and Favicon
 
-1. Ajoutez vos images dans `docs/assets/` :
-   - `logo.png` (pour le header)
-   - `favicon.ico` (pour l'onglet du navigateur)
+1. Add your images to `docs/assets/`:
+   - `logo.png` (for header)
+   - `favicon.ico` (for browser tab)
 
-2. Modifiez `book.json` pour référencer ces fichiers
+2. Modify `book.json` to reference these files
 
-### Plugins supplémentaires
+### Additional Plugins
 
-Ajoutez dans `book.json` → `plugins` :
+Add to `book.json` → `plugins`:
 ```json
 {
   "plugins": [
@@ -180,36 +180,36 @@ Ajoutez dans `book.json` → `plugins` :
 
 ## 🔧 Maintenance
 
-### Ajout de nouvelles pages
+### Adding New Pages
 
-1. **Créez le fichier markdown** dans le bon dossier
-2. **Ajoutez l'entrée** dans `SUMMARY.md` :
+1. **Create the markdown file** in the appropriate folder
+2. **Add the entry** to `SUMMARY.md`:
    ```markdown
-   * [Nouvelle page](dossier/nouvelle-page.md)
+   * [New Page](folder/new-page.md)
    ```
-3. **Commitez et pushez** les changements
+3. **Commit and push** changes
 
-### Mise à jour du contenu
+### Updating Content
 
-1. **Modifiez les fichiers** markdown existants
-2. **Testez localement** avec `gitbook serve`
-3. **Commitez** les changements
-4. Le déploiement se fait automatiquement
+1. **Modify existing** markdown files
+2. **Test locally** with `gitbook serve`
+3. **Commit** changes
+4. Deployment happens automatically
 
-### Structure des liens
+### Link Structure
 
-Utilisez des liens relatifs :
+Use relative links:
 ```markdown
-[Autre page](../admin-guide/commands.md)
-[Même dossier](configuration.md)
-[Section](#titre-de-section)
+[Other page](../admin-guide/commands.md)
+[Same folder](configuration.md)
+[Section](#section-title)
 ```
 
-## 📊 Analytics et monitoring
+## 📊 Analytics and Monitoring
 
 ### Google Analytics
 
-Ajoutez dans `book.json` :
+Add to `book.json`:
 ```json
 {
   "pluginsConfig": {
@@ -220,77 +220,77 @@ Ajoutez dans `book.json` :
 }
 ```
 
-### Métriques GitBook
+### GitBook Metrics
 
-Si vous utilisez GitBook.com, les analytics sont intégrées automatiquement.
+If using GitBook.com, analytics are automatically integrated.
 
-## 🌍 Internationalisation
+## 🌍 Internationalization
 
-Pour ajouter d'autres langues :
+To add other languages:
 
-1. **Créez les dossiers** :
+1. **Create folders**:
    ```
    docs/
-   ├── fr/          # Version française (actuelle)
-   ├── en/          # Version anglaise
-   └── LANGS.md     # Configuration des langues
+   ├── en/          # English version (current)
+   ├── fr/          # French version
+   └── LANGS.md     # Language configuration
    ```
 
-2. **Configurez LANGS.md** :
+2. **Configure LANGS.md**:
    ```markdown
    # Languages
    
-   * [Français](fr/)
    * [English](en/)
+   * [Français](fr/)
    ```
 
-## 🔍 SEO et référencement
+## 🔍 SEO and Referencing
 
-### Métadonnées
+### Metadata
 
-Ajoutez dans chaque page :
+Add to each page:
 ```markdown
 ---
-description: Description de la page pour les moteurs de recherche
-keywords: jobsadventure, minecraft, plugin, métiers
+description: Page description for search engines
+keywords: jobsadventure, minecraft, plugin, jobs
 ---
 ```
 
 ### Sitemap
 
-Le plugin `sitemap-general` génère automatiquement un sitemap XML.
+The `sitemap-general` plugin automatically generates an XML sitemap.
 
-## 🛠️ Dépannage
+## 🛠️ Troubleshooting
 
-### Erreurs de build
+### Build Errors
 
 ```bash
-# Nettoyage du cache
+# Clear cache
 gitbook install --clean
 
-# Réinstallation des plugins
+# Reinstall plugins
 rm -rf node_modules/
 gitbook install
 ```
 
-### Problèmes de synchronisation
+### Synchronization Issues
 
-- Vérifiez les permissions GitHub
-- Contrôlez les webhooks dans les paramètres
-- Vérifiez les logs de build
+- Check GitHub permissions
+- Verify webhooks in settings
+- Check build logs
 
 ### Performance
 
-- Optimisez les images (WebP, compression)
-- Limitez le nombre de plugins
-- Utilisez un CDN pour les assets
+- Optimize images (WebP, compression)
+- Limit number of plugins
+- Use CDN for assets
 
 ## 📞 Support
 
-- **Documentation GitBook** : [docs.gitbook.com](https://docs.gitbook.com/)
-- **Community** : [community.gitbook.com](https://community.gitbook.com/)
-- **GitHub Issues** : Pour les problèmes spécifiques au projet
+- **GitBook Documentation**: [docs.gitbook.com](https://docs.gitbook.com/)
+- **Community**: [community.gitbook.com](https://community.gitbook.com/)
+- **GitHub Issues**: For project-specific issues
 
 ---
 
-**Votre wiki JobsAdventure est maintenant prêt ! 📚✨**
+**Your JobsAdventure wiki is now ready! 📚✨**

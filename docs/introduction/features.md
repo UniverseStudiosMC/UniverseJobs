@@ -1,67 +1,67 @@
-# ⭐ Fonctionnalités principales
+# ⭐ Main Features
 
-JobsAdventure offre un éventail complet de fonctionnalités avancées pour créer l'expérience de métiers parfaite sur votre serveur Minecraft.
+JobsAdventure offers a comprehensive array of advanced features to create the perfect jobs experience on your Minecraft server.
 
-## 🏢 Système de métiers avancé
+## 🏢 Advanced Job System
 
-### Types d'actions supportés (15+)
-JobsAdventure reconnaît et récompense une large variété d'actions :
+### Supported Action Types (15+)
+JobsAdventure recognizes and rewards a wide variety of actions:
 
-| Type d'action | Description | Exemples |
+| Action Type | Description | Examples |
 |:---|:---|:---|
-| **BREAK** | Casser des blocs | Minage, déforestation, excavation |
-| **PLACE** | Placer des blocs | Construction, agriculture |
-| **KILL** | Tuer des entités | Combat, chasse, nettoyage |
-| **FISH** | Pêcher des poissons | Pêche normale et CustomFishing |
-| **INTERACT** | Interagir avec des objets | Récolte, artisanat |
-| **CRAFT** | Fabriquer des objets | Artisanat, forge |
-| **SMELT** | Faire fondre des objets | Métallurgie, cuisine |
-| **BREW** | Créer des potions | Alchimie |
-| **ENCHANT** | Enchanter des objets | Magie |
-| **TAME** | Apprivoiser des animaux | Dressage |
-| **SHEAR** | Tondre des animaux | Élevage |
-| **MILK** | Traire des animaux | Production laitière |
-| **CUSTOM** | Actions personnalisées | Via API |
-| **MYTHICMOB** | Créatures MythicMobs | `MYTHICMOB:CreatureName` |
-| **PLUGIN** | Intégrations plugins | CustomCrops, Nexo, etc. |
+| **BREAK** | Breaking blocks | Mining, deforestation, excavation |
+| **PLACE** | Placing blocks | Construction, farming |
+| **KILL** | Killing entities | Combat, hunting, cleanup |
+| **FISH** | Fishing | Normal fishing and CustomFishing |
+| **INTERACT** | Interacting with objects | Harvesting, crafting |
+| **CRAFT** | Crafting items | Crafting, forging |
+| **SMELT** | Smelting items | Metallurgy, cooking |
+| **BREW** | Brewing potions | Alchemy |
+| **ENCHANT** | Enchanting items | Magic |
+| **TAME** | Taming animals | Animal training |
+| **SHEAR** | Shearing animals | Livestock |
+| **MILK** | Milking animals | Dairy production |
+| **CUSTOM** | Custom actions | Via API |
+| **MYTHICMOB** | MythicMobs creatures | `MYTHICMOB:CreatureName` |
+| **PLUGIN** | Plugin integrations | CustomCrops, Nexo, etc. |
 
-### Courbes d'expérience flexibles
-Deux options pour définir la progression :
+### Flexible Experience Curves
+Two options for defining progression:
 
-#### 1. Formules mathématiques personnalisées
+#### 1. Custom Mathematical Formulas
 ```yaml
 xp-equation: "100 * Math.pow(level, 1.8)"
 ```
-Fonctions supportées :
-- `Math.pow(level, 2)` - Progression exponentielle
-- `Math.sqrt(level * 500)` - Progression racine carrée
-- `Math.log(level + 1)` - Progression logarithmique
-- Combinaisons complexes possibles
+Supported functions:
+- `Math.pow(level, 2)` - Exponential progression
+- `Math.sqrt(level * 500)` - Square root progression
+- `Math.log(level + 1)` - Logarithmic progression
+- Complex combinations possible
 
-#### 2. Fichiers de courbes prédéfinis
+#### 2. Predefined Curve Files
 ```yaml
-xp-curve: "steep"  # Utilise /xp-curves/steep.yml
+xp-curve: "steep"  # Uses /xp-curves/steep.yml
 ```
 
-### Messages XP personnalisables
-Trois modes d'affichage pour les gains d'XP :
+### Customizable XP Messages
+Three display modes for XP gains:
 
-#### Chat classique
+#### Classic Chat
 ```yaml
 xp-message:
   type: "chat"
   text: "&e+{exp} XP {job} &7(Total: {total_xp})"
 ```
 
-#### Barre d'action
+#### Action Bar
 ```yaml
 xp-message:
   type: "actionbar"
   text: "&6+{exp} XP &7| &e{job} Level {level}"
-  duration: 60  # ticks (3 secondes)
+  duration: 60  # ticks (3 seconds)
 ```
 
-#### Barre de boss
+#### Boss Bar
 ```yaml
 xp-message:
   type: "bossbar"
@@ -69,41 +69,41 @@ xp-message:
   color: "green"
   style: "segmented_10"
   duration: 80
-  show-progress: true  # Affiche le progrès du niveau
+  show-progress: true  # Shows level progress
 ```
 
-## 🎁 Système de récompenses intelligent
+## 🎁 Smart Reward System
 
-### Types de récompenses multiples
+### Multiple Reward Types
 
-#### Récompenses d'objets
+#### Item Rewards
 ```yaml
 items:
   tool:
     material: DIAMOND_PICKAXE
     amount: 1
-    display-name: "&bPioche de Maître Mineur"
+    display-name: "&bMaster Miner's Pickaxe"
     enchantments:
       efficiency: 3
       unbreaking: 2
-    nbt: '{Custom: 1b}'  # NBT personnalisé
+    nbt: '{Custom: 1b}'  # Custom NBT
 ```
 
-#### Récompenses économiques
+#### Economic Rewards
 ```yaml
 economy-reward: 500.0  # Via Vault
 ```
 
-#### Récompenses de commandes
+#### Command Rewards
 ```yaml
 commands:
   - "give {player} diamond 5"
-  - "broadcast {player} a atteint le niveau 50 !"
-  - "tellraw {player} {\"text\":\"Félicitations !\", \"color\":\"gold\"}"
+  - "broadcast {player} reached level 50!"
+  - "tellraw {player} {\"text\":\"Congratulations!\", \"color\":\"gold\"}"
 ```
 
-### Système de conditions avancé
-Logique AND/OR complexe pour les prérequis :
+### Advanced Conditions System
+Complex AND/OR logic for requirements:
 
 ```yaml
 requirements:
@@ -118,49 +118,49 @@ requirements:
   item:
     material: "IRON_PICKAXE"
     accept:
-      message: "&aRécompense réclamée !"
+      message: "&aReward claimed!"
       sound: "ENTITY_PLAYER_LEVELUP"
     deny:
-      message: "&cVous avez besoin d'une pioche en fer !"
+      message: "&cYou need an iron pickaxe!"
       sound: "ENTITY_VILLAGER_NO"
 ```
 
-### Interface graphique interactive
-- **Navigation par pages** pour de nombreuses récompenses
-- **Aperçu en temps réel** des prérequis
-- **Feedback visuel** pour les récompenses disponibles/réclamées
-- **Cooldowns affichés** avec temps restant
+### Interactive GUI
+- **Page navigation** for many rewards
+- **Real-time preview** of requirements
+- **Visual feedback** for available/claimed rewards
+- **Cooldown display** with remaining time
 
-### Système de cooldown flexible
+### Flexible Cooldown System
 ```yaml
-cooldown-hours: 24        # Cooldown de 24 heures
-cooldown-days: 7          # Cooldown de 7 jours
-repeatable: true          # Peut être réclamée plusieurs fois
+cooldown-hours: 24        # 24-hour cooldown
+cooldown-days: 7          # 7-day cooldown
+repeatable: true          # Can be claimed multiple times
 ```
 
-## 🔗 Intégrations de plugins
+## 🔗 Plugin Integrations
 
 ### PlaceholderAPI (60+ placeholders)
 
-#### Informations joueur
+#### Player Information
 ```
-%jobsadventure_miner_player_level%       # Niveau mining du joueur
-%jobsadventure_farmer_player_xp%         # XP farming du joueur
-%jobsglobal_player_totaljobs%            # Nombre total de métiers
-%jobsglobal_player_totallevels%          # Somme de tous les niveaux
-%jobsglobal_player_rank%                 # Rang global du joueur
+%jobsadventure_miner_player_level%       # Player's mining level
+%jobsadventure_farmer_player_xp%         # Player's farming XP
+%jobsglobal_player_totaljobs%            # Total number of jobs
+%jobsglobal_player_totallevels%          # Sum of all levels
+%jobsglobal_player_rank%                 # Player's global rank
 ```
 
-#### Classements
+#### Leaderboards
 ```
-%jobsadventure_miner_leaderboard_1_name%    # Nom du top 1 mineur
-%jobsadventure_miner_leaderboard_1_level%   # Niveau du top 1 mineur
-%jobsglobal_totalxp_1_displayname%          # Top 1 XP global
-%jobsglobal_totallevels_5_name%             # 5ème joueur par niveaux
+%jobsadventure_miner_leaderboard_1_name%    # Top 1 miner name
+%jobsadventure_miner_leaderboard_1_level%   # Top 1 miner level
+%jobsglobal_totalxp_1_displayname%          # Global XP top 1
+%jobsglobal_totallevels_5_name%             # 5th player by levels
 ```
 
 ### MythicMobs
-Intégration complète pour les créatures personnalisées :
+Complete integration for custom creatures:
 ```yaml
 actions:
   KILL:
@@ -174,7 +174,7 @@ actions:
 ```
 
 ### CustomCrops
-Support complet de l'agriculture avancée :
+Full support for advanced farming:
 ```yaml
 actions:
   BREAK:
@@ -188,7 +188,7 @@ actions:
 ```
 
 ### CustomFishing
-Pêche personnalisée avec créatures rares :
+Custom fishing with rare creatures:
 ```yaml
 actions:
   FISH:
@@ -197,12 +197,12 @@ actions:
       xp: 50.0
       requirements:
         time:
-          min: 13000  # Seulement la nuit
+          min: 13000  # Night only
           max: 23000
 ```
 
 ### Nexo & ItemsAdder
-Objets et blocs personnalisés :
+Custom items and blocks:
 ```yaml
 actions:
   BREAK:
@@ -216,7 +216,7 @@ actions:
 ```
 
 ### MMOItems
-Outils et armes spécialisés :
+Specialized tools and weapons:
 ```yaml
 requirements:
   item:
@@ -224,47 +224,47 @@ requirements:
       type: "TOOL"
       id: "MASTER_PICKAXE"
     deny:
-      message: "&cVous avez besoin de la Pioche de Maître !"
+      message: "&cYou need the Master Pickaxe!"
 ```
 
-## 🛡️ Système anti-triche avancé
+## 🛡️ Advanced Anti-Cheat System
 
-### Protection NBT des blocs
-- **Marquage automatique** des blocs placés par les joueurs
-- **Distinction intelligente** entre blocs naturels et artificiels
-- **Nettoyage automatique** des données NBT obsolètes
-- **Performance optimisée** sans impact sur le gameplay
+### NBT Block Protection
+- **Automatic marking** of player-placed blocks
+- **Smart distinction** between natural and artificial blocks
+- **Automatic cleanup** of obsolete NBT data
+- **Optimized performance** with no gameplay impact
 
-### Détection d'exploits
-- **Cooldowns adaptatifs** pour prévenir le spam
-- **Détection de patterns** suspects d'activité
-- **Validation stricte** de toutes les actions
-- **Logs détaillés** pour audit
+### Exploit Detection
+- **Adaptive cooldowns** to prevent spam
+- **Suspicious pattern detection**
+- **Strict validation** of all actions
+- **Detailed logs** for auditing
 
-### Système de validation
+### Validation System
 ```yaml
 anti-exploit:
   block-tracking: true
-  cooldown-ms: 100        # Cooldown entre actions
+  cooldown-ms: 100        # Cooldown between actions
   max-actions-per-second: 10
   suspicious-threshold: 50
 ```
 
-## ⚡ Performance et compatibilité
+## ⚡ Performance and Compatibility
 
-### Compatibilité Folia
-- **Threading régionalisé** pour performance maximale
-- **Opérations asynchrones** pour éviter les lags
-- **Synchronisation intelligente** entre régions
-- **Scaling horizontal** pour gros serveurs
+### Folia Compatibility
+- **Regionalized threading** for maximum performance
+- **Asynchronous operations** to avoid lag
+- **Smart synchronization** between regions
+- **Horizontal scaling** for large servers
 
-### Optimisations avancées
-- **Cache multi-niveaux** pour accès rapides
-- **Compression de données** pour économiser l'espace
-- **Pool de connexions** pour la base de données
-- **Batch operations** pour réduire les I/O
+### Advanced Optimizations
+- **Multi-level cache** for fast access
+- **Data compression** to save space
+- **Connection pooling** for database
+- **Batch operations** to reduce I/O
 
-### Monitoring en temps réel
+### Real-time Monitoring
 ```
 Performance Metrics:
 ⚡ Action Processing:    < 1ms average
@@ -274,29 +274,29 @@ Performance Metrics:
 📈 Scalability:         Tested up to 5000 players
 ```
 
-## 🎨 Personnalisation complète
+## 🎨 Complete Customization
 
-### Messages multilingues
-Support complet pour :
-- **Français** (fr_FR) - Traduction complète
-- **Anglais** (en_US) - Langue par défaut
-- **Extensible** - Ajout facile de nouvelles langues
+### Multi-language Messages
+Full support for:
+- **French** (fr_FR) - Complete translation
+- **English** (en_US) - Default language
+- **Extensible** - Easy addition of new languages
 
-### Interface graphique
+### GUI Interface
 ```yaml
 gui:
-  title: "&6Métiers de {player}"
-  size: 54  # Inventaire 6 lignes
+  title: "&6{player}'s Jobs"
+  size: 54  # 6-row inventory
   items:
     job_item:
       material: "DIAMOND_PICKAXE"
       display-name: "&e{job_name}"
       lore:
-        - "&7Niveau: &a{level}"
+        - "&7Level: &a{level}"
         - "&7XP: &b{current_xp}/{required_xp}"
 ```
 
-### Sons et effets
+### Sounds and Effects
 ```yaml
 sounds:
   level-up: "ENTITY_PLAYER_LEVELUP"
@@ -308,71 +308,71 @@ effects:
     - "PARTICLE:FLAME:50"
 ```
 
-## 🔧 API développeur
+## 🔧 Developer API
 
-### Événements complets
+### Complete Events
 ```java
-// Événements disponibles
-PlayerJobJoinEvent       - Rejoindre un métier
-PlayerJobLeaveEvent      - Quitter un métier
-PlayerXpGainEvent        - Gain d'XP (cancellable)
-PlayerLevelUpEvent       - Montée de niveau
-PlayerRewardClaimEvent   - Réclamation de récompense
-JobActionEvent           - Action de métier exécutée
+// Available events
+PlayerJobJoinEvent       - Joining a job
+PlayerJobLeaveEvent      - Leaving a job
+PlayerXpGainEvent        - XP gain (cancellable)
+PlayerLevelUpEvent       - Level advancement
+PlayerRewardClaimEvent   - Reward claiming
+JobActionEvent           - Job action performed
 ```
 
-### Intégration facile
+### Easy Integration
 ```java
-// Exemple d'utilisation de l'API
+// API usage example
 JobManager jobManager = JobsAdventure.getInstance().getJobManager();
 Player player = Bukkit.getPlayer("Steve");
 
-// Ajouter de l'XP
+// Add XP
 jobManager.addXp(player, "miner", 100.0);
 
-// Vérifier le niveau
+// Check level
 int level = jobManager.getLevel(player, "miner");
 
-// Forcer montée de niveau
+// Force level up
 jobManager.setLevel(player, "miner", 50);
 ```
 
-### Extensions personnalisées
-- **Actions personnalisées** via l'API
-- **Conditions personnalisées** pour les récompenses
-- **Intégrations tierces** simplifiées
-- **Hooks de données** pour synchronisation
+### Custom Extensions
+- **Custom actions** via API
+- **Custom conditions** for rewards
+- **Third-party integrations** simplified
+- **Data hooks** for synchronization
 
-## 📊 Système de données
+## 📊 Data System
 
-### Stockage hybride
-**Fichiers YAML** (par défaut) :
-- Installation simple
-- Idéal pour petits/moyens serveurs
-- Sauvegarde facile
+### Hybrid Storage
+**YAML Files** (default):
+- Simple installation
+- Ideal for small/medium servers
+- Easy backup
 
-**Base de données MySQL** (optionnel) :
-- Performance maximale
-- Idéal pour gros serveurs/réseaux
-- Synchronisation cross-serveur
+**MySQL Database** (optional):
+- Maximum performance
+- Ideal for large servers/networks
+- Cross-server synchronization
 
-### Compression intelligente
-- **Compression automatique** des gros fichiers
-- **Seuil configurable** pour l'activation
-- **Économie d'espace** significative
-- **Performance préservée**
+### Smart Compression
+- **Automatic compression** of large files
+- **Configurable threshold** for activation
+- **Significant space savings**
+- **Preserved performance**
 
-### Cache avancé
+### Advanced Cache
 ```yaml
 cache:
-  max-entries: 1000      # Nombre max d'entrées
-  max-memory-mb: 256     # Mémoire maximale
-  cleanup-interval: 30   # Nettoyage en minutes
+  max-entries: 1000      # Maximum entries
+  max-memory-mb: 256     # Maximum memory
+  cleanup-interval: 30   # Cleanup in minutes
 ```
 
-## 🔗 Voir aussi
+## 🔗 See Also
 
-- [Compatibilité et prérequis](compatibility.md)
-- [Installation rapide](../installation/quick-start.md)
-- [Configuration des métiers](../jobs-configuration/creating-jobs.md)
-- [API développeur](../api/introduction.md)
+- [Compatibility and Requirements](compatibility.md)
+- [Quick Installation](../installation/quick-start.md)
+- [Job Configuration](../jobs-configuration/creating-jobs.md)
+- [Developer API](../api/introduction.md)

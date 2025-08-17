@@ -1,390 +1,390 @@
-# ⚔️ Guide d'administration - Commandes essentielles
+# ⚔️ Administration Guide - Essential Commands
 
-Ce guide présente toutes les commandes d'administration pour gérer efficacement JobsAdventure sur votre serveur.
+This guide presents all administration commands to efficiently manage JobsAdventure on your server.
 
-## 🔑 Permissions administrateur
+## 🔑 Administrator Permissions
 
-Avant tout, assurez-vous d'avoir les bonnes permissions :
+First, make sure you have the right permissions:
 
 | Permission | Description |
 |:---|:---|
-| `jobsadventure.admin` | Accès aux commandes d'administration de base |
-| `jobsadventure.admin.xpbonus` | Gestion des bonus XP |
-| `jobsadventure.rewards.admin` | Administration des récompenses |
+| `jobsadventure.admin` | Access to basic administration commands |
+| `jobsadventure.admin.xpbonus` | XP bonus management |
+| `jobsadventure.rewards.admin` | Reward administration |
 
-## 🔧 Gestion générale du plugin
+## 🔧 General Plugin Management
 
-### Recharger la configuration
+### Reload Configuration
 ```
 /jobs reload
 ```
-**Utilisation :** Après avoir modifié des fichiers de configuration
-**Effet :** Recharge tous les fichiers sans redémarrer le serveur
+**Usage:** After modifying configuration files
+**Effect:** Reloads all files without restarting the server
 
-### Mode debug
+### Debug Mode
 ```
 /jobs debug on
 /jobs debug off
 ```
-**Utilisation :** Pour diagnostiquer des problèmes
-**Effet :** Active/désactive les logs détaillés dans la console
+**Usage:** To diagnose problems
+**Effect:** Enables/disables detailed logs in console
 
-### Statistiques du serveur
+### Server Statistics
 ```
 /jobs admin stats
 ```
-**Sortie exemple :**
+**Example output:**
 ```
-=== Statistiques JobsAdventure ===
-Joueurs actifs: 42
-Métiers actifs: 3
-Actions traitées (dernière heure): 1,847
-Performance moyenne: 0.7ms
-Mémoire utilisée: 38MB
+=== JobsAdventure Statistics ===
+Active players: 42
+Active jobs: 3
+Actions processed (last hour): 1,847
+Average performance: 0.7ms
+Memory used: 38MB
 Cache hits: 94.2%
 ```
 
-### Métriques de performance
+### Performance Metrics
 ```
 /jobs admin performance
 ```
-Affiche des métriques détaillées pour optimiser les performances.
+Displays detailed metrics for performance optimization.
 
-## 👥 Gestion des joueurs
+## 👥 Player Management
 
-### Forcer un joueur à rejoindre un métier
+### Force a player to join a job
 ```
-/jobs admin player <joueur> join <métier>
+/jobs admin player <player> join <job>
 ```
-**Exemples :**
+**Examples:**
 ```
 /jobs admin player Steve join miner
 /jobs admin player Alice join farmer
 ```
 
-### Forcer un joueur à quitter un métier
+### Force a player to leave a job
 ```
-/jobs admin player <joueur> leave <métier>
+/jobs admin player <player> leave <job>
 ```
-**Exemple :**
+**Example:**
 ```
 /jobs admin player Steve leave miner
 ```
 
-### Modifier le niveau d'un joueur
+### Modify a player's level
 ```
-/jobs admin player <joueur> setlevel <métier> <niveau>
+/jobs admin player <player> setlevel <job> <level>
 ```
-**Exemples :**
+**Examples:**
 ```
 /jobs admin player Steve setlevel miner 50
 /jobs admin player Alice setlevel farmer 25
 ```
 
-### Ajouter de l'XP à un joueur
+### Add XP to a player
 ```
-/jobs admin player <joueur> addxp <métier> <xp>
+/jobs admin player <player> addxp <job> <xp>
 ```
-**Exemples :**
+**Examples:**
 ```
 /jobs admin player Steve addxp miner 1000
 /jobs admin player Alice addxp farmer 500
 ```
 
-### Retirer de l'XP à un joueur
+### Remove XP from a player
 ```
-/jobs admin player <joueur> removexp <métier> <xp>
+/jobs admin player <player> removexp <job> <xp>
 ```
-**Exemple :**
+**Example:**
 ```
 /jobs admin player Steve removexp miner 200
 ```
 
-### Réinitialiser un joueur
+### Reset a player
 ```
-/jobs admin player <joueur> reset [métier]
+/jobs admin player <player> reset [job]
 ```
-**Exemples :**
+**Examples:**
 ```
-/jobs admin player Steve reset           # Tous les métiers
-/jobs admin player Steve reset miner     # Métier spécifique
-```
-
-## 🚀 Système de bonus XP
-
-### Bonus XP global pour tous les joueurs
-```
-/jobs xpbonus <multiplicateur> <durée>
-```
-**Paramètres :**
-- `multiplicateur` : 0.1 à 10.0 (ex: 2.0 = +100% XP)
-- `durée` : en secondes (max 86400 = 24h)
-
-**Exemples :**
-```
-/jobs xpbonus 2.0 3600        # Double XP pendant 1 heure
-/jobs xpbonus 1.5 7200        # +50% XP pendant 2 heures
-/jobs xpbonus 3.0 1800        # Triple XP pendant 30 minutes
+/jobs admin player Steve reset           # All jobs
+/jobs admin player Steve reset miner     # Specific job
 ```
 
-### Bonus XP pour un joueur spécifique
+## 🚀 XP Bonus System
+
+### Global XP bonus for all players
 ```
-/jobs xpbonus <joueur> <multiplicateur> <durée>
+/jobs xpbonus <multiplier> <duration>
 ```
-**Exemples :**
+**Parameters:**
+- `multiplier`: 0.1 to 10.0 (e.g., 2.0 = +100% XP)
+- `duration`: in seconds (max 86400 = 24h)
+
+**Examples:**
 ```
-/jobs xpbonus VIP_Player 2.5 3600    # +150% XP pour un VIP
-/jobs xpbonus NewPlayer 1.2 86400     # +20% XP pour un débutant (24h)
+/jobs xpbonus 2.0 3600        # Double XP for 1 hour
+/jobs xpbonus 1.5 7200        # +50% XP for 2 hours
+/jobs xpbonus 3.0 1800        # Triple XP for 30 minutes
 ```
 
-### Bonus XP pour un métier spécifique
+### XP bonus for a specific player
 ```
-/jobs xpbonus <joueur> <métier> <multiplicateur> <durée>
+/jobs xpbonus <player> <multiplier> <duration>
 ```
-**Exemples :**
+**Examples:**
 ```
-/jobs xpbonus Steve miner 3.0 1800    # Triple XP mining pour Steve (30 min)
-/jobs xpbonus Alice farmer 2.0 7200   # Double XP farming pour Alice (2h)
-```
-
-### Scénarios d'utilisation courants
-
-#### Événement weekend
-```
-/jobs xpbonus 2.0 172800    # Double XP pendant tout le weekend (48h)
+/jobs xpbonus VIP_Player 2.5 3600    # +150% XP for a VIP
+/jobs xpbonus NewPlayer 1.2 86400     # +20% XP for a beginner (24h)
 ```
 
-#### Bonus de bienvenue
+### XP bonus for a specific job
 ```
-/jobs xpbonus NouveauJoueur 1.5 604800    # +50% XP pendant 1 semaine
+/jobs xpbonus <player> <job> <multiplier> <duration>
+```
+**Examples:**
+```
+/jobs xpbonus Steve miner 3.0 1800    # Triple mining XP for Steve (30 min)
+/jobs xpbonus Alice farmer 2.0 7200   # Double farming XP for Alice (2h)
 ```
 
-#### Événement métier spécialisé
+### Common Usage Scenarios
+
+#### Weekend Event
 ```
-# Semaine du mining - bonus pour tous les mineurs
-/jobs xpbonus JoueurA miner 2.0 604800
-/jobs xpbonus JoueurB miner 2.0 604800
+/jobs xpbonus 2.0 172800    # Double XP for entire weekend (48h)
+```
+
+#### Welcome Bonus
+```
+/jobs xpbonus NewPlayer 1.5 604800    # +50% XP for 1 week
+```
+
+#### Specialized Job Event
+```
+# Mining week - bonus for all miners
+/jobs xpbonus PlayerA miner 2.0 604800
+/jobs xpbonus PlayerB miner 2.0 604800
 # etc...
 ```
 
-## 🎁 Gestion des récompenses
+## 🎁 Reward Management
 
-### Donner une récompense à un joueur
+### Give a reward to a player
 ```
-/jobs admin rewards give <joueur> <métier> <récompense>
+/jobs admin rewards give <player> <job> <reward>
 ```
-**Exemples :**
+**Examples:**
 ```
 /jobs admin rewards give Steve miner starter_bonus
 /jobs admin rewards give Alice farmer daily_bonus
 ```
 
-### Réinitialiser les récompenses
+### Reset rewards
 ```
-/jobs admin rewards reset <joueur> [métier] [récompense]
+/jobs admin rewards reset <player> [job] [reward]
 ```
-**Exemples :**
+**Examples:**
 ```
-/jobs admin rewards reset Steve                     # Toutes les récompenses
-/jobs admin rewards reset Steve miner               # Toutes les récompenses miner
-/jobs admin rewards reset Steve miner daily_bonus   # Récompense spécifique
+/jobs admin rewards reset Steve                     # All rewards
+/jobs admin rewards reset Steve miner               # All miner rewards
+/jobs admin rewards reset Steve miner daily_bonus   # Specific reward
 ```
 
-### Forcer l'éligibilité d'une récompense
+### Force reward eligibility
 ```
-/jobs admin rewards unlock <joueur> <métier> <récompense>
+/jobs admin rewards unlock <player> <job> <reward>
 ```
-Utile pour débloquer des récompenses spéciales lors d'événements.
+Useful for unlocking special rewards during events.
 
-## 💾 Gestion des données
+## 💾 Data Management
 
-### Sauvegarde forcée
+### Force Save
 ```
 /jobs admin database save
 ```
-Force la sauvegarde de toutes les données joueurs.
+Forces saving of all player data.
 
-### Rechargement des données
+### Reload Data
 ```
 /jobs admin database load
 ```
-Recharge toutes les données depuis la source (fichiers/DB).
+Reloads all data from source (files/DB).
 
-### Optimisation de la base de données
+### Database Optimization
 ```
 /jobs admin database optimize
 ```
-Optimise les performances de la base de données (MySQL uniquement).
+Optimizes database performance (MySQL only).
 
-### Migration des données
+### Data Migration
 ```
 /jobs admin migrate file-to-database
 /jobs admin migrate database-to-file
 ```
-Migre les données entre fichiers et base de données.
+Migrates data between files and database.
 
-## 📊 Surveillance et monitoring
+## 📊 Monitoring and Surveillance
 
-### Voir les joueurs actifs par métier
+### View active players by job
 ```
-/jobs admin list players <métier>
+/jobs admin list players <job>
 ```
-**Exemple :**
+**Example:**
 ```
 /jobs admin list players miner
 ```
 
-### Statistiques détaillées d'un joueur
+### Detailed player statistics
 ```
-/jobs admin info <joueur>
+/jobs admin info <player>
 ```
-Affiche toutes les informations administrateur sur un joueur.
+Displays all administrator information about a player.
 
-### Log des actions récentes
+### Recent action logs
 ```
-/jobs admin log [joueur] [métier] [heures]
+/jobs admin log [player] [job] [hours]
 ```
-**Exemples :**
+**Examples:**
 ```
-/jobs admin log                      # Toutes les actions (dernière heure)
-/jobs admin log Steve                # Actions de Steve (dernière heure)
-/jobs admin log Steve miner 24       # Actions mining de Steve (24h)
+/jobs admin log                      # All actions (last hour)
+/jobs admin log Steve                # Steve's actions (last hour)
+/jobs admin log Steve miner 24       # Steve's mining actions (24h)
 ```
 
-### Alertes de performance
+### Performance alerts
 ```
 /jobs admin alerts
 ```
-Affiche les alertes de performance et recommandations d'optimisation.
+Displays performance alerts and optimization recommendations.
 
-## 🔧 Maintenance et diagnostic
+## 🔧 Maintenance and Diagnostics
 
-### Test de performance
+### Performance Test
 ```
 /jobs admin benchmark
 ```
-Lance un test de performance pour diagnostiquer les problèmes.
+Runs a performance test to diagnose issues.
 
-### Nettoyage du cache
+### Cache Management
 ```
 /jobs admin cache clear
 /jobs admin cache info
 ```
-Gère le cache interne du plugin.
+Manages the plugin's internal cache.
 
-### Vérification de l'intégrité
+### Integrity Check
 ```
 /jobs admin check integrity
 ```
-Vérifie l'intégrité des données et configurations.
+Verifies data and configuration integrity.
 
-### Export des données
+### Data Export
 ```
-/jobs admin export <format> [fichier]
+/jobs admin export <format> [file]
 ```
-**Formats supportés :** `csv`, `json`, `yaml`
-**Exemples :**
+**Supported formats:** `csv`, `json`, `yaml`
+**Examples:**
 ```
 /jobs admin export csv player_stats.csv
 /jobs admin export json backup.json
 ```
 
-## 🎯 Scénarios d'administration courants
+## 🎯 Common Administration Scenarios
 
-### Nouveau serveur - Configuration initiale
+### New Server - Initial Setup
 ```bash
-# 1. Vérifier l'installation
+# 1. Verify installation
 /jobs admin stats
 
-# 2. Configurer un événement de lancement
-/jobs xpbonus 2.0 604800    # Double XP pendant 1 semaine
+# 2. Configure launch event
+/jobs xpbonus 2.0 604800    # Double XP for 1 week
 
-# 3. Créer des comptes test
+# 3. Create test accounts
 /jobs admin player TestPlayer join miner
 /jobs admin player TestPlayer setlevel miner 10
 ```
 
-### Événement spécial - Weekend double XP
+### Special Event - Double XP Weekend
 ```bash
-# Vendredi soir
+# Friday evening
 /jobs xpbonus 2.0 172800
-/broadcast &6[Événement] &eDouble XP activé pour le weekend !
+/broadcast &6[Event] &eDouble XP activated for the weekend!
 
-# Dimanche soir - vérification
-/jobs admin stats    # Voir l'impact de l'événement
+# Sunday evening - verification
+/jobs admin stats    # See event impact
 ```
 
-### Problème de joueur - Réinitialisation
+### Player Issue - Reset
 ```bash
-# Enquête
+# Investigation
 /jobs admin info ProblematicPlayer
 /jobs admin log ProblematicPlayer 48
 
-# Réinitialisation si nécessaire
+# Reset if necessary
 /jobs admin player ProblematicPlayer reset
 /jobs admin rewards reset ProblematicPlayer
 ```
 
-### Maintenance serveur - Sauvegarde
+### Server Maintenance - Backup
 ```bash
-# Avant maintenance
+# Before maintenance
 /jobs admin database save
 /jobs admin export json backup_$(date).json
 
-# Après maintenance
+# After maintenance
 /jobs admin check integrity
 /jobs reload
 ```
 
-## ⚠️ Bonnes pratiques
+## ⚠️ Best Practices
 
-### Sauvegardes régulières
-- Configurez des **sauvegardes automatiques** toutes les heures
-- Testez la **restauration** régulièrement
-- Gardez des **archives** de plusieurs jours
+### Regular Backups
+- Configure **automatic backups** every hour
+- Test **restoration** regularly
+- Keep **archives** for several days
 
-### Monitoring continu
-- Vérifiez `/jobs admin stats` quotidiennement
-- Surveillez les **alertes de performance**
-- Attention aux **pics d'utilisation** inhabituels
+### Continuous Monitoring
+- Check `/jobs admin stats` daily
+- Monitor **performance alerts**
+- Watch for unusual **usage spikes**
 
-### Gestion des événements
-- **Planifiez** les bonus XP à l'avance
-- **Communiquez** les événements aux joueurs
-- **Surveillez** l'impact sur l'économie
+### Event Management
+- **Plan** XP bonuses in advance
+- **Communicate** events to players
+- **Monitor** impact on economy
 
-### Sécurité
-- **Limitez** les permissions admin
-- **Loggez** toutes les actions administrateur
-- **Vérifiez** régulièrement les accès
+### Security
+- **Limit** admin permissions
+- **Log** all administrator actions
+- **Verify** access regularly
 
-## 🆘 Dépannage rapide
+## 🆘 Quick Troubleshooting
 
-### Performance dégradée
+### Degraded Performance
 ```bash
-/jobs admin performance      # Identifier les goulots
-/jobs admin cache clear      # Nettoyer le cache
-/jobs admin database optimize # Optimiser la DB
+/jobs admin performance      # Identify bottlenecks
+/jobs admin cache clear      # Clear cache
+/jobs admin database optimize # Optimize DB
 ```
 
-### Données corrompues
+### Corrupted Data
 ```bash
 /jobs admin check integrity  # Diagnostic
-/jobs admin database load    # Rechargement
-# Si nécessaire : restaurer depuis sauvegarde
+/jobs admin database load    # Reload
+# If necessary: restore from backup
 ```
 
-### Plugin ne répond plus
+### Plugin Unresponsive
 ```bash
-/jobs debug on              # Activer les logs
-/jobs reload                # Recharger
-# Vérifier la console pour les erreurs
+/jobs debug on              # Enable logs
+/jobs reload                # Reload
+# Check console for errors
 ```
 
-## 📚 Voir aussi
+## 📚 See Also
 
-- [Gestion des joueurs](player-management.md)
-- [Système de bonus XP](xp-bonus-system.md)
-- [Surveillance et débogage](monitoring-debugging.md)
-- [Référence des commandes](../reference/commands-reference.md)
-- [Dépannage](../troubleshooting/common-issues.md)
+- [Player Management](player-management.md)
+- [XP Bonus System](xp-bonus-system.md)
+- [Monitoring and Debugging](monitoring-debugging.md)
+- [Commands Reference](../reference/commands-reference.md)
+- [Troubleshooting](../troubleshooting/common-issues.md)

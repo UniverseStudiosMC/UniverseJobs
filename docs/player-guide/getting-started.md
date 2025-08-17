@@ -1,267 +1,267 @@
-# 🎮 Guide du joueur - Premiers pas
+# 🎮 Player Guide - Getting Started
 
-Bienvenue dans JobsAdventure ! Ce guide vous apprendra tout ce qu'il faut savoir pour commencer votre aventure professionnelle sur Minecraft.
+Welcome to JobsAdventure! This guide will teach you everything you need to know to start your professional adventure in Minecraft.
 
-## 🤔 Qu'est-ce qu'un métier ?
+## 🤔 What is a Job?
 
-Un **métier** dans JobsAdventure est une spécialisation qui vous permet de :
-- **Gagner de l'expérience (XP)** en effectuant certaines actions
-- **Monter de niveau** et débloquer de nouvelles capacités
-- **Obtenir des récompenses** uniques basées sur votre progression
-- **Participer à l'économie** du serveur de manière spécialisée
+A **job** in JobsAdventure is a specialization that allows you to:
+- **Gain experience (XP)** by performing certain actions
+- **Level up** and unlock new abilities
+- **Obtain unique rewards** based on your progression
+- **Participate in the server economy** in a specialized way
 
-## 📋 Découvrir les métiers disponibles
+## 📋 Discover Available Jobs
 
-Pour voir tous les métiers disponibles sur le serveur :
+To see all jobs available on the server:
 ```
 /jobs list
 ```
 
-Vous verrez une liste comme celle-ci :
+You'll see a list like this:
 ```
-=== Métiers Disponibles ===
-✓ Miner - Extraction de ressources souterraines
-✗ Farmer - Agriculture et élevage  
-✗ Hunter - Combat et survie
+=== Available Jobs ===
+✓ Miner - Underground resource extraction
+✗ Farmer - Agriculture and livestock  
+✗ Hunter - Combat and survival
 ```
 
-- ✓ = Métiers que vous avez déjà
-- ✗ = Métiers disponibles
+- ✓ = Jobs you already have
+- ✗ = Available jobs
 
-## 🎯 Votre premier métier
+## 🎯 Your First Job
 
-### Étape 1 : Choisir un métier
-Nous recommandons de commencer par **Miner** car c'est le plus simple :
+### Step 1: Choose a Job
+We recommend starting with **Miner** as it's the simplest:
 ```
 /jobs join miner
 ```
 
-**Message de confirmation :**
+**Confirmation message:**
 ```
-✅ Vous avez rejoint le métier Miner !
+✅ You have joined the Miner job!
 ```
 
-### Étape 2 : Comprendre votre métier
-Pour voir les détails de votre nouveau métier :
+### Step 2: Understand Your Job
+To see details about your new job:
 ```
 /jobs info miner
 ```
 
-**Informations affichées :**
+**Information displayed:**
 ```
 === Miner ===
-Description : Extraction de ressources souterraines
-Niveau max : 100
-Permission : jobsadventure.job.miner
-Histoire :
-  - Creusez profondément et trouvez des richesses !
-  - Montez de niveau en minant minerais et pierres
-  - XP bonus pour les matériaux rares
-Types d'actions : BREAK, KILL
+Description: Underground resource extraction
+Max Level: 100
+Permission: jobsadventure.job.miner
+Lore:
+  - Dig deep and find riches!
+  - Level up by mining ores and stones
+  - Bonus XP for rare materials
+Action Types: BREAK, KILL
 ```
 
-### Étape 3 : Commencer à gagner de l'XP
-Maintenant, allez **miner des blocs** ! Chaque bloc miné vous donnera de l'XP :
+### Step 3: Start Gaining XP
+Now go **mine blocks**! Each mined block will give you XP:
 
-- **Pierre** : 1 XP
-- **Charbon** : 5 XP  
-- **Fer** : 10 XP
-- **Or** : 25 XP
-- **Diamant** : 50 XP
+- **Stone**: 1 XP
+- **Coal**: 5 XP  
+- **Iron**: 10 XP
+- **Gold**: 25 XP
+- **Diamond**: 50 XP
 
-**Messages XP que vous verrez :**
+**XP messages you'll see:**
 ```
-+1 XP (Miner)     [Pour la pierre]
-+5 XP (Miner)     [Pour le charbon]
-+50 XP (Miner)    [Pour le diamant]
++1 XP (Miner)     [For stone]
++5 XP (Miner)     [For coal]
++50 XP (Miner)    [For diamond]
 ```
 
-## 📊 Suivre votre progression
+## 📊 Track Your Progress
 
-### Vérifier vos statistiques
-Pour voir votre niveau actuel et votre XP :
+### Check Your Statistics
+To see your current level and XP:
 ```
 /jobs stats
 ```
 
-**Exemple de sortie :**
+**Example output:**
 ```
-=== Métiers de VotreNom ===
-Miner - Niveau 3 (150/200 XP)
-```
-
-Cela signifie :
-- Vous êtes **niveau 3** en Miner
-- Vous avez **150 XP** sur les **200 nécessaires** pour le niveau 4
-
-### Montée de niveau
-Quand vous atteignez assez d'XP, vous montez de niveau :
-```
-🎉 Félicitations ! Vous avez atteint le niveau 4 dans le métier Miner !
+=== YourName's Jobs ===
+Miner - Level 3 (150/200 XP)
 ```
 
-### Voir le classement
-Pour voir comment vous vous classez par rapport aux autres :
+This means:
+- You are **level 3** in Miner
+- You have **150 XP** out of **200 needed** for level 4
+
+### Level Up
+When you reach enough XP, you level up:
+```
+🎉 Congratulations! You have reached level 4 in the Miner job!
+```
+
+### See Rankings
+To see how you rank against others:
 ```
 /jobs top miner
 ```
 
-## 🎁 Système de récompenses
+## 🎁 Reward System
 
-### Accéder aux récompenses
-Pour voir les récompenses disponibles pour votre métier :
+### Access Rewards
+To see available rewards for your job:
 ```
 /jobs rewards open miner
 ```
 
-Cela ouvre une **interface graphique** où vous pouvez :
-- Voir toutes les récompenses disponibles
-- Vérifier les prérequis
-- Réclamer les récompenses débloquées
+This opens a **graphical interface** where you can:
+- See all available rewards
+- Check requirements
+- Claim unlocked rewards
 
-### Types de récompenses
+### Types of Rewards
 
-#### Récompenses d'objets
-- Outils améliorés
-- Matériaux rares
-- Objets spéciaux
+#### Item Rewards
+- Enhanced tools
+- Rare materials
+- Special items
 
-#### Récompenses économiques
-- Argent ajouté à votre compte
-- Bonus économiques
+#### Economic Rewards
+- Money added to your account
+- Economic bonuses
 
-#### Récompenses de commandes
-- Téléportations spéciales
-- Permissions temporaires
-- Effets spéciaux
+#### Command Rewards
+- Special teleportations
+- Temporary permissions
+- Special effects
 
-### Exemple de récompense débutant
-**Starter Bonus** (Niveau 1) :
-- 1x Pioche en pierre
-- 10x Pain
-- 50 pièces d'or
+### Example Beginner Reward
+**Starter Bonus** (Level 1):
+- 1x Stone Pickaxe
+- 10x Bread
+- 50 gold coins
 
-Pour la réclamer, cliquez dessus dans l'interface ou utilisez :
+To claim it, click on it in the interface or use:
 ```
 /jobs rewards claim miner starter_bonus
 ```
 
-## 🏢 Avoir plusieurs métiers
+## 🏢 Having Multiple Jobs
 
-### Limite de métiers
-La plupart des serveurs permettent **2-3 métiers maximum** par joueur. Pour vérifier votre limite :
+### Job Limit
+Most servers allow **2-3 jobs maximum** per player. To check your limit:
 ```
 /jobs stats
 ```
 
-### Ajouter un deuxième métier
-Une fois à l'aise avec Miner, essayez un autre métier :
+### Add a Second Job
+Once comfortable with Miner, try another job:
 ```
 /jobs join farmer
 ```
 
-### Gérer vos métiers
-Pour quitter un métier :
+### Manage Your Jobs
+To leave a job:
 ```
 /jobs leave farmer
 ```
 
-**⚠️ Attention :** Quitter un métier vous fait perdre tout votre progrès dans ce métier !
+**⚠️ Warning:** Leaving a job makes you lose all progress in that job!
 
-## 🎯 Stratégies pour débuter
+## 🎯 Beginner Strategies
 
-### 1. Commencez simple
-- Choisissez **Miner** comme premier métier
-- Minez dans vos activités normales
-- Ne vous forcez pas, laissez l'XP venir naturellement
+### 1. Start Simple
+- Choose **Miner** as your first job
+- Mine during your normal activities
+- Don't force it, let XP come naturally
 
-### 2. Explorez les prérequis
-Certaines actions nécessitent des conditions :
-- **Outils spécifiques** (ex: pioche en fer pour miner le charbon efficacement)
-- **Niveau minimum** (ex: niveau 10 pour miner le fer)
-- **Monde spécifique** (ex: diamants seulement dans l'overworld)
-- **Heure du jour** (ex: certains bonus la nuit)
+### 2. Explore Requirements
+Some actions require conditions:
+- **Specific tools** (e.g., iron pickaxe to mine coal efficiently)
+- **Minimum level** (e.g., level 10 to mine iron)
+- **Specific world** (e.g., diamonds only in overworld)
+- **Time of day** (e.g., certain bonuses at night)
 
-### 3. Optimisez votre équipement
-- Utilisez les **meilleurs outils** pour votre niveau
-- Réclamez les **récompenses d'outils** dès que possible
-- Vérifiez les **enchantements recommandés**
+### 3. Optimize Your Equipment
+- Use the **best tools** for your level
+- Claim **tool rewards** as soon as possible
+- Check **recommended enchantments**
 
-### 4. Planifiez votre progression
-- Regardez les **récompenses futures** pour vous motiver
-- Fixez-vous des **objectifs de niveau** (ex: niveau 10, 25, 50)
-- Variez les **activités** pour éviter l'ennui
+### 4. Plan Your Progression
+- Look at **future rewards** for motivation
+- Set **level goals** (e.g., level 10, 25, 50)
+- Vary **activities** to avoid boredom
 
-## 💡 Conseils avancés
+## 💡 Advanced Tips
 
-### Messages XP
-Vous pouvez recevoir les messages XP de trois façons :
-- **Chat** : Messages normaux dans le chat
-- **Barre d'action** : Au-dessus de votre barre d'objets
-- **Barre de boss** : Barre colorée en haut de l'écran
+### XP Messages
+You can receive XP messages in three ways:
+- **Chat**: Normal messages in chat
+- **Action Bar**: Above your hotbar
+- **Boss Bar**: Colored bar at top of screen
 
-### Bonus XP temporaires
-Parfois, les administrateurs activent des **événements bonus XP** :
+### Temporary XP Bonuses
+Sometimes administrators activate **bonus XP events**:
 ```
-🔥 BOOST XP ! +100% XP pendant 1 heure (Événement weekend)
+🔥 XP BOOST! +100% XP for 1 hour (Weekend event)
 ```
 
-### Conditions spéciales
-Certaines actions donnent plus d'XP dans des conditions spéciales :
-- **Profondeur** (plus profond = plus d'XP pour le mining)
-- **Biome** (certains biomes donnent des bonus)
-- **Heure** (bonus nocturnes pour certains métiers)
-- **Météo** (bonus de pluie pour l'agriculture)
+### Special Conditions
+Some actions give more XP under special conditions:
+- **Depth** (deeper = more XP for mining)
+- **Biome** (certain biomes give bonuses)
+- **Time** (night bonuses for certain jobs)
+- **Weather** (rain bonuses for farming)
 
-## ❓ Problèmes courants
+## ❓ Common Problems
 
-### "Je ne gagne pas d'XP !"
-✅ **Vérifications :**
-1. Avez-vous rejoint le métier ? (`/jobs stats`)
-2. Minez-vous les bons blocs ?
-3. Respectez-vous les conditions (outils, niveau, etc.) ?
-4. Le bloc était-il placé par un joueur ? (pas d'XP pour les blocs artificiels)
+### "I'm not gaining XP!"
+✅ **Checks:**
+1. Have you joined the job? (`/jobs stats`)
+2. Are you mining the right blocks?
+3. Do you meet the conditions (tools, level, etc.)?
+4. Was the block placed by a player? (no XP for artificial blocks)
 
-### "Je ne peux pas rejoindre un métier !"
-✅ **Solutions :**
-1. Vérifiez que vous avez la permission
-2. Vérifiez que vous n'avez pas atteint la limite de métiers
-3. Demandez à un administrateur
+### "I can't join a job!"
+✅ **Solutions:**
+1. Check you have permission
+2. Check you haven't reached the job limit
+3. Ask an administrator
 
-### "L'interface des récompenses ne s'ouvre pas !"
-✅ **Solutions :**
-1. Assurez-vous d'avoir rejoint le métier
-2. Vérifiez que vous avez la permission `jobsadventure.rewards.use`
-3. Essayez `/jobs rewards list` d'abord
+### "The rewards interface won't open!"
+✅ **Solutions:**
+1. Make sure you've joined the job
+2. Check you have permission `jobsadventure.rewards.use`
+3. Try `/jobs rewards list` first
 
-## 📚 Commandes essentielles à retenir
+## 📚 Essential Commands to Remember
 
-| Commande | Description |
+| Command | Description |
 |:---|:---|
-| `/jobs list` | Voir tous les métiers |
-| `/jobs join <métier>` | Rejoindre un métier |
-| `/jobs stats` | Voir votre progression |
-| `/jobs info <métier>` | Détails d'un métier |
-| `/jobs rewards open <métier>` | Interface des récompenses |
-| `/jobs top <métier>` | Classement |
-| `/jobs help` | Aide complète |
+| `/jobs list` | See all jobs |
+| `/jobs join <job>` | Join a job |
+| `/jobs stats` | See your progress |
+| `/jobs info <job>` | Job details |
+| `/jobs rewards open <job>` | Rewards interface |
+| `/jobs top <job>` | Rankings |
+| `/jobs help` | Complete help |
 
-## 🚀 Prochaines étapes
+## 🚀 Next Steps
 
-Maintenant que vous maîtrisez les bases :
+Now that you master the basics:
 
-1. **Explorez** les autres guides :
-   - [Rejoindre et quitter un métier](joining-leaving-jobs.md)
-   - [Système de niveaux et XP](levels-and-xp.md)  
-   - [Système de récompenses](rewards-system.md)
+1. **Explore** other guides:
+   - [Joining and Leaving Jobs](joining-leaving-jobs.md)
+   - [Levels and XP System](levels-and-xp.md)  
+   - [Rewards System](rewards-system.md)
 
-2. **Découvrez** les fonctionnalités avancées :
-   - Intégrations avec d'autres plugins
-   - Système de conditions complexes
-   - Bonus et événements spéciaux
+2. **Discover** advanced features:
+   - Integrations with other plugins
+   - Complex conditions system
+   - Bonuses and special events
 
-3. **Rejoignez** la communauté pour partager vos expériences !
+3. **Join** the community to share your experiences!
 
 ---
 
-**Bon jeu et bonne progression dans vos métiers ! 🎉**
+**Good luck and have fun progressing in your jobs! 🎉**

@@ -1,8 +1,8 @@
 {
   "title": "JobsAdventure Wiki",
-  "description": "Documentation complète pour JobsAdventure - Le plugin de métiers ultime pour Minecraft",
+  "description": "Complete documentation for JobsAdventure - The ultimate jobs plugin for Minecraft",
   "author": "Ax_Dev",
-  "language": "fr",
+  "language": "en",
   "root": "./",
   "structure": {
     "readme": "README.md",
@@ -54,7 +54,7 @@
     },
     "edit-link": {
       "base": "https://github.com/ax-dev/JobsAdventure/tree/main/docs",
-      "label": "Éditer cette page"
+      "label": "Edit this page"
     },
     "prism": {
       "css": [

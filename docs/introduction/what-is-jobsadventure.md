@@ -1,161 +1,161 @@
-# 🤔 Qu'est-ce que JobsAdventure ?
+# 🤔 What is JobsAdventure?
 
-JobsAdventure est le plugin de métiers **nouvelle génération** pour Minecraft, conçu pour transformer votre serveur en une véritable expérience économique RPG.
+JobsAdventure is the **next-generation** jobs plugin for Minecraft, designed to transform your server into a true RPG economic experience.
 
-## 🎯 Vision du projet
+## 🎯 Project Vision
 
-JobsAdventure a été créé avec une vision claire : **offrir le système de métiers le plus avancé, flexible et performant** disponible pour Minecraft. Contrairement aux autres plugins de métiers, JobsAdventure repense complètement l'approche traditionnelle pour offrir :
+JobsAdventure was created with a clear vision: **offer the most advanced, flexible, and performant jobs system** available for Minecraft. Unlike other job plugins, JobsAdventure completely rethinks the traditional approach to provide:
 
-- Une **architecture moderne** compatible avec Folia
-- Une **flexibilité maximale** dans la configuration
-- Des **performances exceptionnelles** même avec 1000+ joueurs
-- Une **sécurité renforcée** contre les exploits
+- A **modern architecture** compatible with Folia
+- **Maximum flexibility** in configuration
+- **Exceptional performance** even with 1000+ players
+- **Enhanced security** against exploits
 
-## 🏗️ Philosophie de conception
+## 🏗️ Design Philosophy
 
-### Simplicité pour les joueurs, puissance pour les administrateurs
+### Simplicity for players, power for administrators
 
-JobsAdventure suit le principe **"Simple en surface, puissant en profondeur"** :
+JobsAdventure follows the principle **"Simple on the surface, powerful in depth"**:
 
-- **Joueurs** : Interface intuitive, progression claire, récompenses motivantes
-- **Administrateurs** : Configuration avancée, outils de gestion complets, API extensible
-- **Développeurs** : Architecture modulaire, événements complets, intégrations facilités
+- **Players**: Intuitive interface, clear progression, motivating rewards
+- **Administrators**: Advanced configuration, complete management tools, extensible API
+- **Developers**: Modular architecture, complete events, easy integrations
 
-### Performance avant tout
+### Performance first
 
-Chaque ligne de code est optimisée pour :
-- **Temps de traitement < 1ms** pour les actions courantes
-- **Compatibilité Folia** avec threading régionalisé
-- **Gestion mémoire intelligente** avec cache et compression
-- **Opérations asynchrones** pour éviter les lags
+Every line of code is optimized for:
+- **Processing time < 1ms** for common actions
+- **Folia compatibility** with regionalized threading
+- **Smart memory management** with cache and compression
+- **Asynchronous operations** to avoid lag
 
-## 🔍 Comparaison avec les autres plugins
+## 🔍 Comparison with other plugins
 
-| Fonctionnalité | JobsAdventure | Autres plugins |
+| Feature | JobsAdventure | Other plugins |
 |:---|:---:|:---:|
-| **Compatibilité Folia** | ✅ Complète | ❌ Non supportée |
-| **Formules XP mathématiques** | ✅ Oui | ❌ Courbes fixes |
-| **Système anti-exploit NBT** | ✅ Avancé | ⚠️ Basique |
-| **Intégrations plugins** | ✅ 6+ plugins majeurs | ⚠️ Limitées |
-| **Interface graphique** | ✅ Personnalisable | ⚠️ Générique |
-| **API développeur** | ✅ Complète | ⚠️ Limitée |
-| **Support multilingue** | ✅ Oui | ❌ Anglais seulement |
-| **Système de conditions** | ✅ Logique AND/OR | ⚠️ Basique |
+| **Folia Compatibility** | ✅ Complete | ❌ Not supported |
+| **Mathematical XP Formulas** | ✅ Yes | ❌ Fixed curves |
+| **Advanced NBT Anti-Exploit** | ✅ Advanced | ⚠️ Basic |
+| **Plugin Integrations** | ✅ 6+ major plugins | ⚠️ Limited |
+| **GUI Interface** | ✅ Customizable | ⚠️ Generic |
+| **Developer API** | ✅ Complete | ⚠️ Limited |
+| **Multi-language Support** | ✅ Yes | ❌ English only |
+| **Conditions System** | ✅ AND/OR Logic | ⚠️ Basic |
 
-## 🌟 Cas d'usage principaux
+## 🌟 Main Use Cases
 
-### 🏰 Serveurs Survival
-- **Progression économique** naturelle et équilibrée
-- **Métiers thématiques** (mineur, fermier, bûcheron, etc.)
-- **Récompenses progressives** qui motivent l'exploration
-- **Anti-grief** intégré pour protéger l'économie
+### 🏰 Survival Servers
+- **Natural economic progression** balanced and fair
+- **Thematic jobs** (miner, farmer, lumberjack, etc.)
+- **Progressive rewards** that motivate exploration
+- **Integrated anti-grief** to protect the economy
 
-### 🌍 Réseaux SMP
-- **Synchronisation cross-monde** des données joueurs
-- **Classements globaux** et compétition entre joueurs
-- **Événements temporaires** avec bonus XP
-- **Économie unifiée** à travers les mondes
+### 🌍 SMP Networks
+- **Cross-world synchronization** of player data
+- **Global leaderboards** and player competition
+- **Temporary events** with XP bonuses
+- **Unified economy** across worlds
 
-### 🎭 Serveurs RPG
-- **Intégration MMO** avec MythicMobs, MMOItems
-- **Classes et spécialisations** via les métiers
-- **Quêtes et récompenses** basées sur les niveaux
-- **Progression complexe** avec prérequis
+### 🎭 RPG Servers
+- **MMO integration** with MythicMobs, MMOItems
+- **Classes and specializations** via jobs
+- **Quests and rewards** based on levels
+- **Complex progression** with prerequisites
 
-### ⚡ Serveurs Performance
-- **Architecture Folia** pour scaling horizontal
-- **Thread safety** complète
-- **Optimisations avancées** pour gros serveurs
-- **Monitoring** en temps réel
+### ⚡ Performance Servers
+- **Folia architecture** for horizontal scaling
+- **Complete thread safety**
+- **Advanced optimizations** for large servers
+- **Real-time monitoring**
 
-### 🏢 Serveurs Économie
-- **Intégration Vault** complète
-- **Marchés dynamiques** basés sur l'activité
-- **Inflation contrôlée** via les courbes XP
-- **Taxation et redistribution** possible
+### 🏢 Economy Servers
+- **Complete Vault integration**
+- **Dynamic markets** based on activity
+- **Controlled inflation** via XP curves
+- **Taxation and redistribution** possible
 
-## 🛠️ Architecture technique
+## 🛠️ Technical Architecture
 
-### Système modulaire
-JobsAdventure est construit sur une architecture modulaire permettant :
-- **Ajout de fonctionnalités** sans impacter l'existant
-- **Intégrations tierces** faciles à développer
-- **Maintenance simplifiée** et mises à jour sûres
-- **Customisation poussée** par les administrateurs
+### Modular system
+JobsAdventure is built on a modular architecture allowing:
+- **Adding features** without impacting existing ones
+- **Easy third-party integrations** to develop
+- **Simplified maintenance** and safe updates
+- **Deep customization** by administrators
 
-### Gestion des données
-- **Stockage hybride** : fichiers YAML ou base de données MySQL
-- **Compression intelligente** pour optimiser l'espace
-- **Cache multi-niveaux** pour des accès ultra-rapides
-- **Sauvegarde automatique** et récupération d'erreurs
+### Data management
+- **Hybrid storage**: YAML files or MySQL database
+- **Smart compression** to optimize space
+- **Multi-level cache** for ultra-fast access
+- **Automatic backup** and error recovery
 
-### Sécurité intégrée
-- **Système NBT** pour traquer les blocs placés par les joueurs
-- **Détection d'exploits** en temps réel
-- **Validation stricte** de toutes les entrées
-- **Audit trail** pour tracer toutes les actions importantes
+### Integrated security
+- **NBT system** to track player-placed blocks
+- **Real-time exploit detection**
+- **Strict validation** of all inputs
+- **Audit trail** to trace all important actions
 
-## 🎮 Expérience joueur
+## 🎮 Player Experience
 
-### Progression intuitive
-Les joueurs découvrent naturellement :
-1. **Les métiers disponibles** via `/jobs list`
-2. **Comment rejoindre** un métier qui les intéresse
-3. **Les actions qui donnent de l'XP** en jouant normalement
-4. **Les récompenses** accessibles via l'interface graphique
-5. **Leur progression** et classement face aux autres
+### Intuitive progression
+Players naturally discover:
+1. **Available jobs** via `/jobs list`
+2. **How to join** a job that interests them
+3. **Actions that give XP** by playing normally
+4. **Accessible rewards** via the graphical interface
+5. **Their progression** and ranking against others
 
-### Feedback immédiat
-Chaque action génère un feedback adapté :
-- **Messages XP** configurables (chat, actionbar, bossbar)
-- **Sons et effets** pour renforcer la satisfaction
-- **Barres de progression** visuelles en temps réel
-- **Notifications** pour les montées de niveau et récompenses
+### Immediate feedback
+Each action generates appropriate feedback:
+- **Configurable XP messages** (chat, actionbar, bossbar)
+- **Sounds and effects** to enhance satisfaction
+- **Real-time visual progress bars**
+- **Notifications** for level-ups and rewards
 
-### Motivation long terme
-- **Courbes d'XP** équilibrées pour éviter la lassitude
-- **Récompenses échelonnées** qui maintiennent l'intérêt
-- **Défis et objectifs** variés selon les métiers
-- **Compétition saine** via les classements
+### Long-term motivation
+- **Balanced XP curves** to avoid tedium
+- **Staggered rewards** that maintain interest
+- **Varied challenges and objectives** according to jobs
+- **Healthy competition** via leaderboards
 
-## 🔮 Vision future
+## 🔮 Future Vision
 
-JobsAdventure continue d'évoluer avec :
+JobsAdventure continues to evolve with:
 
-### Fonctionnalités en développement
-- **Support MySQL clustering** pour les gros réseaux
-- **API REST** pour intégrations web
-- **Système d'achievements** intégré
-- **Bot Discord** pour le monitoring
-- **Interface web** d'administration
+### Features in development
+- **MySQL clustering support** for large networks
+- **REST API** for web integrations
+- **Integrated achievement system**
+- **Discord bot** for monitoring
+- **Web administration interface**
 
-### Intégrations prévues
-- **Nouveaux plugins** populaires
-- **Systèmes de guildes** et équipes
-- **Économie cross-serveur** avancée
-- **Machine learning** pour l'équilibrage automatique
+### Planned integrations
+- **New popular plugins**
+- **Guild and team systems**
+- **Advanced cross-server economy**
+- **Machine learning** for automatic balancing
 
-### Amélirations continues
-- **Optimisations performance** constantes
-- **Nouvelles fonctionnalités** basées sur la communauté
-- **Support versions** Minecraft récentes
-- **Documentation** enrichie
+### Continuous improvements
+- **Constant performance optimizations**
+- **New features** based on community
+- **Recent Minecraft version support**
+- **Enriched documentation**
 
-## 🤝 Philosophie open-source
+## 🤝 Open-source Philosophy
 
-JobsAdventure croit en :
-- **Transparence** du développement
-- **Contributions communautaires** encouragées
-- **Feedback utilisateur** pris en compte
-- **Amélioration continue** basée sur l'usage réel
+JobsAdventure believes in:
+- **Development transparency**
+- **Encouraged community contributions**
+- **User feedback** taken into account
+- **Continuous improvement** based on real usage
 
-## 🚀 Prêt à commencer ?
+## 🚀 Ready to Start?
 
-Maintenant que vous comprenez la vision de JobsAdventure, découvrez :
-- [Les fonctionnalités détaillées](features.md)
-- [La compatibilité et prérequis](compatibility.md)  
-- [L'installation rapide](../installation/quick-start.md)
+Now that you understand the vision of JobsAdventure, discover:
+- [Detailed features](features.md)
+- [Compatibility and requirements](compatibility.md)  
+- [Quick installation](../installation/quick-start.md)
 
 ---
 
-*JobsAdventure : Le futur des plugins de métiers pour Minecraft*
+*JobsAdventure: The future of job plugins for Minecraft*

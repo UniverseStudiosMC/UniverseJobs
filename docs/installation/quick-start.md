@@ -1,130 +1,130 @@
-# 🚀 Installation rapide
+# 🚀 Quick Installation
 
-Ce guide vous permettra d'installer JobsAdventure en moins de 5 minutes !
+This guide will help you install JobsAdventure in less than 5 minutes!
 
-## 📋 Prérequis
+## 📋 Prerequisites
 
-Avant de commencer, assurez-vous d'avoir :
+Before starting, make sure you have:
 
-- **Serveur Minecraft** : Paper 1.13+ / Spigot 1.13+ / Bukkit 1.13+ (ou Folia 1.21+ pour les performances maximales)
-- **Java** : OpenJDK 21 (recommandé) ou version compatible
-- **PlaceholderAPI** : Obligatoire pour toutes les fonctionnalités
-- **RAM** : Minimum 2GB, recommandé 4GB+ pour les gros serveurs
+- **Minecraft Server**: Paper 1.13+ / Spigot 1.13+ / Bukkit 1.13+ (or Folia 1.21+ for maximum performance)
+- **Java**: OpenJDK 21 (recommended) or compatible version
+- **PlaceholderAPI**: Required for all features
+- **RAM**: Minimum 2GB, recommended 4GB+ for large servers
 
-## 📥 Téléchargement
+## 📥 Download
 
-1. Téléchargez la dernière version de JobsAdventure depuis :
-   - GitHub Releases : [JobsAdventure Releases](https://github.com/ax-dev/JobsAdventure/releases)
-   - SpigotMC : [Page SpigotMC](https://spigotmc.org/)
+1. **Download the latest version** of JobsAdventure from:
+   - GitHub Releases: [JobsAdventure Releases](https://github.com/ax-dev/JobsAdventure/releases)
+   - SpigotMC: [SpigotMC Page](https://spigotmc.org/)
 
-2. Téléchargez **PlaceholderAPI** si vous ne l'avez pas déjà :
-   - [PlaceholderAPI sur SpigotMC](https://www.spigotmc.org/resources/placeholderapi.6245/)
+2. **Download PlaceholderAPI** if you don't have it already:
+   - [PlaceholderAPI on SpigotMC](https://www.spigotmc.org/resources/placeholderapi.6245/)
 
 ## 🔧 Installation
 
-### Étape 1 : Installation des plugins
-1. **Placez** le fichier `JobsAdventure-v1.0.jar` dans votre dossier `/plugins`
-2. **Placez** le fichier `PlaceholderAPI.jar` dans votre dossier `/plugins`
-3. **Redémarrez** votre serveur
+### Step 1: Install Plugins
+1. **Place** the `JobsAdventure-v1.0.jar` file in your `/plugins` folder
+2. **Place** the `PlaceholderAPI.jar` file in your `/plugins` folder
+3. **Restart** your server
 
-### Étape 2 : Vérification
-1. Vérifiez dans la console que JobsAdventure s'est chargé correctement :
+### Step 2: Verification
+1. Check in the console that JobsAdventure loaded correctly:
    ```
-   [INFO] JobsAdventure a été activé avec succès !
-   [INFO] Configuration chargée avec succès
-   [INFO] Métiers chargés avec succès
+   [INFO] JobsAdventure has been successfully enabled!
+   [INFO] Configuration loaded successfully
+   [INFO] Jobs loaded successfully
    [INFO] PlaceholderAPI integration initialized successfully
    ```
 
-2. Testez en jeu avec la commande :
+2. Test in-game with the command:
    ```
    /jobs list
    ```
 
-## ✅ Configuration par défaut
+## ✅ Default Configuration
 
-JobsAdventure est livré avec **3 métiers pré-configurés** prêts à l'emploi :
+JobsAdventure comes with **3 pre-configured jobs** ready to use:
 
-### ⛏️ Mineur (Miner)
-- **Niveau max** : 100
-- **Actions** : Minage de pierres, minerais, combat souterrain
-- **Récompenses** : Outils améliorés, bonus économiques
-- **Spécialités** : Bonus de profondeur, multiplicateurs de minerais rares
+### ⛏️ Miner
+- **Max Level**: 100
+- **Actions**: Stone mining, ores, underground combat
+- **Rewards**: Enhanced tools, economic bonuses
+- **Specialties**: Depth bonuses, rare ore multipliers
 
-### 🌾 Fermier (Farmer)  
-- **Niveau max** : 75
-- **Actions** : Agriculture, élevage, production alimentaire
-- **Récompenses** : Graines rares, outils agricoles
-- **Spécialités** : Bonus saisonniers, multiplicateurs d'élevage
+### 🌾 Farmer  
+- **Max Level**: 75
+- **Actions**: Agriculture, livestock, food production
+- **Rewards**: Rare seeds, farming tools
+- **Specialties**: Seasonal bonuses, breeding multipliers
 
-### 🏹 Chasseur (Hunter)
-- **Niveau max** : 80
-- **Actions** : Combat, apprivoisement, survie
-- **Récompenses** : Armes spécialisées, objets rares
-- **Spécialités** : Intégration MythicMobs, bonus de créatures rares
+### 🏹 Hunter
+- **Max Level**: 80
+- **Actions**: Combat, taming, survival
+- **Rewards**: Specialized weapons, rare items
+- **Specialties**: MythicMobs integration, rare creature bonuses
 
-## 🎮 Test rapide
+## 🎮 Quick Test
 
-1. **Rejoignez un métier** :
+1. **Join a job**:
    ```
    /jobs join miner
    ```
 
-2. **Minez quelques blocs** de pierre ou de charbon
+2. **Mine some blocks** of stone or coal
 
-3. **Vérifiez vos stats** :
+3. **Check your stats**:
    ```
    /jobs stats
    ```
 
-4. **Ouvrez l'interface des récompenses** :
+4. **Open rewards interface**:
    ```
    /jobs rewards open miner
    ```
 
-## 🔧 Plugins optionnels (recommandés)
+## 🔧 Optional Plugins (recommended)
 
-Pour une expérience complète, installez ces plugins :
+For a complete experience, install these plugins:
 
-| Plugin | Fonctionnalité | Priorité |
+| Plugin | Functionality | Priority |
 |:---|:---|:---:|
-| **Vault** | Économie et permissions | 🔴 Haute |
-| **MythicMobs** | Créatures personnalisées | 🟡 Moyenne |
-| **CustomCrops** | Agriculture avancée | 🟡 Moyenne |
-| **CustomFishing** | Pêche personnalisée | 🟢 Basse |
-| **Nexo/ItemsAdder** | Objets personnalisés | 🟢 Basse |
-| **MMOItems** | Outils spécialisés | 🟢 Basse |
+| **Vault** | Economy and permissions | 🔴 High |
+| **MythicMobs** | Custom creatures | 🟡 Medium |
+| **CustomCrops** | Advanced farming | 🟡 Medium |
+| **CustomFishing** | Custom fishing | 🟢 Low |
+| **Nexo/ItemsAdder** | Custom items | 🟢 Low |
+| **MMOItems** | Specialized tools | 🟢 Low |
 
-## 🎯 Prochaines étapes
+## 🎯 Next Steps
 
-Maintenant que JobsAdventure est installé :
+Now that JobsAdventure is installed:
 
-1. **Explorez** les [métiers par défaut](../player-guide/getting-started.md)
-2. **Configurez** vos [premiers métiers personnalisés](../jobs-configuration/creating-jobs.md)
-3. **Découvrez** le [système de récompenses](../rewards/reward-configuration.md)
-4. **Apprenez** les [commandes d'administration](../admin-guide/admin-commands.md)
+1. **Explore** the [default jobs](../player-guide/getting-started.md)
+2. **Configure** your [first custom jobs](../jobs-configuration/creating-jobs.md)
+3. **Discover** the [reward system](../rewards/reward-configuration.md)
+4. **Learn** the [admin commands](../admin-guide/admin-commands.md)
 
-## ❗ Problèmes courants
+## ❗ Common Issues
 
-### Plugin ne se charge pas
-- ✅ Vérifiez que vous utilisez Java 21+
-- ✅ Assurez-vous que PlaceholderAPI est installé
-- ✅ Consultez les [logs](../troubleshooting/logs-debugging.md) pour plus de détails
+### Plugin won't load
+- ✅ Check you're using Java 21+
+- ✅ Make sure PlaceholderAPI is installed
+- ✅ Check the [logs](../troubleshooting/logs-debugging.md) for details
 
-### Commandes ne fonctionnent pas
-- ✅ Vérifiez les [permissions](../reference/permissions.md)
-- ✅ Redémarrez le serveur après l'installation
+### Commands don't work
+- ✅ Check [permissions](../reference/permissions.md)
+- ✅ Restart the server after installation
 
-### Pas d'XP gagné
-- ✅ Vérifiez que vous avez rejoint un métier avec `/jobs join <métier>`
-- ✅ Consultez le [guide de dépannage](../troubleshooting/common-issues.md)
+### No XP gained
+- ✅ Check you've joined a job with `/jobs join <job>`
+- ✅ See the [troubleshooting guide](../troubleshooting/common-issues.md)
 
-## 🆘 Besoin d'aide ?
+## 🆘 Need Help?
 
-- 📚 [FAQ complète](../appendix/faq.md)
-- 🔧 [Guide de dépannage](../troubleshooting/common-issues.md)
-- 💬 [Support et communauté](../appendix/support.md)
+- 📚 [Complete FAQ](../appendix/faq.md)
+- 🔧 [Troubleshooting Guide](../troubleshooting/common-issues.md)
+- 💬 [Support and Community](../appendix/support.md)
 
 ---
 
-**Félicitations ! JobsAdventure est maintenant installé et prêt à transformer votre serveur ! 🎉**
+**Congratulations! JobsAdventure is now installed and ready to transform your server! 🎉**
