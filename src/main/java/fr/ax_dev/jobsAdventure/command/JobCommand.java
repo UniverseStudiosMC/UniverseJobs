@@ -21,6 +21,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
