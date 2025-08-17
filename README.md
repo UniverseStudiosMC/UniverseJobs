@@ -265,6 +265,23 @@ Message Types:
 3. **🔄 Restart** your server
 4. **🎉 Enjoy** - Jobs are pre-configured and ready!
 
+### 🔨 **Building from Source**
+```bash
+# Clone the repository
+git clone https://github.com/your-username/JobsAdventure.git
+cd JobsAdventure
+
+# Build the plugin (Nexo integration is optional)
+mvn clean package
+
+# Optional: Enable Nexo integration
+# 1. Download nexo-1.10.jar
+# 2. Place it in libs/ folder
+# 3. Rebuild with: mvn clean package
+```
+
+**Note**: The plugin builds perfectly without Nexo. See [NEXO_SETUP.md](NEXO_SETUP.md) for optional Nexo integration.
+
 ### 🛠️ **Advanced Configuration**
 ```yaml
 Recommended Server Setup:
