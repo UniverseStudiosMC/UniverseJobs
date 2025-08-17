@@ -87,11 +87,19 @@ placeholder:
 ```
 
 ### 3. Item (`item`)
-Vérifie l'item en main of the player.
+Vérifie l'item en main of the player. Supporte maintenant les matériaux multiples !
 
 ```yaml
 item:
-  material: "DIAMOND_PICKAXE"       # Type d'item requis
+  # Support des matériaux multiples (OU logique)
+  material: 
+    - "IRON_PICKAXE"
+    - "DIAMOND_PICKAXE"
+    - "NETHERITE_PICKAXE"
+  
+  # OU format traditionnel (toujours supporté)
+  # material: "DIAMOND_PICKAXE"
+  
   name: "&bPioche de Maître"        # Nom affiché (optionnel)
   lore:                             # Lore requis (optionnel)
     - "&7Pioche spéciale"
@@ -103,7 +111,7 @@ item:
   accept:
     message: "&aBonne pioche !"
   deny:
-    message: "&cVous devez avoir une pioche en diamant !"
+    message: "&cVous devez avoir une pioche en fer ou mieux !"
 ```
 
 **Options avancées** :
@@ -280,6 +288,177 @@ custom:
     message: "&aCondition custom remplie !"
   deny:
     message: "&cCondition custom non remplie !"
+```
+
+## 🌟 Structure Multiple Condition
+
+La structure `multiple_condition` permet de définir plusieurs conditions nommées avec des messages d'accept/deny globaux et individuels pour une flexibilité maximale.
+
+### Syntaxe de Base
+```yaml
+requirements:
+  logic: "AND"
+  multiple_condition:
+    # Conditions individuelles avec leurs propres deny messages
+    permission:
+      permission: "jobsadventure.mine.iron"
+      require: true
+      deny:
+        message: "&cVous n'avez pas la permission de miner le fer !"
+    
+    placeholder:
+      placeholder: "%player_level%"
+      operator: "greater_than"
+      value: "10"
+      deny:
+        message: "&cVous devez être niveau 10+ pour miner du fer !"
+        sound: "ENTITY_VILLAGER_NO"
+    
+    item:
+      material: 
+        - "IRON_PICKAXE"
+        - "DIAMOND_PICKAXE"
+      deny:
+        message: "&cVous avez besoin d'une pioche en fer ou mieux !"
+        sound: "BLOCK_ANVIL_PLACE"
+        cancelEvent: true
+    
+    # Messages globaux (optionnels)
+    accept:
+      message: "&a✅ Toutes les conditions remplies !"
+      sound: "ENTITY_PLAYER_LEVELUP"
+    
+    deny:
+      message: "&c❌ Conditions non remplies"
+      sound: "ENTITY_VILLAGER_NO"
+      cancelEvent: true
+```
+
+### Avantages de Multiple Condition
+
+1. **Messages Spécifiques** : Chaque condition peut avoir son propre message d'erreur
+2. **Flexibilité** : Combine la logique AND/OR avec des messages personnalisés
+3. **Lisibilité** : Structure claire et organisée
+4. **Performance** : Évaluation optimisée avec court-circuit
+
+### Hiérarchie des Messages
+
+L'ordre de priorité pour les messages est le suivant :
+
+1. **Message individuel** de la condition qui échoue (le plus spécifique)
+2. **Message global deny** (si pas de message individuel)
+3. **Message par défaut** du système
+
+```yaml
+multiple_condition:
+  permission:
+    permission: "vip.mining"
+    require: true
+    deny:
+      message: "&cMessage spécifique VIP"  # Priorité 1
+  
+  placeholder:
+    placeholder: "%player_level%"
+    operator: "greater_than"
+    value: "25"
+    # Pas de deny message individuel
+  
+  # Message global pour les conditions sans message spécifique
+  deny:
+    message: "&cMessage global par défaut"   # Priorité 2 pour placeholder
+    sound: "ENTITY_VILLAGER_NO"
+```
+
+### Support des Matériaux Multiples
+
+La condition `item` supporte maintenant plusieurs matériaux avec logique OR :
+
+```yaml
+multiple_condition:
+  tool_check:
+    material: 
+      - "IRON_PICKAXE"      # OU
+      - "DIAMOND_PICKAXE"   # OU
+      - "NETHERITE_PICKAXE" # OU
+      # Le joueur doit avoir UN de ces outils
+    deny:
+      message: "&cVous avez besoin d'une pioche en fer ou mieux !"
+  
+  # Backward compatible - fonctionne toujours
+  single_tool:
+    material: "DIAMOND_SWORD"
+```
+
+### Exemple Complexe : Système de Mining Avancé
+
+```yaml
+coal_ore:
+  target: "COAL_ORE"
+  xp: 5.0
+  name: "Coal Mining"
+  description: "Mining coal ore with advanced requirements"
+  requirements:
+    logic: "AND"
+    multiple_condition:
+      # Vérification des permissions
+      mining_permission:
+        permission: "jobsadventure.mine.coal"
+        require: true
+        deny:
+          message: "&c🚫 Permission manquante pour miner le charbon !"
+          sound: "ENTITY_VILLAGER_NO"
+      
+      # Niveau minimum requis
+      level_check:
+        placeholder: "%jobsadventure_miner_player_level%"
+        operator: "greater_than_or_equal"
+        value: "5"
+        deny:
+          message: "&c📊 Niveau mineur 5+ requis (actuel: %jobsadventure_miner_player_level%)"
+          sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+      
+      # Vérification de l'outil
+      tool_requirement:
+        material: 
+          - "STONE_PICKAXE"
+          - "IRON_PICKAXE"
+          - "DIAMOND_PICKAXE"
+          - "NETHERITE_PICKAXE"
+        deny:
+          message: "&c⛏️ Pioche requise (pierre, fer, diamant ou netherite) !"
+          sound: "BLOCK_ANVIL_PLACE"
+          cancelEvent: true
+      
+      # Vérification de l'argent (coût par action)
+      money_check:
+        placeholder: "%vault_eco_balance%"
+        operator: "greater_than_or_equal"
+        value: "10"
+        deny:
+          message: "&c💰 10$ requis par bloc miné (solde: %vault_eco_balance%$)"
+          sound: "ENTITY_VILLAGER_NO"
+      
+      # Zone autorisée
+      location_check:
+        world:
+          worlds: ["mining_world", "world"]
+          blacklist: false
+        deny:
+          message: "&c🌍 Mining autorisé uniquement dans mining_world !"
+      
+      # Messages de succès
+      accept:
+        message: "&a✅ Mining réussi ! Charbon obtenu !"
+        sound: "ENTITY_PLAYER_LEVELUP"
+        commands:
+          - "eco take %player% 10"  # Prélever le coût
+          - "give %player% coal 1"  # Donner le charbon bonus
+      
+      # Message d'échec global (si pas de message spécifique)
+      deny:
+        message: "&c❌ Impossible de miner - vérifiez les conditions"
+        sound: "ENTITY_VILLAGER_NO"
+        cancelEvent: true
 ```
 
 ## 🔗 Logique AND/OR

@@ -8,6 +8,8 @@ import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 
 import de.tr7zw.changeme.nbtapi.NBTItem;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Condition that checks the item in the player's hand.
@@ -15,7 +17,7 @@ import de.tr7zw.changeme.nbtapi.NBTItem;
  */
 public class ItemCondition extends AbstractCondition {
     
-    private final String material;
+    private final List<String> materials;
     private final String nbtKey;
     private final String nbtValue;
     private final Integer customModelData;
@@ -29,7 +31,15 @@ public class ItemCondition extends AbstractCondition {
      */
     public ItemCondition(ConfigurationSection config) {
         super(config);
-        this.material = config.getString("material");
+        
+        // Handle both single material and material list
+        this.materials = new ArrayList<>();
+        if (config.isList("material")) {
+            this.materials.addAll(config.getStringList("material"));
+        } else if (config.getString("material") != null) {
+            this.materials.add(config.getString("material"));
+        }
+        
         this.nbtKey = config.getString("nbt.key");
         this.nbtValue = config.getString("nbt.value");
         this.customModelData = config.contains("custom-model-data") ? 
@@ -45,14 +55,22 @@ public class ItemCondition extends AbstractCondition {
             return false;
         }
         
-        // Check material
-        if (material != null) {
-            try {
-                Material requiredMaterial = Material.valueOf(material.toUpperCase());
-                if (item.getType() != requiredMaterial) {
-                    return false;
+        // Check materials (OR logic - item must match at least one material)
+        if (!materials.isEmpty()) {
+            boolean materialMatched = false;
+            for (String materialName : materials) {
+                try {
+                    Material requiredMaterial = Material.valueOf(materialName.toUpperCase());
+                    if (item.getType() == requiredMaterial) {
+                        materialMatched = true;
+                        break;
+                    }
+                } catch (IllegalArgumentException e) {
+                    // Invalid material name, continue checking others
+                    continue;
                 }
-            } catch (IllegalArgumentException e) {
+            }
+            if (!materialMatched) {
                 return false;
             }
         }
@@ -124,7 +142,7 @@ public class ItemCondition extends AbstractCondition {
     
     @Override
     public String toString() {
-        return "ItemCondition{material='" + material + "', hasNBT=" + (nbtKey != null) + 
+        return "ItemCondition{materials=" + materials + ", hasNBT=" + (nbtKey != null) + 
                ", hasMMOItems=" + (mmoItemsType != null) + 
                "}";
     }

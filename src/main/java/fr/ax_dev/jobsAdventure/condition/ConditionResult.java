@@ -2,6 +2,7 @@ package fr.ax_dev.jobsAdventure.condition;
 
 import fr.ax_dev.jobsAdventure.utils.MessageUtils;
 import org.bukkit.Sound;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class ConditionResult {
     private final Sound acceptSound;
     private final List<String> acceptCommands;
     private final boolean acceptCancelEvent;
+    private final boolean isDefault;
     
     /**
      * Create a new condition result with separate accept/deny actions.
@@ -45,6 +47,50 @@ public class ConditionResult {
         this.acceptSound = acceptSound;
         this.acceptCommands = acceptCommands;
         this.acceptCancelEvent = acceptCancelEvent;
+        this.isDefault = false;
+    }
+    
+    /**
+     * Create a condition result from configuration section (for accept results).
+     * 
+     * @param config The configuration section containing result data
+     */
+    public ConditionResult(ConfigurationSection config) {
+        this(config, true);
+    }
+    
+    /**
+     * Create a condition result from configuration section.
+     * 
+     * @param config The configuration section containing result data
+     * @param isAccept Whether this is an accept (true) or deny (false) result
+     */
+    public ConditionResult(ConfigurationSection config, boolean isAccept) {
+        this.allowed = isAccept;
+        
+        if (isAccept) {
+            this.denyMessage = null;
+            this.denySound = null;
+            this.denyCommands = null;
+            this.denyCancelEvent = false;
+            
+            this.acceptMessage = config.getString("message");
+            this.acceptSound = parseSound(config.getString("sound"));
+            this.acceptCommands = config.getStringList("commands");
+            this.acceptCancelEvent = config.getBoolean("cancelEvent", false);
+        } else {
+            this.denyMessage = config.getString("message");
+            this.denySound = parseSound(config.getString("sound"));
+            this.denyCommands = config.getStringList("commands");
+            this.denyCancelEvent = config.getBoolean("cancelEvent", false);
+            
+            this.acceptMessage = null;
+            this.acceptSound = null;
+            this.acceptCommands = null;
+            this.acceptCancelEvent = false;
+        }
+        
+        this.isDefault = false;
     }
     
     /**
@@ -84,12 +130,45 @@ public class ConditionResult {
     }
     
     /**
+     * Parse a sound string to Sound enum.
+     * 
+     * @param soundString The sound string
+     * @return The Sound or null if invalid
+     */
+    private Sound parseSound(String soundString) {
+        if (soundString == null || soundString.isEmpty()) {
+            return null;
+        }
+        try {
+            return Sound.valueOf(soundString.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Private constructor for default results.
+     */
+    private ConditionResult(boolean allowed, boolean isDefault) {
+        this.allowed = allowed;
+        this.denyMessage = null;
+        this.denySound = null;
+        this.denyCommands = null;
+        this.denyCancelEvent = false;
+        this.acceptMessage = null;
+        this.acceptSound = null;
+        this.acceptCommands = null;
+        this.acceptCancelEvent = false;
+        this.isDefault = isDefault;
+    }
+
+    /**
      * Create an allowed result with no actions.
      * 
      * @return Allowed result
      */
     public static ConditionResult allow() {
-        return new ConditionResult(true, null, null, null, null, null, null);
+        return new ConditionResult(true, true);
     }
     
     /**
@@ -110,7 +189,7 @@ public class ConditionResult {
      * @return Denied result
      */
     public static ConditionResult deny() {
-        return new ConditionResult(false, null, null, null, null, null, null);
+        return new ConditionResult(false, true);
     }
     
     /**
@@ -153,6 +232,15 @@ public class ConditionResult {
      */
     public boolean isAllowed() {
         return allowed;
+    }
+    
+    /**
+     * Check if this is a default result (no custom messages/actions).
+     * 
+     * @return true if this is a default result
+     */
+    public boolean isDefault() {
+        return isDefault;
     }
     
     /**

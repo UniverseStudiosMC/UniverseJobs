@@ -58,7 +58,7 @@ public class ConditionGroup {
      */
     private void loadConditions(ConfigurationSection config) {
         for (String key : config.getKeys(false)) {
-            if (key.equals("logic") || key.equals("groups")) continue;
+            if (key.equals("logic") || key.equals("groups") || key.equals("multiple_condition")) continue;
             
             Object value = config.get(key);
             if (value instanceof ConfigurationSection conditionConfig) {
@@ -66,6 +66,36 @@ public class ConditionGroup {
                 if (condition != null) {
                     conditions.add(condition);
                 }
+            }
+        }
+        
+        // Handle multiple_condition structure
+        ConfigurationSection multipleCondition = config.getConfigurationSection("multiple_condition");
+        if (multipleCondition != null) {
+            loadMultipleConditions(multipleCondition);
+        }
+    }
+    
+    /**
+     * Load multiple conditions from the multiple_condition section.
+     * This allows for named conditions with individual accept/deny messages.
+     * 
+     * @param multipleCondition The multiple_condition configuration section
+     */
+    private void loadMultipleConditions(ConfigurationSection multipleCondition) {
+        for (String conditionName : multipleCondition.getKeys(false)) {
+            if (conditionName.equals("accept") || conditionName.equals("deny")) continue;
+            
+            ConfigurationSection conditionConfig = multipleCondition.getConfigurationSection(conditionName);
+            if (conditionConfig != null) {
+                // Create a wrapper condition that includes the global accept/deny messages
+                MultipleConditionWrapper wrapper = new MultipleConditionWrapper(
+                    conditionName, 
+                    conditionConfig, 
+                    multipleCondition.getConfigurationSection("accept"),
+                    multipleCondition.getConfigurationSection("deny")
+                );
+                conditions.add(wrapper);
             }
         }
     }
