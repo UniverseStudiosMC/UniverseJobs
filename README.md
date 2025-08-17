@@ -357,11 +357,11 @@ JobsAdventure is released under the **MIT License**, meaning:
 
 ### **Download JobsAdventure today and watch your players fall in love with progression!**
 
-[![Download Now](https://img.shields.io/badge/Download-JobsAdventure%20v1.0-success?style=for-the-badge&logo=download)](https://github.com/your-repo/releases)
+[![Download Now](https://img.shields.io/badge/Download-JobsAdventure%20v1.0-success?style=for-the-badge&logo=download)](https://github.com/JobsAdventure/releases)
 
 ---
 
-**Made with ❤️ by the Minecraft Community | Powered by Folia-Ready Technology**
+**Made with ❤️ by Ax_Dev**
 
 *"The future of Minecraft servers starts with JobsAdventure"*
 

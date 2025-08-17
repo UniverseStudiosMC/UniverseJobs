@@ -1,6 +1,7 @@
 package fr.ax_dev.jobsAdventure.job;
 
 import fr.ax_dev.jobsAdventure.JobsAdventure;
+import fr.ax_dev.jobsAdventure.storage.PerformanceManager;
 import fr.ax_dev.jobsAdventure.xp.XpCurve;
 import fr.ax_dev.jobsAdventure.xp.XpCurveManager;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -10,6 +11,7 @@ import org.bukkit.entity.Player;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 
 /**
@@ -24,6 +26,7 @@ public class JobManager {
     private final File jobsFolder;
     private final File dataFolder;
     private XpCurveManager xpCurveManager;
+    private PerformanceManager performanceManager;
     
     /**
      * Create a new JobManager instance.
@@ -45,6 +48,9 @@ public class JobManager {
         
         // Initialize XP curve manager
         this.xpCurveManager = new XpCurveManager(plugin);
+        
+        // Initialize performance manager for high-performance data operations
+        this.performanceManager = new PerformanceManager(plugin);
     }
     
     /**
@@ -156,6 +162,17 @@ public class JobManager {
      * @return Player job data
      */
     public PlayerJobData getPlayerData(UUID playerUuid) {
+        // Use performance manager if available for optimized data access
+        if (performanceManager != null) {
+            PlayerJobData data = performanceManager.getPlayerData(playerUuid);
+            if (data != null) {
+                // Also keep in local cache for backward compatibility
+                playerData.put(playerUuid, data);
+                return data;
+            }
+        }
+        
+        // Fallback to original implementation
         return playerData.computeIfAbsent(playerUuid, uuid -> {
             PlayerJobData data = new PlayerJobData(uuid);
             data.setJobManager(this); // Set JobManager reference for XP curve calculations
@@ -313,6 +330,13 @@ public class JobManager {
         PlayerJobData data = playerData.get(playerUuid);
         if (data == null) return;
         
+        // Use performance manager for optimized async saving
+        if (performanceManager != null) {
+            performanceManager.savePlayerDataAsync(playerUuid, data);
+            return;
+        }
+        
+        // Fallback to original sync implementation
         try {
             File dataFile = new File(dataFolder, playerUuid.toString() + ".yml");
             FileConfiguration config = new YamlConfiguration();
@@ -384,6 +408,13 @@ public class JobManager {
      * Save all player data.
      */
     public void saveAllPlayerData() {
+        // Use performance manager for optimized batch saving
+        if (performanceManager != null) {
+            performanceManager.saveAllPlayerDataAsync().join();
+            return;
+        }
+        
+        // Fallback to original implementation
         for (UUID playerUuid : playerData.keySet()) {
             savePlayerData(playerUuid);
         }
@@ -467,5 +498,74 @@ public class JobManager {
      */
     public XpCurveManager getXpCurveManager() {
         return xpCurveManager;
+    }
+    
+    /**
+     * Get the performance manager.
+     * 
+     * @return The performance manager
+     */
+    public PerformanceManager getPerformanceManager() {
+        return performanceManager;
+    }
+    
+    /**
+     * Initialize the performance manager asynchronously.
+     * 
+     * @return CompletableFuture that completes when initialization is done
+     */
+    public CompletableFuture<Void> initializePerformanceManager() {
+        if (performanceManager != null) {
+            return performanceManager.initialize();
+        }
+        return CompletableFuture.completedFuture(null);
+    }
+    
+    /**
+     * Shutdown the performance manager gracefully.
+     * 
+     * @return CompletableFuture that completes when shutdown is done
+     */
+    public CompletableFuture<Void> shutdownPerformanceManager() {
+        if (performanceManager != null) {
+            return performanceManager.shutdown();
+        }
+        return CompletableFuture.completedFuture(null);
+    }
+    
+    /**
+     * Get performance statistics from the performance manager.
+     * 
+     * @return Map containing performance statistics
+     */
+    public Map<String, Object> getPerformanceStats() {
+        if (performanceManager != null) {
+            return performanceManager.getPerformanceStats();
+        }
+        return new HashMap<>();
+    }
+    
+    /**
+     * Get health information from the performance manager.
+     * 
+     * @return Map containing health information
+     */
+    public Map<String, Object> getHealthInfo() {
+        if (performanceManager != null) {
+            return performanceManager.getHealthInfo();
+        }
+        
+        Map<String, Object> health = new HashMap<>();
+        health.put("performance_manager_enabled", false);
+        return health;
+    }
+    
+    /**
+     * Force cleanup and optimization.
+     */
+    public void performCleanup() {
+        if (performanceManager != null) {
+            performanceManager.performCleanup();
+        }
     }
 }

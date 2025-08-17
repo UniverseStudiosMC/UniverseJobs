@@ -10,6 +10,14 @@
     <packaging>jar</packaging>
 
     <name>JobsAdventure</name>
+    <description>The Ultimate Next-Generation Jobs Plugin for Minecraft</description>
+    <url>https://github.com/your-username/JobsAdventure</url>
+    
+    <scm>
+        <connection>scm:git:git://github.com/your-username/JobsAdventure.git</connection>
+        <developerConnection>scm:git:ssh://github.com:your-username/JobsAdventure.git</developerConnection>
+        <url>https://github.com/your-username/JobsAdventure/tree/main</url>
+    </scm>
 
     <properties>
         <java.version>21</java.version>

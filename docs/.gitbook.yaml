@@ -1,0 +1,45 @@
+# Configuration GitBook moderne
+
+# Structure du contenu
+root: ./
+
+# Configuration de la documentation
+structure:
+  readme: README.md
+  summary: SUMMARY.md
+
+# Métadonnées
+title: JobsAdventure Wiki
+description: Documentation complète pour JobsAdventure - Le plugin de métiers ultime pour Minecraft
+
+# Configuration du site
+site:
+  title: JobsAdventure Wiki
+  description: Guide complet pour installer, configurer et utiliser JobsAdventure
+  
+# Intégrations
+integrations:
+  github:
+    enabled: true
+    repository: ax-dev/JobsAdventure
+    
+  search:
+    enabled: true
+    
+  analytics:
+    enabled: false
+
+# Configuration PDF
+pdf:
+  enabled: true
+  title: JobsAdventure - Guide Complet
+  author: Ax_Dev
+  
+# Variables globales
+variables:
+  plugin_version: "1.0"
+  minecraft_version: "1.21+"
+  java_version: "21"
+  
+# Redirections (si nécessaire)
+redirects: {}

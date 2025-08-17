@@ -1,61 +1,147 @@
-# JobsAdventure Configuration File
-# A flexible and customizable jobs plugin for Minecraft servers
+# JobsAdventure Configuration
+# Main configuration file with performance optimizations
 
-# Language settings
-language:
-  # Available languages: en_US, fr_FR
-  # Language files are located in plugins/JobsAdventure/languages/
-  locale: "en_US"
+# General Settings
+debug: false
+language: "en"
+auto-save-interval-minutes: 5
 
-# Message display settings
-messages:
-  # Show XP gain messages to players
-  show-xp-gain: true
-
-# Sound effects
-sounds:
-  level-up: "ENTITY_PLAYER_LEVELUP"
-  xp-gain: "ENTITY_EXPERIENCE_ORB_PICKUP"
-
-# General plugin settings
-settings:
-  # How often to auto-save player data (in seconds)
-  save-interval: 300
-  
-  # Maximum number of jobs a player can have at once
-  max-jobs-per-player: 3
-  
-  # Enable debug logging
-  debug: false
-
-# Commands to execute when a player levels up
-# Placeholders: {player}, {job}, {level}
-level-up-commands:
-  - "broadcast {player} reached level {level} in {job}!"
-  - "give {player} diamond 1"
-
-# Block protection settings (anti-exploit)
-block-protection:
-  # Enable block protection to prevent XP farming exploits
-  # Uses NBT tags to mark ALL player-placed blocks
-  # Blocks placed by players will not give XP when mined
-  # Supports both vanilla blocks and Nexo custom blocks
-  # (Nexo compatibility is automatic when Nexo plugin is present)
+# Performance Settings
+performance:
+  # Enable high-performance storage system
   enabled: true
   
-  # Example: How this protects the Miner job from exploits
-  # 1. Player places a DIAMOND_ORE block
-  # 2. System marks it with NBT tag "player_placed"
-  # 3. When player mines it, no XP is awarded (50.0 XP prevented)
-  # 4. Natural diamond ore still gives full XP
-  # 5. Works with custom Nexo blocks like custom_diamond_ore
+  # Cache configuration
+  cache:
+    max-entries: 1000
+    max-memory-mb: 256
+    cleanup-interval-minutes: 30
+  
+  # Compression settings
+  compression:
+    enabled: true
+    min-size-bytes: 512
+  
+  # Async operation settings
+  async:
+    core-threads: 2
+    max-threads: 8
+    keep-alive-seconds: 60
+    queue-size: 1000
+  
+  # Monitoring
+  monitoring:
+    enabled: true
+    report-interval-minutes: 15
 
-# Database configuration (for future use)
+# Database Configuration
+# Set enabled to true to use database instead of files
 database:
   enabled: false
-  type: "mysql"
-  host: "localhost"
-  port: 3306
-  database: "jobsadventure"
-  username: "username"
-  password: "password"
+  
+  # Database connection settings
+  url: "jdbc:mysql://localhost:3306/jobsadventure"
+  username: "jobsadventure"
+  password: "your_password_here"
+  
+  # Connection pool settings
+  pool:
+    min-connections: 2
+    max-connections: 10
+    connection-timeout-ms: 30000
+    validation-interval-ms: 300000
+
+# Job Settings
+jobs:
+  # Maximum number of jobs a player can have
+  max-jobs-per-player: 3
+  
+  # Default XP curve settings
+  default-xp-curve: "standard"
+  
+  # Job permission format: jobsadventure.job.<jobid>
+  permission-format: "jobsadventure.job.%job%"
+
+# Reward Settings
+rewards:
+  # Enable reward system
+  enabled: true
+  
+  # GUI settings
+  gui:
+    title: "&6Job Rewards"
+    size: 54
+    
+    # Update interval in ticks (20 ticks = 1 second)
+    update-interval: 100
+
+# XP Settings
+xp:
+  # Enable XP gain messages
+  messages: true
+  
+  # XP multiplier for all jobs
+  global-multiplier: 1.0
+  
+  # Level up sound
+  level-up-sound: "ENTITY_PLAYER_LEVELUP"
+
+# Placeholder Settings (for PlaceholderAPI)
+placeholders:
+  # Enable placeholders
+  enabled: true
+  
+  # Placeholder refresh interval in seconds
+  refresh-interval: 30
+  
+  # Cache placeholders for better performance
+  cache-enabled: true
+
+# Integration Settings
+integrations:
+  # Vault economy integration
+  vault:
+    enabled: true
+  
+  # PlaceholderAPI integration
+  placeholderapi:
+    enabled: true
+  
+  # Citizens NPC integration
+  citizens:
+    enabled: false
+  
+  # WorldGuard integration
+  worldguard:
+    enabled: false
+
+# Logging Settings
+logging:
+  # Log level: INFO, WARNING, SEVERE
+  level: "INFO"
+  
+  # Log performance metrics
+  performance-metrics: false
+  
+  # Log database operations
+  database-operations: false
+
+# Advanced Settings
+advanced:
+  # Enable experimental features
+  experimental-features: false
+  
+  # Thread safety level: LOW, MEDIUM, HIGH
+  thread-safety: "HIGH"
+  
+  # Memory optimization level: LOW, MEDIUM, HIGH
+  memory-optimization: "MEDIUM"
+  
+  # I/O optimization level: LOW, MEDIUM, HIGH
+  io-optimization: "HIGH"
+
+# Update Checker
+update-checker:
+  enabled: true
+  check-interval-hours: 24
+  notify-ops: true
