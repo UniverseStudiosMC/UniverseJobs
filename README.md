@@ -6,6 +6,7 @@
 [![Spigot](https://img.shields.io/badge/Spigot-1.13+-red?style=for-the-badge&logo=minecraft)](https://spigotmc.org/)
 [![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk)](https://openjdk.org/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![Wiki](https://img.shields.io/badge/📖%20WIKI-Documentation-blue?style=for-the-badge&logo=gitbook)](https://universestudios.gitbook.io/jobsadventure)
 
 ---
 
