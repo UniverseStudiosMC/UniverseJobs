@@ -38,13 +38,13 @@ public class FileRewardStorage implements RewardStorage {
         // Create data folder if it doesn't exist
         if (!dataFolder.exists()) {
             if (dataFolder.mkdirs()) {
-                plugin.getLogger().info("Created reward data folder: " + dataFolder.getPath());
+                // Created reward data folder
             } else {
                 plugin.getLogger().severe("Failed to create reward data folder: " + dataFolder.getPath());
             }
         }
         
-        plugin.getLogger().info("File-based reward storage initialized");
+        // File-based reward storage initialized
     }
     
     @Override

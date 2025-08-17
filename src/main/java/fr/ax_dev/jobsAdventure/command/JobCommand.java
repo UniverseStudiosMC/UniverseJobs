@@ -12,6 +12,8 @@ import fr.ax_dev.jobsAdventure.reward.RewardManager;
 import fr.ax_dev.jobsAdventure.reward.RewardStatus;
 import fr.ax_dev.jobsAdventure.reward.gui.RewardGuiManager;
 import fr.ax_dev.jobsAdventure.utils.MessageUtils;
+import fr.ax_dev.jobsAdventure.utils.LanguageFileMigrator;
+import fr.ax_dev.jobsAdventure.utils.LegacyConverterTest;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -71,6 +73,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             case "stats" -> handleStatsCommand(player, args);
             case "rewards" -> handleRewardsCommand(player, args);
             case "xpbonus" -> handleXpBonusCommand(sender, args);
+            case "migrate" -> handleMigrateCommand(sender, args);
             case "reload" -> handleReloadCommand(player);
             default -> sendHelp(player);
         }
@@ -143,6 +146,12 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         // Check if player has the job
         if (!jobManager.hasJob(player, jobId)) {
             player.sendMessage(languageManager.getMessage("commands.leave.dont-have", "job", job.getName()));
+            return;
+        }
+        
+        // Check if this is a default job
+        if (plugin.getConfigManager().isDefaultJob(jobId)) {
+            player.sendMessage(languageManager.getMessage("commands.leave.default-job", "job", job.getName()));
             return;
         }
         
@@ -729,6 +738,173 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     }
 
     /**
+     * Handle the migrate subcommand for converting language files.
+     */
+    private void handleMigrateCommand(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("jobsadventure.admin.migrate")) {
+            sender.sendMessage("§cYou don't have permission to use migration commands!");
+            return;
+        }
+        
+        if (args.length < 2) {
+            sendMigrateHelp(sender);
+            return;
+        }
+        
+        String migrateSubCommand = args[1].toLowerCase();
+        
+        switch (migrateSubCommand) {
+            case "test" -> handleMigrateTest(sender);
+            case "validate" -> handleMigrateValidate(sender);
+            case "backup" -> handleMigrateBackup(sender);
+            case "convert" -> handleMigrateConvert(sender, args);
+            case "restore" -> handleMigrateRestore(sender);
+            default -> sendMigrateHelp(sender);
+        }
+    }
+    
+    /**
+     * Handle migration test command.
+     */
+    private void handleMigrateTest(CommandSender sender) {
+        sender.sendMessage("§6Running legacy to MiniMessage converter tests...");
+        
+        // Capture console output by redirecting System.out temporarily
+        try {
+            LegacyConverterTest.runTests();
+            sender.sendMessage("§aConverter tests completed! Check console for detailed results.");
+        } catch (Exception e) {
+            sender.sendMessage("§cError running tests: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Handle migration validate command.
+     */
+    private void handleMigrateValidate(CommandSender sender) {
+        sender.sendMessage("§6Validating language files for legacy color codes...");
+        
+        File languagesDir = new File(plugin.getDataFolder(), "languages");
+        LanguageFileMigrator migrator = new LanguageFileMigrator(languagesDir, plugin.getLogger());
+        
+        LanguageFileMigrator.ValidationResult result = migrator.validateFiles();
+        
+        sender.sendMessage("§6" + result.getSummary());
+        
+        if (!result.getIssues().isEmpty()) {
+            sender.sendMessage("§eFound " + result.getIssues().size() + " files with legacy codes:");
+            for (String issue : result.getIssues()) {
+                sender.sendMessage("§7- " + issue);
+            }
+        }
+        
+        if (result.isValid()) {
+            sender.sendMessage("§aAll language files are using MiniMessage format!");
+        } else {
+            sender.sendMessage("§eUse '/jobs migrate convert' to convert legacy codes to MiniMessage format.");
+        }
+    }
+    
+    /**
+     * Handle migration backup command.
+     */
+    private void handleMigrateBackup(CommandSender sender) {
+        sender.sendMessage("§6Creating backups of all language files...");
+        
+        File languagesDir = new File(plugin.getDataFolder(), "languages");
+        LanguageFileMigrator migrator = new LanguageFileMigrator(languagesDir, plugin.getLogger());
+        
+        if (migrator.createBackups()) {
+            sender.sendMessage("§aSuccessfully created backups for all language files!");
+        } else {
+            sender.sendMessage("§cFailed to create some backups. Check console for details.");
+        }
+    }
+    
+    /**
+     * Handle migration convert command.
+     */
+    private void handleMigrateConvert(CommandSender sender, String[] args) {
+        boolean createBackup = true;
+        
+        // Check for --no-backup flag
+        if (args.length > 2 && args[2].equals("--no-backup")) {
+            createBackup = false;
+            sender.sendMessage("§eSkipping backup creation as requested.");
+        }
+        
+        sender.sendMessage("§6Converting all language files from legacy to MiniMessage format...");
+        if (createBackup) {
+            sender.sendMessage("§7Creating backups automatically...");
+        }
+        
+        File languagesDir = new File(plugin.getDataFolder(), "languages");
+        LanguageFileMigrator migrator = new LanguageFileMigrator(languagesDir, plugin.getLogger());
+        
+        boolean success = migrator.migrateAllFiles(createBackup);
+        
+        if (success) {
+            sender.sendMessage("§aSuccessfully converted all language files to MiniMessage format!");
+            
+            // Show conversion report
+            List<String> report = migrator.getConversionReport();
+            if (!report.isEmpty()) {
+                sender.sendMessage("§6Conversion summary:");
+                int conversions = 0;
+                for (String line : report) {
+                    if (line.startsWith("CONVERTED:")) {
+                        conversions++;
+                    }
+                }
+                sender.sendMessage("§7Total messages converted: §e" + conversions);
+                
+                if (conversions > 0) {
+                    sender.sendMessage("§7Use '/jobs migrate validate' to verify the conversion.");
+                    sender.sendMessage("§eRecommended: Reload the plugin to apply changes with '/jobs reload'");
+                }
+            }
+        } else {
+            sender.sendMessage("§cSome files failed to convert. Check console for details.");
+            sender.sendMessage("§7You can use '/jobs migrate restore' to revert changes if needed.");
+        }
+    }
+    
+    /**
+     * Handle migration restore command.
+     */
+    private void handleMigrateRestore(CommandSender sender) {
+        sender.sendMessage("§6Restoring language files from backups...");
+        
+        File languagesDir = new File(plugin.getDataFolder(), "languages");
+        LanguageFileMigrator migrator = new LanguageFileMigrator(languagesDir, plugin.getLogger());
+        
+        if (migrator.restoreFromBackups()) {
+            sender.sendMessage("§aSuccessfully restored all language files from backups!");
+            sender.sendMessage("§eRecommended: Reload the plugin with '/jobs reload' to apply changes.");
+        } else {
+            sender.sendMessage("§cFailed to restore some files. Check console for details.");
+        }
+    }
+    
+    /**
+     * Send migration help message.
+     */
+    private void sendMigrateHelp(CommandSender sender) {
+        sender.sendMessage("§6=== Language File Migration Commands ===");
+        sender.sendMessage("§e/jobs migrate test §7- Run converter tests");
+        sender.sendMessage("§e/jobs migrate validate §7- Check files for legacy color codes");
+        sender.sendMessage("§e/jobs migrate backup §7- Create backup files");
+        sender.sendMessage("§e/jobs migrate convert [--no-backup] §7- Convert legacy to MiniMessage");
+        sender.sendMessage("§e/jobs migrate restore §7- Restore files from backups");
+        sender.sendMessage("§7");
+        sender.sendMessage("§7Migration process:");
+        sender.sendMessage("§71. Run §e/jobs migrate validate §7to see what needs converting");
+        sender.sendMessage("§72. Run §e/jobs migrate convert §7to perform the conversion");
+        sender.sendMessage("§73. Use §e/jobs reload §7to apply the changes");
+        sender.sendMessage("§74. If issues occur, use §e/jobs migrate restore §7to revert");
+    }
+    
+    /**
      * Handle the reload subcommand.
      */
     private void handleReloadCommand(Player player) {
@@ -759,6 +935,10 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             MessageUtils.sendMessage(player, "&e/jobs reload &7- Reload configuration");
         }
         
+        if (player.hasPermission("jobsadventure.admin.migrate")) {
+            MessageUtils.sendMessage(player, "&e/jobs migrate &7- Language file migration tools");
+        }
+        
         if (player.hasPermission("jobsadventure.admin.xpbonus")) {
             MessageUtils.sendMessage(player, "&e/jobs xpbonus &7- Manage XP bonuses");
         }
@@ -780,6 +960,9 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             }
             if (player.hasPermission("jobsadventure.admin")) {
                 subCommands.add("reload");
+            }
+            if (player.hasPermission("jobsadventure.admin.migrate")) {
+                subCommands.add("migrate");
             }
             if (player.hasPermission("jobsadventure.admin.xpbonus")) {
                 subCommands.add("xpbonus");
@@ -847,6 +1030,17 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                         }
                     }
                 }
+                case "migrate" -> {
+                    // Migration subcommands
+                    if (player.hasPermission("jobsadventure.admin.migrate")) {
+                        List<String> migrateSubCommands = Arrays.asList("test", "validate", "backup", "convert", "restore");
+                        for (String migrateSubCommand : migrateSubCommands) {
+                            if (migrateSubCommand.startsWith(input)) {
+                                completions.add(migrateSubCommand);
+                            }
+                        }
+                    }
+                }
                 case "xpbonus" -> {
                     // XP Bonus subcommands
                     if (player.hasPermission("jobsadventure.admin.xpbonus")) {
@@ -863,6 +1057,11 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             // Handle Rewards tab completion
             if (player.hasPermission("jobsadventure.rewards.use")) {
                 completions.addAll(getRewardsTabCompletions(player, args));
+            }
+        } else if (args.length >= 3 && args[0].equalsIgnoreCase("migrate")) {
+            // Handle Migration tab completion
+            if (player.hasPermission("jobsadventure.admin.migrate")) {
+                completions.addAll(getMigrateTabCompletions(args));
             }
         } else if (args.length >= 3 && args[0].equalsIgnoreCase("xpbonus")) {
             // Handle XP Bonus tab completion
@@ -1006,6 +1205,27 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                     if (reward.getId().toLowerCase().startsWith(input)) {
                         completions.add(reward.getId());
                     }
+                }
+            }
+        }
+        
+        return completions;
+    }
+    
+    /**
+     * Get tab completions for Migration commands.
+     */
+    private List<String> getMigrateTabCompletions(String[] args) {
+        List<String> completions = new ArrayList<>();
+        
+        if (args.length == 3) {
+            String migrateSubCommand = args[1].toLowerCase();
+            String input = args[2].toLowerCase();
+            
+            if ("convert".equals(migrateSubCommand)) {
+                // Only --no-backup flag for convert command
+                if ("--no-backup".startsWith(input)) {
+                    completions.add("--no-backup");
                 }
             }
         }

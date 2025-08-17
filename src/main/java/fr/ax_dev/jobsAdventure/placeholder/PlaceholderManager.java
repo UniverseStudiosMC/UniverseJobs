@@ -24,15 +24,7 @@ public class PlaceholderManager {
                 globalLeaderboardPlaceholder.register();
 
                 placeholderApiEnabled = true;
-                plugin.getLogger().info("PlaceholderAPI integration enabled successfully!");
-                plugin.getLogger().info("Registered placeholders:");
-                plugin.getLogger().info("- %jobsadventure_<job>_leaderboard_<position>_<info>%");
-                plugin.getLogger().info("- %jobsadventure_<job>_player_<info>%");
-                plugin.getLogger().info("- %jobsadventure_<job>_job_<info>%");
-                plugin.getLogger().info("- %jobsglobal_totallevels_<position>_<info>%");
-                plugin.getLogger().info("- %jobsglobal_totaljobs_<position>_<info>%");
-                plugin.getLogger().info("- %jobsglobal_totalxp_<position>_<info>%");
-                plugin.getLogger().info("- %jobsglobal_player_<stat>%");
+                // PlaceholderAPI integration enabled
 
             } catch (Exception e) {
                 plugin.getLogger().severe("Failed to initialize PlaceholderAPI integration: " + e.getMessage());
@@ -52,7 +44,7 @@ public class PlaceholderManager {
                 if (globalLeaderboardPlaceholder != null) {
                     globalLeaderboardPlaceholder.unregister();
                 }
-                plugin.getLogger().info("PlaceholderAPI integration disabled.");
+                // PlaceholderAPI integration disabled
             } catch (Exception e) {
                 plugin.getLogger().warning("Error while disabling PlaceholderAPI integration: " + e.getMessage());
             }

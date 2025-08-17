@@ -26,7 +26,7 @@ You'll see a list like this:
 ```
 
 - ✓ = Jobs you already have
-- ✗ = Available jobs
+- ✗ = Availabthe jobs
 
 ## 🎯 Your First Job
 

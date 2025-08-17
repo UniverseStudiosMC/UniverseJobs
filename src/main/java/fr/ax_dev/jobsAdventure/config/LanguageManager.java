@@ -1,7 +1,9 @@
 package fr.ax_dev.jobsAdventure.config;
 
 import fr.ax_dev.jobsAdventure.JobsAdventure;
-import org.bukkit.ChatColor;
+import fr.ax_dev.jobsAdventure.utils.MessageUtils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -51,7 +53,7 @@ public class LanguageManager {
                 try (InputStream in = plugin.getResource("languages/" + langFile)) {
                     if (in != null) {
                         Files.copy(in, file.toPath());
-                        plugin.getLogger().info("Created default language file: " + langFile);
+                        // Created default language file
                     }
                 } catch (IOException e) {
                     plugin.getLogger().severe("Failed to create language file " + langFile + ": " + e.getMessage());
@@ -78,7 +80,7 @@ public class LanguageManager {
                     String locale = file.getName().replace(".yml", "");
                     FileConfiguration config = YamlConfiguration.loadConfiguration(file);
                     languageFiles.put(locale, config);
-                    plugin.getLogger().info("Loaded language file: " + locale);
+                    // Loaded language file
                 } catch (Exception e) {
                     plugin.getLogger().log(Level.WARNING, "Failed to load language file: " + file.getName(), e);
                 }
@@ -109,7 +111,7 @@ public class LanguageManager {
             this.currentLocale = "en_US";
         }
         
-        plugin.getLogger().info("Loaded language: " + currentLocale);
+        // Language loaded
     }
     
     /**
@@ -123,7 +125,7 @@ public class LanguageManager {
         String message = getRawMessage(key);
         
         if (message == null) {
-            return "&c[Missing message: " + key + "]";
+            return "<red>[Missing message: " + key + "]";
         }
         
         // Replace placeholders
@@ -135,7 +137,9 @@ public class LanguageManager {
             }
         }
         
-        return ChatColor.translateAlternateColorCodes('&', message);
+        // Parse the message and convert to legacy string for backward compatibility
+        Component component = MessageUtils.parseMessage(message);
+        return LegacyComponentSerializer.legacySection().serialize(component);
     }
     
     /**
@@ -170,7 +174,7 @@ public class LanguageManager {
         String message = getRawMessage(key);
         
         if (message == null) {
-            return "&c[Missing message: " + key + "]";
+            return "<red>[Missing message: " + key + "]";
         }
         
         // Replace placeholders
@@ -182,7 +186,9 @@ public class LanguageManager {
             }
         }
         
-        return ChatColor.translateAlternateColorCodes('&', message);
+        // Parse the message and convert to legacy string for backward compatibility
+        Component component = MessageUtils.parseMessage(message);
+        return LegacyComponentSerializer.legacySection().serialize(component);
     }
     
     /**
@@ -221,6 +227,58 @@ public class LanguageManager {
      */
     public java.util.Set<String> getAvailableLocales() {
         return languageFiles.keySet();
+    }
+    
+    /**
+     * Gets a localized message as a Component (for direct MiniMessage usage).
+     *
+     * @param key The message key
+     * @param placeholders Key-value pairs for placeholder replacement
+     * @return The Component with formatting applied
+     */
+    public Component getMessageComponent(String key, Object... placeholders) {
+        String message = getRawMessage(key);
+        
+        if (message == null) {
+            return MessageUtils.parseMessage("<red>[Missing message: " + key + "]");
+        }
+        
+        // Replace placeholders
+        if (placeholders.length > 0) {
+            for (int i = 0; i < placeholders.length - 1; i += 2) {
+                String placeholder = "{" + placeholders[i] + "}";
+                String value = String.valueOf(placeholders[i + 1]);
+                message = message.replace(placeholder, value);
+            }
+        }
+        
+        return MessageUtils.parseMessage(message);
+    }
+    
+    /**
+     * Gets a localized message as a Component with a map of placeholders.
+     *
+     * @param key The message key
+     * @param placeholders Map of placeholder keys and values
+     * @return The Component with formatting applied
+     */
+    public Component getMessageComponent(String key, Map<String, Object> placeholders) {
+        String message = getRawMessage(key);
+        
+        if (message == null) {
+            return MessageUtils.parseMessage("<red>[Missing message: " + key + "]");
+        }
+        
+        // Replace placeholders
+        if (placeholders != null) {
+            for (Map.Entry<String, Object> entry : placeholders.entrySet()) {
+                String placeholder = "{" + entry.getKey() + "}";
+                String value = String.valueOf(entry.getValue());
+                message = message.replace(placeholder, value);
+            }
+        }
+        
+        return MessageUtils.parseMessage(message);
     }
     
     /**

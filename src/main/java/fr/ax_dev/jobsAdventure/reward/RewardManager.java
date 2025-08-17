@@ -56,7 +56,7 @@ public class RewardManager {
         loadRewards();
         guiConfigLoader.loadGuiConfigs();
         
-        plugin.getLogger().info("Reward system initialized with " + allRewards.size() + " rewards");
+        // Reward system initialized
     }
     
     /**
@@ -80,7 +80,7 @@ public class RewardManager {
         File rewardsFolder = new File(plugin.getDataFolder(), "rewards");
         if (!rewardsFolder.exists()) {
             if (rewardsFolder.mkdirs()) {
-                plugin.getLogger().info("Created rewards folder: " + rewardsFolder.getPath());
+                // Created rewards folder
             } else {
                 plugin.getLogger().severe("Failed to create rewards folder: " + rewardsFolder.getPath());
                 return;
@@ -118,8 +118,7 @@ public class RewardManager {
             }
         }
         
-        plugin.getLogger().info("Loaded " + allRewards.size() + " rewards from " + 
-            (files != null ? files.length : 0) + " files");
+        // Rewards loaded
     }
     
     /**
@@ -160,8 +159,7 @@ public class RewardManager {
             }
             
             jobRewards.put(jobId, rewards);
-            plugin.getLogger().info("Loaded " + rewards.size() + " rewards for job '" + jobId + 
-                "' from file " + file.getName());
+            // Rewards loaded for job
             
         } catch (Exception e) {
             plugin.getLogger().severe("Failed to load reward file " + file.getName() + ": " + e.getMessage());
@@ -195,7 +193,7 @@ public class RewardManager {
         
         try {
             plugin.saveResource("rewards/example_rewards.yml", false);
-            plugin.getLogger().info("Created example reward file from resources: " + rewardFile.getName());
+            // Created example reward file
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Failed to create example reward file from resources", e);
         }

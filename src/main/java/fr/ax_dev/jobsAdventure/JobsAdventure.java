@@ -62,7 +62,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
         // Load configuration
         try {
             configManager.loadConfig();
-            getLogger().info(languageManager.getMessage("system.config-loaded"));
+            // Configuration loaded successfully
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Failed to load configuration", e);
             getServer().getPluginManager().disablePlugin(this);
@@ -72,7 +72,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
         // Load jobs
         try {
             jobManager.loadJobs();
-            getLogger().info(languageManager.getMessage("system.jobs-loaded"));
+            // Jobs loaded successfully
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Failed to load jobs", e);
             getServer().getPluginManager().disablePlugin(this);
@@ -82,7 +82,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
         // Initialize reward system
         try {
             rewardManager.initialize();
-            getLogger().info(languageManager.getMessage("system.rewards-initialized"));
+            // Reward system initialized successfully
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Failed to initialize reward system", e);
             getServer().getPluginManager().disablePlugin(this);
@@ -104,7 +104,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
                 new NexoEventListener(this, actionProcessor, protectionManager), 
                 this
             );
-            getLogger().info(languageManager.getMessage("system.nexo-registered"));
+            // Nexo event listener registered
         }
         
         // Register ItemsAdder event listener if ItemsAdder is present
@@ -113,7 +113,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
                 new ItemsAdderEventListener(this, actionProcessor, protectionManager), 
                 this
             );
-            getLogger().info(languageManager.getMessage("system.itemsadder-registered"));
+            // ItemsAdder event listener registered
         }
         
         // Register CustomCrops event listener if CustomCrops is present
@@ -122,7 +122,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
                 new CustomCropsEventListener(this, actionProcessor, protectionManager), 
                 this
             );
-            getLogger().info("CustomCrops event listener registered for crop break/harvest/place support");
+            // CustomCrops event listener registered
         }
         
         // Register CustomFishing event listener if CustomFishing is present
@@ -131,7 +131,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
                 new CustomFishingEventListener(this, actionProcessor), 
                 this
             );
-            getLogger().info("CustomFishing event listener registered for fishing loot support");
+            // CustomFishing event listener registered
         }
         
         // Load player data for online players
@@ -145,7 +145,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
         // Initialize PlaceholderAPI integration
         try {
             placeholderManager.initialize();
-            getLogger().info("PlaceholderAPI integration initialized successfully");
+            // PlaceholderAPI integration initialized
         } catch (Exception e) {
             getLogger().log(Level.WARNING, "Failed to initialize PlaceholderAPI integration", e);
         }
@@ -156,7 +156,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
         // Check for optional dependencies
         checkDependencies();
         
-        getLogger().info(languageManager.getMessage("system.plugin-enabled"));
+        // Plugin enabled successfully
     }
 
     @Override
@@ -192,12 +192,10 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
         
         // Save all player data
         if (jobManager != null) {
-            getLogger().info("Saving all player data...");
             jobManager.saveAllPlayerData();
-            getLogger().info("Player data saved successfully");
         }
         
-        getLogger().info(languageManager.getMessage("system.plugin-disabled"));
+        // Plugin disabled
     }
     
     /**
@@ -213,7 +211,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
                 jobManager.saveAllPlayerData();
             }, saveInterval * 20L, saveInterval * 20L);
             
-            getLogger().info("Auto-save task started (interval: " + saveInterval + " seconds)");
+            // Auto-save task started
         }
     }
     
@@ -265,7 +263,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
             dependencyStatus.append("CustomFishing ✗");
         }
         
-        getLogger().info(dependencyStatus.toString());
+        // Dependencies checked
     }
     
     /**

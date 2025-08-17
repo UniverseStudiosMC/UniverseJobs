@@ -38,7 +38,7 @@ public class GuiConfigLoader {
         File guiFolder = new File(plugin.getDataFolder(), "gui");
         if (!guiFolder.exists()) {
             if (guiFolder.mkdirs()) {
-                plugin.getLogger().info("Created gui folder: " + guiFolder.getPath());
+                // Created gui folder
             } else {
                 plugin.getLogger().severe("Failed to create gui folder: " + guiFolder.getPath());
                 return;
@@ -59,7 +59,7 @@ public class GuiConfigLoader {
             loadGuiFile(file);
         }
         
-        plugin.getLogger().info("Loaded " + guiConfigs.size() + " GUI configurations from " + files.length + " files");
+        // GUI configurations loaded
     }
     
     /**
@@ -75,7 +75,7 @@ public class GuiConfigLoader {
             GuiConfig guiConfig = new GuiConfig(config);
             guiConfigs.put(fileName, guiConfig);
             
-            plugin.getLogger().info("Loaded GUI configuration: " + fileName + " from file " + file.getName());
+            // GUI configuration loaded
             
         } catch (Exception e) {
             plugin.getLogger().severe("Failed to load GUI file " + file.getName() + ": " + e.getMessage());
@@ -117,7 +117,7 @@ public class GuiConfigLoader {
         
         try {
             plugin.saveResource("gui/example_rewards_gui.yml", false);
-            plugin.getLogger().info("Created example GUI file from resources: " + guiFile.getName());
+            // Created example GUI file
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Failed to create example GUI file from resources", e);
         }

@@ -1,6 +1,7 @@
 package fr.ax_dev.jobsAdventure.job;
 
 import fr.ax_dev.jobsAdventure.JobsAdventure;
+import fr.ax_dev.jobsAdventure.config.ConfigManager;
 import fr.ax_dev.jobsAdventure.storage.PerformanceManager;
 import fr.ax_dev.jobsAdventure.xp.XpCurve;
 import fr.ax_dev.jobsAdventure.xp.XpCurveManager;
@@ -90,19 +91,19 @@ public class JobManager {
                     if (job.isEnabled()) {
                         jobs.put(jobId, job);
                         loadedCount++;
-                        plugin.getLogger().info("Loaded job: " + job.getName() + " (" + jobId + ")");
+                        // Loaded job successfully
                     } else {
                         plugin.getLogger().severe("Job " + jobId + " is disabled due to XP curve error: " + job.getXpCurveErrorMessage());
                     }
                 } else {
-                    plugin.getLogger().info("Skipped disabled job: " + jobId);
+                    // Skipped disabled job
                 }
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE, "Failed to load job file: " + jobFile.getName(), e);
             }
         }
         
-        plugin.getLogger().info("Loaded " + loadedCount + " jobs successfully");
+        // Jobs loaded successfully
     }
     
     /**
@@ -210,6 +211,11 @@ public class JobManager {
      * @return true if successful
      */
     public boolean leaveJob(Player player, String jobId) {
+        // Check if this is a default job that cannot be left
+        if (plugin.getConfigManager().isDefaultJob(jobId)) {
+            return false; // Cannot leave default jobs
+        }
+        
         PlayerJobData data = getPlayerData(player);
         return data.leaveJob(jobId);
     }
@@ -364,25 +370,57 @@ public class JobManager {
     public void loadPlayerData(UUID playerUuid) {
         try {
             File dataFile = new File(dataFolder, playerUuid.toString() + ".yml");
+            PlayerJobData data;
+            
             if (!dataFile.exists()) {
                 // Create new player data
-                PlayerJobData newData = new PlayerJobData(playerUuid);
-                newData.setJobManager(this);
-                playerData.put(playerUuid, newData);
-                return;
+                data = new PlayerJobData(playerUuid);
+                data.setJobManager(this);
+            } else {
+                FileConfiguration config = YamlConfiguration.loadConfiguration(dataFile);
+                data = new PlayerJobData(playerUuid);
+                data.setJobManager(this); // Set JobManager reference for XP curve calculations
+                data.load(config);
             }
             
-            FileConfiguration config = YamlConfiguration.loadConfiguration(dataFile);
-            PlayerJobData data = new PlayerJobData(playerUuid);
-            data.setJobManager(this); // Set JobManager reference for XP curve calculations
-            data.load(config);
+            // Auto-assign default jobs
+            assignDefaultJobs(data);
+            
             playerData.put(playerUuid, data);
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load player data for " + playerUuid, e);
             // Create new player data as fallback
             PlayerJobData fallbackData = new PlayerJobData(playerUuid);
             fallbackData.setJobManager(this);
+            assignDefaultJobs(fallbackData);
             playerData.put(playerUuid, fallbackData);
+        }
+    }
+    
+    /**
+     * Assign default jobs to a player based on configuration.
+     * 
+     * @param data The player job data
+     */
+    private void assignDefaultJobs(PlayerJobData data) {
+        ConfigManager config = plugin.getConfigManager();
+        
+        if (config.isAllJobsByDefault()) {
+            // Assign all available jobs
+            for (Job job : jobs.values()) {
+                if (job.isEnabled() && !data.hasJob(job.getId())) {
+                    data.joinJob(job.getId());
+                }
+            }
+        } else {
+            // Assign specific default jobs
+            List<String> defaultJobs = config.getJobsByDefault();
+            for (String jobId : defaultJobs) {
+                Job job = getJob(jobId);
+                if (job != null && job.isEnabled() && !data.hasJob(jobId)) {
+                    data.joinJob(jobId);
+                }
+            }
         }
     }
     
@@ -390,7 +428,7 @@ public class JobManager {
      * Create example job files.
      */
     private void createExampleJobs() {
-        plugin.getLogger().info("Creating example job files...");
+        // Creating example job files
         
         // Save miner.yml
         plugin.saveResource("jobs/miner.yml", false);
@@ -401,7 +439,7 @@ public class JobManager {
         // Save hunter.yml
         plugin.saveResource("jobs/hunter.yml", false);
         
-        plugin.getLogger().info("Example job files created successfully!");
+        // Example job files created
     }
     
     /**
@@ -441,15 +479,15 @@ public class JobManager {
             if (job.getXpEquation() != null) {
                 // Use equation-based curve
                 curve = xpCurveManager.getCurveFromEquation(job.getXpEquation());
-                plugin.getLogger().info("Job " + job.getId() + " using XP equation: " + job.getXpEquation());
+                // Job using XP equation
             } else if (job.getXpCurveName() != null) {
                 // Use file-based curve
                 curve = xpCurveManager.getCurve(job.getXpCurveName());
-                plugin.getLogger().info("Job " + job.getId() + " using XP curve: " + job.getXpCurveName());
+                // Job using XP curve
             } else {
                 // Use default curve
                 curve = xpCurveManager.getDefaultCurve();
-                plugin.getLogger().info("Job " + job.getId() + " using default XP curve");
+                // Job using default XP curve
             }
             
             job.setXpCurve(curve);
@@ -470,7 +508,7 @@ public class JobManager {
                     throw new RuntimeException("XP curve returned negative values");
                 }
                 
-                plugin.getLogger().info("Job " + job.getId() + " XP curve validated successfully");
+                // XP curve validated successfully
                 
             } catch (Exception e) {
                 throw new RuntimeException("XP curve validation failed: " + e.getMessage(), e);

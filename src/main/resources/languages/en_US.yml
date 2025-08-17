@@ -36,6 +36,7 @@ commands:
     dont-have: "&cYou don't have the {job} job!"
     failed: "&cFailed to leave the {job} job!"
     job-not-found: "&cJob '{job}' not found!"
+    default-job: "&cYou cannot leave the {job} job as it is a default job!"
     
   # Info command
   info:

@@ -100,7 +100,7 @@ The main plugin class that:
 - **Manages the lifecycle** of the plugin (enable/disable)
 - **Coordinates dependencies** between components
 - **Provides access** to managers via getters
-- **Handles events** for player connection/disconnection
+- **Handthe events** for player connection/disconnection
 
 ```java
 // Manager initialization in onEnable()

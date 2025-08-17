@@ -37,12 +37,7 @@ public class BlockProtectionManager {
         loadConfiguration();
         checkNexoCompatibility();
         
-        if (enabled) {
-            String nexoStatus = nexoEnabled ? " (with Nexo compatibility)" : "";
-            plugin.getLogger().info("Block protection enabled using NBT tags - tracking ALL player-placed blocks" + nexoStatus);
-        } else {
-            plugin.getLogger().info("Block protection disabled");
-        }
+        // Block protection initialized
     }
     
     /**

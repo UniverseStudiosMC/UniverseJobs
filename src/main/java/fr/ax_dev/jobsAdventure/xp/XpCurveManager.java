@@ -30,13 +30,13 @@ public class XpCurveManager {
         // Create curves folder if it doesn't exist
         if (!curvesFolder.exists()) {
             curvesFolder.mkdirs();
-            plugin.getLogger().info("Created xp-curves folder");
+            // Created xp-curves folder
         }
         
         // Check if folder is empty and create examples
         File[] existingFiles = curvesFolder.listFiles((dir, name) -> name.endsWith(".yml"));
         if (existingFiles == null || existingFiles.length == 0) {
-            plugin.getLogger().info("No XP curve files found, creating examples...");
+            // No XP curve files found, creating examples
             createExampleCurves();
         }
         
@@ -55,7 +55,7 @@ public class XpCurveManager {
                 try {
                     XpCurve curve = XpCurve.fromFile(curveName, file);
                     curves.put(curveName, curve);
-                    plugin.getLogger().info("Loaded XP curve: " + curveName);
+                    // Loaded XP curve
                 } catch (Exception e) {
                     plugin.getLogger().log(Level.WARNING, "Failed to load XP curve: " + file.getName(), e);
                 }
@@ -66,7 +66,7 @@ public class XpCurveManager {
         if (curves.isEmpty()) {
             XpCurve defaultCurve = XpCurve.createDefault();
             curves.put("default", defaultCurve);
-            plugin.getLogger().info("Created default XP curve");
+            // Created default XP curve
         }
     }
     
@@ -74,7 +74,7 @@ public class XpCurveManager {
      * Create example XP curve files.
      */
     private void createExampleCurves() {
-        plugin.getLogger().info("Creating example XP curve files...");
+        // Creating example XP curve files
         
         // Create example linear curve
         createLinearExample();
@@ -91,7 +91,7 @@ public class XpCurveManager {
         // Create mining-focused curve
         createMiningExample();
         
-        plugin.getLogger().info("Created 5 example XP curve files successfully!");
+        // Created example XP curve files
     }
     
     /**

@@ -5,6 +5,7 @@ import fr.ax_dev.jobsAdventure.utils.MessageUtils;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,7 +36,7 @@ public class ConfigManager {
         // Validate configuration
         validateConfig(config);
         
-        plugin.getLogger().info("Configuration loaded successfully");
+        // Configuration loaded successfully
     }
     
     /**
@@ -166,7 +167,7 @@ public class ConfigManager {
         
         if (changed) {
             plugin.saveConfig();
-            plugin.getLogger().info("Configuration updated with new default values");
+            // Configuration updated with new default values
         }
     }
     
@@ -229,11 +230,47 @@ public class ConfigManager {
     
     /**
      * Get the maximum number of jobs a player can have.
+     * Note: This is ignored when all-jobs-by-default is enabled.
      * 
      * @return The max job count
      */
     public int getMaxJobsPerPlayer() {
-        return plugin.getConfig().getInt("settings.max-jobs-per-player", 3);
+        // If all jobs by default is enabled, return a high number
+        if (isAllJobsByDefault()) {
+            return Integer.MAX_VALUE;
+        }
+        return plugin.getConfig().getInt("jobs.max-jobs-per-player", 3);
+    }
+    
+    /**
+     * Check if all jobs should be assigned by default.
+     * 
+     * @return true if all jobs should be assigned by default
+     */
+    public boolean isAllJobsByDefault() {
+        return plugin.getConfig().getBoolean("jobs.all-jobs-by-default", false);
+    }
+    
+    /**
+     * Get the list of job IDs that players automatically join and cannot leave.
+     * 
+     * @return List of default job IDs
+     */
+    public List<String> getJobsByDefault() {
+        return plugin.getConfig().getStringList("jobs.jobs-by-default");
+    }
+    
+    /**
+     * Check if a job is a default job that players cannot leave.
+     * 
+     * @param jobId The job ID to check
+     * @return true if the job is a default job
+     */
+    public boolean isDefaultJob(String jobId) {
+        if (isAllJobsByDefault()) {
+            return true; // All jobs are default jobs when this is enabled
+        }
+        return getJobsByDefault().contains(jobId);
     }
     
     /**

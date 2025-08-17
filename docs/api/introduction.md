@@ -1,19 +1,19 @@
-# 🔧 API JobsAdventure - Introduction
+﻿# 🔧 API JobsAdventure - Introduction
 
-JobsAdventure fournit une API complète permettant aux développeurs d'intégrer leurs plugins avec le système de jobs. Cette API est conçue pour être simple à utiliser tout en offrant une flexibilité maximale.
+JobsAdventure provides a API complète allowing développeurs d'intégrer leurs Plugins avec the system de jobs. Cette API is designed pour être simple à utiliser while offering flexibility maximum.
 
-## 🎯 Vue d'ensemble de l'API
+## 🎯 Vue d'ensemble of the API
 
 ### Fonctionnalités Principales
-- **Gestion des Jobs** : Créer, modifier, activer/désactiver des jobs
-- **Données Joueurs** : Accès et modification des niveaux, XP, jobs actifs
-- **Système d'Événements** : Écoute et réaction aux événements de jobs
-- **Actions Personnalisées** : Création de nouveaux types d'actions
-- **Conditions Personnalisées** : Création de nouvelles conditions
+- **Gestion des Jobs** : Créer, modifier, activer/désactiver of jobs
+- **Données players** : Accès et modification des Levelx, XP, jobs actifs
+- **Système d'Events** : Écoute et réaction aux events de jobs
+- **Actions Custom** : Création de nouveaux types d'actions
+- **Conditions Custom** : Création de nouvelthe conditions
 - **Récompenses** : Gestion des récompenses et de leur attribution
 
 ### Compatibilité
-- **Paper/Spigot/Bukkit** : Support complet
+- **Paper/Spigot/Bukkit** : Support complete
 - **Folia** : Compatibilité native avec threading régionalisé
 - **Java 21+** : Optimisé pour les versions récentes
 - **Minecraft 1.19+** : Support des versions récentes
@@ -39,7 +39,7 @@ dependencies {
 }
 ```
 
-### 2. Déclaration dans plugin.yml
+### 2. Déclaration dans Plugin.yml
 ```yaml
 name: MonPlugin
 depend: [JobsAdventure]
@@ -47,7 +47,7 @@ depend: [JobsAdventure]
 softdepend: [JobsAdventure]
 ```
 
-### 3. Accès à l'API
+### 3. Accès à the API
 ```java
 public class MonPlugin extends JavaPlugin {
     
@@ -64,16 +64,16 @@ public class MonPlugin extends JavaPlugin {
         
         // L'API est maintenant disponible
         JobManager jobManager = jobsAdventure.getJobManager();
-        // ... utiliser l'API
+        // ... utiliser the API
     }
     
     private boolean setupJobsAdventure() {
-        Plugin plugin = getServer().getPluginManager().getPlugin("JobsAdventure");
-        if (plugin == null || !(plugin instanceof JobsAdventure)) {
+        Plugin Plugin = getServer().getPluginManager().getPlugin("JobsAdventure");
+        if (Plugin == null || !(Plugin instanceof JobsAdventure)) {
             return false;
         }
         
-        this.jobsAdventure = (JobsAdventure) plugin;
+        this.jobsAdventure = (JobsAdventure) Plugin;
         return true;
     }
 }
@@ -84,21 +84,21 @@ public class MonPlugin extends JavaPlugin {
 ### 1. JobManager
 **Accès** : `JobsAdventure.getInstance().getJobManager()`
 
-Gestion complète des jobs et données joueurs :
+Gestion complète of jobs et données players :
 ```java
 JobManager jobManager = JobsAdventure.getInstance().getJobManager();
 
-// Gestion des jobs
+// Gestion of jobs
 Job job = jobManager.getJob("miner");
 Collection<Job> allJobs = jobManager.getAllJobs();
 boolean exists = jobManager.hasJob("farmer");
 
-// Données joueurs
+// Données players
 PlayerJobData data = jobManager.getPlayerData(player);
 boolean hasJob = jobManager.hasJob(player, "miner");
 Set<String> playerJobs = jobManager.getPlayerJobs(player);
 
-// XP et niveaux
+// XP et Levelx
 jobManager.addXp(player, "miner", 100.0);
 double xp = jobManager.getXp(player, "miner");
 int level = jobManager.getLevel(player, "miner");
@@ -107,11 +107,11 @@ int level = jobManager.getLevel(player, "miner");
 ### 2. ActionProcessor
 **Accès** : `JobsAdventure.getInstance().getActionProcessor()`
 
-Traitement des actions personnalisées :
+Traitement of actions customs :
 ```java
 ActionProcessor processor = JobsAdventure.getInstance().getActionProcessor();
 
-// Traitement manuel d'une action
+// Traitement manuel d'an action
 ConditionContext context = new ConditionContext(player, block, "STONE");
 boolean shouldCancel = processor.processAction(player, ActionType.BREAK, event, context);
 ```
@@ -123,7 +123,7 @@ Gestion des récompenses :
 ```java
 RewardManager rewardManager = JobsAdventure.getInstance().getRewardManager();
 
-// Vérifier les récompenses disponibles
+// Vérifier the rewards disponibles
 List<Reward> available = rewardManager.getAvailableRewards(player);
 
 // Forcer l'attribution d'une récompense
@@ -141,12 +141,12 @@ PlaceholderManager placeholderManager = JobsAdventure.getInstance().getPlacehold
 String value = placeholderManager.getPlaceholderValue(player, "jobsadventure_miner_player_level");
 ```
 
-## 🎭 Événements Disponibles
+## 🎭 Events Disponibles
 
-JobsAdventure émet plusieurs événements que votre plugin peut écouter :
+JobsAdventure émet plusieurs events que votre Plugin peut écouter :
 
 ### PlayerJobJoinEvent
-Déclenché quand un joueur rejoint un job :
+Déclenché quand un Player rejoint a job :
 ```java
 @EventHandler
 public void onJobJoin(PlayerJobJoinEvent event) {
@@ -154,26 +154,26 @@ public void onJobJoin(PlayerJobJoinEvent event) {
     String jobId = event.getJobId();
     Job job = event.getJob();
     
-    // Logique personnalisée
-    player.sendMessage("Bienvenue dans le job " + job.getName() + " !");
+    // Logique custom
+    player.sendMessage("Bienvenue dans the job " + job.getName() + " !");
 }
 ```
 
 ### PlayerJobLeaveEvent
-Déclenché quand un joueur quitte un job :
+Déclenché quand un Player quitte a job :
 ```java
 @EventHandler
 public void onJobLeave(PlayerJobLeaveEvent event) {
     Player player = event.getPlayer();
     String jobId = event.getJobId();
     
-    // Logique personnalisée
-    player.sendMessage("Vous avez quitté le job " + jobId);
+    // Logique custom
+    player.sendMessage("Vous avez quitté the job " + jobId);
 }
 ```
 
 ### PlayerXpGainEvent
-Déclenché quand un joueur gagne de l'XP (annulable) :
+Déclenché quand un Player gagne de l'XP (annulable) :
 ```java
 @EventHandler
 public void onXpGain(PlayerXpGainEvent event) {
@@ -194,7 +194,7 @@ public void onXpGain(PlayerXpGainEvent event) {
 ```
 
 ### PlayerLevelUpEvent
-Déclenché lors d'une montée de niveau :
+Déclenché lors d'une montée de Level :
 ```java
 @EventHandler
 public void onLevelUp(PlayerLevelUpEvent event) {
@@ -203,23 +203,23 @@ public void onLevelUp(PlayerLevelUpEvent event) {
     int oldLevel = event.getOldLevel();
     int newLevel = event.getNewLevel();
     
-    // Récompenses personnalisées
-    if (newLevel % 10 == 0) { // Tous les 10 niveaux
+    // Récompenses customs
+    if (newLevel % 10 == 0) { // Tous les 10 Levelx
         player.getInventory().addItem(new ItemStack(Material.DIAMOND, newLevel / 10));
     }
 }
 ```
 
 ### PlayerRewardClaimEvent
-Déclenché quand un joueur réclame une récompense :
+Déclenché quand un Player réclame une récompense :
 ```java
 @EventHandler
 public void onRewardClaim(PlayerRewardClaimEvent event) {
     Player player = event.getPlayer();
     Reward reward = event.getReward();
     
-    // Logique personnalisée
-    getLogger().info(player.getName() + " a réclamé la récompense " + reward.getId());
+    // Logique custom
+    getLogger().info(player.getName() + " a réclamé the reward " + reward.getId());
 }
 ```
 
@@ -233,16 +233,16 @@ public void onJobAction(JobActionEvent event) {
     JobAction action = event.getAction();
     double xpGained = event.getXpGained();
     
-    // Statistiques personnalisées
+    // Statistics customs
     incrementPlayerStats(player, job.getId(), action.getType());
 }
 ```
 
-## 🛠️ Utilisation Avancée
+## 🛠️ Usage Avancée
 
-### 1. Création d'Actions Personnalisées
+### 1. Création d'Actions Custom
 
-Vous pouvez créer vos propres types d'actions :
+You can create your own types d'actions :
 
 ```java
 public class MonActionListener implements Listener {
@@ -260,11 +260,11 @@ public class MonActionListener implements Listener {
         // Créer le contexte
         ConditionContext context = new ConditionContext(
             player,
-            null, // Pas de bloc pour cet événement
+            null, // Pas de bloc pour cet event
             "custom_action_" + event.getActionType()
         );
         
-        // Traiter l'action
+        // Traiter the action
         ActionProcessor processor = jobsAdventure.getActionProcessor();
         processor.processAction(player, ActionType.CUSTOM, event, context);
     }
@@ -273,14 +273,14 @@ public class MonActionListener implements Listener {
 
 ### 2. Intégration avec PlaceholderAPI
 
-Utiliser les placeholders JobsAdventure dans vos plugins :
+Utiliser les placeholders JobsAdventure dans vos Plugins :
 
 ```java
 public class MonPlaceholderExtension extends PlaceholderExpansion {
     
     @Override
     public String getIdentifier() {
-        return "monplugin";
+        return "monPlugin";
     }
     
     @Override
@@ -307,10 +307,10 @@ public void modifyXpCurve(String jobId) {
     if (job != null && job.getXpCurve() != null) {
         XpCurve curve = job.getXpCurve();
         
-        // Récupérer l'XP requis pour un niveau
+        // Récupérer l'XP requis pour un Level
         double xpForLevel50 = curve.getXpForLevel(50);
         
-        // Calculer le niveau pour une quantité d'XP
+        // Calculer le Level pour une quantité d'XP
         int levelForXp = curve.getLevelForXp(125000.0, job.getMaxLevel());
     }
 }
@@ -323,21 +323,21 @@ public void modifyXpCurve(String jobId) {
 try {
     JobManager jobManager = JobsAdventure.getInstance().getJobManager();
     if (jobManager != null) {
-        // Utiliser l'API
+        // Utiliser the API
     }
 } catch (Exception e) {
-    getLogger().warning("Erreur lors de l'accès à l'API JobsAdventure: " + e.getMessage());
+    getLogger().warning("Erreur lors de l'accès à the API JobsAdventure: " + e.getMessage());
 }
 ```
 
 ### 2. Vérification de Compatibilité
 ```java
 public boolean isJobsAdventureCompatible() {
-    Plugin plugin = Bukkit.getPluginManager().getPlugin("JobsAdventure");
-    if (plugin == null) return false;
+    Plugin Plugin = Bukkit.getPluginManager().getPlugin("JobsAdventure");
+    if (Plugin == null) return false;
     
     // Vérifier la version
-    String version = plugin.getDescription().getVersion();
+    String version = Plugin.getDescription().getVersion();
     return version.startsWith("1.0") || version.startsWith("1.1");
 }
 ```
@@ -354,15 +354,15 @@ public void addXpSafely(Player player, String jobId, double xp) {
 }
 ```
 
-## 📚 Exemples Complets
+## 📚 Examples Complets
 
-Voir les fichiers suivants pour des exemples détaillés :
-- [Événements](events.md) - Liste complète des événements
-- [Intégration Personnalisée](custom-integration.md) - Guide d'intégration
-- [Actions Personnalisées](custom-actions.md) - Création d'actions
-- [Conditions Personnalisées](custom-conditions.md) - Création de conditions
-- [Exemples de Code](code-examples.md) - Exemples pratiques
+Voir les fichiers suivants pour of examples détaillés :
+- [Events](events.md) - Liste complète of events
+- [Intégration Custom](custom-integration.md) - Guide d'intégration
+- [Actions Custom](custom-actions.md) - Création d'actions
+- [Conditions Custom](custom-conditions.md) - Création de conditions
+- [Examples de Code](code-examples.md) - Examples pratiques
 
 ---
 
-L'API JobsAdventure est conçue pour être puissante et flexible tout en restant simple à utiliser. Elle permet une intégration profonde avec le système de jobs pour créer des expériences de jeu uniques.
+L'API JobsAdventure is designed pour être puissante et flexible tout en restant simple à utiliser. Elle permet une intégration profonde avec the system de jobs to create gaming experiences uniques.

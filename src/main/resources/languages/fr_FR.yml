@@ -36,6 +36,7 @@ commands:
     dont-have: "&cVous n'avez pas le métier {job} !"
     failed: "&cÉchec lors de l'abandon du métier {job} !"
     job-not-found: "&cMétier '{job}' introuvable !"
+    default-job: "&cVous ne pouvez pas quitter le métier {job} car c'est un métier par défaut !"
     
   # Commande info
   info:

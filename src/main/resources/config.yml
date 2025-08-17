@@ -54,8 +54,18 @@ database:
 # Job Settings
 jobs:
   # Maximum number of jobs a player can have
+  # Note: This setting is ignored when 'all-jobs-by-default' is enabled
   max-jobs-per-player: 3
   
+  # Automatically assign all available jobs to players when they join
+  # When enabled, players will have all jobs and cannot leave them
+  # This overrides 'max-jobs-per-player' and 'jobs-by-default' settings
+  all-jobs-by-default: false
+  
+  # List of job IDs that players automatically join and cannot leave
+  # Only works when 'all-jobs-by-default' is false
+  # Example: ["miner", "farmer", "hunter"]
+  jobs-by-default: []
   # Default XP curve settings
   default-xp-curve: "standard"
   

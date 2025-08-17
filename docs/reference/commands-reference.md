@@ -1,22 +1,22 @@
-# 📋 Référence Complète des Commandes
+﻿# 📋 Référence Complète des Commands
 
-JobsAdventure fournit un ensemble complet de commandes pour les joueurs et les administrateurs. Toutes les commandes sont regroupées sous la commande principale `/jobs`.
+JobsAdventure fournit un ensemble complete de Commands pour les players et les administrateurs. Toutes the commands sont regroupées sous the command principale `/jobs`.
 
-## 🎮 Commandes Joueurs
+## 🎮 Commands players
 
 ### `/jobs` - Aide Principale
 **Permission** : `jobsadventure.command.jobs` (par défaut : `true`)  
 **Usage** : `/jobs`
 
-Affiche l'aide principale avec la liste de toutes les commandes disponibles.
+Affiche l'aide principale avec la liste de toutes the commands disponibles.
 
 ```
 /jobs help - Affiche cette aide
 /jobs list - Affiche tous les jobs disponibles  
-/jobs join <job> - Rejoindre un job
-/jobs leave <job> - Quitter un job
-/jobs info [job] - Informations sur un job
-/jobs stats [joueur] - Statistiques de jobs
+/jobs join <job> - Rejoindre a job
+/jobs leave <job> - Quitter a job
+/jobs info [job] - Informations sur a job
+/jobs stats [Player] - Statistics de jobs
 /jobs rewards - Afficher et réclamer des récompenses
 ```
 
@@ -24,25 +24,25 @@ Affiche l'aide principale avec la liste de toutes les commandes disponibles.
 **Permission** : `jobsadventure.command.list` (par défaut : `true`)  
 **Usage** : `/jobs list`
 
-Affiche tous les jobs disponibles sur le serveur avec leurs informations de base.
+Affiche tous les jobs disponibles sur the server avec leurs informations de base.
 
 **Affichage** :
 ```
 === Jobs Disponibles ===
 🛠️ Miner - Extraction de minerais
-   Niveau requis: Aucun
+   Level requis: Aucun
    Permission: jobsadventure.job.miner
-   Joueurs actifs: 45
+   players actifs: 45
 
 🌾 Farmer - Agriculture et élevage  
-   Niveau requis: Aucun
+   Level requis: Aucun
    Permission: jobsadventure.job.farmer
-   Joueurs actifs: 32
+   players actifs: 32
 
 🏹 Hunter - Chasse et combat
-   Niveau requis: Niveau 10 en Farmer
+   Level requis: Level 10 en Farmer
    Permission: jobsadventure.job.hunter  
-   Joueurs actifs: 28
+   players actifs: 28
 ```
 
 ### `/jobs join <job>` - Rejoindre un Job
@@ -50,54 +50,54 @@ Affiche tous les jobs disponibles sur le serveur avec leurs informations de base
 **Permission du job** : `jobsadventure.job.<jobid>` (ex: `jobsadventure.job.miner`)  
 **Usage** : `/jobs join <nom_du_job>`
 
-Permet à un joueur de rejoindre un job spécifique.
+Permet à un Player de rejoindre a job spécifique.
 
-**Exemples** :
+**Examples** :
 ```bash
-/jobs join miner    # Rejoindre le job de mineur
-/jobs join farmer   # Rejoindre le job de fermier
-/jobs join hunter   # Rejoindre le job de chasseur
+/jobs join miner    # Rejoindre the job de mineur
+/jobs join farmer   # Rejoindre the job de fermier
+/jobs join hunter   # Rejoindre the job de chasseur
 ```
 
 **Vérifications effectuées** :
-- ✅ Le job existe et est activé
-- ✅ Le joueur a la permission pour ce job
-- ✅ Le joueur ne possède pas déjà ce job
-- ✅ Le joueur n'a pas atteint la limite de jobs simultanés
+- ✅ The job existe et est activé
+- ✅ The player a la permission pour ce job
+- ✅ The player ne possède pas déjà ce job
+- ✅ The player n'a pas atteint la limite de jobs simultanés
 - ✅ Les prérequis du job sont remplis
 
 ### `/jobs leave <job>` - Quitter un Job
 **Permission** : `jobsadventure.command.leave` (par défaut : `true`)  
 **Usage** : `/jobs leave <nom_du_job>`
 
-Permet à un joueur de quitter un job.
+Permet à un Player de quitter a job.
 
-**Exemples** :
+**Examples** :
 ```bash
-/jobs leave miner   # Quitter le job de mineur
-/jobs leave farmer  # Quitter le job de fermier
+/jobs leave miner   # Quitter the job de mineur
+/jobs leave farmer  # Quitter the job de fermier
 ```
 
 ### `/jobs info [job]` - Informations sur un Job
 **Permission** : `jobsadventure.command.info` (par défaut : `true`)  
 **Usage** : `/jobs info [nom_du_job]`
 
-Affiche des informations détaillées sur un job spécifique ou sur tous les jobs du joueur.
+Affiche des informations detailed sur a job spécifique ou sur tous les jobs of the player.
 
-### `/jobs stats [joueur]` - Statistiques
+### `/jobs stats [Player]` - Statistics
 **Permission** : `jobsadventure.command.stats` (par défaut : `true`)  
 **Permission autres** : `jobsadventure.command.stats.others` (admins uniquement)  
-**Usage** : `/jobs stats [nom_joueur]`
+**Usage** : `/jobs stats [nom_Player]`
 
-Affiche les statistiques détaillées d'un joueur.
+Affiche the statistics detailed d'un Player.
 
 ### `/jobs rewards` - Système de Récompenses
 **Permission** : `jobsadventure.command.rewards` (par défaut : `true`)  
 **Usage** : `/jobs rewards`
 
-Ouvre l'interface graphique des récompenses ou affiche les récompenses disponibles.
+Ouvre l'interface graphique des récompenses ou affiche the rewards disponibles.
 
-## 🛡️ Commandes Admin
+## 🛡️ Commands Admin
 
 ### `/jobs admin` - Menu Admin Principal
 **Permission** : `jobsadventure.admin` (par défaut : `op`)  
@@ -109,34 +109,34 @@ Affiche le menu principal d'administration avec toutes les options disponibles.
 **Permission** : `jobsadventure.admin.reload` (par défaut : `op`)  
 **Usage** : `/jobs admin reload [config|jobs|rewards|all]`
 
-Recharge les différents composants du plugin sans redémarrage.
+Recharge les différents composants of the plugin sans redémarrage.
 
 **Options** :
 ```bash
 /jobs admin reload config    # Recharge config.yml uniquement
 /jobs admin reload jobs      # Recharge tous les jobs
-/jobs admin reload rewards   # Recharge les récompenses
+/jobs admin reload rewards   # Recharge the rewards
 /jobs admin reload all       # Recharge tout (par défaut)
 ```
 
-### `/jobs admin player <joueur>` - Gestion Joueur
+### `/jobs admin player <Player>` - Gestion Player
 **Permission** : `jobsadventure.admin.player` (par défaut : `op`)  
-**Usage** : `/jobs admin player <joueur> <action> [paramètres]`
+**Usage** : `/jobs admin player <Player> <action> [paramètres]`
 
-Gestion complète des données d'un joueur.
+Gestion complète des données d'un Player.
 
 **Actions disponibles** :
 ```bash
-# Gestion des jobs
-/jobs admin player Steve join miner      # Forcer rejoindre un job
-/jobs admin player Steve leave miner     # Forcer quitter un job
-/jobs admin player Steve reset miner     # Reset niveau/XP d'un job
+# Gestion of jobs
+/jobs admin player Steve join miner      # Forcer rejoindre a job
+/jobs admin player Steve leave miner     # Forcer quitter a job
+/jobs admin player Steve reset miner     # Reset Level/XP d'a job
 /jobs admin player Steve reset all       # Reset tous les jobs
 
-# Gestion XP/Niveaux
+# Gestion XP/Levelx
 /jobs admin player Steve addxp miner 1000    # Ajouter 1000 XP
 /jobs admin player Steve setxp miner 50000   # Définir XP exact
-/jobs admin player Steve setlevel miner 50   # Définir niveau exact
+/jobs admin player Steve setlevel miner 50   # Définir Level exact
 ```
 
 ### `/jobs admin bonus` - Gestion Bonus XP
@@ -147,7 +147,7 @@ Gestion des bonus d'XP temporaires et permanents.
 
 **Gestion globale** :
 ```bash
-# Bonus serveur global
+# Bonus Server global
 /jobs admin bonus global set 2.0 1h     # Bonus x2 pendant 1h sur tous les jobs
 /jobs admin bonus global remove         # Supprimer bonus global
 
@@ -169,7 +169,7 @@ Outils avancés de débogage et diagnostic.
 /jobs admin debug performance stop      # Arrêter et afficher rapport
 
 # Cache et mémoire
-/jobs admin debug cache stats          # Statistiques du cache
+/jobs admin debug cache stats          # Statistics du cache
 /jobs admin debug cache clear          # Vider le cache
 
 # Base de données
@@ -182,11 +182,11 @@ Outils avancés de débogage et diagnostic.
 ### Permissions de Base
 ```yaml
 permissions:
-  # Commandes joueurs
-  jobsadventure.command.jobs: true          # Commande /jobs principale
+  # Commands players
+  jobsadventure.command.jobs: true          # Command /jobs principale
   jobsadventure.command.list: true          # Lister les jobs
-  jobsadventure.command.join: true          # Rejoindre un job
-  jobsadventure.command.leave: true         # Quitter un job
+  jobsadventure.command.join: true          # Rejoindre a job
+  jobsadventure.command.leave: true         # Quitter a job
   jobsadventure.command.info: true          # Info sur les jobs
   jobsadventure.command.stats: true         # Ses propres stats
   jobsadventure.command.rewards: true       # Accès aux récompenses
@@ -207,10 +207,10 @@ permissions:
   # Administration de base
   jobsadventure.admin: op                   # Accès admin général
   jobsadventure.admin.reload: op            # Rechargement config
-  jobsadventure.admin.stats: op             # Stats serveur
+  jobsadventure.admin.stats: op             # Stats Server
   
   # Gestion avancée
-  jobsadventure.admin.player: op            # Gestion joueurs
+  jobsadventure.admin.player: op            # Gestion players
   jobsadventure.admin.job: op               # Gestion jobs
   jobsadventure.admin.bonus: op             # Gestion bonus XP
   jobsadventure.admin.debug: op             # Outils debug
@@ -219,13 +219,13 @@ permissions:
 
 ## 📝 Alias et Raccourcis
 
-### Alias de Commandes
+### Alias de Commands
 ```bash
 # Alias disponibles pour /jobs
 /j          # Raccourci pour /jobs
 /job        # Alias alternatif
 
-# Alias de sous-commandes  
+# Alias de sous-Commands  
 /jobs j     # Raccourci pour /jobs join
 /jobs l     # Raccourci pour /jobs leave
 /jobs i     # Raccourci pour /jobs info
@@ -233,36 +233,36 @@ permissions:
 /jobs r     # Raccourci pour /jobs rewards
 ```
 
-## 📋 Exemples d'Usage
+## 📋 Examples d'Usage
 
-### Scénario Joueur Débutant
+### Scénario Player Débutant
 ```bash
 /jobs list                    # Voir les jobs disponibles
-/jobs join miner             # Rejoindre le job mineur
-/jobs info miner             # Comprendre le job
+/jobs join miner             # Rejoindre the job mineur
+/jobs info miner             # Comprendre the job
 # [Miner quelques blocs]
 /jobs stats                  # Vérifier les progrès
-/jobs rewards                # Voir les récompenses disponibles
+/jobs rewards                # Voir the rewards disponibles
 ```
 
 ### Scénario Administrateur
 ```bash
-/jobs admin stats            # Vérifier le statut du serveur
-/jobs admin bonus global set 2.0 1h    # Événement XP double pendant 1h
-/jobs admin player Steve setlevel miner 25  # Ajuster un niveau
+/jobs admin stats            # Vérifier le statut du Server
+/jobs admin bonus global set 2.0 1h    # Event XP double pendant 1h
+/jobs admin player Steve setlevel miner 25  # Ajuster un Level
 /jobs admin reload           # Recharger après changements config
 ```
 
 ## ⚠️ Notes Importantes
 
-1. **Permissions** : Toutes les commandes nécessitent les permissions appropriées
+1. **Permissions** : Toutes the commands nécessitent les permissions appropriées
 2. **Paramètres** : Les paramètres entre `<>` sont obligatoires, ceux entre `[]` sont optionnels
-3. **Auto-complétion** : La plupart des commandes supportent l'auto-complétion
-4. **Sensibilité à la casse** : Les noms de jobs et joueurs sont sensibles à la casse
+3. **Auto-complétion** : La plupart des Commands supportent l'auto-complétion
+4. **Sensibilité à la casse** : Les noms de jobs et players sont sensibles à la casse
 
 ## 🔗 Voir Aussi
 
-- [Guide du Joueur](../player-guide/getting-started.md)
+- [Guide of the player](../player-guide/getting-started.md)
 - [Guide de l'Administrateur](../admin-guide/admin-commands.md)
 - [Système de Permissions](permissions.md)
-- [Dépannage des Commandes](../troubleshooting/common-issues.md)
+- [Dépannage des Commands](../troubleshooting/common-issues.md)

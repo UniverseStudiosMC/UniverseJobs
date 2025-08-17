@@ -99,7 +99,7 @@ JobsAdventure is built on a modular architecture allowing:
 
 ### Intuitive progression
 Players naturally discover:
-1. **Available jobs** via `/jobs list`
+1. **Availabthe jobs** via `/jobs list`
 2. **How to join** a job that interests them
 3. **Actions that give XP** by playing normally
 4. **Accessible rewards** via the graphical interface

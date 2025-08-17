@@ -1,16 +1,16 @@
-# 🎭 Événements de l'API JobsAdventure
+﻿# 🎭 JobsAdventure API Events
 
-JobsAdventure émet une variété d'événements permettant aux plugins tiers de s'intégrer profondément avec le système de jobs. Tous les événements héritent de la classe Bukkit `Event` et peuvent être écoutés via l'annotation `@EventHandler`.
+JobsAdventure emits a variety of events that allow third-party Plugins to integrate deeply with the job system. All events inherit from the Bukkit `Event` class and can be listened to via the `@EventHandler` annotation.
 
-## 📋 Liste Complète des Événements
+## 📋 Complete Event List
 
 ### 1. PlayerJobJoinEvent
-**Package** : `fr.ax_dev.jobsAdventure.api.events`
-**Annulable** : ❌ Non
+**Package**: `fr.ax_dev.jobsAdventure.api.events`
+**Cancellable**: ❌ No
 
-Déclenché lorsqu'un joueur rejoint un job avec succès.
+Triggered when a player successfully joins a job.
 
-#### Détails
+#### Details
 ```java
 public class PlayerJobJoinEvent extends Event {
     private final Player player;
@@ -20,42 +20,42 @@ public class PlayerJobJoinEvent extends Event {
 }
 ```
 
-#### Méthodes Disponibles
-- `Player getPlayer()` - Le joueur qui a rejoint le job
-- `String getJobId()` - L'ID du job rejoint  
-- `Job getJob()` - L'objet Job complet
-- `JoinReason getReason()` - La raison du join (COMMAND, API, AUTO)
+#### Available Methods
+- `Player getPlayer()` - The player who joined the job
+- `String getJobId()` - The ID of the joined job
+- `Job getJob()` - The complete Job object
+- `JoinReason getReason()` - The reason for joining (COMMAND, API, AUTO)
 
-#### Exemple d'Usage
+#### Usage Example
 ```java
 @EventHandler
 public void onPlayerJobJoin(PlayerJobJoinEvent event) {
     Player player = event.getPlayer();
     Job job = event.getJob();
     
-    // Donner un kit de démarrage
+    // Give starter kit
     if (event.getReason() == JoinReason.COMMAND) {
         giveStarterKit(player, job.getId());
     }
     
-    // Notifier les autres joueurs
+    // Notify other players
     Bukkit.broadcastMessage(
         ChatColor.GREEN + player.getName() + 
-        " a rejoint le job " + job.getName() + " !"
+        " joined the " + job.getName() + " job!"
     );
     
-    // Statistiques personnalisées
+    // Custom statistics
     incrementJobJoinStats(job.getId());
 }
 ```
 
 ### 2. PlayerJobLeaveEvent
-**Package** : `fr.ax_dev.jobsAdventure.api.events`
-**Annulable** : ❌ Non
+**Package**: `fr.ax_dev.jobsAdventure.api.events`
+**Cancellable**: ❌ No
 
-Déclenché lorsqu'un joueur quitte un job.
+Triggered when a player leaves a job.
 
-#### Détails
+#### Details
 ```java
 public class PlayerJobLeaveEvent extends Event {
     private final Player player;
@@ -67,43 +67,43 @@ public class PlayerJobLeaveEvent extends Event {
 }
 ```
 
-#### Méthodes Disponibles
-- `Player getPlayer()` - Le joueur qui a quitté le job
-- `String getJobId()` - L'ID du job quitté
-- `Job getJob()` - L'objet Job complet
-- `LeaveReason getReason()` - Raison du départ (COMMAND, API, FORCED)
-- `int getFinalLevel()` - Le niveau final atteint
-- `double getFinalXp()` - L'XP total final
+#### Available Methods
+- `Player getPlayer()` - The player who left the job
+- `String getJobId()` - The ID of the left job
+- `Job getJob()` - The complete Job object
+- `LeaveReason getReason()` - Reason for leaving (COMMAND, API, FORCED)
+- `int getFinalLevel()` - The final level reached
+- `double getFinalXp()` - The final total XP
 
-#### Exemple d'Usage
+#### Usage Example
 ```java
 @EventHandler
 public void onPlayerJobLeave(PlayerJobLeaveEvent event) {
     Player player = event.getPlayer();
     Job job = event.getJob();
     
-    // Sauvegarder les statistiques
+    // Save statistics
     saveJobStatistics(player, job.getId(), event.getFinalLevel(), event.getFinalXp());
     
-    // Donner une récompense de départ si niveau élevé
+    // Give departure reward if high level
     if (event.getFinalLevel() >= 50) {
         giveCompletionReward(player, job.getId());
     }
     
-    // Message personnalisé
+    // Custom message
     player.sendMessage(ChatColor.YELLOW + 
-        "Vous avez quitté " + job.getName() + 
-        " au niveau " + event.getFinalLevel() + " !");
+        "You left " + job.getName() + 
+        " at level " + event.getFinalLevel() + " !");
 }
 ```
 
 ### 3. PlayerXpGainEvent
 **Package** : `fr.ax_dev.jobsAdventure.api.events`
-**Annulable** : ✅ Oui
+**Cancellable** : ✅ Yes
 
-Déclenché avant qu'un joueur ne gagne de l'XP. Peut être annulé ou modifié.
+Triggered before a player gains XP. Can be cancelled or modified.
 
-#### Détails
+#### Details
 ```java
 public class PlayerXpGainEvent extends Cancellable {
     private final Player player;
@@ -116,24 +116,24 @@ public class PlayerXpGainEvent extends Cancellable {
 }
 ```
 
-#### Méthodes Disponibles
-- `Player getPlayer()` - Le joueur gagnant l'XP
-- `String getJobId()` - L'ID du job concerné
-- `Job getJob()` - L'objet Job complet
-- `double getXp()` - La quantité d'XP à gagner
+#### Available Methods
+- `Player getPlayer()` - The player gaining XP
+- `String getJobId()` - The job ID concerned
+- `Job getJob()` - The Job object complete
+- `double getXp()` - La quantité d'XP to gain
 - `void setXp(double xp)` - Modifier la quantité d'XP
-- `XpSource getSource()` - Source de l'XP (ACTION, COMMAND, BONUS)
+- `XpSource getSource()` - XP source (ACTION, COMMAND, BONUS)
 - `JobAction getAction()` - L'action qui a généré l'XP (peut être null)
-- `boolean isCancelled()` / `void setCancelled(boolean)` - Gestion d'annulation
+- `boolean isCancelled()` / `void setCancelled(boolean)` - Cancellation management
 
-#### Exemple d'Usage
+#### Usage Example
 ```java
 @EventHandler
 public void onPlayerXpGain(PlayerXpGainEvent event) {
     Player player = event.getPlayer();
     Job job = event.getJob();
     
-    // Double XP pour les VIP
+    // Double XP for VIPs
     if (player.hasPermission("vip.double.xp")) {
         event.setXp(event.getXp() * 2);
     }
@@ -154,7 +154,7 @@ public void onPlayerXpGain(PlayerXpGainEvent event) {
     
     // Log pour anti-triche
     if (event.getXp() > 1000) {
-        getLogger().warning("Gain XP suspect: " + player.getName() + 
+        getLogger().warning("Suspicious XP gain: " + player.getName() + 
                           " - " + event.getXp() + " XP en " + job.getId());
     }
 }
@@ -162,11 +162,11 @@ public void onPlayerXpGain(PlayerXpGainEvent event) {
 
 ### 4. PlayerLevelUpEvent
 **Package** : `fr.ax_dev.jobsAdventure.api.events`
-**Annulable** : ❌ Non
+**Cancellable** : ❌ No
 
-Déclenché lorsqu'un joueur monte de niveau dans un job.
+Déclenché lorsqu'un Player monte de Level dans a job.
 
-#### Détails
+#### Details
 ```java
 public class PlayerLevelUpEvent extends Event {
     private final Player player;
@@ -179,16 +179,16 @@ public class PlayerLevelUpEvent extends Event {
 }
 ```
 
-#### Méthodes Disponibles
-- `Player getPlayer()` - Le joueur qui a monté de niveau
-- `String getJobId()` - L'ID du job concerné
-- `Job getJob()` - L'objet Job complet
-- `int getOldLevel()` - L'ancien niveau
-- `int getNewLevel()` - Le nouveau niveau
-- `double getTotalXp()` - L'XP total du joueur
-- `boolean isMaxLevel()` - True si le joueur a atteint le niveau max
+#### Available Methods
+- `Player getPlayer()` - The player who leveled up in Level
+- `String getJobId()` - The job ID concerned
+- `Job getJob()` - The Job object complete
+- `int getOldLevel()` - The old Level
+- `int getNewLevel()` - The new level
+- `double getTotalXp()` - The XP total of the Player
+- `boolean isMaxLevel()` - True if the player has reached the max level
 
-#### Exemple d'Usage
+#### Usage Example
 ```java
 @EventHandler
 public void onPlayerLevelUp(PlayerLevelUpEvent event) {
@@ -198,16 +198,16 @@ public void onPlayerLevelUp(PlayerLevelUpEvent event) {
     
     // Récompenses par paliers
     if (newLevel % 10 == 0) {
-        // Tous les 10 niveaux
+        // Tous les 10 Levelx
         int diamonds = newLevel / 10;
         player.getInventory().addItem(new ItemStack(Material.DIAMOND, diamonds));
-        player.sendMessage(ChatColor.AQUA + "Récompense de palier: " + diamonds + " diamants !");
+        player.sendMessage(ChatColor.AQUA + "Récompense de palier: " + diamonds + " diamonds !");
     }
     
-    // Titre spécial au niveau max
+    // Titre spécial at level max
     if (event.isMaxLevel()) {
         Bukkit.broadcastMessage(ChatColor.GOLD + "🏆 " + player.getName() + 
-                              " a maîtrisé le job " + job.getName() + " ! 🏆");
+                              " a maîtrisé the job " + job.getName() + " ! 🏆");
         
         // Donner un titre spécial
         giveTitle(player, "Master " + job.getName());
@@ -216,18 +216,18 @@ public void onPlayerLevelUp(PlayerLevelUpEvent event) {
     // Déverrouiller de nouvelles zones
     unlockAreasForLevel(player, job.getId(), newLevel);
     
-    // Statistiques
+    // Statistics
     updatePlayerRanking(player, job.getId(), newLevel);
 }
 ```
 
 ### 5. PlayerRewardClaimEvent
 **Package** : `fr.ax_dev.jobsAdventure.api.events`
-**Annulable** : ✅ Oui
+**Cancellable** : ✅ Yes
 
-Déclenché lorsqu'un joueur tente de réclamer une récompense.
+Déclenché lorsqu'un Player tente de réclamer une récompense.
 
-#### Détails
+#### Details
 ```java
 public class PlayerRewardClaimEvent extends Cancellable {
     private final Player player;
@@ -238,21 +238,21 @@ public class PlayerRewardClaimEvent extends Cancellable {
 }
 ```
 
-#### Méthodes Disponibles
-- `Player getPlayer()` - Le joueur réclamant la récompense
-- `Reward getReward()` - La récompense réclamée
+#### Available Methods
+- `Player getPlayer()` - The player claiming the reward
+- `Reward getReward()` - La récompense claimed
 - `ClaimReason getReason()` - Raison de la réclamation (GUI, COMMAND, AUTO)
-- `boolean isCancelled()` / `void setCancelled(boolean)` - Gestion d'annulation
-- `String getCancelReason()` / `void setCancelReason(String)` - Raison d'annulation
+- `boolean isCancelled()` / `void setCancelled(boolean)` - Cancellation management
+- `String getCancelReason()` / `void setCancelReason(String)` - Cancellation reason
 
-#### Exemple d'Usage
+#### Usage Example
 ```java
 @EventHandler
 public void onPlayerRewardClaim(PlayerRewardClaimEvent event) {
     Player player = event.getPlayer();
     Reward reward = event.getReward();
     
-    // Vérifier les conditions spéciales
+    // Vérifier the conditions spéciales
     if (reward.getId().startsWith("vip_") && !player.hasPermission("vip.rewards")) {
         event.setCancelled(true);
         event.setCancelReason("Vous devez être VIP pour cette récompense !");
@@ -268,12 +268,12 @@ public void onPlayerRewardClaim(PlayerRewardClaimEvent event) {
     }
     
     // Log pour audit
-    getLogger().info(player.getName() + " a réclamé la récompense " + reward.getId());
+    getLogger().info(player.getName() + " a réclamé the reward " + reward.getId());
     
-    // Compteur personnalisé
+    // Compteur custom
     incrementDailyClaimCount(player);
     
-    // Notification spéciale pour les récompenses rares
+    // Notification spéciale pour the rewards rares
     if (reward.getRarity() == RewardRarity.LEGENDARY) {
         Bukkit.broadcastMessage(ChatColor.GOLD + player.getName() + 
                               " a obtenu une récompense légendaire !");
@@ -283,11 +283,11 @@ public void onPlayerRewardClaim(PlayerRewardClaimEvent event) {
 
 ### 6. JobActionEvent
 **Package** : `fr.ax_dev.jobsAdventure.api.events`
-**Annulable** : ❌ Non
+**Cancellable** : ❌ No
 
-Déclenché après qu'une action de job ait été traitée avec succès.
+Déclenché après qu'an action de job ait été traitée avec succès.
 
-#### Détails
+#### Details
 ```java
 public class JobActionEvent extends Event {
     private final Player player;
@@ -300,27 +300,27 @@ public class JobActionEvent extends Event {
 }
 ```
 
-#### Méthodes Disponibles
-- `Player getPlayer()` - Le joueur ayant effectué l'action
-- `Job getJob()` - Le job concerné
-- `JobAction getAction()` - L'action spécifique effectuée
-- `ActionType getActionType()` - Le type d'action (BREAK, PLACE, KILL, etc.)
-- `double getXpGained()` - L'XP réellement gagné
-- `ConditionContext getContext()` - Le contexte de l'action
-- `boolean hasLeveledUp()` - True si le joueur a monté de niveau
+#### Available Methods
+- `Player getPlayer()` - The player who performed the action
+- `Job getJob()` - The job concerned
+- `JobAction getAction()` - L'action specifically performed
+- `ActionType getActionType()` - The action type (BREAK, PLACE, KILL, etc.)
+- `double getXpGained()` - The XP actually gained
+- `ConditionContext getContext()` - The action context
+- `boolean hasLeveledUp()` - True si The player a monté de Level
 
-#### Exemple d'Usage
+#### Usage Example
 ```java
 @EventHandler
 public void onJobAction(JobActionEvent event) {
     Player player = event.getPlayer();
     Job job = event.getJob();
     
-    // Statistiques détaillées
+    // Statistics detailed
     ActionStats stats = getActionStats(player);
     stats.incrementAction(job.getId(), event.getActionType());
     
-    // Achievements personnalisés
+    // Achievements custom
     checkCustomAchievements(player, job, event.getActionType());
     
     // Particules visuelles pour certaines actions
@@ -338,11 +338,11 @@ public void onJobAction(JobActionEvent event) {
 }
 ```
 
-## 🔧 Événements Personnalisés
+## 🔧 Events Customs
 
-Vous pouvez également créer vos propres événements pour étendre le système :
+You can also create your own events to extend the system :
 
-### Exemple d'Événement Personnalisé
+### Example d'Event Custom
 ```java
 public class CustomJobStreakEvent extends Event {
     private static final HandlerList HANDLERS = new HandlerList();
@@ -372,7 +372,7 @@ public class CustomJobStreakEvent extends Event {
 }
 ```
 
-### Déclencher l'Événement
+### Déclencher l'Event
 ```java
 // Dans votre logique de streak
 if (streakCount >= 10) {
@@ -383,7 +383,7 @@ if (streakCount >= 10) {
 }
 ```
 
-## 📊 Priorités d'Événements
+## 📊 Priorités d'Events
 
 Utilisez les priorités pour contrôler l'ordre d'exécution :
 
@@ -400,7 +400,7 @@ public void onXpGainLowest(PlayerXpGainEvent event) {
 
 @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 public void onXpGainMonitor(PlayerXpGainEvent event) {
-    // Logging uniquement, ne pas modifier l'événement
+    // Logging uniquement, ne pas modifier the event
     logXpGain(event.getPlayer(), event.getJob(), event.getXp());
 }
 ```
@@ -425,29 +425,29 @@ public void onPlayerLevelUp(PlayerLevelUpEvent event) {
 ```java
 @EventHandler
 public void onJobAction(JobActionEvent event) {
-    // Éviter les opérations coûteuses dans les événements fréquents
+    // Avoid operations expensive in the events frequent
     if (event.getActionType() == ActionType.BREAK) {
-        // Traitement asynchrone pour les opérations lourdes
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        // Asynchronous processing for operations heavy
+        Bukkit.getScheduler().runTaskAsynchronously(Plugin, () -> {
             updateDatabase(event.getPlayer(), event.getJob());
         });
     }
 }
 ```
 
-### 3. Vérifications de Sécurité
+### 3. Security Checks
 ```java
 @EventHandler
 public void onRewardClaim(PlayerRewardClaimEvent event) {
     Player player = event.getPlayer();
     
-    // Toujours vérifier que le joueur est en ligne
+    // Always check que The player is online
     if (!player.isOnline()) {
         event.setCancelled(true);
         return;
     }
     
-    // Vérifier les permissions
+    // Check permissions
     if (!player.hasPermission("rewards.claim")) {
         event.setCancelled(true);
         event.setCancelReason("Permission insuffisante");
@@ -458,12 +458,12 @@ public void onRewardClaim(PlayerRewardClaimEvent event) {
 
 ## 🔗 Voir Aussi
 
-- [Introduction à l'API](introduction.md) - Concepts de base
-- [Intégration Personnalisée](custom-integration.md) - Guide complet d'intégration
-- [Exemples de Code](code-examples.md) - Exemples pratiques
-- [Actions Personnalisées](custom-actions.md) - Créer des actions
-- [Conditions Personnalisées](custom-conditions.md) - Créer des conditions
+- [Introduction à the API](introduction.md) - Concepts de base
+- [Intégration Custom](custom-integration.md) - Guide complete d'intégration
+- [Examples de Code](code-examples.md) - Examples pratiques
+- [Actions Custom](custom-actions.md) - Créer of actions
+- [Conditions Custom](custom-conditions.md) - Créer of conditions
 
 ---
 
-Les événements JobsAdventure offrent des points d'intégration puissants pour créer des expériences de jeu riches et personnalisées. Utilisez-les pour étendre le système de jobs selon les besoins spécifiques de votre serveur.
+Les events JobsAdventure offer points of powerful integration to create gaming experiences riches et customs. Utilisez-les to extend the system de jobs according to the needs specific to your Server.

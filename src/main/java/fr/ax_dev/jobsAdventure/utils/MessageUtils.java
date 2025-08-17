@@ -30,19 +30,20 @@ public class MessageUtils {
             return Component.empty();
         }
         
-        // First, convert legacy color codes (&) to section symbols (§)
-        String processedMessage = translateLegacyColorCodes(message);
-        
-        // Check if the message contains MiniMessage tags
-        if (containsMiniMessageTags(processedMessage)) {
-            // Parse as MiniMessage
-            return miniMessage.deserialize(processedMessage);
-        } else if (processedMessage.contains("§")) {
-            // Parse as legacy
-            return legacySerializer.deserialize(processedMessage);
+        // Check if the message contains legacy codes and convert if needed
+        String processedMessage;
+        if (LegacyToMiniMessageConverter.containsLegacyCodes(message)) {
+            processedMessage = LegacyToMiniMessageConverter.convert(message);
         } else {
-            // Plain text, but try MiniMessage first in case it has tags
+            processedMessage = message;
+        }
+        
+        // Parse as MiniMessage (it handles plain text gracefully)
+        try {
             return miniMessage.deserialize(processedMessage);
+        } catch (Exception e) {
+            // Fallback to plain text if parsing fails
+            return Component.text(message);
         }
     }
     
@@ -115,98 +116,20 @@ public class MessageUtils {
     }
     
     /**
-     * Translate legacy color codes (&) to section symbols (§).
+     * Convert legacy color codes to MiniMessage format.
      * 
-     * @param message The message to translate
-     * @return The translated message
+     * @param message The message to convert
+     * @return The converted message in MiniMessage format
      */
     public static String translateLegacyColorCodes(String message) {
         if (message == null || message.isEmpty()) {
             return message;
         }
         
-        // Translate &x color codes (hex) and standard color codes
-        char[] chars = message.toCharArray();
-        StringBuilder result = new StringBuilder();
-        
-        for (int i = 0; i < chars.length; i++) {
-            if (chars[i] == '&' && i + 1 < chars.length) {
-                char next = chars[i + 1];
-                // Check for valid color codes (0-9, a-f, k-o, r, x)
-                if ((next >= '0' && next <= '9') || 
-                    (next >= 'a' && next <= 'f') || 
-                    (next >= 'k' && next <= 'o') || 
-                    next == 'r') {
-                    result.append('§').append(next);
-                    i++; // Skip the next character
-                } else if (next == 'x' && i + 13 < chars.length) {
-                    // Check for hex color code (&x&R&R&G&G&B&B)
-                    boolean isHex = true;
-                    for (int j = 2; j <= 12; j += 2) {
-                        if (chars[i + j] != '&' || !isHexChar(chars[i + j + 1])) {
-                            isHex = false;
-                            break;
-                        }
-                    }
-                    
-                    if (isHex) {
-                        // Convert to MiniMessage hex format
-                        StringBuilder hex = new StringBuilder("<#");
-                        for (int j = 3; j <= 13; j += 2) {
-                            hex.append(chars[i + j]);
-                        }
-                        hex.append(">");
-                        result.append(hex);
-                        i += 13; // Skip the hex code
-                    } else {
-                        result.append(chars[i]);
-                    }
-                } else {
-                    result.append(chars[i]);
-                }
-            } else {
-                result.append(chars[i]);
-            }
-        }
-        
-        return result.toString();
+        // Use the efficient regex-based converter
+        return LegacyToMiniMessageConverter.convert(message);
     }
     
-    /**
-     * Check if a character is a valid hex character.
-     */
-    private static boolean isHexChar(char c) {
-        return (c >= '0' && c <= '9') || 
-               (c >= 'a' && c <= 'f') || 
-               (c >= 'A' && c <= 'F');
-    }
-    
-    /**
-     * Check if a message contains MiniMessage tags.
-     */
-    private static boolean containsMiniMessageTags(String message) {
-        if (message == null || message.isEmpty()) {
-            return false;
-        }
-        
-        // Common MiniMessage tags
-        return message.contains("<") && message.contains(">") && (
-            message.contains("<gradient") ||
-            message.contains("<rainbow") ||
-            message.contains("<color") ||
-            message.contains("<#") ||
-            message.contains("<bold") ||
-            message.contains("<italic") ||
-            message.contains("<underlined") ||
-            message.contains("<strikethrough") ||
-            message.contains("<obfuscated") ||
-            message.contains("<click") ||
-            message.contains("<hover") ||
-            message.contains("<reset") ||
-            message.contains("<br>") ||
-            message.contains("</")
-        );
-    }
     
     /**
      * Replace placeholders in a message.

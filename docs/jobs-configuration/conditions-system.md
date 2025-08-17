@@ -1,27 +1,27 @@
-# 🔧 Système de Conditions
+﻿# 🔧 Système de Conditions
 
-Le système de conditions de JobsAdventure permet de créer des règles complexes pour contrôler quand les actions donnent de l'XP et quand les récompenses peuvent être réclamées. Il utilise une logique AND/OR flexible avec support des groupes imbriqués.
+The system de conditions de JobsAdventure permet de créer des règles complexes pour contrôler quand the actions donnent de l'XP et quand the rewards peuvent être claimeds. Il utilise une logique AND/OR flexible avec support des groupes imbriqués.
 
 ## 🎯 Vue d'ensemble
 
 ### Fonctionnalités Principales
-- **Logique AND/OR** : Combinaison flexible des conditions
+- **Logique AND/OR** : Combinaison flexible of conditions
 - **Groupes imbriqués** : Structure hiérarchique de conditions complexes
 - **Types multiples** : 9 types de conditions différents
-- **Actions conditionnelles** : Messages et commandes selon le résultat
+- **Actions conditionnelles** : Messages et Commands selon le résultat
 - **Performance optimisée** : Évaluation rapide et cache intelligent
 
-### Utilisation
+### Usage
 Les conditions peuvent être utilisées dans :
 - **Actions de jobs** : Contrôler quand l'XP est accordé
 - **Récompenses** : Définir les prérequis pour réclamation
-- **Commandes dynamiques** : Exécution conditionnelle
+- **Commands dynamiques** : Exécution conditionnelle
 - **Messages adaptatifs** : Affichage selon le contexte
 
 ## 📋 Types de Conditions
 
 ### 1. Permission (`permission`)
-Vérifie si un joueur possède une permission spécifique.
+Vérifie si un Player possède une permission spécifique.
 
 ```yaml
 permission:
@@ -37,11 +37,11 @@ permission:
 
 **Cas d'usage** :
 - Réserver certaines actions aux VIP
-- Empêcher l'XP pour les joueurs bannis
+- Empêcher l'XP pour les players bannis
 - Créer des zones spéciales selon les rangs
 
 ### 2. Placeholder (`placeholder`)
-Utilise PlaceholderAPI pour évaluer des conditions dynamiques.
+Utilise PlaceholderAPI pour évaluer of conditions dynamiques.
 
 ```yaml
 placeholder:
@@ -49,9 +49,9 @@ placeholder:
   operator: "greater_than"          # Opérateur de comparaison
   value: "25"                      # Valeur de référence
   accept:
-    message: "&aVous avez le niveau requis !"
+    message: "&aVous avez le Level requis !"
   deny:
-    message: "&cVous devez être niveau 25+ !"
+    message: "&cVous devez être Level 25+ !"
 ```
 
 **Opérateurs disponibles** :
@@ -65,9 +65,9 @@ placeholder:
 - `starts_with` : Commence par
 - `ends_with` : Finit par
 
-**Exemples avancés** :
+**Examples avancés** :
 ```yaml
-# Vérifier l'argent du joueur
+# Vérifier l'argent of the player
 placeholder:
   placeholder: "%vault_eco_balance%"
   operator: "greater_than_or_equal"
@@ -87,7 +87,7 @@ placeholder:
 ```
 
 ### 3. Item (`item`)
-Vérifie l'item en main du joueur.
+Vérifie l'item en main of the player.
 
 ```yaml
 item:
@@ -109,7 +109,7 @@ item:
 **Options avancées** :
 ```yaml
 item:
-  # Support des items personnalisés
+  # Support des items custom
   material: "nexo:mythril_pickaxe"
   
   # Vérification des enchantements
@@ -127,7 +127,7 @@ item:
 ```
 
 ### 4. World (`world`)
-Limite les actions à certains mondes.
+Limite the actions à certains mondes.
 
 ```yaml
 world:
@@ -142,7 +142,7 @@ world:
     message: "&cVous ne pouvez pas miner ici !"
 ```
 
-**Exemples** :
+**Examples** :
 ```yaml
 # Autoriser seulement le monde normal
 world:
@@ -166,7 +166,7 @@ Conditions basées sur l'heure du jeu.
 ```yaml
 time:
   min: 6000                         # Heure minimale (6h du matin)
-  max: 18000                        # Heure maximale (18h)
+  max: 18000                        # Heure maximum (18h)
   accept:
     message: "&aIl fait jour, bon moment pour miner !"
   deny:
@@ -180,7 +180,7 @@ time:
 - `18000` : 18h (coucher du soleil)
 - `23999` : Fin de la journée
 
-**Exemples avancés** :
+**Examples avancés** :
 ```yaml
 # Seulement la nuit
 time:
@@ -214,7 +214,7 @@ weather:
 - `RAIN` : Pluie
 - `STORM` : Orage
 
-**Exemples** :
+**Examples** :
 ```yaml
 # Farming seulement sous la pluie
 weather:
@@ -268,18 +268,18 @@ region:
 ```
 
 ### 9. Custom (`custom`)
-Conditions personnalisées via l'API.
+Conditions customs via the API.
 
 ```yaml
 custom:
-  type: "mon_plugin_condition"      # Type de condition personnalisée
+  type: "mon_Plugin_condition"      # Type de condition custom
   parameters:                       # Paramètres spécifiques
     min_level: 25
     required_achievement: "master_miner"
   accept:
-    message: "&aCondition personnalisée remplie !"
+    message: "&aCondition custom remplie !"
   deny:
-    message: "&cCondition personnalisée non remplie !"
+    message: "&cCondition custom non remplie !"
 ```
 
 ## 🔗 Logique AND/OR
@@ -287,7 +287,7 @@ custom:
 ### Logique Simple
 ```yaml
 requirements:
-  logic: "AND"                      # Toutes les conditions doivent être vraies
+  logic: "AND"                      # Toutes the conditions doivent être vraies
   permission:
     permission: "vip.mining"
     require: true
@@ -310,7 +310,7 @@ requirements:
 requirements:
   logic: "AND"
   
-  # Condition simple au niveau principal
+  # Condition simple au Level principal
   permission:
     permission: "jobs.mining"
     require: true
@@ -335,7 +335,7 @@ requirements:
         biomes: ["MOUNTAINS", "DESERT"]
 ```
 
-### Exemple Complexe : Mine VIP
+### Example Complexe : Mine VIP
 ```yaml
 requirements:
   logic: "AND"
@@ -362,7 +362,7 @@ requirements:
           operator: "greater_than"
           value: "10000"
       
-      # Méthode 2: Niveau élevé + temps spécial
+      # Méthode 2: Level élevé + temps spécial
       high_level:
         logic: "AND"
         placeholder:
@@ -408,18 +408,18 @@ permission:
     actionbar: "&cUpgrade vers VIP pour plus de bonus !"
 ```
 
-### Commandes Conditionnelles
+### Commands Conditionnelles
 ```yaml
 placeholder:
   placeholder: "%jobsadventure_miner_player_level%"
   operator: "equals"
   value: "100"
   accept:
-    message: "&6🎉 Niveau maximum atteint !"
+    message: "&6🎉 Level maximum atteint !"
     commands:
-      - "broadcast %player% a atteint le niveau max en Mining !"
+      - "broadcast %player% a atteint the max level en Mining !"
       - "give %player% diamond_block 10"
-      - "titles send %player% title:&6MAÎTRE subtitle:&eMining_Niveau_100 fadeIn:20 stay:60 fadeOut:20"
+      - "titles send %player% title:&6MAÎTRE subtitle:&eMining_Level_100 fadeIn:20 stay:60 fadeOut:20"
       - "jobs admin player %player% reset miner"  # Reset pour prestige
 ```
 
@@ -431,7 +431,7 @@ time:
   accept:
     message: "&9Bonus nocturne activé !"
     effects:
-      - "NIGHT_VISION:30:1"      # Effet:durée:niveau
+      - "NIGHT_VISION:30:1"      # Effet:durée:Level
       - "SPEED:30:1"
     particles:
       - "ENCHANTMENT_TABLE:10"   # Type:quantité
@@ -456,7 +456,7 @@ prestige_action:
       material: "NETHER_STAR"
       name: "&6Étoile de Prestige"
     accept:
-      message: "&6⭐ Prestige accompli ! Vous recommencez au niveau 1 avec des bonus !"
+      message: "&6⭐ Prestige accompli ! Vous recommencez au Level 1 avec des bonus !"
       commands:
         - "jobs admin player %player% reset miner"
         - "jobs admin player %player% setlevel miner 1"
@@ -464,9 +464,9 @@ prestige_action:
         - "give %player% diamond_pickaxe{Enchantments:[{id:efficiency,lvl:10},{id:unbreaking,lvl:5}]} 1"
 ```
 
-### Événements Temporaires
+### Events Temporaires
 ```yaml
-# Événement spécial week-end
+# Event spécial week-end
 weekend_bonus:
   target: "*"
   xp: 25.0
@@ -582,7 +582,7 @@ permission:
 
 ## 🔗 Voir Aussi
 
-- [Configuration des Jobs](../jobs-configuration/creating-jobs.md)
+- [Configuration des Jobs](../jobs-Configuration/creating-jobs.md)
 - [Système de Récompenses](../rewards/reward-conditions.md)
 - [Placeholders](../reference/placeholders.md)
 - [Intégrations](../integrations/)
@@ -590,4 +590,4 @@ permission:
 
 ---
 
-Le système de conditions JobsAdventure offre une flexibilité maximale pour créer des mécaniques de jeu complexes et engageantes, adaptées aux besoins spécifiques de votre serveur.
+The system de conditions JobsAdventure offre flexibility maximum to create mécaniques de jeu complexes et engageantes, adaptées aux besoins specific to your Server.

@@ -24,14 +24,7 @@ public class FoliaCompatibilityManager {
         this.plugin = plugin;
         this.foliaLib = new FoliaLib(plugin);
         
-        // Log platform information
-        if (foliaLib.isFolia()) {
-            plugin.getLogger().info("Folia detected - Using regionised scheduler");
-        } else if (foliaLib.isPaper()) {
-            plugin.getLogger().info("Paper detected - Using standard scheduler with Folia compatibility layer");
-        } else {
-            plugin.getLogger().info("Spigot detected - Using standard scheduler with Folia compatibility layer");
-        }
+        // Platform detection complete
     }
     
     /**
