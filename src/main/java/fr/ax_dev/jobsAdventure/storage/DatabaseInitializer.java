@@ -142,7 +142,6 @@ public class DatabaseInitializer {
      * @return Array of SQL statements
      */
     private String[] splitSqlScript(String script) {
-        // Simple split by semicolon for now
         // TODO: Improve to handle stored procedures with DELIMITER
         java.util.List<String> statements = new java.util.ArrayList<>();
         
