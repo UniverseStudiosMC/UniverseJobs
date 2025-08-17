@@ -1,0 +1,204 @@
+# Farmer Job Configuration
+# This job rewards players for farming, breeding, and food-related activities
+
+# Basic job information
+name: "Farmer"
+description: "Grow crops and raise animals"
+enabled: true
+max-level: 75
+permission: "jobsadventure.job.farmer"
+icon: "GOLDEN_HOE"
+
+# XP Curve Configuration (choose one):
+# Option 1: Use a predefined curve file
+xp-curve: "gentle"  # Uses /xp-curves/gentle.yml
+
+# Option 2: Use a mathematical equation
+# xp-equation: "75 * Math.pow(level, 1.5)"  # Custom equation
+
+# Job lore
+lore:
+  - "&7Feed the world with your harvests!"
+  - "&7Level up by farming and breeding"
+  - "&7Bonus XP during rain"
+
+# Job actions
+actions:
+  # Crop harvesting
+  BREAK:
+    # Wheat harvesting
+    wheat:
+      target: "WHEAT"
+      xp: 2.0
+      name: "Wheat Harvesting"
+      description: "Harvesting mature wheat"
+      requirements:
+        logic: "AND"
+        placeholder:
+          placeholder: "%block_data_age%"
+          operator: "equals"
+          value: "7"
+          deny:
+            message: "&cWait for the wheat to fully mature!"
+    
+    # Carrot harvesting with weather bonus
+    carrots:
+      target: "CARROTS"
+      xp: 3.0
+      name: "Carrot Harvesting"
+      description: "Harvesting carrots with weather bonus"
+      requirements:
+        logic: "OR"
+        weather:
+          weather: "RAIN"
+          deny:
+            message: "&7Carrots grow better in the rain for bonus XP!"
+        weather:
+          weather: "CLEAR"
+    
+    # Potato harvesting
+    potatoes:
+      target: "POTATOES"
+      xp: 3.0
+      name: "Potato Harvesting"
+      description: "Harvesting potatoes"
+  
+  # Crop planting
+  PLACE:
+    # Wheat seeds
+    wheat_seeds:
+      target: "WHEAT"
+      xp: 0.5
+      name: "Wheat Planting"
+      description: "Planting wheat seeds"
+      requirements:
+        logic: "AND"
+        item:
+          material: "WHEAT_SEEDS"
+          deny:
+            message: "&cYou need wheat seeds to plant wheat!"
+    
+    # Carrot planting
+    carrot_planting:
+      target: "CARROTS"
+      xp: 0.8
+      name: "Carrot Planting"
+      description: "Planting carrots"
+      requirements:
+        logic: "AND"
+        item:
+          material: "CARROT"
+          deny:
+            message: "&cYou need carrots to plant them!"
+    
+    # Sapling planting
+    oak_sapling:
+      target: "OAK_SAPLING"
+      xp: 1.0
+      name: "Tree Planting"
+      description: "Planting oak saplings"
+
+  # Animal breeding
+  BREED:
+    # Cow breeding
+    cow:
+      target: "COW"
+      xp: 8.0
+      name: "Cow Breeding"
+      description: "Breeding cows for sustainability"
+      requirements:
+        logic: "AND"
+        item:
+          material: "WHEAT"
+          deny:
+            message: "&cYou need wheat to breed cows!"
+    
+    # Pig breeding
+    pig:
+      target: "PIG" 
+      xp: 6.0
+      name: "Pig Breeding"
+      description: "Breeding pigs"
+      requirements:
+        logic: "AND"
+        item:
+          material: "CARROT"
+          deny:
+            message: "&cYou need carrots to breed pigs!"
+    
+    # Chicken breeding with time restriction
+    chicken:
+      target: "CHICKEN"
+      xp: 4.0
+      name: "Chicken Breeding"
+      description: "Breeding chickens during daytime"
+      requirements:
+        logic: "AND"
+        item:
+          material: "WHEAT_SEEDS"
+          deny:
+            message: "&cYou need seeds to breed chickens!"
+        time:
+          min: 0
+          max: 12000
+          deny:
+            message: "&cChickens breed better during the day!"
+
+  # Fishing
+  FISH:
+    # General fishing
+    fish:
+      target: "FISH"
+      xp: 3.0
+      name: "Fishing"
+      description: "Catching fish"
+      requirements:
+        logic: "AND"
+        biome:
+          biomes:
+            - "RIVER"
+            - "OCEAN"
+            - "BEACH"
+          blacklist: false
+          deny:
+            message: "&cFish better near water biomes!"
+
+  # Food consumption
+  EAT:
+    # Eating bread
+    bread:
+      target: "BREAD"
+      xp: 1.0
+      name: "Bread Consumption"
+      description: "Eating homemade bread"
+    
+    # Eating carrots
+    carrot:
+      target: "CARROT"
+      xp: 0.5
+      name: "Carrot Consumption" 
+      description: "Eating fresh carrots"
+
+  # Animal care
+  MILK:
+    # Milking cows
+    cow_milk:
+      target: "COW"
+      xp: 2.0
+      name: "Cow Milking"
+      description: "Milking cows for dairy"
+
+  # Sheep shearing
+  SHEAR:
+    # Shearing sheep
+    sheep:
+      target: "SHEEP"
+      xp: 3.0
+      name: "Sheep Shearing"
+      description: "Shearing sheep for wool"
+      requirements:
+        logic: "AND"
+        item:
+          material: "SHEARS"
+          deny:
+            message: "&cYou need shears to properly shear sheep!"

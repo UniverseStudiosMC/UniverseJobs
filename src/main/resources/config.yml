@@ -1,0 +1,67 @@
+# JobsAdventure Configuration File
+# A flexible and customizable jobs plugin for Minecraft servers
+
+# Messages sent to players
+messages:
+  level-up: "&aCongratulations! You reached level {level} in {job}!"
+  xp-gain: "&e+{xp} XP ({job})"
+  show-xp-gain: true
+  job-joined: "&aYou joined the {job} job!"
+  job-left: "&cYou left the {job} job!"
+  already-have-job: "&cYou already have the {job} job!"
+  dont-have-job: "&cYou don't have the {job} job!"
+  job-not-found: "&cJob '{job}' not found!"
+  no-permission: "&cYou don't have permission to join the {job} job!"
+  max-jobs-reached: "&cYou can only have {max} jobs at once!"
+  invalid-usage: "&cInvalid usage! Use /job help for commands."
+  job-or-player-not-found: "&cJob or player '{target}' not found!"
+  join-failed: "&cFailed to join the {job} job!"
+  leave-failed: "&cFailed to leave the {job} job!"
+
+# Sound effects
+sounds:
+  level-up: "ENTITY_PLAYER_LEVELUP"
+  xp-gain: "ENTITY_EXPERIENCE_ORB_PICKUP"
+
+# General plugin settings
+settings:
+  # How often to auto-save player data (in seconds)
+  save-interval: 300
+  
+  # Maximum number of jobs a player can have at once
+  max-jobs-per-player: 3
+  
+  # Enable debug logging
+  debug: false
+
+# Commands to execute when a player levels up
+# Placeholders: {player}, {job}, {level}
+level-up-commands:
+  - "broadcast {player} reached level {level} in {job}!"
+  - "give {player} diamond 1"
+
+# Block protection settings (anti-exploit)
+block-protection:
+  # Enable block protection to prevent XP farming exploits
+  # Uses NBT tags to mark ALL player-placed blocks
+  # Blocks placed by players will not give XP when mined
+  # Supports both vanilla blocks and Nexo custom blocks
+  # (Nexo compatibility is automatic when Nexo plugin is present)
+  enabled: true
+  
+  # Example: How this protects the Miner job from exploits
+  # 1. Player places a DIAMOND_ORE block
+  # 2. System marks it with NBT tag "player_placed"
+  # 3. When player mines it, no XP is awarded (50.0 XP prevented)
+  # 4. Natural diamond ore still gives full XP
+  # 5. Works with custom Nexo blocks like custom_diamond_ore
+
+# Database configuration (for future use)
+database:
+  enabled: false
+  type: "mysql"
+  host: "localhost"
+  port: 3306
+  database: "jobsadventure"
+  username: "username"
+  password: "password"

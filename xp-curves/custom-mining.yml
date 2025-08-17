@@ -1,0 +1,58 @@
+# Custom Mining XP Curve
+# Each level requires specific XP amounts
+# Level 1 is always 0 XP (starting level)
+
+# Early levels (easy progression)
+1: 0
+2: 100
+3: 250
+4: 450
+5: 700
+
+# Mid levels (moderate progression)
+6: 1000
+7: 1350
+8: 1750
+9: 2200
+10: 2700
+
+# Higher levels (steeper progression)
+11: 3300
+12: 4000
+13: 4800
+14: 5700
+15: 6700
+
+# Late game levels (very steep)
+16: 8000
+17: 9500
+18: 11200
+19: 13100
+20: 15200
+
+# Master levels (exponential growth)
+21: 17600
+22: 20400
+23: 23600
+24: 27200
+25: 31200
+
+# Continue pattern for higher levels...
+26: 35800
+27: 41000
+28: 46800
+29: 53200
+30: 60200
+
+# Expert levels
+35: 95000
+40: 145000
+45: 215000
+50: 310000
+
+# Legendary levels
+60: 650000
+70: 1200000
+80: 2000000
+90: 3200000
+100: 5000000

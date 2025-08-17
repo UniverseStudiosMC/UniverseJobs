@@ -1,0 +1,60 @@
+name: JobsAdventure
+version: '1.0-SNAPSHOT'
+main: fr.ax_dev.jobsAdventure.JobsAdventure
+api-version: '1.21'
+description: A flexible and customizable jobs plugin for Minecraft servers
+author: ax_dev
+website: https://github.com/ax-dev/JobsAdventure
+
+softdepend: [PlaceholderAPI, MythicMobs, MMOItems, CustomCrops, Nexo, ItemsAdder]
+
+commands:
+  jobs:
+    description: Main jobs command with rewards and XP bonus management
+    usage: /jobs <join|leave|info|list|rewards|xpbonus> [args...]
+    aliases: [job]
+    permission: jobsadventure.use
+
+permissions:
+  jobsadventure.*:
+    description: Gives access to all JobsAdventure permissions
+    children:
+      jobsadventure.use: true
+      jobsadventure.admin: true
+      jobsadventure.admin.xpbonus: true
+      jobsadventure.rewards.*: true
+  jobsadventure.use:
+    description: Allows using basic job commands
+    default: true
+  jobsadventure.admin:
+    description: Allows access to admin commands and job management
+    default: op
+  jobsadventure.job.*:
+    description: Allows joining any job
+    children:
+      jobsadventure.job.miner: true
+      jobsadventure.job.farmer: true
+      jobsadventure.job.hunter: true
+  jobsadventure.job.miner:
+    description: Allows joining the miner job
+    default: true
+  jobsadventure.job.farmer:
+    description: Allows joining the farmer job
+    default: true
+  jobsadventure.job.hunter:
+    description: Allows joining the hunter job
+    default: true
+  jobsadventure.admin.xpbonus:
+    description: Allows managing XP bonuses for players
+    default: op
+  jobsadventure.rewards.*:
+    description: Gives access to all reward permissions
+    children:
+      jobsadventure.rewards.use: true
+      jobsadventure.rewards.admin: true
+  jobsadventure.rewards.use:
+    description: Allows using basic reward commands and opening reward GUIs
+    default: true
+  jobsadventure.rewards.admin:
+    description: Allows using admin reward commands (reset, give, etc.)
+    default: op

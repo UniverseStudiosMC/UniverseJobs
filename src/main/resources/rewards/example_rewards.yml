@@ -1,0 +1,74 @@
+# Example Rewards Configuration
+# This file contains 3 simple reward examples with requirements.
+# Copy and modify these examples for your own jobs.
+# To use this file, add to your job configuration:
+# rewards: "example_rewards"
+
+rewards:
+  # EXAMPLE 1: Simple starter reward - No requirements
+  starter_bonus:
+    name: "&aStarter Bonus"
+    description: "&7Your first reward!"
+    required-level: 1
+    repeatable: false
+    items:
+      pickaxe:
+        material: STONE_PICKAXE
+        amount: 1
+        display-name: "&7Starter Pickaxe"
+      food:
+        material: BREAD
+        amount: 10
+    economy-reward: 50.0
+
+  # EXAMPLE 2: Daily reward with time requirement
+  daily_bonus:
+    name: "&6Daily Bonus"
+    description: "&7Come back every day!"
+    required-level: 5
+    repeatable: true
+    cooldown-hours: 24
+    items:
+      gold:
+        material: GOLD_INGOT
+        amount: 5
+    economy-reward: 100.0
+    requirements:
+      logic: "AND"
+      placeholder:
+        placeholder: "%player_online_time%"
+        operator: "greater_than"
+        value: "10"
+        accept:
+          message: "&aDaily bonus claimed! See you tomorrow!"
+          sound: "ENTITY_PLAYER_LEVELUP"
+        deny:
+          message: "&cYou must play at least 10 minutes to claim this!"
+          sound: "ENTITY_VILLAGER_NO"
+
+  # EXAMPLE 3: Tool upgrade with item requirement
+  tool_upgrade:
+    name: "&bTool Upgrade"
+    description: "&7Trade your iron pickaxe for diamond!"
+    required-level: 10
+    repeatable: false
+    items:
+      diamond_pickaxe:
+        material: DIAMOND_PICKAXE
+        amount: 1
+        display-name: "&bUpgraded Pickaxe"
+        enchantments:
+          efficiency: 2
+    economy-reward: 200.0
+    requirements:
+      logic: "AND"
+      item:
+        material: "IRON_PICKAXE"
+        accept:
+          message: "&aPickaxe upgraded successfully!"
+          sound: "BLOCK_ANVIL_USE"
+          commands:
+            - "clear {player} iron_pickaxe 1"
+        deny:
+          message: "&cYou need to hold an iron pickaxe!"
+          sound: "ENTITY_ITEM_BREAK"

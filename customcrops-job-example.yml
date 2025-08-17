@@ -1,0 +1,171 @@
+# Exemple de configuration pour un job Farmer avec support CustomCrops
+# Utilise le format customcrops:crop_id comme Nexo (nexo:block_id) et ItemsAdder (itemsadder:item_id)
+
+farmer:
+  name: "Fermier"
+  description: "Cultivez des crops CustomCrops et gagnez de l'expérience"
+  icon: "DIAMOND_HOE"
+  max_level: 100
+  enabled: true
+  
+  # Configuration XP et niveaux
+  xp_curve:
+    type: "exponential"
+    base: 100
+    multiplier: 1.5
+  
+  # Actions avec support CustomCrops - format customcrops:crop_id
+  actions:
+    # Actions de récolte CustomCrops (HARVEST - via CropInteractEvent)
+    harvest:
+      # Récolte de tomates matures (stage 4)
+      "customcrops:tomato_stage_4":
+        xp: 15
+        money: 2.5
+        conditions:
+          - type: "time"
+            start: 6
+            end: 20  # Bonus de jour
+        
+      # Récolte de maïs mature (stage 4)
+      "customcrops:corn_stage_4":
+        xp: 20
+        money: 3.0
+        
+      # Récolte de riz mature (stage 4)
+      "customcrops:rice_stage_4":
+        xp: 12
+        money: 1.8
+        
+      # Récolte de carottes matures
+      "customcrops:carrot_stage_4":
+        xp: 13
+        money: 2.0
+        
+      # Récolte de pommes de terre matures
+      "customcrops:potato_stage_4":
+        xp: 14
+        money: 2.1
+        
+      # Configuration générale pour tous les autres crops CustomCrops matures
+      # (si le crop n'est pas spécifiquement configuré ci-dessus)
+      "customcrops:*_stage_4":
+        xp: 10
+        money: 1.5
+        
+      # Configuration pour les stages avancés (stage 5+)
+      "customcrops:*_stage_5":
+        xp: 18
+        money: 2.8
+    
+    # Actions de plantation CustomCrops (PLACE)
+    place:
+      # Plantation de tomates
+      "customcrops:tomato":
+        xp: 5
+        money: 0.5
+        
+      # Plantation de maïs
+      "customcrops:corn":
+        xp: 6
+        money: 0.8
+        
+      # Plantation de riz
+      "customcrops:rice":
+        xp: 4
+        money: 0.4
+        
+      # Configuration générale pour toutes les plantations CustomCrops
+      "customcrops:*":
+        xp: 3
+        money: 0.3
+    
+    # Actions de casse CustomCrops (BREAK) - crops cassées avant maturité
+    break:
+      # Casse de tomates non matures
+      "customcrops:tomato_stage_1":
+        xp: 1
+        money: 0.1
+      "customcrops:tomato_stage_2":
+        xp: 1
+        money: 0.1
+      "customcrops:tomato_stage_3":
+        xp: 1
+        money: 0.1
+        
+      # Configuration générale pour tous les crops CustomCrops cassés
+      "customcrops:*_stage_*":
+        xp: 1
+        money: 0.1
+  
+  # Bonus d'outils - fonctionne avec tous les outils vanilla et CustomCrops
+  tool_bonuses:
+    "DIAMOND_HOE":
+      multiplier: 1.2
+    "NETHERITE_HOE":
+      multiplier: 1.5
+    # Les outils CustomCrops peuvent aussi être ajoutés ici s'ils utilisent des NBT ou custom model data
+  
+  # Messages spécifiques
+  messages:
+    level_up: "&a[Farmer] &7Vous êtes maintenant niveau &b{level}&7!"
+    xp_gain: "&7+{xp} XP Farmer &8({action_target})"
+
+# Exemple de job plus spécialisé
+greenhouse_farmer:
+  name: "Fermier de Serre"
+  description: "Spécialisé dans les cultures de serre CustomCrops"
+  icon: "GLASS"
+  max_level: 50
+  enabled: true
+  
+  actions:
+    # Uniquement certains crops spécifiques (via CropInteractEvent)
+    harvest:
+      "customcrops:greenhouse_tomato_stage_4":
+        xp: 25
+        money: 4.0
+        conditions:
+          - type: "biome"
+            biome: "PLAINS"  # Seulement dans les plaines
+            
+      "customcrops:hydroponic_lettuce_stage_3":
+        xp: 18
+        money: 3.2
+        
+    place:
+      "customcrops:greenhouse_tomato":
+        xp: 8
+        money: 1.0
+        conditions:
+          - type: "permission"
+            permission: "jobsadventure.greenhouse"
+
+# Exemple avec conditions avancées
+advanced_farmer:
+  name: "Fermier Avancé"
+  description: "Configuration avancée avec conditions complexes"
+  
+  actions:
+    # Récolte via CropInteractEvent
+    harvest:
+      # Bonus selon l'heure et la météo
+      "customcrops:special_crop_stage_4":
+        xp: 30
+        money: 5.0
+        conditions:
+          - type: "time"
+            start: 12
+            end: 14  # Midi
+          - type: "weather"
+            weather: "CLEAR"  # Temps clair
+          - type: "world"
+            world: "farming_world"
+            
+      # Multiplicateur selon le niveau du joueur
+      "customcrops:expert_crop_stage_4":
+        xp: 20
+        money: 3.0
+        level_multipliers:
+          50: 1.5   # x1.5 au niveau 50+
+          75: 2.0   # x2.0 au niveau 75+

@@ -1,0 +1,208 @@
+# Hunter Job Configuration  
+# This job rewards players for hunting creatures and survival activities
+
+# Basic job information
+name: "Hunter"
+description: "Master of the wild and creature hunting"
+enabled: true
+max-level: 80
+permission: "jobsadventure.job.hunter"
+icon: "BOW"
+
+
+# Job lore
+lore:
+  - "&7Track and hunt creatures across the land!"
+  - "&7Bonus XP for rare creature kills"
+  - "&7Master of archery and survival"
+
+# Job actions
+actions:
+  # Creature hunting
+  KILL:
+    # Basic hostile mobs
+    zombie:
+      target: "ZOMBIE"
+      xp: 3.0
+      name: "Zombie Hunting"
+      description: "Eliminating zombies"
+    
+    skeleton:
+      target: "SKELETON"
+      xp: 4.0
+      name: "Skeleton Hunting"
+      description: "Taking down skeletons"
+    
+    spider:
+      target: "SPIDER"
+      xp: 2.5
+      name: "Spider Hunting"
+      description: "Clearing spider threats"
+    
+    # Creeper with special requirements
+    creeper:
+      target: "CREEPER"
+      xp: 8.0
+      name: "Creeper Elimination"
+      description: "Safely eliminating creepers"
+      requirements:
+        logic: "AND"
+        item:
+          material: "BOW"
+          deny:
+            message: "&cUse a bow for safe creeper elimination!"
+            sound: "ENTITY_CREEPER_PRIMED"
+    
+    # Enderman with advanced requirements
+    enderman:
+      target: "ENDERMAN"
+      xp: 15.0
+      name: "Enderman Hunting"
+      description: "Advanced enderman hunting"
+      requirements:
+        logic: "AND"
+        placeholder:
+          placeholder: "%player_level%"
+          operator: "greater_equal"
+          value: "25"
+          deny:
+            message: "&cYou need to be level 25+ to hunt endermen effectively!"
+        item:
+          custom-model-data: 1001
+          deny:
+            message: "&cYou need a special weapon to hunt endermen!"
+    
+    # Animals for food
+    cow:
+      target: "COW"
+      xp: 2.0
+      name: "Cattle Hunting"
+      description: "Hunting cattle for food"
+      requirements:
+        logic: "AND"
+        biome:
+          biomes:
+            - "PLAINS"
+            - "SAVANNA"
+          blacklist: false
+          deny:
+            message: "&cHunt cattle in their natural habitat!"
+    
+    pig:
+      target: "PIG"
+      xp: 1.5
+      name: "Pig Hunting"
+      description: "Hunting pigs"
+    
+    chicken:
+      target: "CHICKEN"
+      xp: 1.0
+      name: "Poultry Hunting"
+      description: "Hunting chickens"
+    
+    # Rare creatures with MythicMobs
+    forest_spirit:
+      target: "MYTHICMOB:ForestSpirit"
+      xp: 50.0
+      name: "Forest Spirit Hunting"
+      description: "Hunting legendary forest spirits"
+      requirements:
+        logic: "AND"
+        permission:
+          permission: "jobsadventure.hunt.legendary"
+          require: true
+          deny:
+            message: "&cYou're not experienced enough to hunt legendary creatures!"
+            commands:
+              - "give {player} golden_apple 1"
+        world:
+          worlds:
+            - "world"
+          blacklist: false
+          deny:
+            message: "&cLegendary creatures only exist in the main world!"
+    
+    # Boss hunting
+    wither:
+      target: "WITHER"
+      xp: 200.0
+      name: "Wither Slaying"
+      description: "Defeating the mighty wither"
+      requirements:
+        logic: "AND"
+        placeholder:
+          placeholder: "%jobsadventure_hunter_level%"
+          operator: "greater_equal"
+          value: "50"
+          deny:
+            message: "&cYou need hunter level 50+ to face the wither!"
+            sound: "ENTITY_WITHER_SPAWN"
+            commands:
+              - "title {player} title &cNot Ready!"
+              - "title {player} subtitle &7Train more before facing bosses"
+
+  # Taming wild animals
+  TAME:
+    wolf:
+      target: "WOLF"
+      xp: 10.0
+      name: "Wolf Taming"
+      description: "Taming wolves as companions"
+      requirements:
+        logic: "AND"
+        item:
+          material: "BONE"
+          deny:
+            message: "&cYou need bones to tame wolves!"
+    
+    cat:
+      target: "CAT"
+      xp: 8.0
+      name: "Cat Taming"
+      description: "Taming cats"
+      requirements:
+        logic: "AND"
+        item:
+          material: "COD"
+          deny:
+            message: "&cYou need fish to tame cats!"
+    
+    horse:
+      target: "HORSE"
+      xp: 15.0
+      name: "Horse Taming"
+      description: "Taming horses for riding"
+
+  # Fishing in dangerous waters
+  FISH:
+    dangerous_fishing:
+      target: "FISH"
+      xp: 5.0
+      name: "Dangerous Fishing"
+      description: "Fishing in dangerous waters at night"
+      requirements:
+        logic: "AND"
+        time:
+          min: 13000
+          max: 23000
+          deny:
+            message: "&cDangerous fishing is only available at night!"
+        weather:
+          weather: "THUNDER"
+          deny:
+            message: "&cFish during thunderstorms for the ultimate challenge!"
+
+  # Archery practice
+  CUSTOM:
+    # This would be handled by a custom event
+    archery_practice:
+      target: "TARGET_HIT"
+      xp: 1.0
+      name: "Archery Practice"
+      description: "Practicing archery skills"
+      requirements:
+        logic: "AND"
+        item:
+          material: "BOW"
+          deny:
+            message: "&cYou need a bow for archery practice!"
