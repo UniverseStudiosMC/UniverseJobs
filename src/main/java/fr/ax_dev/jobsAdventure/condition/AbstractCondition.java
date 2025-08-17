@@ -8,7 +8,6 @@ import org.bukkit.Sound;
 import org.bukkit.boss.BossBar;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import fr.ax_dev.jobsAdventure.JobsAdventure;
 
 import java.util.List;
@@ -160,12 +159,11 @@ public abstract class AbstractCondition implements Condition {
                         MessageUtils.sendActionBar(player, text);
                         // Schedule clear after duration
                         if (messageConfig.getDuration() > 0) {
-                            new BukkitRunnable() {
-                                @Override
-                                public void run() {
+                            JobsAdventure.getInstance().getFoliaManager().runLater(() -> {
+                                if (player.isOnline()) {
                                     MessageUtils.sendActionBar(player, "");
                                 }
-                            }.runTaskLater(JobsAdventure.getInstance(), messageConfig.getDuration());
+                            }, messageConfig.getDuration());
                         }
                         break;
                         
@@ -180,12 +178,11 @@ public abstract class AbstractCondition implements Condition {
                         
                         // Remove after duration
                         if (messageConfig.getDuration() > 0) {
-                            new BukkitRunnable() {
-                                @Override
-                                public void run() {
+                            JobsAdventure.getInstance().getFoliaManager().runLater(() -> {
+                                if (player.isOnline()) {
                                     bossBar.removePlayer(player);
                                 }
-                            }.runTaskLater(JobsAdventure.getInstance(), messageConfig.getDuration());
+                            }, messageConfig.getDuration());
                         }
                         break;
                 }

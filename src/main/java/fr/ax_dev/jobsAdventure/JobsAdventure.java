@@ -3,6 +3,7 @@ package fr.ax_dev.jobsAdventure;
 import fr.ax_dev.jobsAdventure.action.ActionProcessor;
 import fr.ax_dev.jobsAdventure.bonus.XpBonusManager;
 import fr.ax_dev.jobsAdventure.command.JobCommand;
+import fr.ax_dev.jobsAdventure.compatibility.FoliaCompatibilityManager;
 import fr.ax_dev.jobsAdventure.config.ConfigManager;
 import fr.ax_dev.jobsAdventure.config.LanguageManager;
 import fr.ax_dev.jobsAdventure.job.JobManager;
@@ -31,6 +32,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
     private static JobsAdventure instance;
     private ConfigManager configManager;
     private LanguageManager languageManager;
+    private FoliaCompatibilityManager foliaManager;
     private JobManager jobManager;
     private ActionProcessor actionProcessor;
     private XpBonusManager bonusManager;
@@ -47,6 +49,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
         // Initialize managers
         this.configManager = new ConfigManager(this);
         this.languageManager = new LanguageManager(this);
+        this.foliaManager = new FoliaCompatibilityManager(this);
         this.jobManager = new JobManager(this);
         this.bonusManager = new XpBonusManager(this);
         this.messageSender = new XpMessageSender(this);
@@ -133,8 +136,10 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
         
         // Load player data for online players
         for (org.bukkit.entity.Player player : getServer().getOnlinePlayers()) {
-            jobManager.loadPlayerData(player);
-            rewardManager.loadPlayerData(player);
+            foliaManager.runAsync(() -> {
+                jobManager.loadPlayerData(player);
+                rewardManager.loadPlayerData(player);
+            });
         }
         
         // Initialize PlaceholderAPI integration
@@ -160,6 +165,11 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
         // Cancel save task
         if (saveTask != null) {
             saveTask.cancel();
+        }
+        
+        // Cancel all Folia tasks
+        if (foliaManager != null) {
+            foliaManager.cancelAllTasks();
         }
         
         // Shutdown managers
@@ -196,7 +206,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
     private void startSaveTask() {
         int saveInterval = configManager.getSaveInterval();
         if (saveInterval > 0) {
-            saveTask = getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
+            foliaManager.runTimerAsync(() -> {
                 if (configManager.isDebugEnabled()) {
                     getLogger().info("Auto-saving player data...");
                 }
@@ -264,7 +274,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         // Load player data asynchronously
-        getServer().getScheduler().runTaskAsynchronously(this, () -> {
+        foliaManager.runAsync(() -> {
             jobManager.loadPlayerData(event.getPlayer());
             rewardManager.loadPlayerData(event.getPlayer());
             if (configManager.isDebugEnabled()) {
@@ -284,7 +294,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
         }
         
         // Save player data asynchronously
-        getServer().getScheduler().runTaskAsynchronously(this, () -> {
+        foliaManager.runAsync(() -> {
             jobManager.savePlayerData(event.getPlayer());
             rewardManager.unloadPlayerData(event.getPlayer());
             if (configManager.isDebugEnabled()) {
@@ -309,6 +319,15 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
      */
     public LanguageManager getLanguageManager() {
         return languageManager;
+    }
+    
+    /**
+     * Get the Folia compatibility manager.
+     * 
+     * @return The Folia compatibility manager
+     */
+    public FoliaCompatibilityManager getFoliaManager() {
+        return foliaManager;
     }
     
     /**

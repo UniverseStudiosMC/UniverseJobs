@@ -2,7 +2,8 @@ name: JobsAdventure
 version: '1.0-SNAPSHOT'
 main: fr.ax_dev.jobsAdventure.JobsAdventure
 api-version: '1.21'
-description: A flexible and customizable jobs plugin for Minecraft servers
+folia-supported: true
+description: A flexible and customizable jobs plugin for Minecraft servers with Folia support
 author: ax_dev
 website: https://github.com/ax-dev/JobsAdventure
 

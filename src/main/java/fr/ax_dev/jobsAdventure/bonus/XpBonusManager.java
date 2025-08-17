@@ -1,6 +1,7 @@
 package fr.ax_dev.jobsAdventure.bonus;
 
 import fr.ax_dev.jobsAdventure.JobsAdventure;
+import fr.ax_dev.jobsAdventure.compatibility.FoliaCompatibilityManager;
 import fr.ax_dev.jobsAdventure.utils.MessageUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -16,8 +17,9 @@ import java.util.stream.Collectors;
 public class XpBonusManager {
     
     private final JobsAdventure plugin;
+    private final FoliaCompatibilityManager foliaManager;
     private final Map<UUID, List<XpBonus>> playerBonuses = new ConcurrentHashMap<>();
-    private BukkitRunnable cleanupTask;
+    private boolean cleanupRunning = false;
     
     /**
      * Create a new XP bonus manager.
@@ -26,6 +28,7 @@ public class XpBonusManager {
      */
     public XpBonusManager(JobsAdventure plugin) {
         this.plugin = plugin;
+        this.foliaManager = plugin.getFoliaManager();
         startCleanupTask();
     }
     
@@ -231,24 +234,21 @@ public class XpBonusManager {
      * Start the cleanup task.
      */
     private void startCleanupTask() {
-        cleanupTask = new BukkitRunnable() {
-            @Override
-            public void run() {
+        cleanupRunning = true;
+        
+        // Run every 30 seconds asynchronously
+        foliaManager.runTimerAsync(() -> {
+            if (cleanupRunning) {
                 cleanupExpiredBonuses();
             }
-        };
-        
-        // Run every 30 seconds
-        cleanupTask.runTaskTimerAsynchronously(plugin, 600L, 600L);
+        }, 600L, 600L);
     }
     
     /**
      * Stop the cleanup task.
      */
     public void shutdown() {
-        if (cleanupTask != null) {
-            cleanupTask.cancel();
-        }
+        cleanupRunning = false;
     }
     
     /**

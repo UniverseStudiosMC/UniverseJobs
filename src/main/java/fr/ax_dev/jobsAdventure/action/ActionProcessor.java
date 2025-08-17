@@ -14,7 +14,6 @@ import org.bukkit.Registry;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.List;
 
@@ -287,12 +286,11 @@ public class ActionProcessor {
                     MessageUtils.sendActionBar(player, text);
                     // Schedule clear after duration
                     if (messageConfig.getDuration() > 0) {
-                        new BukkitRunnable() {
-                            @Override
-                            public void run() {
+                        plugin.getFoliaManager().runLater(() -> {
+                            if (player.isOnline()) {
                                 MessageUtils.sendActionBar(player, "");
                             }
-                        }.runTaskLater(plugin, messageConfig.getDuration());
+                        }, messageConfig.getDuration());
                     }
                     break;
                     

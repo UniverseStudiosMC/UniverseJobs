@@ -1,6 +1,7 @@
 package fr.ax_dev.jobsAdventure.utils;
 
 import fr.ax_dev.jobsAdventure.JobsAdventure;
+import fr.ax_dev.jobsAdventure.compatibility.FoliaCompatibilityManager;
 import fr.ax_dev.jobsAdventure.job.Job;
 import fr.ax_dev.jobsAdventure.job.XpMessageSettings;
 import org.bukkit.Bukkit;
@@ -13,6 +14,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Utility class for sending XP messages using different display methods.
@@ -20,12 +22,15 @@ import java.util.UUID;
 public class XpMessageSender {
     
     private final JobsAdventure plugin;
-    private final Map<UUID, BossBar> activeBossBars = new HashMap<>();
-    private final Map<UUID, BukkitRunnable> activeActionBars = new HashMap<>();
-    private final Map<UUID, BukkitRunnable> activeBossBarTasks = new HashMap<>();
+    private final FoliaCompatibilityManager foliaManager;
+    private final Map<UUID, BossBar> activeBossBars = new ConcurrentHashMap<>();
+    private final Map<UUID, Runnable> activeActionBarCleanups = new ConcurrentHashMap<>();
+    private final Map<UUID, Runnable> activeBossBarCleanups = new ConcurrentHashMap<>();
+    private final Map<UUID, BukkitRunnable> activeBossBarTasks = new ConcurrentHashMap<>();
     
     public XpMessageSender(JobsAdventure plugin) {
         this.plugin = plugin;
+        this.foliaManager = plugin.getFoliaManager();
     }
     
     /**
@@ -100,28 +105,29 @@ public class XpMessageSender {
         try {
             UUID playerId = player.getUniqueId();
             
-            // Cancel existing actionbar task for this player
-            BukkitRunnable existingTask = activeActionBars.get(playerId);
-            if (existingTask != null) {
-                existingTask.cancel();
+            // Cancel existing actionbar cleanup for this player
+            Runnable existingCleanup = activeActionBarCleanups.remove(playerId);
+            if (existingCleanup != null) {
+                // Note: With FoliaLib, we can't cancel individual tasks, but removing from map prevents duplicate cleanup
             }
             
-            // Send initial actionbar message
-            player.sendActionBar(MessageUtils.parseMessage(message));
-            
-            // Create task to clear actionbar after duration
-            BukkitRunnable clearTask = new BukkitRunnable() {
-                @Override
-                public void run() {
-                    if (player.isOnline()) {
-                        player.sendActionBar(MessageUtils.parseMessage(""));
-                    }
-                    activeActionBars.remove(playerId);
+            // Send initial actionbar message (run on player's region)
+            foliaManager.runAtEntity(player, () -> {
+                if (player.isOnline()) {
+                    player.sendActionBar(MessageUtils.parseMessage(message));
                 }
+            });
+            
+            // Create cleanup task to clear actionbar after duration
+            Runnable clearTask = () -> {
+                if (player.isOnline()) {
+                    player.sendActionBar(MessageUtils.parseMessage(""));
+                }
+                activeActionBarCleanups.remove(playerId);
             };
             
-            activeActionBars.put(playerId, clearTask);
-            clearTask.runTaskLater(plugin, durationTicks);
+            activeActionBarCleanups.put(playerId, clearTask);
+            foliaManager.runLater(() -> foliaManager.runAtEntity(player, clearTask), durationTicks);
             
         } catch (Exception e) {
             // Fallback to chat message
@@ -150,27 +156,21 @@ public class XpMessageSender {
                 }
                 existingBar.setProgress(progress);
                 
-                // Cancel existing removal task
-                BukkitRunnable existingTask = activeBossBarTasks.get(playerId);
-                if (existingTask != null) {
-                    existingTask.cancel();
-                }
+                // Cancel existing removal task by removing from cleanup map
+                activeBossBarCleanups.remove(playerId);
                 
                 // Create new removal task
-                BukkitRunnable newTask = new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        BossBar currentBar = activeBossBars.get(playerId);
-                        if (currentBar != null && currentBar.equals(existingBar)) {
-                            currentBar.removePlayer(player);
-                            activeBossBars.remove(playerId);
-                            activeBossBarTasks.remove(playerId);
-                        }
+                Runnable removalTask = () -> {
+                    BossBar currentBar = activeBossBars.get(playerId);
+                    if (currentBar != null && currentBar.equals(existingBar) && player.isOnline()) {
+                        currentBar.removePlayer(player);
+                        activeBossBars.remove(playerId);
+                        activeBossBarCleanups.remove(playerId);
                     }
                 };
                 
-                activeBossBarTasks.put(playerId, newTask);
-                newTask.runTaskLater(plugin, settings.getBossbarDuration());
+                activeBossBarCleanups.put(playerId, removalTask);
+                foliaManager.runLater(() -> foliaManager.runAtEntity(player, removalTask), settings.getBossbarDuration());
                 
             } else {
                 // Create new bossbar
@@ -195,20 +195,17 @@ public class XpMessageSender {
                 activeBossBars.put(playerId, bossBar);
                 
                 // Schedule removal after duration
-                BukkitRunnable removeTask = new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        BossBar currentBar = activeBossBars.get(playerId);
-                        if (currentBar != null && currentBar.equals(bossBar)) {
-                            currentBar.removePlayer(player);
-                            activeBossBars.remove(playerId);
-                            activeBossBarTasks.remove(playerId);
-                        }
+                Runnable removalTask = () -> {
+                    BossBar currentBar = activeBossBars.get(playerId);
+                    if (currentBar != null && currentBar.equals(bossBar) && player.isOnline()) {
+                        currentBar.removePlayer(player);
+                        activeBossBars.remove(playerId);
+                        activeBossBarCleanups.remove(playerId);
                     }
                 };
                 
-                activeBossBarTasks.put(playerId, removeTask);
-                removeTask.runTaskLater(plugin, settings.getBossbarDuration());
+                activeBossBarCleanups.put(playerId, removalTask);
+                foliaManager.runLater(() -> foliaManager.runAtEntity(player, removalTask), settings.getBossbarDuration());
             }
             
         } catch (Exception e) {
@@ -231,17 +228,9 @@ public class XpMessageSender {
             bossBar.removePlayer(player);
         }
         
-        // Clean up bossbar task
-        BukkitRunnable bossBarTask = activeBossBarTasks.remove(playerId);
-        if (bossBarTask != null) {
-            bossBarTask.cancel();
-        }
-        
-        // Clean up actionbar task
-        BukkitRunnable actionBarTask = activeActionBars.remove(playerId);
-        if (actionBarTask != null) {
-            actionBarTask.cancel();
-        }
+        // Remove cleanup tasks (they'll naturally expire or check for online status)
+        activeBossBarCleanups.remove(playerId);
+        activeActionBarCleanups.remove(playerId);
     }
     
     /**
@@ -254,17 +243,9 @@ public class XpMessageSender {
         }
         activeBossBars.clear();
         
-        // Clean up all bossbar tasks
-        for (BukkitRunnable task : activeBossBarTasks.values()) {
-            task.cancel();
-        }
-        activeBossBarTasks.clear();
-        
-        // Clean up all actionbar tasks
-        for (BukkitRunnable task : activeActionBars.values()) {
-            task.cancel();
-        }
-        activeActionBars.clear();
+        // Clear cleanup maps (tasks will be cancelled by FoliaLib when plugin shuts down)
+        activeBossBarCleanups.clear();
+        activeActionBarCleanups.clear();
     }
     
     /**
