@@ -313,4 +313,13 @@ public class ActionProcessor {
         }
     }
     
+    /**
+     * Get the listener instance. Placeholder implementation.
+     * 
+     * @return null for now (not implemented yet)
+     */
+    public Object getListener() {
+        return null; // TODO: Implement performance listener
+    }
+    
 }

@@ -20,6 +20,12 @@ import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
 
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * Listens for job-related actions and processes them.
  */
@@ -28,6 +34,26 @@ public class JobActionListener implements Listener {
     private final JobsAdventure plugin;
     private final ActionProcessor actionProcessor;
     private final BlockProtectionManager protectionManager;
+    
+    // Performance optimization
+    private final Map<UUID, Long> lastActionTime = new ConcurrentHashMap<>();
+    private final AtomicLong totalEvents = new AtomicLong(0);
+    private final AtomicLong processedEvents = new AtomicLong(0);
+    private final AtomicLong rateLimitedEvents = new AtomicLong(0);
+    
+    // Reflection cache for MythicMobs
+    private Method mythicMobsInstMethod;
+    private Method getMobManagerMethod;
+    private Method getActiveMobMethod;
+    private Method getTypeMethod;
+    private Method getInternalNameMethod;
+    private boolean mythicMobsAvailable = false;
+    private boolean mythicMobsChecked = false;
+    
+    // Rate limiting (per player)
+    private static final long ACTION_COOLDOWN_MS = 50; // 50ms between actions
+    private static final long CLEANUP_INTERVAL = 300000L; // 5 minutes
+    private volatile long lastCleanup = System.currentTimeMillis();
     
     /**
      * Create a new JobActionListener.
@@ -40,6 +66,102 @@ public class JobActionListener implements Listener {
         this.plugin = plugin;
         this.actionProcessor = actionProcessor;
         this.protectionManager = protectionManager;
+        
+        // Initialize MythicMobs reflection cache
+        initializeMythicMobsReflection();
+    }
+    
+    /**
+     * Check if action should be rate limited.
+     * 
+     * @param player The player performing the action
+     * @return true if action should be processed, false if rate limited
+     */
+    private boolean checkRateLimit(Player player) {
+        totalEvents.incrementAndGet();
+        
+        long currentTime = System.currentTimeMillis();
+        UUID playerId = player.getUniqueId();
+        
+        Long lastTime = lastActionTime.get(playerId);
+        if (lastTime != null && (currentTime - lastTime) < ACTION_COOLDOWN_MS) {
+            rateLimitedEvents.incrementAndGet();
+            return false;
+        }
+        
+        lastActionTime.put(playerId, currentTime);
+        
+        // Periodic cleanup
+        if (currentTime - lastCleanup > CLEANUP_INTERVAL) {
+            cleanupOldEntries();
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Clean up old entries from the rate limiting map.
+     */
+    private void cleanupOldEntries() {
+        long cutoffTime = System.currentTimeMillis() - (ACTION_COOLDOWN_MS * 10);
+        lastActionTime.entrySet().removeIf(entry -> entry.getValue() < cutoffTime);
+        lastCleanup = System.currentTimeMillis();
+        
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("JobActionListener cleanup completed. Active entries: " + lastActionTime.size());
+        }
+    }
+    
+    /**
+     * Initialize MythicMobs reflection methods for better performance.
+     */
+    private void initializeMythicMobsReflection() {
+        try {
+            if (plugin.getServer().getPluginManager().isPluginEnabled("MythicMobs")) {
+                Class<?> mythicMobsAPI = Class.forName("io.lumine.mythic.bukkit.MythicBukkit");
+                mythicMobsInstMethod = mythicMobsAPI.getMethod("inst");
+                
+                Object apiInstance = mythicMobsInstMethod.invoke(null);
+                getMobManagerMethod = apiInstance.getClass().getMethod("getMobManager");
+                
+                Object mobManager = getMobManagerMethod.invoke(apiInstance);
+                getActiveMobMethod = mobManager.getClass().getMethod("getActiveMob", org.bukkit.entity.Entity.class);
+                
+                // Cache methods for mob type retrieval
+                getTypeMethod = Class.forName("io.lumine.mythic.core.mobs.ActiveMob").getMethod("getType");
+                getInternalNameMethod = Class.forName("io.lumine.mythic.core.mobs.MobType").getMethod("getInternalName");
+                
+                mythicMobsAvailable = true;
+                plugin.getLogger().info("MythicMobs integration initialized with reflection cache");
+            }
+        } catch (Exception e) {
+            mythicMobsAvailable = false;
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("MythicMobs not available or failed to initialize: " + e.getMessage());
+            }
+        }
+        mythicMobsChecked = true;
+    }
+    
+    /**
+     * Get performance statistics.
+     * 
+     * @return Map containing performance data
+     */
+    public Map<String, Object> getPerformanceStats() {
+        Map<String, Object> stats = new ConcurrentHashMap<>();
+        stats.put("total_events", totalEvents.get());
+        stats.put("processed_events", processedEvents.get());
+        stats.put("rate_limited_events", rateLimitedEvents.get());
+        stats.put("active_players", lastActionTime.size());
+        stats.put("mythicmobs_available", mythicMobsAvailable);
+        
+        long processed = processedEvents.get();
+        long total = totalEvents.get();
+        double processingRate = total > 0 ? (double) processed / total * 100 : 0;
+        stats.put("processing_rate_percent", processingRate);
+        
+        return stats;
     }
     
     /**
@@ -57,37 +179,54 @@ public class JobActionListener implements Listener {
         
         if (killer == null) return;
         
-        // Create context
-        ConditionContext context = new ConditionContext()
-                .setEntity(killed)
-                .set("target", killed.getType().name());
-        
-        // Check for MythicMobs
-        if (plugin.getServer().getPluginManager().isPluginEnabled("MythicMobs")) {
-            handleMythicMobKill(killer, killed, context);
+        // Rate limiting check
+        if (!checkRateLimit(killer)) {
+            return;
         }
         
-        // Process the action
-        actionProcessor.processAction(killer, ActionType.KILL, event, context);
+        try {
+            // Create context
+            ConditionContext context = new ConditionContext()
+                    .setEntity(killed)
+                    .set("target", killed.getType().name());
+            
+            // Check for MythicMobs using cached reflection
+            if (mythicMobsAvailable) {
+                handleMythicMobKillOptimized(killer, killed, context);
+            }
+            
+            // Process the action
+            actionProcessor.processAction(killer, ActionType.KILL, event, context);
+            processedEvents.incrementAndGet();
+            
+        } catch (Exception e) {
+            plugin.getLogger().warning("Error processing KILL action for player " + killer.getName() + ": " + e.getMessage());
+        }
     }
     
     /**
-     * Handle MythicMobs entity kills.
+     * Handle MythicMobs entity kills (legacy method - kept for compatibility).
      */
     private void handleMythicMobKill(Player killer, Entity killed, ConditionContext context) {
+        if (mythicMobsAvailable) {
+            handleMythicMobKillOptimized(killer, killed, context);
+        }
+    }
+    
+    /**
+     * Handle MythicMobs entity kills using cached reflection methods.
+     */
+    private void handleMythicMobKillOptimized(Player killer, Entity killed, ConditionContext context) {
         try {
-            // Use reflection to check if entity is a MythicMob
-            Class<?> mythicMobsAPI = Class.forName("io.lumine.mythic.bukkit.MythicBukkit");
-            Object apiInstance = mythicMobsAPI.getMethod("inst").invoke(null);
-            Object mobManager = apiInstance.getClass().getMethod("getMobManager").invoke(apiInstance);
-            Object activeMob = mobManager.getClass()
-                    .getMethod("getActiveMob", org.bukkit.entity.Entity.class)
-                    .invoke(mobManager, killed);
+            // Use cached reflection methods for better performance
+            Object apiInstance = mythicMobsInstMethod.invoke(null);
+            Object mobManager = getMobManagerMethod.invoke(apiInstance);
+            Object activeMob = getActiveMobMethod.invoke(mobManager, killed);
             
             if (activeMob != null) {
-                // Get MythicMob internal name
-                Object mobType = activeMob.getClass().getMethod("getType").invoke(activeMob);
-                String internalName = (String) mobType.getClass().getMethod("getInternalName").invoke(mobType);
+                // Get MythicMob internal name using cached methods
+                Object mobType = getTypeMethod.invoke(activeMob);
+                String internalName = (String) getInternalNameMethod.invoke(mobType);
                 
                 // Set MythicMob target
                 context.set("target", "MYTHICMOB:" + internalName);
@@ -95,10 +234,13 @@ public class JobActionListener implements Listener {
                 context.set("mythicmob_type", internalName);
             }
         } catch (Exception e) {
-            // MythicMobs not available or error occurred
+            // Error occurred - log and fall back
             if (plugin.getConfigManager().isDebugEnabled()) {
-                plugin.getLogger().warning("Failed to check MythicMobs data: " + e.getMessage());
+                plugin.getLogger().warning("Failed to check MythicMobs data with cached reflection: " + e.getMessage());
             }
+            
+            // Disable MythicMobs integration if there are persistent errors
+            mythicMobsAvailable = false;
         }
     }
     
@@ -110,26 +252,38 @@ public class JobActionListener implements Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         
-        // Check if this block was placed by a player (anti-exploit for both vanilla and Nexo blocks)
-        if (protectionManager.isPlayerPlacedBlock(event.getBlock())) {
-            // Remove from tracking but don't give XP
-            protectionManager.removeTrackedBlock(event.getBlock());
-            
-            if (plugin.getConfigManager().isDebugEnabled()) {
-                plugin.getLogger().info("Player " + player.getName() + " mined a player-placed block - no XP awarded");
-            }
+        // Rate limiting check
+        if (!checkRateLimit(player)) {
             return;
         }
         
-        // Create context
-        ConditionContext context = new ConditionContext()
-                .setBlock(event.getBlock())
-                .set("target", event.getBlock().getType().name());
-        
-        // Process the action and check if we should cancel
-        boolean shouldCancel = actionProcessor.processAction(player, ActionType.BREAK, event, context);
-        if (shouldCancel) {
-            event.setCancelled(true);
+        try {
+            // Check if this block was placed by a player (anti-exploit for both vanilla and Nexo blocks)
+            if (protectionManager.isPlayerPlacedBlock(event.getBlock())) {
+                // Remove from tracking but don't give XP
+                protectionManager.removeTrackedBlock(event.getBlock());
+                
+                if (plugin.getConfigManager().isDebugEnabled()) {
+                    plugin.getLogger().info("Player " + player.getName() + " mined a player-placed block - no XP awarded");
+                }
+                return;
+            }
+            
+            // Create context
+            ConditionContext context = new ConditionContext()
+                    .setBlock(event.getBlock())
+                    .set("target", event.getBlock().getType().name());
+            
+            // Process the action and check if we should cancel
+            boolean shouldCancel = actionProcessor.processAction(player, ActionType.BREAK, event, context);
+            if (shouldCancel) {
+                event.setCancelled(true);
+            }
+            
+            processedEvents.incrementAndGet();
+            
+        } catch (Exception e) {
+            plugin.getLogger().warning("Error processing BREAK action for player " + player.getName() + ": " + e.getMessage());
         }
     }
     

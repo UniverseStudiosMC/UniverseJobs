@@ -18,6 +18,7 @@ import fr.ax_dev.jobsAdventure.reward.gui.RewardGuiManager;
 import fr.ax_dev.jobsAdventure.utils.XpMessageSender;
 import fr.ax_dev.jobsAdventure.placeholder.PlaceholderManager;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -42,10 +43,12 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
     private RewardGuiManager rewardGuiManager;
     private PlaceholderManager placeholderManager;
     private BukkitTask saveTask;
+    private long startTime;
 
     @Override
     public void onEnable() {
         instance = this;
+        startTime = System.currentTimeMillis();
         // Initialize managers
         this.configManager = new ConfigManager(this);
         this.languageManager = new LanguageManager(this);
@@ -161,41 +164,146 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
-        instance = null;
-        // Cancel save task
-        if (saveTask != null) {
-            saveTask.cancel();
+        getLogger().info("Shutting down JobsAdventure plugin...");
+        
+        try {
+            // Cancel save task first to prevent conflicts
+            if (saveTask != null && !saveTask.isCancelled()) {
+                saveTask.cancel();
+                saveTask = null;
+            }
+            
+            // Save all player data before shutting down managers
+            if (jobManager != null) {
+                getLogger().info("Saving all player data...");
+                jobManager.saveAllPlayerData();
+            }
+            
+            // Shutdown managers in proper order
+            getLogger().info("Shutting down managers...");
+            
+            // Shutdown reward GUI manager first to close any open GUIs
+            if (rewardGuiManager != null) {
+                try {
+                    // Close all open GUIs
+                    for (Player player : getServer().getOnlinePlayers()) {
+                        if (player.getOpenInventory() != null) {
+                            player.closeInventory();
+                        }
+                    }
+                    rewardGuiManager = null;
+                } catch (Exception e) {
+                    getLogger().log(Level.WARNING, "Error shutting down reward GUI manager", e);
+                }
+            }
+            
+            // Shutdown reward manager
+            if (rewardManager != null) {
+                try {
+                    rewardManager.shutdown();
+                    rewardManager = null;
+                } catch (Exception e) {
+                    getLogger().log(Level.WARNING, "Error shutting down reward manager", e);
+                }
+            }
+            
+            // Shutdown XP message sender
+            if (messageSender != null) {
+                try {
+                    messageSender.cleanup();
+                    messageSender = null;
+                } catch (Exception e) {
+                    getLogger().log(Level.WARNING, "Error shutting down message sender", e);
+                }
+            }
+            
+            // Shutdown bonus manager
+            if (bonusManager != null) {
+                try {
+                    bonusManager.shutdown();
+                    bonusManager = null;
+                } catch (Exception e) {
+                    getLogger().log(Level.WARNING, "Error shutting down bonus manager", e);
+                }
+            }
+            
+            // Shutdown placeholder manager
+            if (placeholderManager != null) {
+                try {
+                    placeholderManager.shutdown();
+                    placeholderManager = null;
+                } catch (Exception e) {
+                    getLogger().log(Level.WARNING, "Error shutting down placeholder manager", e);
+                }
+            }
+            
+            // Shutdown protection manager
+            if (protectionManager != null) {
+                try {
+                    // Protection manager doesn't have explicit shutdown, just clear reference
+                    protectionManager = null;
+                } catch (Exception e) {
+                    getLogger().log(Level.WARNING, "Error cleaning up protection manager", e);
+                }
+            }
+            
+            // Shutdown job manager (this should be done after other managers)
+            if (jobManager != null) {
+                try {
+                    jobManager.shutdown();
+                    jobManager = null;
+                } catch (Exception e) {
+                    getLogger().log(Level.WARNING, "Error shutting down job manager", e);
+                }
+            }
+            
+            // Shutdown action processor
+            if (actionProcessor != null) {
+                try {
+                    // Action processor doesn't have explicit shutdown, just clear reference
+                    actionProcessor = null;
+                } catch (Exception e) {
+                    getLogger().log(Level.WARNING, "Error cleaning up action processor", e);
+                }
+            }
+            
+            // Cancel all Folia tasks
+            if (foliaManager != null) {
+                try {
+                    foliaManager.cancelAllTasks();
+                    foliaManager = null;
+                } catch (Exception e) {
+                    getLogger().log(Level.WARNING, "Error shutting down Folia manager", e);
+                }
+            }
+            
+            // Shutdown config managers
+            if (languageManager != null) {
+                try {
+                    // Language manager doesn't have explicit shutdown, just clear reference
+                    languageManager = null;
+                } catch (Exception e) {
+                    getLogger().log(Level.WARNING, "Error cleaning up language manager", e);
+                }
+            }
+            
+            if (configManager != null) {
+                try {
+                    // Config manager doesn't have explicit shutdown, just clear reference
+                    configManager = null;
+                } catch (Exception e) {
+                    getLogger().log(Level.WARNING, "Error cleaning up config manager", e);
+                }
+            }
+            
+            getLogger().info("JobsAdventure plugin shutdown completed successfully");
+            
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Critical error during plugin shutdown", e);
+        } finally {
+            // Clear the static instance last
+            instance = null;
         }
-        
-        // Cancel all Folia tasks
-        if (foliaManager != null) {
-            foliaManager.cancelAllTasks();
-        }
-        
-        // Shutdown managers
-        if (placeholderManager != null) {
-            placeholderManager.shutdown();
-        }
-        
-        if (bonusManager != null) {
-            bonusManager.shutdown();
-        }
-        
-        if (messageSender != null) {
-            messageSender.cleanup();
-        }
-        
-        if (rewardManager != null) {
-            rewardManager.shutdown();
-        }
-        
-        
-        // Save all player data
-        if (jobManager != null) {
-            jobManager.saveAllPlayerData();
-        }
-        
-        // Plugin disabled
     }
     
     /**
@@ -407,5 +515,23 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
      */
     public static JobsAdventure getInstance() {
         return instance;
+    }
+    
+    /**
+     * Get the plugin start time.
+     * 
+     * @return The start time in milliseconds
+     */
+    public long getStartTime() {
+        return startTime;
+    }
+    
+    /**
+     * Get the performance manager. This is a placeholder implementation.
+     * 
+     * @return null for now (not implemented yet)
+     */
+    public Object getPerformanceManager() {
+        return null; // TODO: Implement performance manager
     }
 }

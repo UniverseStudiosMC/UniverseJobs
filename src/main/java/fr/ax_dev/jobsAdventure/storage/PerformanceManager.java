@@ -91,34 +91,52 @@ public class PerformanceManager implements Listener {
      * @return PlayerJobData, loaded if necessary
      */
     public PlayerJobData getPlayerData(UUID playerId) {
-        PlayerJobData data = activePlayerData.get(playerId);
-        if (data != null) {
-            return data;
+        if (playerId == null) {
+            plugin.getLogger().warning("Attempted to get player data with null UUID");
+            return null;
         }
         
-        // Check if load is pending
-        if (pendingLoads.contains(playerId)) {
-            // Return temporary data while loading
-            PlayerJobData tempData = createTemporaryPlayerData(playerId);
-            activePlayerData.put(playerId, tempData);
-            return tempData;
-        }
-        
-        // Load synchronously for immediate access
         try {
-            data = storage.loadPlayerDataAsync(playerId).get(5, TimeUnit.SECONDS);
+            PlayerJobData data = activePlayerData.get(playerId);
             if (data != null) {
-                activePlayerData.put(playerId, data);
                 return data;
             }
+            
+            // Check if load is pending
+            if (pendingLoads.contains(playerId)) {
+                // Return temporary data while loading
+                PlayerJobData tempData = createTemporaryPlayerData(playerId);
+                activePlayerData.put(playerId, tempData);
+                return tempData;
+            }
+            
+            // Load synchronously for immediate access
+            try {
+                data = storage.loadPlayerDataAsync(playerId).get(5, TimeUnit.SECONDS);
+                if (data != null) {
+                    activePlayerData.put(playerId, data);
+                    return data;
+                }
+            } catch (java.util.concurrent.TimeoutException e) {
+                plugin.getLogger().warning("Timeout loading player data for " + playerId + " - returning temporary data");
+            } catch (java.util.concurrent.ExecutionException e) {
+                plugin.getLogger().log(Level.WARNING, "Execution error loading player data for " + playerId, e.getCause());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                plugin.getLogger().log(Level.WARNING, "Interrupted while loading player data for " + playerId, e);
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.WARNING, "Unexpected error loading player data for " + playerId, e);
+            }
+            
+            // Fallback to new data
+            data = createTemporaryPlayerData(playerId);
+            activePlayerData.put(playerId, data);
+            return data;
+            
         } catch (Exception e) {
-            plugin.getLogger().log(Level.WARNING, "Failed to load player data for " + playerId, e);
+            plugin.getLogger().log(Level.SEVERE, "Critical error in getPlayerData for " + playerId, e);
+            return createTemporaryPlayerData(playerId);
         }
-        
-        // Fallback to new data
-        data = createTemporaryPlayerData(playerId);
-        activePlayerData.put(playerId, data);
-        return data;
     }
     
     /**
@@ -129,8 +147,27 @@ public class PerformanceManager implements Listener {
      * @return CompletableFuture that completes when save is done
      */
     public CompletableFuture<Void> savePlayerDataAsync(UUID playerId, PlayerJobData data) {
-        activePlayerData.put(playerId, data);
-        return storage.savePlayerDataAsync(playerId, data);
+        if (playerId == null) {
+            plugin.getLogger().warning("Attempted to save player data with null UUID");
+            return CompletableFuture.completedFuture(null);
+        }
+        
+        if (data == null) {
+            plugin.getLogger().warning("Attempted to save null player data for " + playerId);
+            return CompletableFuture.completedFuture(null);
+        }
+        
+        try {
+            activePlayerData.put(playerId, data);
+            return storage.savePlayerDataAsync(playerId, data)
+                .exceptionally(throwable -> {
+                    plugin.getLogger().log(Level.SEVERE, "Failed to save player data for " + playerId, throwable);
+                    return null;
+                });
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.SEVERE, "Error initiating save for player data " + playerId, e);
+            return CompletableFuture.completedFuture(null);
+        }
     }
     
     /**
@@ -284,20 +321,48 @@ public class PerformanceManager implements Listener {
     
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
-        UUID playerId = event.getPlayer().getUniqueId();
-        
-        // Preload player data asynchronously
-        preloadPlayersAsync(Set.of(playerId));
+        try {
+            UUID playerId = event.getPlayer().getUniqueId();
+            
+            if (playerId == null) {
+                plugin.getLogger().warning("Player joined with null UUID: " + event.getPlayer().getName());
+                return;
+            }
+            
+            // Preload player data asynchronously
+            preloadPlayersAsync(Set.of(playerId))
+                .exceptionally(throwable -> {
+                    plugin.getLogger().log(Level.WARNING, "Failed to preload data for joining player " + playerId, throwable);
+                    return null;
+                });
+                
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.SEVERE, "Error handling player join event", e);
+        }
     }
     
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
-        UUID playerId = event.getPlayer().getUniqueId();
-        
-        // Unload player data with small delay to allow for final operations
-        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
-            unloadPlayerData(playerId);
-        }, 20L); // 1 second delay
+        try {
+            UUID playerId = event.getPlayer().getUniqueId();
+            
+            if (playerId == null) {
+                plugin.getLogger().warning("Player quit with null UUID: " + event.getPlayer().getName());
+                return;
+            }
+            
+            // Unload player data with small delay to allow for final operations
+            Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
+                try {
+                    unloadPlayerData(playerId);
+                } catch (Exception e) {
+                    plugin.getLogger().log(Level.WARNING, "Error unloading player data for " + playerId, e);
+                }
+            }, 20L); // 1 second delay
+            
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.SEVERE, "Error handling player quit event", e);
+        }
     }
     
     // Private methods

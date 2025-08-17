@@ -13,7 +13,11 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
+import java.lang.ref.WeakReference;
 
 /**
  * Manages all jobs and player job data.
@@ -28,6 +32,16 @@ public class JobManager {
     private final File dataFolder;
     private XpCurveManager xpCurveManager;
     private PerformanceManager performanceManager;
+    
+    // Thread safety and resource management
+    private final ReadWriteLock dataLock = new ReentrantReadWriteLock();
+    private final AtomicBoolean isShutdown = new AtomicBoolean(false);
+    private final Set<WeakReference<PlayerJobData>> trackedPlayerData = ConcurrentHashMap.newKeySet();
+    
+    // Memory management
+    private volatile long lastCleanupTime = System.currentTimeMillis();
+    private static final long CLEANUP_INTERVAL = 300000L; // 5 minutes
+    private static final int MAX_CACHED_PLAYERS = 1000;
     
     /**
      * Create a new JobManager instance.
@@ -163,22 +177,57 @@ public class JobManager {
      * @return Player job data
      */
     public PlayerJobData getPlayerData(UUID playerUuid) {
+        if (isShutdown.get()) {
+            throw new IllegalStateException("JobManager is shutdown");
+        }
+        
+        // Check if cleanup is needed
+        checkAndPerformCleanup();
+        
         // Use performance manager if available for optimized data access
         if (performanceManager != null) {
             PlayerJobData data = performanceManager.getPlayerData(playerUuid);
             if (data != null) {
                 // Also keep in local cache for backward compatibility
-                playerData.put(playerUuid, data);
+                dataLock.writeLock().lock();
+                try {
+                    playerData.put(playerUuid, data);
+                    trackPlayerData(data);
+                } finally {
+                    dataLock.writeLock().unlock();
+                }
                 return data;
             }
         }
         
-        // Fallback to original implementation
-        return playerData.computeIfAbsent(playerUuid, uuid -> {
-            PlayerJobData data = new PlayerJobData(uuid);
+        // Fallback to original implementation with thread safety
+        dataLock.readLock().lock();
+        try {
+            PlayerJobData existingData = playerData.get(playerUuid);
+            if (existingData != null) {
+                return existingData;
+            }
+        } finally {
+            dataLock.readLock().unlock();
+        }
+        
+        // Need to create new data
+        dataLock.writeLock().lock();
+        try {
+            // Double-check in case another thread created it
+            PlayerJobData existingData = playerData.get(playerUuid);
+            if (existingData != null) {
+                return existingData;
+            }
+            
+            PlayerJobData data = new PlayerJobData(playerUuid);
             data.setJobManager(this); // Set JobManager reference for XP curve calculations
+            playerData.put(playerUuid, data);
+            trackPlayerData(data);
             return data;
-        });
+        } finally {
+            dataLock.writeLock().unlock();
+        }
     }
     
     /**
@@ -189,6 +238,10 @@ public class JobManager {
      * @return true if successful
      */
     public boolean joinJob(Player player, String jobId) {
+        if (isShutdown.get()) {
+            return false;
+        }
+        
         Job job = getJob(jobId);
         if (job == null || !job.isEnabled()) {
             return false;
@@ -200,7 +253,9 @@ public class JobManager {
         }
         
         PlayerJobData data = getPlayerData(player);
-        return data.joinJob(jobId);
+        synchronized (data) {
+            return data.joinJob(jobId);
+        }
     }
     
     /**
@@ -211,13 +266,19 @@ public class JobManager {
      * @return true if successful
      */
     public boolean leaveJob(Player player, String jobId) {
+        if (isShutdown.get()) {
+            return false;
+        }
+        
         // Check if this is a default job that cannot be left
         if (plugin.getConfigManager().isDefaultJob(jobId)) {
             return false; // Cannot leave default jobs
         }
         
         PlayerJobData data = getPlayerData(player);
-        return data.leaveJob(jobId);
+        synchronized (data) {
+            return data.leaveJob(jobId);
+        }
     }
     
     /**
@@ -251,8 +312,20 @@ public class JobManager {
      * @param xp The XP amount
      */
     public void addXp(Player player, String jobId, double xp) {
+        if (isShutdown.get()) {
+            return;
+        }
+        
+        // Validate XP amount to prevent exploitation
+        if (Double.isNaN(xp) || Double.isInfinite(xp) || xp < 0 || xp > 1000000) {
+            plugin.getLogger().warning("Invalid XP amount attempted for player " + player.getName() + ": " + xp);
+            return;
+        }
+        
         PlayerJobData data = getPlayerData(player);
-        data.addXp(jobId, xp);
+        synchronized (data) {
+            data.addXp(jobId, xp);
+        }
     }
     
     /**
@@ -333,24 +406,35 @@ public class JobManager {
      * @param playerUuid The player UUID
      */
     public void savePlayerData(UUID playerUuid) {
-        PlayerJobData data = playerData.get(playerUuid);
-        if (data == null) return;
-        
-        // Use performance manager for optimized async saving
-        if (performanceManager != null) {
-            performanceManager.savePlayerDataAsync(playerUuid, data);
+        if (isShutdown.get()) {
+            plugin.getLogger().warning("Attempted to save player data after JobManager shutdown: " + playerUuid);
             return;
         }
         
-        // Fallback to original sync implementation
+        PlayerJobData data;
+        dataLock.readLock().lock();
         try {
-            File dataFile = new File(dataFolder, playerUuid.toString() + ".yml");
-            FileConfiguration config = new YamlConfiguration();
-            data.save(config);
-            config.save(dataFile);
-        } catch (Exception e) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to save player data for " + playerUuid, e);
+            data = playerData.get(playerUuid);
+        } finally {
+            dataLock.readLock().unlock();
         }
+        
+        if (data == null) {
+            return;
+        }
+        
+        // Use performance manager for optimized async saving
+        if (performanceManager != null) {
+            try {
+                performanceManager.savePlayerDataAsync(playerUuid, data);
+                return;
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.WARNING, "Performance manager save failed, falling back to sync save", e);
+            }
+        }
+        
+        // Fallback to sync implementation
+        savePlayerDataInternal(playerUuid, data);
     }
     
     /**
@@ -368,6 +452,21 @@ public class JobManager {
      * @param playerUuid The player UUID
      */
     public void loadPlayerData(UUID playerUuid) {
+        if (isShutdown.get()) {
+            plugin.getLogger().warning("Attempted to load player data after JobManager shutdown: " + playerUuid);
+            return;
+        }
+        
+        // Check if data is already loaded
+        dataLock.readLock().lock();
+        try {
+            if (playerData.containsKey(playerUuid)) {
+                return; // Already loaded
+            }
+        } finally {
+            dataLock.readLock().unlock();
+        }
+        
         try {
             File dataFile = new File(dataFolder, playerUuid.toString() + ".yml");
             PlayerJobData data;
@@ -386,14 +485,28 @@ public class JobManager {
             // Auto-assign default jobs
             assignDefaultJobs(data);
             
-            playerData.put(playerUuid, data);
+            // Store with thread safety
+            dataLock.writeLock().lock();
+            try {
+                playerData.put(playerUuid, data);
+                trackPlayerData(data);
+            } finally {
+                dataLock.writeLock().unlock();
+            }
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load player data for " + playerUuid, e);
             // Create new player data as fallback
             PlayerJobData fallbackData = new PlayerJobData(playerUuid);
             fallbackData.setJobManager(this);
             assignDefaultJobs(fallbackData);
-            playerData.put(playerUuid, fallbackData);
+            
+            dataLock.writeLock().lock();
+            try {
+                playerData.put(playerUuid, fallbackData);
+                trackPlayerData(fallbackData);
+            } finally {
+                dataLock.writeLock().unlock();
+            }
         }
     }
     
@@ -602,8 +715,193 @@ public class JobManager {
      * Force cleanup and optimization.
      */
     public void performCleanup() {
-        if (performanceManager != null) {
-            performanceManager.performCleanup();
+        if (isShutdown.get()) {
+            return;
         }
+        
+        try {
+            // Clean up player data cache
+            cleanupPlayerDataCache();
+            
+            // Clean up job references
+            cleanupJobReferences();
+            
+            // Performance manager cleanup
+            if (performanceManager != null) {
+                performanceManager.performCleanup();
+            }
+            
+            lastCleanupTime = System.currentTimeMillis();
+            
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("JobManager cleanup completed. Active player data: " + playerData.size());
+            }
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "Error during JobManager cleanup", e);
+        }
+    }
+    
+    /**
+     * Cleanup player data cache, removing stale entries.
+     */
+    private void cleanupPlayerDataCache() {
+        if (playerData.size() <= MAX_CACHED_PLAYERS) {
+            return;
+        }
+        
+        dataLock.writeLock().lock();
+        try {
+            // Remove offline players from cache if we exceed the limit
+            Iterator<Map.Entry<UUID, PlayerJobData>> iterator = playerData.entrySet().iterator();
+            int removedCount = 0;
+            
+            while (iterator.hasNext() && playerData.size() > MAX_CACHED_PLAYERS) {
+                Map.Entry<UUID, PlayerJobData> entry = iterator.next();
+                Player player = plugin.getServer().getPlayer(entry.getKey());
+                
+                if (player == null || !player.isOnline()) {
+                    // Save data before removing from cache
+                    try {
+                        savePlayerDataInternal(entry.getKey(), entry.getValue());
+                        iterator.remove();
+                        removedCount++;
+                    } catch (Exception e) {
+                        plugin.getLogger().log(Level.WARNING, "Failed to save player data during cleanup for " + entry.getKey(), e);
+                    }
+                }
+            }
+            
+            if (removedCount > 0 && plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("Cleaned up " + removedCount + " offline player data entries from cache");
+            }
+        } finally {
+            dataLock.writeLock().unlock();
+        }
+    }
+    
+    /**
+     * Clean up weak references to player data.
+     */
+    private void cleanupJobReferences() {
+        trackedPlayerData.removeIf(ref -> ref.get() == null);
+    }
+    
+    /**
+     * Shutdown the JobManager and clean up all resources.
+     */
+    public void shutdown() {
+        if (isShutdown.compareAndSet(false, true)) {
+            plugin.getLogger().info("Shutting down JobManager...");
+            
+            try {
+                // Save all player data before shutdown
+                saveAllPlayerDataSync();
+                
+                // Shutdown performance manager
+                if (performanceManager != null) {
+                    performanceManager.shutdown().join();
+                    performanceManager = null;
+                }
+                
+                // Clear all caches
+                dataLock.writeLock().lock();
+                try {
+                    playerData.clear();
+                    trackedPlayerData.clear();
+                } finally {
+                    dataLock.writeLock().unlock();
+                }
+                
+                // Shutdown XP curve manager
+                if (xpCurveManager != null) {
+                    // XpCurveManager doesn't have explicit shutdown, but clear reference
+                    xpCurveManager = null;
+                }
+                
+                plugin.getLogger().info("JobManager shutdown completed");
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.SEVERE, "Error during JobManager shutdown", e);
+            }
+        }
+    }
+    
+    /**
+     * Save all player data synchronously (used during shutdown).
+     */
+    private void saveAllPlayerDataSync() {
+        dataLock.readLock().lock();
+        try {
+            for (Map.Entry<UUID, PlayerJobData> entry : playerData.entrySet()) {
+                try {
+                    savePlayerDataInternal(entry.getKey(), entry.getValue());
+                } catch (Exception e) {
+                    plugin.getLogger().log(Level.SEVERE, "Failed to save player data during shutdown for " + entry.getKey(), e);
+                }
+            }
+        } finally {
+            dataLock.readLock().unlock();
+        }
+    }
+    
+    /**
+     * Internal method to save player data without external dependencies.
+     */
+    private void savePlayerDataInternal(UUID playerUuid, PlayerJobData data) {
+        if (data == null) {
+            return;
+        }
+        
+        try {
+            File dataFile = new File(dataFolder, playerUuid.toString() + ".yml");
+            FileConfiguration config = new YamlConfiguration();
+            data.save(config);
+            config.save(dataFile);
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.SEVERE, "Failed to save player data for " + playerUuid, e);
+        }
+    }
+    
+    /**
+     * Check if automatic cleanup is needed and perform it.
+     */
+    private void checkAndPerformCleanup() {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastCleanupTime > CLEANUP_INTERVAL) {
+            plugin.getFoliaManager().runAsync(this::performCleanup);
+        }
+    }
+    
+    /**
+     * Track a PlayerJobData instance for memory management.
+     * 
+     * @param data The player data to track
+     */
+    private void trackPlayerData(PlayerJobData data) {
+        if (data != null) {
+            trackedPlayerData.add(new WeakReference<>(data));
+        }
+    }
+    
+    /**
+     * Get memory usage statistics.
+     * 
+     * @return Map containing memory usage information
+     */
+    public Map<String, Object> getMemoryStats() {
+        Map<String, Object> stats = new HashMap<>();
+        
+        dataLock.readLock().lock();
+        try {
+            stats.put("cached_players", playerData.size());
+            stats.put("max_cached_players", MAX_CACHED_PLAYERS);
+            stats.put("loaded_jobs", jobs.size());
+            stats.put("tracked_references", trackedPlayerData.size());
+            stats.put("is_shutdown", isShutdown.get());
+            stats.put("last_cleanup", new Date(lastCleanupTime));
+        } finally {
+            dataLock.readLock().unlock();
+        }
+        
+        return stats;
     }
 }

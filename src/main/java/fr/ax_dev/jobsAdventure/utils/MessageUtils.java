@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
@@ -87,6 +88,18 @@ public class MessageUtils {
     public static void sendMessage(Player player, String message) {
         if (player != null && message != null && !message.isEmpty()) {
             player.sendMessage(parseMessage(message));
+        }
+    }
+    
+    /**
+     * Send a formatted message to a command sender.
+     * 
+     * @param sender The command sender to send the message to
+     * @param message The message to send
+     */
+    public static void sendMessage(CommandSender sender, String message) {
+        if (sender != null && message != null && !message.isEmpty()) {
+            sender.sendMessage(parseMessage(message));
         }
     }
     

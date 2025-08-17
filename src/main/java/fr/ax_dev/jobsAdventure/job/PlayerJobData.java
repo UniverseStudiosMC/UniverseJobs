@@ -5,6 +5,9 @@ import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Stores job-related data for a specific player.
@@ -17,8 +20,13 @@ public class PlayerJobData {
     private final Map<String, Double> xpData = new ConcurrentHashMap<>();
     private final Map<String, Integer> levelData = new ConcurrentHashMap<>();
     
+    // Thread safety
+    private final ReadWriteLock dataLock = new ReentrantReadWriteLock();
+    private final AtomicBoolean isLoading = new AtomicBoolean(false);
+    private volatile long lastModified = System.currentTimeMillis();
+    
     // Reference to JobManager for XP curve calculations
-    private JobManager jobManager;
+    private volatile JobManager jobManager;
     
     /**
      * Create new player job data.
@@ -54,13 +62,23 @@ public class PlayerJobData {
      * @return true if successful (wasn't already in the job)
      */
     public boolean joinJob(String jobId) {
-        if (jobs.add(jobId)) {
-            // Initialize XP and level if not present
-            xpData.putIfAbsent(jobId, 0.0);
-            levelData.putIfAbsent(jobId, 1);
-            return true;
+        if (jobId == null || jobId.isEmpty()) {
+            return false;
         }
-        return false;
+        
+        dataLock.writeLock().lock();
+        try {
+            if (jobs.add(jobId)) {
+                // Initialize XP and level if not present
+                xpData.putIfAbsent(jobId, 0.0);
+                levelData.putIfAbsent(jobId, 1);
+                lastModified = System.currentTimeMillis();
+                return true;
+            }
+            return false;
+        } finally {
+            dataLock.writeLock().unlock();
+        }
     }
     
     /**
@@ -70,8 +88,21 @@ public class PlayerJobData {
      * @return true if successful (was in the job)
      */
     public boolean leaveJob(String jobId) {
-        return jobs.remove(jobId);
-        // Note: We keep XP and level data even after leaving
+        if (jobId == null || jobId.isEmpty()) {
+            return false;
+        }
+        
+        dataLock.writeLock().lock();
+        try {
+            boolean removed = jobs.remove(jobId);
+            if (removed) {
+                lastModified = System.currentTimeMillis();
+            }
+            return removed;
+            // Note: We keep XP and level data even after leaving
+        } finally {
+            dataLock.writeLock().unlock();
+        }
     }
     
     /**
@@ -90,7 +121,12 @@ public class PlayerJobData {
      * @return Set of job IDs
      */
     public Set<String> getJobs() {
-        return new HashSet<>(jobs);
+        dataLock.readLock().lock();
+        try {
+            return new HashSet<>(jobs);
+        } finally {
+            dataLock.readLock().unlock();
+        }
     }
     
     /**
@@ -100,14 +136,33 @@ public class PlayerJobData {
      * @param xp The XP amount to add
      */
     public void addXp(String jobId, double xp) {
-        if (!hasJob(jobId)) return;
+        if (jobId == null || !hasJob(jobId)) {
+            return;
+        }
         
-        double currentXp = getXp(jobId);
-        double newXp = currentXp + xp;
-        xpData.put(jobId, newXp);
+        // Validate XP amount
+        if (Double.isNaN(xp) || Double.isInfinite(xp) || xp < 0) {
+            return;
+        }
         
-        // Check for level up
-        checkLevelUp(jobId);
+        dataLock.writeLock().lock();
+        try {
+            double currentXp = xpData.getOrDefault(jobId, 0.0);
+            double newXp = currentXp + xp;
+            
+            // Prevent overflow
+            if (newXp > Double.MAX_VALUE / 2) {
+                newXp = Double.MAX_VALUE / 2;
+            }
+            
+            xpData.put(jobId, newXp);
+            lastModified = System.currentTimeMillis();
+            
+            // Check for level up
+            checkLevelUp(jobId);
+        } finally {
+            dataLock.writeLock().unlock();
+        }
     }
     
     /**
@@ -287,17 +342,23 @@ public class PlayerJobData {
      * @param config The configuration to save to
      */
     public void save(FileConfiguration config) {
-        config.set("uuid", playerUuid.toString());
-        config.set("jobs", new ArrayList<>(jobs));
-        
-        ConfigurationSection xpSection = config.createSection("xp");
-        for (Map.Entry<String, Double> entry : xpData.entrySet()) {
-            xpSection.set(entry.getKey(), entry.getValue());
-        }
-        
-        ConfigurationSection levelSection = config.createSection("levels");
-        for (Map.Entry<String, Integer> entry : levelData.entrySet()) {
-            levelSection.set(entry.getKey(), entry.getValue());
+        dataLock.readLock().lock();
+        try {
+            config.set("uuid", playerUuid.toString());
+            config.set("lastModified", lastModified);
+            config.set("jobs", new ArrayList<>(jobs));
+            
+            ConfigurationSection xpSection = config.createSection("xp");
+            for (Map.Entry<String, Double> entry : xpData.entrySet()) {
+                xpSection.set(entry.getKey(), entry.getValue());
+            }
+            
+            ConfigurationSection levelSection = config.createSection("levels");
+            for (Map.Entry<String, Integer> entry : levelData.entrySet()) {
+                levelSection.set(entry.getKey(), entry.getValue());
+            }
+        } finally {
+            dataLock.readLock().unlock();
         }
     }
     
@@ -307,38 +368,95 @@ public class PlayerJobData {
      * @param config The configuration to load from
      */
     public void load(FileConfiguration config) {
-        // Load jobs
-        List<String> jobsList = config.getStringList("jobs");
-        jobs.clear();
-        jobs.addAll(jobsList);
-        
-        // Load XP data
-        ConfigurationSection xpSection = config.getConfigurationSection("xp");
-        if (xpSection != null) {
-            xpData.clear();
-            for (String jobId : xpSection.getKeys(false)) {
-                xpData.put(jobId, xpSection.getDouble(jobId));
+        if (isLoading.compareAndSet(false, true)) {
+            dataLock.writeLock().lock();
+            try {
+                // Load timestamp
+                lastModified = config.getLong("lastModified", System.currentTimeMillis());
+                
+                // Load jobs
+                List<String> jobsList = config.getStringList("jobs");
+                jobs.clear();
+                jobs.addAll(jobsList);
+                
+                // Load XP data
+                ConfigurationSection xpSection = config.getConfigurationSection("xp");
+                if (xpSection != null) {
+                    xpData.clear();
+                    for (String jobId : xpSection.getKeys(false)) {
+                        double xp = xpSection.getDouble(jobId);
+                        // Validate loaded XP
+                        if (!Double.isNaN(xp) && !Double.isInfinite(xp) && xp >= 0) {
+                            xpData.put(jobId, xp);
+                        }
+                    }
+                }
+                
+                // Load level data
+                ConfigurationSection levelSection = config.getConfigurationSection("levels");
+                if (levelSection != null) {
+                    levelData.clear();
+                    for (String jobId : levelSection.getKeys(false)) {
+                        int level = levelSection.getInt(jobId);
+                        // Validate loaded level
+                        if (level >= 1 && level <= 10000) { // Reasonable bounds
+                            levelData.put(jobId, level);
+                        }
+                    }
+                }
+                
+                // Ensure all jobs have XP and level data
+                for (String jobId : jobs) {
+                    xpData.putIfAbsent(jobId, 0.0);
+                    levelData.putIfAbsent(jobId, 1);
+                }
+            } finally {
+                dataLock.writeLock().unlock();
+                isLoading.set(false);
             }
         }
-        
-        // Load level data
-        ConfigurationSection levelSection = config.getConfigurationSection("levels");
-        if (levelSection != null) {
-            levelData.clear();
-            for (String jobId : levelSection.getKeys(false)) {
-                levelData.put(jobId, levelSection.getInt(jobId));
-            }
-        }
-        
-        // Ensure all jobs have XP and level data
-        for (String jobId : jobs) {
-            xpData.putIfAbsent(jobId, 0.0);
-            levelData.putIfAbsent(jobId, 1);
+    }
+    
+    /**
+     * Get the last modification time.
+     * 
+     * @return Last modification timestamp
+     */
+    public long getLastModified() {
+        return lastModified;
+    }
+    
+    /**
+     * Check if data is currently being loaded.
+     * 
+     * @return true if loading is in progress
+     */
+    public boolean isLoading() {
+        return isLoading.get();
+    }
+    
+    /**
+     * Get a thread-safe snapshot of the data for debugging.
+     * 
+     * @return Map containing data summary
+     */
+    public Map<String, Object> getDataSnapshot() {
+        dataLock.readLock().lock();
+        try {
+            Map<String, Object> snapshot = new HashMap<>();
+            snapshot.put("playerUuid", playerUuid.toString());
+            snapshot.put("jobCount", jobs.size());
+            snapshot.put("totalXp", xpData.values().stream().mapToDouble(Double::doubleValue).sum());
+            snapshot.put("lastModified", new Date(lastModified));
+            snapshot.put("isLoading", isLoading.get());
+            return snapshot;
+        } finally {
+            dataLock.readLock().unlock();
         }
     }
     
     @Override
     public String toString() {
-        return "PlayerJobData{playerUuid=" + playerUuid + ", jobs=" + jobs.size() + "}";
+        return "PlayerJobData{playerUuid=" + playerUuid + ", jobs=" + jobs.size() + ", lastModified=" + new Date(lastModified) + "}";
     }
 }

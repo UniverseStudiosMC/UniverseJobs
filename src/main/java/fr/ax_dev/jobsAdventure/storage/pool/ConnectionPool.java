@@ -5,9 +5,10 @@ import org.bukkit.configuration.file.FileConfiguration;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 
 /**
@@ -30,6 +31,13 @@ public class ConnectionPool {
     private final AtomicInteger activeConnections;
     private final AtomicInteger totalConnections;
     private final AtomicBoolean initialized;
+    
+    // Performance monitoring
+    private final AtomicLong totalConnectionsCreated;
+    private final AtomicLong totalConnectionsDestroyed;
+    private final AtomicLong totalGetConnectionCalls;
+    private final AtomicLong totalConnectionWaitTime;
+    private final ScheduledExecutorService healthChecker;
     
     /**
      * Create a new ConnectionPool.
@@ -62,6 +70,14 @@ public class ConnectionPool {
         this.activeConnections = new AtomicInteger(0);
         this.totalConnections = new AtomicInteger(0);
         this.initialized = new AtomicBoolean(false);
+        
+        // Initialize performance monitoring
+        this.totalConnectionsCreated = new AtomicLong(0);
+        this.totalConnectionsDestroyed = new AtomicLong(0);
+        this.totalGetConnectionCalls = new AtomicLong(0);
+        this.totalConnectionWaitTime = new AtomicLong(0);
+        this.healthChecker = Executors.newSingleThreadScheduledExecutor(
+            r -> new Thread(r, "JobsAdventure-ConnectionPool-HealthChecker"));
     }
     
     /**
@@ -81,6 +97,9 @@ public class ConnectionPool {
             for (int i = 0; i < minConnections; i++) {
                 createConnection();
             }
+            
+            // Start health checking
+            startHealthChecker();
             
             initialized.set(true);
             plugin.getLogger().info("Database connection pool initialized with " + 
@@ -102,26 +121,36 @@ public class ConnectionPool {
             throw new SQLException("Connection pool not available");
         }
         
-        PooledConnection pooledConnection = availableConnections.poll();
+        long startTime = System.nanoTime();
+        totalGetConnectionCalls.incrementAndGet();
         
-        if (pooledConnection == null) {
-            // No available connections, create new one if under limit
-            if (totalConnections.get() < maxConnections) {
-                pooledConnection = createConnection();
-            } else {
-                throw new SQLException("Maximum number of connections reached");
+        try {
+            PooledConnection pooledConnection = availableConnections.poll();
+            
+            if (pooledConnection == null) {
+                // No available connections, create new one if under limit
+                if (totalConnections.get() < maxConnections) {
+                    pooledConnection = createConnection();
+                } else {
+                    throw new SQLException("Maximum number of connections reached");
+                }
             }
+            
+            // Validate connection before returning
+            if (!isConnectionValid(pooledConnection)) {
+                // Connection is invalid, create a new one
+                closeConnection(pooledConnection);
+                pooledConnection = createConnection();
+            }
+            
+            activeConnections.incrementAndGet();
+            return pooledConnection.getConnection();
+            
+        } finally {
+            // Record wait time
+            long waitTime = System.nanoTime() - startTime;
+            totalConnectionWaitTime.addAndGet(waitTime);
         }
-        
-        // Validate connection before returning
-        if (!isConnectionValid(pooledConnection)) {
-            // Connection is invalid, create a new one
-            closeConnection(pooledConnection);
-            pooledConnection = createConnection();
-        }
-        
-        activeConnections.incrementAndGet();
-        return pooledConnection.getConnection();
     }
     
     /**
@@ -156,13 +185,28 @@ public class ConnectionPool {
         
         initialized.set(false);
         
+        // Shutdown health checker
+        if (healthChecker != null && !healthChecker.isShutdown()) {
+            healthChecker.shutdown();
+            try {
+                if (!healthChecker.awaitTermination(5, TimeUnit.SECONDS)) {
+                    healthChecker.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                healthChecker.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+        }
+        
         // Close all available connections
         PooledConnection connection;
         while ((connection = availableConnections.poll()) != null) {
             closeConnection(connection);
         }
         
-        plugin.getLogger().info("Database connection pool shutdown complete");
+        plugin.getLogger().info("Database connection pool shutdown complete. " +
+                "Total connections created: " + totalConnectionsCreated.get() + 
+                ", destroyed: " + totalConnectionsDestroyed.get());
     }
     
     /**
@@ -227,6 +271,20 @@ public class ConnectionPool {
         stats.put("total_connections", getTotalConnections());
         stats.put("max_connections", maxConnections);
         stats.put("min_connections", minConnections);
+        
+        // Performance metrics
+        stats.put("total_connections_created", totalConnectionsCreated.get());
+        stats.put("total_connections_destroyed", totalConnectionsDestroyed.get());
+        stats.put("total_get_connection_calls", totalGetConnectionCalls.get());
+        
+        long calls = totalGetConnectionCalls.get();
+        double avgWaitTimeMs = calls > 0 ? (totalConnectionWaitTime.get() / calls) / 1_000_000.0 : 0;
+        stats.put("avg_connection_wait_time_ms", avgWaitTimeMs);
+        
+        // Connection pool efficiency
+        double poolEfficiency = calls > 0 ? (double) (calls - totalConnectionsCreated.get()) / calls * 100 : 0;
+        stats.put("pool_efficiency_percent", poolEfficiency);
+        
         return stats;
     }
     
@@ -237,6 +295,7 @@ public class ConnectionPool {
             
             PooledConnection pooledConnection = new PooledConnection(connection);
             totalConnections.incrementAndGet();
+            totalConnectionsCreated.incrementAndGet();
             
             return pooledConnection;
             
@@ -272,6 +331,7 @@ public class ConnectionPool {
         if (pooledConnection != null) {
             closeConnectionSafely(pooledConnection.getConnection());
             totalConnections.decrementAndGet();
+            totalConnectionsDestroyed.incrementAndGet();
         }
     }
     
@@ -302,6 +362,90 @@ public class ConnectionPool {
         
         Class.forName(driverClass);
         plugin.getLogger().info("Loaded database driver: " + driverClass);
+    }
+    
+    /**
+     * Start the health checker to monitor connection pool health.
+     */
+    private void startHealthChecker() {
+        healthChecker.scheduleAtFixedRate(() -> {
+            try {
+                // Remove stale connections
+                cleanupStaleConnections();
+                
+                // Ensure minimum connections
+                ensureMinimumConnections();
+                
+                // Log health status if debug is enabled
+                if (plugin.getConfigManager().isDebugEnabled()) {
+                    logHealthStatus();
+                }
+                
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.WARNING, "Error in connection pool health check", e);
+            }
+        }, validationIntervalMs / 1000, validationIntervalMs / 1000, TimeUnit.SECONDS);
+    }
+    
+    /**
+     * Clean up stale connections from the pool.
+     */
+    private void cleanupStaleConnections() {
+        int cleaned = 0;
+        
+        // Check all available connections
+        java.util.Iterator<PooledConnection> iterator = availableConnections.iterator();
+        while (iterator.hasNext()) {
+            PooledConnection pooledConnection = iterator.next();
+            
+            if (!isConnectionValid(pooledConnection)) {
+                iterator.remove();
+                closeConnection(pooledConnection);
+                cleaned++;
+            }
+        }
+        
+        if (cleaned > 0 && plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("Cleaned up " + cleaned + " stale database connections");
+        }
+    }
+    
+    /**
+     * Ensure minimum number of connections in the pool.
+     */
+    private void ensureMinimumConnections() {
+        int currentTotal = totalConnections.get();
+        int needed = minConnections - currentTotal;
+        
+        if (needed > 0) {
+            try {
+                for (int i = 0; i < needed; i++) {
+                    PooledConnection connection = createConnection();
+                    availableConnections.offer(connection);
+                }
+                
+                if (plugin.getConfigManager().isDebugEnabled()) {
+                    plugin.getLogger().info("Created " + needed + " new database connections to maintain minimum pool size");
+                }
+                
+            } catch (SQLException e) {
+                plugin.getLogger().log(Level.WARNING, "Failed to create minimum connections", e);
+            }
+        }
+    }
+    
+    /**
+     * Log health status for debugging.
+     */
+    private void logHealthStatus() {
+        java.util.Map<String, Object> stats = getStats();
+        plugin.getLogger().info("Connection Pool Health: " +
+                "Active=" + stats.get("active_connections") +
+                ", Available=" + stats.get("available_connections") +
+                ", Total=" + stats.get("total_connections") +
+                ", Created=" + stats.get("total_connections_created") +
+                ", Destroyed=" + stats.get("total_connections_destroyed") +
+                ", Efficiency=" + String.format("%.1f%%", stats.get("pool_efficiency_percent")));
     }
     
     /**

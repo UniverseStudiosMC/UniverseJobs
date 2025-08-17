@@ -193,6 +193,15 @@ public class Job {
     }
     
     /**
+     * Get all actions for this job.
+     * 
+     * @return Map of all actions grouped by action type
+     */
+    public Map<ActionType, List<JobAction>> getActions() {
+        return new HashMap<>(actions);
+    }
+    
+    /**
      * Check if this job has any actions for the given action type.
      * 
      * @param actionType The action type to check
