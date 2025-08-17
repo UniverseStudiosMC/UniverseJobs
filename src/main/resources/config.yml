@@ -1,22 +1,16 @@
 # JobsAdventure Configuration File
 # A flexible and customizable jobs plugin for Minecraft servers
 
-# Messages sent to players
+# Language settings
+language:
+  # Available languages: en_US, fr_FR
+  # Language files are located in plugins/JobsAdventure/languages/
+  locale: "en_US"
+
+# Message display settings
 messages:
-  level-up: "&aCongratulations! You reached level {level} in {job}!"
-  xp-gain: "&e+{xp} XP ({job})"
+  # Show XP gain messages to players
   show-xp-gain: true
-  job-joined: "&aYou joined the {job} job!"
-  job-left: "&cYou left the {job} job!"
-  already-have-job: "&cYou already have the {job} job!"
-  dont-have-job: "&cYou don't have the {job} job!"
-  job-not-found: "&cJob '{job}' not found!"
-  no-permission: "&cYou don't have permission to join the {job} job!"
-  max-jobs-reached: "&cYou can only have {max} jobs at once!"
-  invalid-usage: "&cInvalid usage! Use /job help for commands."
-  job-or-player-not-found: "&cJob or player '{target}' not found!"
-  join-failed: "&cFailed to join the {job} job!"
-  leave-failed: "&cFailed to leave the {job} job!"
 
 # Sound effects
 sounds:

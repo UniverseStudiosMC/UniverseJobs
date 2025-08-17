@@ -4,6 +4,7 @@ import fr.ax_dev.jobsAdventure.action.ActionProcessor;
 import fr.ax_dev.jobsAdventure.bonus.XpBonusManager;
 import fr.ax_dev.jobsAdventure.command.JobCommand;
 import fr.ax_dev.jobsAdventure.config.ConfigManager;
+import fr.ax_dev.jobsAdventure.config.LanguageManager;
 import fr.ax_dev.jobsAdventure.job.JobManager;
 import fr.ax_dev.jobsAdventure.listener.JobActionListener;
 import fr.ax_dev.jobsAdventure.listener.NexoEventListener;
@@ -29,6 +30,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
     
     private static JobsAdventure instance;
     private ConfigManager configManager;
+    private LanguageManager languageManager;
     private JobManager jobManager;
     private ActionProcessor actionProcessor;
     private XpBonusManager bonusManager;
@@ -44,6 +46,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
         instance = this;
         // Initialize managers
         this.configManager = new ConfigManager(this);
+        this.languageManager = new LanguageManager(this);
         this.jobManager = new JobManager(this);
         this.bonusManager = new XpBonusManager(this);
         this.messageSender = new XpMessageSender(this);
@@ -56,7 +59,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
         // Load configuration
         try {
             configManager.loadConfig();
-            getLogger().info("Configuration loaded successfully");
+            getLogger().info(languageManager.getMessage("system.config-loaded"));
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Failed to load configuration", e);
             getServer().getPluginManager().disablePlugin(this);
@@ -66,7 +69,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
         // Load jobs
         try {
             jobManager.loadJobs();
-            getLogger().info("Jobs loaded successfully");
+            getLogger().info(languageManager.getMessage("system.jobs-loaded"));
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Failed to load jobs", e);
             getServer().getPluginManager().disablePlugin(this);
@@ -76,7 +79,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
         // Initialize reward system
         try {
             rewardManager.initialize();
-            getLogger().info("Reward system initialized successfully");
+            getLogger().info(languageManager.getMessage("system.rewards-initialized"));
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Failed to initialize reward system", e);
             getServer().getPluginManager().disablePlugin(this);
@@ -98,7 +101,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
                 new NexoEventListener(this, actionProcessor, protectionManager), 
                 this
             );
-            getLogger().info("Nexo event listener registered for enhanced custom block support");
+            getLogger().info(languageManager.getMessage("system.nexo-registered"));
         }
         
         // Register ItemsAdder event listener if ItemsAdder is present
@@ -107,7 +110,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
                 new ItemsAdderEventListener(this, actionProcessor, protectionManager), 
                 this
             );
-            getLogger().info("ItemsAdder event listener registered for enhanced custom block support");
+            getLogger().info(languageManager.getMessage("system.itemsadder-registered"));
         }
         
         // Register CustomCrops event listener if CustomCrops is present
@@ -148,7 +151,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
         // Check for optional dependencies
         checkDependencies();
         
-        getLogger().info("JobsAdventure has been enabled successfully!");
+        getLogger().info(languageManager.getMessage("system.plugin-enabled"));
     }
 
     @Override
@@ -184,7 +187,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
             getLogger().info("Player data saved successfully");
         }
         
-        getLogger().info("JobsAdventure has been disabled");
+        getLogger().info(languageManager.getMessage("system.plugin-disabled"));
     }
     
     /**
@@ -297,6 +300,15 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
      */
     public ConfigManager getConfigManager() {
         return configManager;
+    }
+    
+    /**
+     * Get the language manager.
+     * 
+     * @return The language manager
+     */
+    public LanguageManager getLanguageManager() {
+        return languageManager;
     }
     
     /**

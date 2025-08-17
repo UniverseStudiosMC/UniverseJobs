@@ -3,6 +3,7 @@ package fr.ax_dev.jobsAdventure.command;
 import fr.ax_dev.jobsAdventure.JobsAdventure;
 import fr.ax_dev.jobsAdventure.bonus.XpBonus;
 import fr.ax_dev.jobsAdventure.bonus.XpBonusManager;
+import fr.ax_dev.jobsAdventure.config.LanguageManager;
 import fr.ax_dev.jobsAdventure.job.Job;
 import fr.ax_dev.jobsAdventure.job.JobManager;
 import fr.ax_dev.jobsAdventure.job.PlayerJobData;
@@ -28,6 +29,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     
     private final JobsAdventure plugin;
     private final JobManager jobManager;
+    private final LanguageManager languageManager;
     private final XpBonusManager bonusManager;
     private final RewardManager rewardManager;
     private final RewardGuiManager rewardGuiManager;
@@ -41,6 +43,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     public JobCommand(JobsAdventure plugin, JobManager jobManager) {
         this.plugin = plugin;
         this.jobManager = jobManager;
+        this.languageManager = plugin.getLanguageManager();
         this.bonusManager = plugin.getBonusManager();
         this.rewardManager = plugin.getRewardManager();
         this.rewardGuiManager = plugin.getRewardGuiManager();
@@ -49,7 +52,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("§cThis command can only be used by players!");
+            sender.sendMessage(languageManager.getMessage("commands.players-only"));
             return true;
         }
         
@@ -80,8 +83,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      */
     private void handleJoinCommand(Player player, String[] args) {
         if (args.length < 2) {
-            MessageUtils.sendMessage(player, plugin.getConfigManager().getMessage("invalid-usage", 
-                    "&cUsage: /job join <job>"));
+            player.sendMessage(languageManager.getMessage("commands.join.usage"));
             return;
         }
         
@@ -89,15 +91,13 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         Job job = jobManager.getJob(jobId);
         
         if (job == null) {
-            MessageUtils.sendMessage(player, plugin.getConfigManager().getMessage("job-not-found", 
-                    "&cJob '{job}' not found!"), "job", jobId);
+            player.sendMessage(languageManager.getMessage("commands.join.job-not-found", "job", jobId));
             return;
         }
         
         // Check if player already has the job
         if (jobManager.hasJob(player, jobId)) {
-            MessageUtils.sendMessage(player, plugin.getConfigManager().getMessage("already-have-job", 
-                    "&cYou already have the {job} job!"), "job", job.getName());
+            player.sendMessage(languageManager.getMessage("commands.join.already-have", "job", job.getName()));
             return;
         }
         
@@ -105,25 +105,21 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         Set<String> playerJobs = jobManager.getPlayerJobs(player);
         int maxJobs = plugin.getConfigManager().getMaxJobsPerPlayer();
         if (playerJobs.size() >= maxJobs) {
-            MessageUtils.sendMessage(player, plugin.getConfigManager().getMessage("max-jobs-reached", 
-                    "&cYou can only have {max} jobs at once!"), "max", String.valueOf(maxJobs));
+            player.sendMessage(languageManager.getMessage("commands.join.max-jobs-reached", "max", String.valueOf(maxJobs)));
             return;
         }
         
         // Check permission
         if (!player.hasPermission(job.getPermission())) {
-            MessageUtils.sendMessage(player, plugin.getConfigManager().getMessage("no-permission", 
-                    "&cYou don't have permission to join the {job} job!"), "job", job.getName());
+            player.sendMessage(languageManager.getMessage("commands.join.no-permission", "job", job.getName()));
             return;
         }
         
         // Join the job
         if (jobManager.joinJob(player, jobId)) {
-            MessageUtils.sendMessage(player, plugin.getConfigManager().getMessage("job-joined", 
-                    "&aYou joined the {job} job!"), "job", job.getName());
+            player.sendMessage(languageManager.getMessage("commands.join.success", "job", job.getName()));
         } else {
-            MessageUtils.sendMessage(player, plugin.getConfigManager().getMessage("join-failed", 
-                    "&cFailed to join the {job} job!"), "job", job.getName());
+            player.sendMessage(languageManager.getMessage("commands.join.failed", "job", job.getName()));
         }
     }
     
@@ -132,8 +128,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      */
     private void handleLeaveCommand(Player player, String[] args) {
         if (args.length < 2) {
-            player.sendMessage(plugin.getConfigManager().getMessage("invalid-usage", 
-                    "&cUsage: /job leave <job>"));
+            player.sendMessage(languageManager.getMessage("commands.leave.usage"));
             return;
         }
         
@@ -141,25 +136,21 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         Job job = jobManager.getJob(jobId);
         
         if (job == null) {
-            MessageUtils.sendMessage(player, plugin.getConfigManager().getMessage("job-not-found", 
-                    "&cJob '{job}' not found!"), "job", jobId);
+            player.sendMessage(languageManager.getMessage("commands.leave.job-not-found", "job", jobId));
             return;
         }
         
         // Check if player has the job
         if (!jobManager.hasJob(player, jobId)) {
-            MessageUtils.sendMessage(player, plugin.getConfigManager().getMessage("dont-have-job", 
-                    "&cYou don't have the {job} job!"), "job", job.getName());
+            player.sendMessage(languageManager.getMessage("commands.leave.dont-have", "job", job.getName()));
             return;
         }
         
         // Leave the job
         if (jobManager.leaveJob(player, jobId)) {
-            MessageUtils.sendMessage(player, plugin.getConfigManager().getMessage("job-left", 
-                    "&cYou left the {job} job!"), "job", job.getName());
+            player.sendMessage(languageManager.getMessage("commands.leave.success", "job", job.getName()));
         } else {
-            MessageUtils.sendMessage(player, plugin.getConfigManager().getMessage("leave-failed", 
-                    "&cFailed to leave the {job} job!"), "job", job.getName());
+            player.sendMessage(languageManager.getMessage("commands.leave.failed", "job", job.getName()));
         }
     }
     

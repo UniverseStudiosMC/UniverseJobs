@@ -1,0 +1,157 @@
+# English (United States) language file for JobsAdventure
+# This file contains all translatable messages for the plugin
+
+# XP and leveling messages
+xp:
+  gain-message:
+    default: "&e+{xp} XP ({job})"
+  level-up: "&aCongratulations! You reached level {level} in {job}!"
+
+# XP Bonus system messages
+xp-bonus:
+  global-announced: "&e&lBONUS XP! &6All players received &e{bonus}% &6bonus XP for &e{duration}&6!"
+  added: "&a&lXP BOOST! &e+{bonus}% XP &afor &e{duration} &a({reason})"
+  expired: "&c&lXP BOOST EXPIRED! &7{bonus}% bonus ended ({reason})"
+
+# Command system messages
+commands:
+  players-only: "§cThis command can only be used by players!"
+  no-permission: "§cYou don't have permission to use this command!"
+  player-not-found: "§cPlayer not found!"
+  
+  # Join command
+  join:
+    usage: "&cUsage: /job join <job>"
+    success: "&aYou joined the {job} job!"
+    already-have: "&cYou already have the {job} job!"
+    max-jobs-reached: "&cYou can only have {max} jobs at once!"
+    no-permission: "&cYou don't have permission to join the {job} job!"
+    failed: "&cFailed to join the {job} job!"
+    job-not-found: "&cJob '{job}' not found!"
+    
+  # Leave command
+  leave:
+    usage: "&cUsage: /job leave <job>"
+    success: "&cYou left the {job} job!"
+    dont-have: "&cYou don't have the {job} job!"
+    failed: "&cFailed to leave the {job} job!"
+    job-not-found: "&cJob '{job}' not found!"
+    
+  # Info command
+  info:
+    target-not-found: "&cJob or player '{target}' not found!"
+    job-header: "&6=== {job} ==="
+    description: "&7Description: &f{description}"
+    max-level: "&7Max Level: &f{maxLevel}"
+    permission: "&7Permission: &f{permission}"
+    lore: "&7Lore:"
+    lore-line: "&f  {line}"
+    action-types: "&7Action Types: &f{actionTypes}"
+    
+  # Stats command
+  stats:
+    no-jobs-self: "&cYou don't have any jobs!"
+    no-jobs-other: "&c{player} doesn't have any jobs!"
+    header: "&6=== {player} Jobs ==="
+    job-line: "&e{job} &7- Level {level} &8({currentXp}/{requiredXp} XP)"
+    
+  # List command
+  list:
+    no-jobs: "&cNo jobs are available!"
+    header: "&6=== Available Jobs ==="
+    status-have: "§a✓"
+    status-dont-have: "§c✗"
+    
+  # XP Bonus commands
+  xpbonus:
+    usage:
+      header: "&6=== XP Bonus Commands ==="
+      global: "&e/job xpbonus <multiplier> <duration> &7- Give global XP bonus"
+      player: "&e/job xpbonus <player> <multiplier> <duration> &7- Give player XP bonus"
+      job: "&e/job xpbonus <player> <job> <multiplier> <duration> &7- Give job-specific bonus"
+      examples: "&7Examples: /job xpbonus 2.0 300, /job xpbonus Steve 1.5 600"
+    invalid-numbers: "§cInvalid multiplier or duration! Use numbers only."
+    invalid-multiplier: "§cMultiplier must be between 0.1 and 10.0!"
+    invalid-duration: "§cDuration must be between 1 second and 24 hours (86400 seconds)!"
+    job-not-exist: "§cJob '{job}' does not exist!"
+    gave-global: "§aGave {multiplier}x XP bonus to {playerCount} online players for {duration}"
+    player-offline: "§cPlayer '{player}' is not online!"
+    gave-player: "§aGave {player} {bonus}% XP bonus for {duration} ({job})"
+    
+  # Rewards commands
+  rewards:
+    no-permission: "&cYou don't have permission to use rewards!"
+    help:
+      header: "&6=== Reward Commands ==="
+      open: "&e/job rewards open <job> &7- Open rewards GUI for a job"
+      list: "&e/job rewards list &7- List jobs with rewards"
+      claim: "&e/job rewards claim <job> <rewardId> &7- Claim a specific reward"
+      info: "&e/job rewards info <job> <rewardId> &7- Get reward information"
+    open:
+      usage: "&cUsage: /jobs rewards open <job>"
+    job-not-found: "&cJob '{job}' not found!"
+    must-have-job: "&cYou must have the {job} job to view its rewards!"
+    list:
+      header: "&6Jobs with rewards:"
+      job-item: "&e- {job}"
+      no-rewards: "&cNo jobs have rewards configured."
+    claim:
+      success: "&aReward claimed successfully!"
+      failed: "&cFailed to claim reward. Check requirements and availability."
+    reward-not-found: "&cReward not found!"
+    
+  # Help command
+  help:
+    header: "&6=== JobsAdventure Help ==="
+    join: "&e/job join <job> &7- Join a job"
+    leave: "&e/job leave <job> &7- Leave a job"
+    list: "&e/job list &7- List all available jobs"
+    info: "&e/job info <job> &7- Get job information"
+    stats: "&e/job stats [player] &7- View job statistics"
+    top: "&e/job top <job> &7- View job leaderboards"
+    rewards: "&e/job rewards &7- Reward system commands"
+    xpbonus: "&e/job xpbonus &7- XP bonus commands"
+    reload: "&e/job reload &7- Reload plugin configuration"
+
+# GUI system messages
+gui:
+  rewards:
+    title: "&6{job} Rewards"
+    job-label: "&7Job: &e{job}"
+    total-label: "&7Total Rewards: &e{count}"
+    page-label: "&7Page: &e{current}/{total}"
+    required-level: "&7Required Level: &e{level}"
+    status-label: "&7Status: {status}"
+    repeatable-yes: "&7Repeatable: &aYes"
+    repeatable-no: "&7Repeatable: &cNo"
+    cooldown-label: "&7Cooldown: &e{cooldown}"
+    click-to-claim: "&a▶ Click to claim!"
+    claim-success: "&aReward claimed successfully!"
+    claim-failed: "&cFailed to claim reward."
+    already-claimed: "&7You have already claimed this reward."
+
+# System messages (console/logger)
+system:
+  config-loaded: "Configuration loaded successfully"
+  jobs-loaded: "Jobs loaded successfully"
+  rewards-initialized: "Reward system initialized successfully"
+  nexo-registered: "Nexo event listener registered for enhanced custom block support"
+  itemsadder-registered: "ItemsAdder event listener registered for enhanced custom block support"
+  plugin-enabled: "JobsAdventure has been enabled successfully!"
+  plugin-disabled: "JobsAdventure has been disabled"
+
+# Legacy message support (backward compatibility)
+messages:
+  level-up: "&aCongratulations! You reached level {level} in {job}!"
+  xp-gain: "&e+{xp} XP ({job})"
+  job-joined: "&aYou joined the {job} job!"
+  job-left: "&cYou left the {job} job!"
+  already-have-job: "&cYou already have the {job} job!"
+  dont-have-job: "&cYou don't have the {job} job!"
+  job-not-found: "&cJob '{job}' not found!"
+  no-permission: "&cYou don't have permission to join the {job} job!"
+  max-jobs-reached: "&cYou can only have {max} jobs at once!"
+  invalid-usage: "&cInvalid usage! Use /job help for commands."
+  job-or-player-not-found: "&cJob or player '{target}' not found!"
+  join-failed: "&cFailed to join the {job} job!"
+  leave-failed: "&cFailed to leave the {job} job!"

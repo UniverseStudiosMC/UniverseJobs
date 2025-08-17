@@ -1,0 +1,157 @@
+# Français (France) language file for JobsAdventure
+# Ce fichier contient tous les messages traduisibles du plugin
+
+# Messages XP et de niveau
+xp:
+  gain-message:
+    default: "&e+{xp} XP ({job})"
+  level-up: "&aFélicitations ! Vous avez atteint le niveau {level} dans le métier {job} !"
+
+# Messages du système de bonus XP
+xp-bonus:
+  global-announced: "&e&lBONUS XP ! &6Tous les joueurs ont reçu &e{bonus}% &6de bonus XP pendant &e{duration}&6 !"
+  added: "&a&lBOOST XP ! &e+{bonus}% XP &apendant &e{duration} &a({reason})"
+  expired: "&c&lBOOST XP EXPIRÉ ! &7Le bonus de {bonus}% s'est terminé ({reason})"
+
+# Messages du système de commandes
+commands:
+  players-only: "§cCette commande ne peut être utilisée que par les joueurs !"
+  no-permission: "§cVous n'avez pas la permission d'utiliser cette commande !"
+  player-not-found: "§cJoueur introuvable !"
+  
+  # Commande join
+  join:
+    usage: "&cUtilisation : /job join <métier>"
+    success: "&aVous avez rejoint le métier {job} !"
+    already-have: "&cVous avez déjà le métier {job} !"
+    max-jobs-reached: "&cVous ne pouvez avoir que {max} métiers à la fois !"
+    no-permission: "&cVous n'avez pas la permission de rejoindre le métier {job} !"
+    failed: "&cÉchec lors de l'adhésion au métier {job} !"
+    job-not-found: "&cMétier '{job}' introuvable !"
+    
+  # Commande leave
+  leave:
+    usage: "&cUtilisation : /job leave <métier>"
+    success: "&cVous avez quitté le métier {job} !"
+    dont-have: "&cVous n'avez pas le métier {job} !"
+    failed: "&cÉchec lors de l'abandon du métier {job} !"
+    job-not-found: "&cMétier '{job}' introuvable !"
+    
+  # Commande info
+  info:
+    target-not-found: "&cMétier ou joueur '{target}' introuvable !"
+    job-header: "&6=== {job} ==="
+    description: "&7Description : &f{description}"
+    max-level: "&7Niveau max : &f{maxLevel}"
+    permission: "&7Permission : &f{permission}"
+    lore: "&7Histoire :"
+    lore-line: "&f  {line}"
+    action-types: "&7Types d'actions : &f{actionTypes}"
+    
+  # Commande stats
+  stats:
+    no-jobs-self: "&cVous n'avez aucun métier !"
+    no-jobs-other: "&c{player} n'a aucun métier !"
+    header: "&6=== Métiers de {player} ==="
+    job-line: "&e{job} &7- Niveau {level} &8({currentXp}/{requiredXp} XP)"
+    
+  # Commande list
+  list:
+    no-jobs: "&cAucun métier n'est disponible !"
+    header: "&6=== Métiers Disponibles ==="
+    status-have: "§a✓"
+    status-dont-have: "§c✗"
+    
+  # Commandes de bonus XP
+  xpbonus:
+    usage:
+      header: "&6=== Commandes de Bonus XP ==="
+      global: "&e/job xpbonus <multiplicateur> <durée> &7- Donner un bonus XP global"
+      player: "&e/job xpbonus <joueur> <multiplicateur> <durée> &7- Donner un bonus XP à un joueur"
+      job: "&e/job xpbonus <joueur> <métier> <multiplicateur> <durée> &7- Donner un bonus spécifique à un métier"
+      examples: "&7Exemples : /job xpbonus 2.0 300, /job xpbonus Steve 1.5 600"
+    invalid-numbers: "§cMultiplicateur ou durée invalide ! Utilisez uniquement des chiffres."
+    invalid-multiplier: "§cLe multiplicateur doit être entre 0.1 et 10.0 !"
+    invalid-duration: "§cLa durée doit être entre 1 seconde et 24 heures (86400 secondes) !"
+    job-not-exist: "§cLe métier '{job}' n'existe pas !"
+    gave-global: "§aBonus XP de {multiplier}x donné à {playerCount} joueurs en ligne pendant {duration}"
+    player-offline: "§cLe joueur '{player}' n'est pas en ligne !"
+    gave-player: "§aBonus XP de {bonus}% donné à {player} pendant {duration} ({job})"
+    
+  # Commandes de récompenses
+  rewards:
+    no-permission: "&cVous n'avez pas la permission d'utiliser les récompenses !"
+    help:
+      header: "&6=== Commandes de Récompenses ==="
+      open: "&e/job rewards open <métier> &7- Ouvrir l'interface des récompenses d'un métier"
+      list: "&e/job rewards list &7- Lister les métiers avec des récompenses"
+      claim: "&e/job rewards claim <métier> <idRécompense> &7- Réclamer une récompense spécifique"
+      info: "&e/job rewards info <métier> <idRécompense> &7- Obtenir des informations sur une récompense"
+    open:
+      usage: "&cUtilisation : /jobs rewards open <métier>"
+    job-not-found: "&cMétier '{job}' introuvable !"
+    must-have-job: "&cVous devez avoir le métier {job} pour voir ses récompenses !"
+    list:
+      header: "&6Métiers avec des récompenses :"
+      job-item: "&e- {job}"
+      no-rewards: "&cAucun métier n'a de récompenses configurées."
+    claim:
+      success: "&aRécompense réclamée avec succès !"
+      failed: "&cÉchec de la réclamation de récompense. Vérifiez les exigences et la disponibilité."
+    reward-not-found: "&cRécompense introuvable !"
+    
+  # Commande d'aide
+  help:
+    header: "&6=== Aide JobsAdventure ==="
+    join: "&e/job join <métier> &7- Rejoindre un métier"
+    leave: "&e/job leave <métier> &7- Quitter un métier"
+    list: "&e/job list &7- Lister tous les métiers disponibles"
+    info: "&e/job info <métier> &7- Obtenir des informations sur un métier"
+    stats: "&e/job stats [joueur] &7- Voir les statistiques des métiers"
+    top: "&e/job top <métier> &7- Voir le classement des métiers"
+    rewards: "&e/job rewards &7- Commandes du système de récompenses"
+    xpbonus: "&e/job xpbonus &7- Commandes de bonus XP"
+    reload: "&e/job reload &7- Recharger la configuration du plugin"
+
+# Messages du système d'interface graphique
+gui:
+  rewards:
+    title: "&6Récompenses {job}"
+    job-label: "&7Métier : &e{job}"
+    total-label: "&7Total des récompenses : &e{count}"
+    page-label: "&7Page : &e{current}/{total}"
+    required-level: "&7Niveau requis : &e{level}"
+    status-label: "&7Statut : {status}"
+    repeatable-yes: "&7Répétable : &aOui"
+    repeatable-no: "&7Répétable : &cNon"
+    cooldown-label: "&7Délai d'attente : &e{cooldown}"
+    click-to-claim: "&a▶ Cliquez pour réclamer !"
+    claim-success: "&aRécompense réclamée avec succès !"
+    claim-failed: "&cÉchec de la réclamation de récompense."
+    already-claimed: "&7Vous avez déjà réclamé cette récompense."
+
+# Messages système (console/logger)
+system:
+  config-loaded: "Configuration chargée avec succès"
+  jobs-loaded: "Métiers chargés avec succès"
+  rewards-initialized: "Système de récompenses initialisé avec succès"
+  nexo-registered: "Écouteur d'événements Nexo enregistré pour le support amélioré des blocs personnalisés"
+  itemsadder-registered: "Écouteur d'événements ItemsAdder enregistré pour le support amélioré des blocs personnalisés"
+  plugin-enabled: "JobsAdventure a été activé avec succès !"
+  plugin-disabled: "JobsAdventure a été désactivé"
+
+# Support des messages hérités (rétrocompatibilité)
+messages:
+  level-up: "&aFélicitations ! Vous avez atteint le niveau {level} dans le métier {job} !"
+  xp-gain: "&e+{xp} XP ({job})"
+  job-joined: "&aVous avez rejoint le métier {job} !"
+  job-left: "&cVous avez quitté le métier {job} !"
+  already-have-job: "&cVous avez déjà le métier {job} !"
+  dont-have-job: "&cVous n'avez pas le métier {job} !"
+  job-not-found: "&cMétier '{job}' introuvable !"
+  no-permission: "&cVous n'avez pas la permission de rejoindre le métier {job} !"
+  max-jobs-reached: "&cVous ne pouvez avoir que {max} métiers à la fois !"
+  invalid-usage: "&cUtilisation invalide ! Utilisez /job help pour les commandes."
+  job-or-player-not-found: "&cMétier ou joueur '{target}' introuvable !"
+  join-failed: "&cÉchec lors de l'adhésion au métier {job} !"
+  leave-failed: "&cÉchec lors de l'abandon du métier {job} !"
