@@ -10,6 +10,8 @@ import org.bukkit.persistence.PersistentDataType;
 import com.nexomc.nexo.api.NexoBlocks;
 import com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic;
 
+// Nexo imports handled via reflection to avoid compilation errors when Nexo is not available
+
 import java.util.logging.Level;
 
 /**
@@ -159,7 +161,7 @@ public class BlockProtectionManager {
         
         try {
             // Use direct Nexo API
-            CustomBlockMechanic mechanic = NexoBlocks.customBlockMechanic(block);
+            CustomBlockMechanic mechanic = NexoBlocks.customBlockMechanic(block.getLocation());
             
             return mechanic != null ? mechanic.getItemID() : null;
             

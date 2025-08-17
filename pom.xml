@@ -100,6 +100,10 @@
             <id>tcoded-releases</id>
             <url>https://repo.tcoded.com/releases</url>
         </repository>
+        <repository>
+            <id>nexomc</id>
+            <url>https://repo.nexomc.com/releases</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -120,16 +124,18 @@
             <artifactId>item-nbt-api</artifactId>
             <version>2.13.2</version>
         </dependency>
-        <!-- Nexo dependency - uncomment and add nexo-1.10.jar to libs/ folder to enable -->
-        <!--
         <dependency>
             <groupId>com.nexomc</groupId>
             <artifactId>nexo</artifactId>
-            <version>1.10</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/libs/nexo-1.10.jar</systemPath>
+            <version>1.1.0</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
-        -->
         <dependency>
             <groupId>dev.lone</groupId>
             <artifactId>api-itemsadder</artifactId>
@@ -155,25 +161,4 @@
             <scope>compile</scope>
         </dependency>
     </dependencies>
-
-    <profiles>
-        <!-- Profile to include Nexo dependency when building locally -->
-        <profile>
-            <id>nexo</id>
-            <activation>
-                <file>
-                    <exists>libs/nexo-1.10.jar</exists>
-                </file>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>com.nexomc</groupId>
-                    <artifactId>nexo</artifactId>
-                    <version>1.10</version>
-                    <scope>system</scope>
-                    <systemPath>${project.basedir}/libs/nexo-1.10.jar</systemPath>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
 </project>

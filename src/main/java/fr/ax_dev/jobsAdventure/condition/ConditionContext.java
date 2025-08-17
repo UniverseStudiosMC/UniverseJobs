@@ -1,5 +1,6 @@
 package fr.ax_dev.jobsAdventure.condition;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -208,7 +209,7 @@ public class ConditionContext {
         try {
             // Use direct Nexo API
             com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic mechanic = 
-                com.nexomc.nexo.api.NexoBlocks.customBlockMechanic(block);
+                com.nexomc.nexo.api.NexoBlocks.customBlockMechanic((Location) block);
             
             return mechanic != null ? mechanic.getItemID() : null;
             
