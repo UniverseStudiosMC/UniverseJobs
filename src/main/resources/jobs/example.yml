@@ -15,8 +15,8 @@ icon:
 
 # ⭐ XP MESSAGE - How to display XP gains
 xp-message:
-  type: "ACTIONBAR" # Types: CHAT, ACTIONBAR, BOSSBAR, TITLE
-  text: "&e+{exp} XP &8| &6{job} &7Level {level}"
+  type: "BOSSBAR" # Types: CHAT, ACTIONBAR, BOSSBAR, TITLE
+  text: "&e+{exp} XP &6+{money} MONEY &8| &6{job} &7Level {level}"
   actionbar:
     duration: 60                            # Duration in ticks (60 = 3 seconds)
 
@@ -29,11 +29,13 @@ actions:
     mine_stone_simple:
       target: "STONE"                       # Block to break
       xp: 1.0                              # XP earned
+      money: 3.0                           # Money earned
       name: "Stone Extraction"              # Optional name for messages
 
     mine_emerald_expert:
       target: "EMERALD_ORE"
       xp: 20.0
+      money: 50.0
       name: "Expert Emerald Extraction"
       requirements:
         logic: "AND"                        # ALL conditions must be true
@@ -57,6 +59,31 @@ actions:
             value: "32"
             deny:
               message: "&c❌ Emeralds are rare on the surface!"
+
+    mine_diamond_vip:
+      target: "DIAMOND_ORE"
+      xp: 30.0
+      money: 100.0
+      name: "VIP Diamond Mining"
+      requirements:
+        logic: "AND"
+        multiple_condition:
+          level_check:
+            placeholder:
+              placeholder: "%jobsadventure_level_example%"
+              operator: "greater_equal"
+              value: "10"
+          player_name_check:
+            placeholder:
+              placeholder: "%player_name%"
+              operator: "equals"
+              value: "STEVE"
+          deny:
+            message: "&c❌ NOT STEVE or insufficient level!"
+            cancelEvent: true
+          accept:
+            commands:
+            - "eco give %player_name% 200"
  
 levelup-actions:
   level_sound:

@@ -41,6 +41,19 @@ public class XpMessageSender {
      * @param playerData The player's job data (for progress calculation)
      */
     public void sendXpMessage(Player player, Job job, double xp, fr.ax_dev.jobsAdventure.job.PlayerJobData playerData) {
+        sendXpMessage(player, job, xp, 0.0, playerData);
+    }
+    
+    /**
+     * Send an XP message to a player using the job's configured display method.
+     * 
+     * @param player The player to send the message to
+     * @param job The job that granted XP
+     * @param xp The amount of XP gained
+     * @param money The amount of money gained (for placeholder support)
+     * @param playerData The player's job data (for progress calculation)
+     */
+    public void sendXpMessage(Player player, Job job, double xp, double money, fr.ax_dev.jobsAdventure.job.PlayerJobData playerData) {
         if (!plugin.getConfig().getBoolean("messages.show-xp-gain", true)) {
             return;
         }
@@ -63,6 +76,7 @@ public class XpMessageSender {
         String message = messageTemplate
                 .replace("{xp}", String.format("%.1f", xp))
                 .replace("{exp}", String.format("%.1f", xp)) // Support both {xp} and {exp}
+                .replace("{money}", String.format("%.1f", money))
                 .replace("{job}", job.getName())
                 .replace("{level}", String.valueOf(currentLevel))
                 .replace("{progress}", String.format("%.1f", progressPercent))

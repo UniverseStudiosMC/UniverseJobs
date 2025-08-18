@@ -7,13 +7,14 @@ import org.bukkit.configuration.ConfigurationSection;
 import java.util.List;
 
 /**
- * Represents a specific action within a job that can award XP when performed.
- * Contains target criteria, XP rewards, and requirement conditions.
+ * Represents a specific action within a job that can award XP and money when performed.
+ * Contains target criteria, XP and money rewards, and requirement conditions.
  */
 public class JobAction {
     
     private final String target;
     private final double xp;
+    private final double money;
     private final ConditionGroup requirements;
     private final String name;
     private final String description;
@@ -28,6 +29,7 @@ public class JobAction {
     public JobAction(ConfigurationSection config) {
         this.target = config.getString("target", "");
         this.xp = config.getDouble("xp", 0.0);
+        this.money = config.getDouble("money", 0.0);
         this.name = config.getString("name", "");
         this.description = config.getString("description", "");
         
@@ -63,6 +65,15 @@ public class JobAction {
      */
     public double getXp() {
         return xp;
+    }
+    
+    /**
+     * Get the money reward for this action.
+     * 
+     * @return The money amount
+     */
+    public double getMoney() {
+        return money;
     }
     
     /**
@@ -208,6 +219,6 @@ public class JobAction {
     
     @Override
     public String toString() {
-        return "JobAction{target='" + target + "', xp=" + xp + ", hasRequirements=" + hasRequirements() + "}";
+        return "JobAction{target='" + target + "', xp=" + xp + ", money=" + money + ", hasRequirements=" + hasRequirements() + "}";
     }
 }

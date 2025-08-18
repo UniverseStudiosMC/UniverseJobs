@@ -9,6 +9,8 @@ import fr.ax_dev.jobsAdventure.job.Job;
 import fr.ax_dev.jobsAdventure.job.JobManager;
 import fr.ax_dev.jobsAdventure.utils.MessageUtils;
 import fr.ax_dev.jobsAdventure.utils.XpMessageSender;
+import net.milkbowl.vault.economy.Economy;
+
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.Sound;
@@ -112,10 +114,12 @@ public class ActionProcessor {
             }
         }
         
-        // Award XP
+        // Award XP and money together
         double xp = action.getXp();
-        if (xp > 0) {
-            awardXp(player, job, xp);
+        double money = action.getMoney();
+        
+        if (xp > 0 || money > 0) {
+            awardRewards(player, job, xp, money);
         }
         
         // Execute action-level message and commands (after XP award)
@@ -125,38 +129,62 @@ public class ActionProcessor {
     }
     
     /**
-     * Award XP to a player for a job.
+     * Award XP and money to a player for a job action.
      * 
      * @param player The player
      * @param job The job
      * @param xp The XP amount
+     * @param money The money amount
      */
-    private void awardXp(Player player, Job job, double xp) {
-        // Get current level for level cap check
-        int currentLevel = jobManager.getLevel(player, job.getId());
-        if (currentLevel >= job.getMaxLevel()) {
-            return; // Player is at max level
+    private void awardRewards(Player player, Job job, double xp, double money) {
+        double finalXp = 0.0;
+        double finalMoney = 0.0;
+        
+        // Process XP if present
+        if (xp > 0) {
+            // Get current level for level cap check
+            int currentLevel = jobManager.getLevel(player, job.getId());
+            if (currentLevel < job.getMaxLevel()) {
+                // Apply any XP multipliers
+                finalXp = applyMultipliers(player, job, xp);
+                
+                // Apply bonus multipliers
+                double bonusMultiplier = bonusManager.getTotalMultiplier(player.getUniqueId(), job.getId());
+                finalXp *= bonusMultiplier;
+                
+                // Add XP to the player
+                jobManager.addXp(player, job.getId(), finalXp);
+                
+                // Check for level up
+                int newLevel = jobManager.getLevel(player, job.getId());
+                if (newLevel > currentLevel) {
+                    handleLevelUp(player, job, currentLevel, newLevel);
+                }
+            }
         }
         
-        // Apply any XP multipliers here if needed
-        double finalXp = applyMultipliers(player, job, xp);
-        
-        // Apply bonus multipliers
-        double bonusMultiplier = bonusManager.getTotalMultiplier(player.getUniqueId(), job.getId());
-        finalXp *= bonusMultiplier;
-        
-        // Add XP to the player
-        jobManager.addXp(player, job.getId(), finalXp);
-        
-        // Check for level up
-        int newLevel = jobManager.getLevel(player, job.getId());
-        if (newLevel > currentLevel) {
-            handleLevelUp(player, job, currentLevel, newLevel);
+        // Process money if present
+        if (money > 0) {
+            // Apply any money multipliers
+            finalMoney = applyMoneyMultipliers(player, job, money);
+            
+            // Apply bonus multipliers (same as XP for consistency)
+            double bonusMultiplier = bonusManager.getTotalMultiplier(player.getUniqueId(), job.getId());
+            finalMoney *= bonusMultiplier;
+            
+            // Add money to the player
+            addPlayerMoney(player, finalMoney);
         }
         
-        // Send XP gain message using the configured display method
-        fr.ax_dev.jobsAdventure.job.PlayerJobData playerData = jobManager.getPlayerData(player);
-        messageSender.sendXpMessage(player, job, finalXp, playerData);
+        // Send combined message if either reward was given
+        if (finalXp > 0 || finalMoney > 0) {
+            fr.ax_dev.jobsAdventure.job.PlayerJobData playerData = jobManager.getPlayerData(player);
+            messageSender.sendXpMessage(player, job, finalXp, finalMoney, playerData);
+            
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("Player " + player.getName() + " earned " + finalXp + " XP and " + finalMoney + " money from job " + job.getId());
+            }
+        }
     }
     
     /**
@@ -190,6 +218,80 @@ public class ActionProcessor {
         // - Item-based bonuses
         
         return baseXp * multiplier;
+    }
+    
+    /**
+     * Apply money multipliers based on various factors (similar to XP multipliers).
+     * 
+     * @param player The player
+     * @param job The job
+     * @param baseMoney The base money amount
+     * @return The modified money amount
+     */
+    private double applyMoneyMultipliers(Player player, Job job, double baseMoney) {
+        double multiplier = 1.0;
+        
+        // Check for permission-based multipliers (same as XP)
+        // Skip if player is OP or has wildcard permission to avoid overpowered bonuses
+        if (!player.isOp() && !player.hasPermission("*")) {
+            for (int i = 10; i >= 1; i--) {
+                String permission = "jobsadventure.multiplier." + i;
+                // Check if player has the specific permission (not through wildcard)
+                if (player.hasPermission(permission) && !hasWildcardPermission(player)) {
+                    multiplier = i;
+                    break;
+                }
+            }
+        }
+        
+        return baseMoney * multiplier;
+    }
+    
+    /**
+     * Add money to a player's balance.
+     * This method handles integration with economy plugins like Vault.
+     * 
+     * @param player The player
+     * @param amount The amount to add
+     */
+    private void addPlayerMoney(Player player, double amount) {
+        // Check if Vault is available and try to use it
+        if (plugin.getServer().getPluginManager().isPluginEnabled("Vault")) {
+            try {
+                // Try to get Vault integration
+                net.milkbowl.vault.economy.Economy economy = getVaultEconomy();
+                if (economy != null) {
+                    economy.depositPlayer(player, amount);
+                    return;
+                }
+            } catch (Exception e) {
+                // Vault integration failed, log and continue to fallback
+                plugin.getLogger().warning("Failed to use Vault for money reward: " + e.getMessage());
+            }
+        }
+        
+        // Fallback: Use commands to give money (works with most economy plugins)
+        String command = plugin.getConfig().getString("economy.money-command", "eco give {player} {amount}")
+                .replace("{player}", player.getName())
+                .replace("{amount}", String.valueOf(amount));
+        
+        plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), command);
+    }
+    
+    /**
+     * Get Vault economy instance if available.
+     * 
+     * @return Economy instance or null
+     */
+    private Economy getVaultEconomy() {
+        try {
+            if (plugin.getServer().getServicesManager().getRegistration(Economy.class) != null) {
+                return plugin.getServer().getServicesManager().getRegistration(Economy.class).getProvider();
+            }
+        } catch (Exception e) {
+            // Class not found or other error
+        }
+        return null;
     }
     
     /**

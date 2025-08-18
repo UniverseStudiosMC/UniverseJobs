@@ -74,17 +74,17 @@ public class MultipleConditionWrapper implements Condition {
     
     @Override
     public ConditionResult getDenyResult() {
-        // Use wrapped condition's deny result first (more specific), then global
+        // Use global deny result if available (this takes priority for multiple_condition)
+        if (globalDenyResult != null) {
+            return globalDenyResult;
+        }
+        
+        // Fall back to wrapped condition's deny result
         if (wrappedCondition != null) {
             ConditionResult wrappedDeny = wrappedCondition.getDenyResult();
             if (wrappedDeny != null && !wrappedDeny.isDefault()) {
                 return wrappedDeny;
             }
-        }
-        
-        // Fall back to global deny result
-        if (globalDenyResult != null) {
-            return globalDenyResult;
         }
         
         return ConditionResult.deny();
