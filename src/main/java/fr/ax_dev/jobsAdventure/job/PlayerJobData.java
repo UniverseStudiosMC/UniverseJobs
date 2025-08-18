@@ -158,8 +158,8 @@ public class PlayerJobData {
             xpData.put(jobId, newXp);
             lastModified = System.currentTimeMillis();
             
-            // Check for level up
-            checkLevelUp(jobId);
+            // Check for level up and trigger actions
+            checkLevelUp(jobId, xp);
         } finally {
             dataLock.writeLock().unlock();
         }
@@ -183,7 +183,7 @@ public class PlayerJobData {
      */
     public void setXp(String jobId, double xp) {
         xpData.put(jobId, xp);
-        checkLevelUp(jobId);
+        checkLevelUp(jobId, 0); // No XP gained since this is a direct set
     }
     
     /**
@@ -321,15 +321,38 @@ public class PlayerJobData {
      * Check if the player should level up and update accordingly.
      * 
      * @param jobId The job ID
+     * @param xpGained The XP gained that might trigger level up
      * @return true if leveled up
      */
-    private boolean checkLevelUp(String jobId) {
+    private boolean checkLevelUp(String jobId, double xpGained) {
         double totalXp = getXp(jobId);
         int currentLevel = getLevel(jobId);
         int calculatedLevel = getLevelFromXp(jobId, totalXp);
         
         if (calculatedLevel > currentLevel) {
             setLevel(jobId, calculatedLevel);
+            
+            // Trigger level up actions if JobManager is available
+            if (jobManager != null) {
+                try {
+                    // Get the player from the UUID
+                    org.bukkit.entity.Player player = org.bukkit.Bukkit.getPlayer(playerUuid);
+                    if (player != null && player.isOnline()) {
+                        // Get the level up action manager from the plugin
+                        fr.ax_dev.jobsAdventure.levelup.SimpleLevelUpActionManager actionManager = 
+                            jobManager.getPlugin().getLevelUpActionManager();
+                        if (actionManager != null) {
+                            actionManager.executeLevelUpActions(player, jobId, currentLevel, calculatedLevel, totalXp, xpGained);
+                        }
+                    }
+                } catch (Exception e) {
+                    // Log error but don't fail the level up
+                    if (jobManager.getPlugin() != null) {
+                        jobManager.getPlugin().getLogger().warning("Failed to execute level up actions for player " + playerUuid + " in job " + jobId + ": " + e.getMessage());
+                    }
+                }
+            }
+            
             return true;
         }
         

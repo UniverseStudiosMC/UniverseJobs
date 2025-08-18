@@ -52,158 +52,102 @@ actions:
 ## ⛏️ Complete Example: Miner Job
 
 ```yaml
-# /plugins/JobsAdventure/jobs/miner.yml
+# ===================================
+# MINER JOB CONFIGURATION
+# ===================================
+# This job rewards players for mining blocks and fighting underground creatures
+# Configure XP rewards, level up actions, and mining-related activities
+
+# Basic job information
 name: "Miner"
-description: "Master of underground extraction"
+description: "Extract valuable resources from the depths of the earth"
 enabled: true
 max-level: 100
 permission: "jobsadventure.job.miner"
 icon: "DIAMOND_PICKAXE"
 
-rewards: "miner_rewards"
-gui-reward: "miner_gui"
-
-# Progressive XP curve
+# XP progression curve
 xp-equation: "100 * Math.pow(level, 1.8)"
 
-# Messages with colored boss bar
+# XP message display
 xp-message:
-  type: "bossbar"
-  text: "&6⛏ +{exp} XP Mining &7({level})"
-  bossbar:
-    color: "yellow"
-    style: "segmented_10"
-    duration: 80
-    show-progress: true
+  type: "actionbar"
+  text: "&e+{exp} XP &8| &6{job} &7Level {level}"
+  actionbar:
+    duration: 60
 
+# Job description and lore
 lore:
-  - "&7Dig deep into the earth"
-  - "&7Discover precious ores"
-  - "&7Bonus XP for rare materials"
-  - "&7Compatible with all custom block plugins"
+  - "&7Dig deep and discover precious ores!"
+  - "&7Level up by mining stones and ores"
+  - "&7Unlock better tools and rewards"
 
+# ===================================
+# JOB ACTIONS - WHAT GIVES XP
+# ===================================
 actions:
-  # Basic mining
   BREAK:
-    # Basic stone
+    # Basic materials
     stone:
       target: "STONE"
       xp: 1.0
-      name: "Stone Extraction"
-      description: "Basic stone mining"
+      name: "Stone Mining"
     
-    # Common ores
     coal_ore:
       target: "COAL_ORE"
-      xp: 5.0
-      name: "Coal Extraction"
-      description: "Coal ore mining"
-      requirements:
-        logic: "AND"
-        item:
-          material: "IRON_PICKAXE"
-          deny:
-            message: "&cAn iron pickaxe or better is required!"
-            sound: "BLOCK_ANVIL_PLACE"
+      xp: 3.0
+      name: "Coal Mining"
     
     iron_ore:
       target: "IRON_ORE"
-      xp: 12.0
-      name: "Iron Extraction"
-      description: "Iron ore mining"
+      xp: 5.0
+      name: "Iron Mining"
       requirements:
         logic: "AND"
         item:
           material: "IRON_PICKAXE"
-        placeholder:
-          placeholder: "%jobsadventure_miner_player_level%"
-          operator: "greater_than"
-          value: "10"
           deny:
-            message: "&cLevel 10 required in mining!"
+            message: "&cYou need at least an iron pickaxe!"
     
-    # Precious ores
     gold_ore:
       target: "GOLD_ORE"
-      xp: 25.0
-      name: "Gold Extraction"
-      description: "Precious gold ore mining"
-      requirements:
-        logic: "AND"
-        item:
-          material: "DIAMOND_PICKAXE"
-        world:
-          worlds: ["world", "mining_world"]
-          blacklist: false
-          deny:
-            message: "&cGold can only be mined in certain worlds!"
+      xp: 8.0
+      name: "Gold Mining"
     
     diamond_ore:
       target: "DIAMOND_ORE"
-      xp: 50.0
-      name: "Diamond Extraction"
-      description: "Mining precious diamonds"
-      message:
-        type: "BOSSBAR"
-        style: "segment_0"
-        color: "BLUE"
-        duration: 100
-        message: "&b💎 DIAMOND FOUND! +50 XP"
-      sound: "ENTITY_PLAYER_LEVELUP"
+      xp: 15.0
+      name: "Diamond Mining"
       requirements:
         logic: "AND"
         item:
           material: "DIAMOND_PICKAXE"
-        time:
-          min: 13000  # Night only
-          max: 23000
           deny:
-            message: "&cDiamonds are easier to find at night!"
+            message: "&cYou need a diamond pickaxe for this!"
         placeholder:
           placeholder: "%player_y%"
           operator: "less_than"
           value: "16"
           deny:
-            message: "&cDiamonds are found below Y=16!"
+            message: "&cDiamonds are only found at Y level 16 or below!"
     
-    # Nether ores
     ancient_debris:
       target: "ANCIENT_DEBRIS"
-      xp: 100.0
-      name: "Ancient Debris Extraction"
-      description: "Mining rare ancient debris"
-      commands:
-        - "broadcast &6{player} &efound ancient debris!"
+      xp: 25.0
+      name: "Ancient Debris Mining"
       requirements:
         logic: "AND"
         item:
           material: "NETHERITE_PICKAXE"
-        world:
-          worlds: ["world_nether"]
-          blacklist: false
-    
-    # Custom Nexo blocks
-    mythril_ore:
-      target: "nexo:mythril_ore"
-      xp: 75.0
-      name: "Mythril Extraction"
-      description: "Mining legendary mythril"
-      requirements:
-        logic: "AND"
-        item:
-          mmoitems:
-            type: "TOOL"
-            id: "MYTHRIL_PICKAXE"
           deny:
-            message: "&cOnly a mythril pickaxe can extract this ore!"
-  
-  # Underground combat
+            message: "&cAncient debris requires a netherite pickaxe!"
+
   KILL:
-    cave_spider:
-      target: "CAVE_SPIDER"
-      xp: 8.0
-      name: "Cave Spider Elimination"
-      description: "Combat in mines"
+    # Underground creatures
+    zombie:
+      target: "ZOMBIE"
+      xp: 2.0
+      name: "Cave Zombie Elimination"
       requirements:
         logic: "AND"
         placeholder:
@@ -211,448 +155,728 @@ actions:
           operator: "less_than"
           value: "50"
           deny:
-            message: "&cUnderground bonus only!"
+            message: "&cThis bonus only applies underground!"
     
-    zombie:
-      target: "ZOMBIE"
-      xp: 5.0
-      name: "Miner Zombie Elimination"
-      description: "Clearing mines of undead"
+    skeleton:
+      target: "SKELETON"
+      xp: 2.5
+      name: "Cave Skeleton Elimination"
       requirements:
         logic: "AND"
         placeholder:
           placeholder: "%player_y%"
           operator: "less_than"
-          value: "60"
-    
-    # MythicMobs boss
-    cave_guardian:
-      target: "MYTHICMOB:CaveGuardian"
-      xp: 200.0
-      name: "Cave Guardian Defeat"
-      description: "Defeating the formidable guardian"
-      commands:
-        - "broadcast &6&l{player} &edefeated the Cave Guardian!"
-        - "give {player} diamond 10"
-      requirements:
-        logic: "AND"
-        permission:
-          permission: "jobs.boss.cave"
-          require: true
+          value: "50"
+
+# ===================================
+# LEVEL UP ACTIONS - REWARDS & EFFECTS
+# ===================================
+levelup-actions:
+  # Welcome message for new miners
+  welcome_message:
+    type: "message"
+    levels: [1]
+    messages:
+      - "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+      - "&6&l✦ WELCOME TO THE MINER JOB! ✦"
+      - "&7You are now a level &e{level} &7miner!"
+      - "&7Mine ores and stones to gain experience!"
+      - "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+  
+  # Basic level up effects for all levels
+  level_up_sound:
+    type: "sound"
+    min-level: 1
+    sound: "ENTITY_PLAYER_LEVELUP"
+  
+  level_up_title:
+    type: "title"
+    min-level: 2
+    title: "&6&lLEVEL UP!"
+    subtitle: "&7Miner Level &e{level}"
+    fade-in: 10
+    stay: 50
+    fade-out: 20
+  
+  level_up_particles:
+    type: "particle"
+    min-level: 1
+    particle: "FLAME"
+    count: 25
+  
+  # Tool rewards at specific levels
+  iron_pickaxe_reward:
+    type: "command"
+    levels: [5]
+    commands:
+      - "give {player} iron_pickaxe 1"
+      - "tellraw {player} {\"text\":\"🎁 You received an Iron Pickaxe for reaching level 5!\",\"color\":\"gold\"}"
+  
+  diamond_pickaxe_reward:
+    type: "command"
+    levels: [25]
+    commands:
+      - "give {player} diamond_pickaxe 1"
+      - "tellraw {player} {\"text\":\"💎 You received a Diamond Pickaxe for reaching level 25!\",\"color\":\"aqua\"}"
+  
+  # Money rewards every 10 levels
+  money_rewards:
+    type: "command"
+    min-level: 10
+    level-interval: 10
+    commands:
+      - "eco give {player} {level}00"
+      - "tellraw {player} {\"text\":\"💰 You earned ${level}00 for reaching level {level}!\",\"color\":\"green\"}"
+  
+  # Major milestone announcements
+  milestone_broadcast:
+    type: "broadcast"
+    levels: [20, 40, 60, 80, 100]
+    messages:
+      - "&6⚒ {player} &7has reached level &e{level} &7in the Miner job! ⚒"
+  
+  # Special rewards for high levels
+  master_miner:
+    type: "command"
+    levels: [50]
+    commands:
+      - "broadcast &6🏆 {player} &7has become a &eMaster Miner&7! 🏆"
+      - "give {player} diamond 10"
+      - "give {player} emerald 5"
+  
+  legendary_miner:
+    type: "command"
+    levels: [100]
+    commands:
+      - "broadcast &6&l🌟 {player} &7has achieved &eLEGENDARY MINER &7status! &6&l🌟"
+      - "give {player} netherite_ingot 5"
+      - "give {player} diamond_block 3"
 ```
 
 ## 🌾 Complete Example: Farmer Job
 
 ```yaml
-# /plugins/JobsAdventure/jobs/farmer.yml
+# ===================================
+# FARMER JOB CONFIGURATION  
+# ===================================
+# This job rewards players for farming, breeding animals, and food production
+# Configure crop growing, animal care, and agricultural activities
+
+# Basic job information
 name: "Farmer"
-description: "Master of agriculture and livestock"
+description: "Cultivate the land and raise animals for sustenance"
 enabled: true
 max-level: 75
 permission: "jobsadventure.job.farmer"
 icon: "GOLDEN_HOE"
 
-rewards: "farmer_rewards"
-gui-reward: "farmer_gui"
+# XP progression curve (gentler than miner)
+xp-curve: "gentle"
 
-xp-equation: "80 * Math.pow(level, 1.6) + level * 15"
-
+# XP message display
 xp-message:
-  type: "actionbar"
-  text: "&a🌾 +{exp} XP Agriculture &7[{level}]"
-  actionbar:
-    duration: 100
+  type: "bossbar"
+  text: "&a+{exp} EXP &7| &2{job} &7Level {level}"
+  bossbar:
+    color: "green"
+    style: "segmented_10"
+    duration: 60
+    show-progress: true
 
+# Job description and lore
 lore:
-  - "&7Cultivate the land and raise animals"
-  - "&7Master the art of agriculture"
-  - "&7Seasonal bonuses and multipliers"
-  - "&7Complete CustomCrops integration"
+  - "&7Grow crops and care for animals"
+  - "&7Master the art of sustainable farming"
+  - "&7Feed the world with your harvest"
 
+# ===================================
+# JOB ACTIONS - WHAT GIVES XP
+# ===================================
 actions:
-  # Basic agriculture
   BREAK:
+    # Crop harvesting
     wheat:
       target: "WHEAT"
-      xp: 3.0
-      name: "Wheat Harvest"
-      description: "Harvesting mature wheat"
-      requirements:
-        logic: "AND"
-        item:
-          material: "HOE"
+      xp: 2.0
+      name: "Wheat Harvesting"
     
     carrots:
       target: "CARROTS"
-      xp: 3.5
-      name: "Carrot Harvest"
-      description: "Harvesting mature carrots"
+      xp: 2.5
+      name: "Carrot Harvesting"
     
     potatoes:
       target: "POTATOES"
-      xp: 3.5
-      name: "Potato Harvest"
-      description: "Harvesting mature potatoes"
+      xp: 2.5
+      name: "Potato Harvesting"
     
-    # CustomCrops
-    tomato:
-      target: "customcrops:tomato_stage_3"
-      xp: 8.0
-      name: "Tomato Harvest"
-      description: "Harvesting mature CustomCrops tomatoes"
-      message:
-        type: "CHAT"
-        message: "&a🍅 Tomato harvested! +8 XP"
+    beetroots:
+      target: "BEETROOTS"
+      xp: 3.0
+      name: "Beetroot Harvesting"
     
-    corn:
-      target: "customcrops:corn_stage_4"
-      xp: 12.0
-      name: "Corn Harvest"
-      description: "Harvesting giant corn"
-  
-  # Planting
+    pumpkin:
+      target: "PUMPKIN"
+      xp: 4.0
+      name: "Pumpkin Harvesting"
+    
+    melon:
+      target: "MELON"
+      xp: 4.0
+      name: "Melon Harvesting"
+    
+    sugar_cane:
+      target: "SUGAR_CANE"
+      xp: 1.5
+      name: "Sugar Cane Harvesting"
+
   PLACE:
+    # Planting crops
     wheat_seeds:
       target: "WHEAT_SEEDS"
       xp: 1.0
       name: "Wheat Planting"
-      description: "Planting wheat seeds"
     
-    custom_tomato_seeds:
-      target: "customcrops:tomato_seeds"
-      xp: 2.0
-      name: "Tomato Planting"
-      description: "Planting tomato seeds"
-  
-  # Livestock
-  KILL:
+    carrot_planting:
+      target: "CARROTS"
+      xp: 1.0
+      name: "Carrot Planting"
+    
+    potato_planting:
+      target: "POTATOES"
+      xp: 1.0
+      name: "Potato Planting"
+
+  BREED:
+    # Animal breeding
     cow:
       target: "COW"
       xp: 8.0
-      name: "Cattle Slaughter"
-      description: "Raising and slaughtering cattle"
+      name: "Cow Breeding"
       requirements:
         logic: "AND"
         item:
-          material: "SWORD"
+          material: "WHEAT"
+          deny:
+            message: "&cYou need wheat to breed cows!"
     
     pig:
       target: "PIG"
       xp: 6.0
-      name: "Pig Slaughter"
-      description: "Raising and slaughtering pigs"
+      name: "Pig Breeding"
+      requirements:
+        logic: "AND"
+        item:
+          material: "CARROT"
+          deny:
+            message: "&cYou need carrots to breed pigs!"
     
     chicken:
       target: "CHICKEN"
       xp: 4.0
-      name: "Poultry Slaughter"
-      description: "Raising and slaughtering poultry"
-  
-  # Animal care
-  INTERACT:
-    milk_cow:
-      target: "COW"
-      xp: 2.0
-      name: "Cow Milking"
-      description: "Milking a cow with a bucket"
+      name: "Chicken Breeding"
       requirements:
         logic: "AND"
         item:
-          material: "BUCKET"
-  
-  # Agricultural crafting
-  CRAFT:
-    bread:
-      target: "BREAD"
-      xp: 2.0
-      name: "Bread Making"
-      description: "Preparing fresh bread"
+          material: "WHEAT_SEEDS"
+          deny:
+            message: "&cYou need seeds to breed chickens!"
     
-    cake:
-      target: "CAKE"
-      xp: 10.0
-      name: "Cake Preparation"
-      description: "Creating a delicious cake"
+    sheep:
+      target: "SHEEP"
+      xp: 5.0
+      name: "Sheep Breeding"
+      requirements:
+        logic: "AND"
+        item:
+          material: "WHEAT"
+          deny:
+            message: "&cYou need wheat to breed sheep!"
+
+  MILK:
+    # Animal care
+    cow_milk:
+      target: "COW"
+      xp: 2.0
+      name: "Cow Milking"
+
+  SHEAR:
+    # Wool collection
+    sheep_shear:
+      target: "SHEEP"
+      xp: 3.0
+      name: "Sheep Shearing"
+      requirements:
+        logic: "AND"
+        item:
+          material: "SHEARS"
+          deny:
+            message: "&cYou need shears to properly shear sheep!"
+
+  FISH:
+    # Basic fishing
+    general_fishing:
+      target: "COD"
+      xp: 3.0
+      name: "Fishing"
+    
+    salmon_fishing:
+      target: "SALMON"
+      xp: 4.0
+      name: "Salmon Fishing"
+
+# ===================================
+# LEVEL UP ACTIONS - REWARDS & EFFECTS
+# ===================================
+levelup-actions:
+  # Welcome message for new farmers
+  welcome_farmer:
+    type: "message"
+    levels: [1]
+    messages:
+      - "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+      - "&a&l🌾 WELCOME TO THE FARMER JOB! 🌾"
+      - "&7You are now a level &e{level} &7farmer!"
+      - "&7Grow crops and care for animals!"
+      - "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+  
+  # Basic level up effects
+  level_up_sound:
+    type: "sound"
+    min-level: 1
+    sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+  
+  level_up_title:
+    type: "title"
+    min-level: 2
+    title: "&a&lLEVEL UP!"
+    subtitle: "&7Farmer Level &e{level}"
+    fade-in: 10
+    stay: 50
+    fade-out: 15
+  
+  level_up_particles:
+    type: "particle"
+    min-level: 1
+    particle: "VILLAGER_HAPPY"
+    count: 20
+  
+  # Starter supplies
+  starter_seeds:
+    type: "command"
+    levels: [3]
+    commands:
+      - "give {player} wheat_seeds 32"
+      - "give {player} carrot 16"
+      - "give {player} potato 16"
+      - "tellraw {player} {\"text\":\"🌱 Starter farming supplies! Plant these to begin your agricultural journey.\",\"color\":\"green\"}"
+  
+  # Tool upgrades
+  iron_hoe_reward:
+    type: "command"
+    levels: [10]
+    commands:
+      - "give {player} iron_hoe 1"
+      - "tellraw {player} {\"text\":\"🔧 Iron Hoe unlocked! More efficient farming awaits.\",\"color\":\"gray\"}"
+  
+  diamond_hoe_reward:
+    type: "command"
+    levels: [30]
+    commands:
+      - "give {player} diamond_hoe 1"
+      - "tellraw {player} {\"text\":\"💎 Diamond Hoe acquired! The ultimate farming tool.\",\"color\":\"aqua\"}"
+  
+  # Animal starter pack
+  animal_starter:
+    type: "command"
+    levels: [15]
+    commands:
+      - "give {player} cow_spawn_egg 2"
+      - "give {player} pig_spawn_egg 2"
+      - "give {player} chicken_spawn_egg 2"
+      - "tellraw {player} {\"text\":\"🐄 Animal starter pack! Begin your livestock operations.\",\"color\":\"yellow\"}"
+  
+  # Food rewards every 5 levels
+  food_rewards:
+    type: "command"
+    min-level: 5
+    level-interval: 5
+    commands:
+      - "give {player} bread 16"
+      - "give {player} cooked_beef 8"
+      - "tellraw {player} {\"text\":\"🍞 Nutritious food reward for level {level}!\",\"color\":\"gold\"}"
+  
+  # Major milestones
+  milestone_broadcast:
+    type: "broadcast"
+    levels: [20, 40, 60, 75]
+    messages:
+      - "&a🌾 {player} &7has reached level &e{level} &7in the Farmer job! 🌾"
+  
+  # Master farmer achievement
+  master_farmer:
+    type: "command"
+    levels: [50]
+    commands:
+      - "broadcast &a🏆 {player} &7has become a &2Master Farmer&7! 🏆"
+      - "give {player} golden_apple 5"
+      - "give {player} enchanted_golden_apple 1"
+      - "give {player} emerald 10"
+  
+  # Legendary farmer
+  legendary_farmer:
+    type: "command"
+    levels: [75]
+    commands:
+      - "broadcast &a&l🌟 {player} &7has achieved &2LEGENDARY FARMER &7status! &a&l🌟"
+      - "give {player} totem_of_undying 1"
+      - "give {player} diamond 15"
 ```
 
 ## 🏹 Complete Example: Hunter Job
 
 ```yaml
-# /plugins/JobsAdventure/jobs/hunter.yml
+# ===================================
+# HUNTER JOB CONFIGURATION
+# ===================================
+# This job rewards players for hunting creatures and combat activities
+# Configure mob hunting, archery skills, and survival challenges
+
+# Basic job information
 name: "Hunter"
-description: "Master of hunting and combat"
+description: "Master of the wild and expert tracker"
 enabled: true
 max-level: 80
 permission: "jobsadventure.job.hunter"
 icon: "BOW"
 
-rewards: "hunter_rewards"
-gui-reward: "hunter_gui"
+# XP progression curve (moderate difficulty)
+xp-equation: "120 * Math.pow(level, 1.6)"
 
-xp-equation: "120 * Math.pow(level, 1.7)"
-
+# XP message display
 xp-message:
-  type: "bossbar"
-  text: "&c🏹 +{exp} XP Hunting &7| Level {level}"
-  bossbar:
-    color: "red"
-    style: "segmented_6"
-    duration: 60
+  type: "chat"
+  text: "&c+{exp} XP &8| &4{job} &7Level {level} &8(&e{total_xp}&8)"
 
+# Job description and lore
 lore:
-  - "&7Track and hunt wild creatures"
-  - "&7Master the art of combat and survival"
-  - "&7Bonuses for rare and dangerous creatures"
-  - "&7Advanced MythicMobs integration"
+  - "&7Track and hunt dangerous creatures"
+  - "&7Master archery and survival skills"
+  - "&7Protect others from monster threats"
 
+# ===================================
+# JOB ACTIONS - WHAT GIVES XP
+# ===================================
 actions:
-  # Basic hunting
   KILL:
+    # Basic hostile mobs
     zombie:
       target: "ZOMBIE"
-      xp: 5.0
-      name: "Zombie Elimination"
-      description: "Hunting the undead"
+      xp: 3.0
+      name: "Zombie Hunting"
     
     skeleton:
       target: "SKELETON"
-      xp: 6.0
-      name: "Skeleton Elimination"
-      description: "Fighting skeleton archers"
+      xp: 4.0
+      name: "Skeleton Hunting"
     
+    spider:
+      target: "SPIDER"
+      xp: 2.5
+      name: "Spider Hunting"
+    
+    # Dangerous mobs with higher XP
     creeper:
       target: "CREEPER"
       xp: 8.0
       name: "Creeper Elimination"
-      description: "Defusing explosive threats"
       requirements:
         logic: "AND"
         item:
           material: "BOW"
           deny:
-            message: "&cUse a bow to hunt creepers safely!"
+            message: "&cUse a bow to safely eliminate creepers!"
     
-    spider:
-      target: "SPIDER"
-      xp: 4.0
-      name: "Spider Elimination"
-      description: "Hunting spiders"
-    
-    # Advanced hostile creatures
     enderman:
       target: "ENDERMAN"
+      xp: 12.0
+      name: "Enderman Hunting"
+    
+    witch:
+      target: "WITCH"
+      xp: 10.0
+      name: "Witch Hunting"
+    
+    # Nether creatures
+    blaze:
+      target: "BLAZE"
       xp: 15.0
-      name: "Enderman Elimination"
-      description: "Facing End teleporters"
+      name: "Blaze Hunting"
       requirements:
         logic: "AND"
         placeholder:
-          placeholder: "%jobsadventure_hunter_player_level%"
-          operator: "greater_than"
-          value: "20"
+          placeholder: "%player_world%"
+          operator: "equals"
+          value: "world_nether"
           deny:
-            message: "&cLevel 20 in hunting required to face Endermen!"
+            message: "&cBlazes can only be hunted in the Nether!"
+    
+    ghast:
+      target: "GHAST"
+      xp: 20.0
+      name: "Ghast Hunting"
     
     wither_skeleton:
       target: "WITHER_SKELETON"
-      xp: 25.0
-      name: "Wither Skeleton Elimination"
-      description: "Fighting in the Nether"
-      requirements:
-        logic: "AND"
-        world:
-          worlds: ["world_nether"]
-          blacklist: false
+      xp: 18.0
+      name: "Wither Skeleton Hunting"
     
-    # Wild animals
-    wolf:
-      target: "WOLF"
-      xp: 10.0
-      name: "Wolf Hunting"
-      description: "Hunting wild wolves"
-      requirements:
-        logic: "AND"
-        weather:
-          weather: "CLEAR"
-          deny:
-            message: "&cWolves are more aggressive in clear weather!"
+    # Boss creatures
+    ender_dragon:
+      target: "ENDER_DRAGON"
+      xp: 500.0
+      name: "Dragon Slaying"
     
-    # MythicMobs bosses
-    forest_guardian:
-      target: "MYTHICMOB:ForestGuardian"
-      xp: 150.0
-      name: "Forest Guardian Defeat"
-      description: "Defeating nature's protector"
-      commands:
-        - "broadcast &a&l{player} &edefeated the Forest Guardian!"
-        - "give {player} emerald 15"
-      sound: "ENTITY_ENDER_DRAGON_DEATH"
-    
-    ancient_beast:
-      target: "MYTHICMOB:AncientBeast"
+    wither:
+      target: "WITHER"
       xp: 300.0
-      name: "Ancient Beast Defeat"
-      description: "Facing the legendary creature"
-      requirements:
-        logic: "AND"
-        permission:
-          permission: "jobs.boss.ancient"
-        groups:
-          group1:
-            logic: "OR"
-            item:
-              mmoitems:
-                type: "SWORD"
-                id: "LEGENDARY_BLADE"
-            item:
-              mmoitems:
-                type: "BOW"
-                id: "MYTHIC_BOW"
-  
-  # Taming
-  TAME:
-    wolf_taming:
-      target: "WOLF"
-      xp: 20.0
-      name: "Wolf Taming"
-      description: "Taming a wild wolf"
+      name: "Wither Slaying"
     
-    horse_taming:
-      target: "HORSE"
-      xp: 25.0
-      name: "Horse Taming"
-      description: "Taming a wild horse"
-  
-  # Specialized fishing (CustomFishing)
+    # Animals (lower XP, for food hunting)
+    cow:
+      target: "COW"
+      xp: 1.0
+      name: "Cattle Hunting"
+    
+    pig:
+      target: "PIG"
+      xp: 1.0
+      name: "Pig Hunting"
+    
+    chicken:
+      target: "CHICKEN"
+      xp: 0.5
+      name: "Chicken Hunting"
+    
+    rabbit:
+      target: "RABBIT"
+      xp: 1.5
+      name: "Rabbit Hunting"
+
   FISH:
-    rare_fish:
-      target: "customfishing:golden_trout"
-      xp: 30.0
-      name: "Golden Trout Fishing"
-      description: "Catching a rare trout"
-      requirements:
-        logic: "AND"
-        time:
-          min: 6000   # Early day
-          max: 12000  # Noon
-        biome:
-          biomes: ["RIVER", "FOREST"]
-          blacklist: false
-```
-
-## 🔧 Example: Crafter Job
-
-```yaml
-# /plugins/JobsAdventure/jobs/crafter.yml
-name: "Crafter"
-description: "Master of crafting and creation"
-enabled: true
-max-level: 60
-permission: "jobsadventure.job.crafter"
-icon: "CRAFTING_TABLE"
-
-rewards: "crafter_rewards"
-gui-reward: "crafter_gui"
-
-xp-equation: "60 * Math.pow(level, 1.5) + level * 10"
-
-xp-message:
-  type: "chat"
-  text: "&6🔨 +{exp} XP Crafting &7({job} Lvl.{level})"
-
-lore:
-  - "&7Create and craft useful items"
-  - "&7Master all crafting arts"
-  - "&7Bonuses for complex items"
-  - "&7Compatible with MMOItems and custom items"
-
-actions:
-  # Basic crafting
-  CRAFT:
-    wooden_tools:
-      target: "WOODEN_PICKAXE,WOODEN_AXE,WOODEN_SHOVEL,WOODEN_SWORD"
+    # Fishing for survival
+    cod:
+      target: "COD"
       xp: 2.0
-      name: "Wooden Tool Crafting"
-      description: "Creating basic tools"
+      name: "Cod Fishing"
     
-    stone_tools:
-      target: "STONE_PICKAXE,STONE_AXE,STONE_SHOVEL,STONE_SWORD"
-      xp: 4.0
-      name: "Stone Tool Crafting"
-      description: "Creating improved tools"
+    salmon:
+      target: "SALMON"
+      xp: 2.5
+      name: "Salmon Fishing"
     
-    iron_tools:
-      target: "IRON_PICKAXE,IRON_AXE,IRON_SHOVEL,IRON_SWORD"
-      xp: 8.0
-      name: "Iron Tool Crafting"
-      description: "Creating quality tools"
-      requirements:
-        logic: "AND"
-        placeholder:
-          placeholder: "%jobsadventure_crafter_player_level%"
-          operator: "greater_than"
-          value: "15"
-    
-    diamond_tools:
-      target: "DIAMOND_PICKAXE,DIAMOND_AXE,DIAMOND_SHOVEL,DIAMOND_SWORD"
-      xp: 20.0
-      name: "Diamond Tool Crafting"
-      description: "Creating master tools"
-      requirements:
-        logic: "AND"
-        placeholder:
-          placeholder: "%jobsadventure_crafter_player_level%"
-          operator: "greater_than"
-          value: "35"
-  
-  # Enchanting
-  ENCHANT:
-    basic_enchant:
-      target: "ANY"
-      xp: 5.0
-      name: "Basic Enchanting"
-      description: "Enchanting items"
-    
-    high_level_enchant:
-      target: "ANY"
-      xp: 15.0
-      name: "Advanced Enchanting"
-      description: "High-level enchantments"
-      requirements:
-        logic: "AND"
-        placeholder:
-          placeholder: "%player_level%"
-          operator: "greater_than"
-          value: "30"
-  
-  # Alchemy
-  BREW:
-    healing_potion:
-      target: "POTION_HEALING"
-      xp: 10.0
-      name: "Healing Potion Preparation"
-      description: "Brewing healing potions"
-    
-    strength_potion:
-      target: "POTION_STRENGTH"
-      xp: 15.0
-      name: "Strength Potion Preparation"
-      description: "Brewing combat potions"
-  
-  # Smelting
-  SMELT:
-    iron_ingot:
-      target: "IRON_INGOT"
+    tropical_fish:
+      target: "TROPICAL_FISH"
       xp: 3.0
-      name: "Iron Smelting"
-      description: "Transforming ore into ingot"
-    
-    gold_ingot:
-      target: "GOLD_INGOT"
-      xp: 5.0
-      name: "Gold Smelting"
-      description: "Refining precious gold"
+      name: "Tropical Fish Fishing"
+
+# ===================================
+# LEVEL UP ACTIONS - REWARDS & EFFECTS
+# ===================================
+levelup-actions:
+  # Welcome message for new hunters
+  welcome_hunter:
+    type: "message"
+    levels: [1]
+    messages:
+      - "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+      - "&c&l🏹 WELCOME TO THE HUNTER JOB! 🏹"
+      - "&7You are now a level &e{level} &7hunter!"
+      - "&7Hunt creatures and master survival!"
+      - "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+  
+  # Basic level up effects
+  level_up_sound:
+    type: "sound"
+    min-level: 1
+    sound: "ENTITY_ARROW_HIT_PLAYER"
+  
+  level_up_title:
+    type: "title"
+    min-level: 2
+    title: "&c&lLEVEL UP!"
+    subtitle: "&7Hunter Level &e{level}"
+    fade-in: 10
+    stay: 50
+    fade-out: 20
+  
+  level_up_particles:
+    type: "particle"
+    min-level: 1
+    particle: "CRIT"
+    count: 30
+  
+  # Weapon progression
+  bow_upgrade:
+    type: "command"
+    levels: [5]
+    commands:
+      - "give {player} bow 1"
+      - "give {player} arrow 64"
+      - "tellraw {player} {\"text\":\"🏹 Hunter's Bow and arrows! Ready for the hunt.\",\"color\":\"red\"}"
+  
+  crossbow_upgrade:
+    type: "command"
+    levels: [20]
+    commands:
+      - "give {player} crossbow 1"
+      - "tellraw {player} {\"text\":\"🎯 Crossbow unlocked! Precise and powerful.\",\"color\":\"dark_red\"}"
+  
+  trident_reward:
+    type: "command"
+    levels: [40]
+    commands:
+      - "give {player} trident 1"
+      - "tellraw {player} {\"text\":\"🔱 Legendary Trident! A weapon of the seas.\",\"color\":\"aqua\"}"
+  
+  # Survival supplies every 10 levels
+  survival_kit:
+    type: "command"
+    min-level: 10
+    level-interval: 10
+    commands:
+      - "give {player} cooked_beef 16"
+      - "give {player} potion{Potion:\"minecraft:healing\"} 3"
+      - "tellraw {player} {\"text\":\"🥩 Survival supplies for level {level}! Stay nourished on your hunts.\",\"color\":\"gold\"}"
+  
+  # Armor upgrades
+  leather_armor:
+    type: "command"
+    levels: [8]
+    commands:
+      - "give {player} leather_helmet 1"
+      - "give {player} leather_chestplate 1"
+      - "give {player} leather_leggings 1"
+      - "give {player} leather_boots 1"
+      - "tellraw {player} {\"text\":\"🧥 Hunter's Leather Armor! Basic protection for your adventures.\",\"color\":\"brown\"}"
+  
+  iron_armor:
+    type: "command"
+    levels: [25]
+    commands:
+      - "give {player} iron_helmet 1"
+      - "give {player} iron_chestplate 1"
+      - "give {player} iron_leggings 1"
+      - "give {player} iron_boots 1"
+      - "tellraw {player} {\"text\":\"⚔️ Iron Armor set! Enhanced protection for dangerous hunts.\",\"color\":\"gray\"}"
+  
+  # Major milestones
+  milestone_broadcast:
+    type: "broadcast"
+    levels: [15, 30, 50, 70, 80]
+    messages:
+      - "&c🏹 {player} &7has reached level &e{level} &7in the Hunter job! 🏹"
+  
+  # Special achievements
+  expert_hunter:
+    type: "command"
+    levels: [35]
+    commands:
+      - "broadcast &c🎯 {player} &7has become an &4Expert Hunter&7! 🎯"
+      - "give {player} diamond 8"
+      - "give {player} enchanted_book 1"
+  
+  master_hunter:
+    type: "command"
+    levels: [60]
+    commands:
+      - "broadcast &c🏆 {player} &7has become a &4Master Hunter&7! 🏆"
+      - "give {player} netherite_ingot 2"
+      - "give {player} totem_of_undying 1"
+  
+  # Legendary achievement
+  legendary_hunter:
+    type: "command"
+    levels: [80]
+    commands:
+      - "broadcast &c&l🌟 {player} &7has achieved &4LEGENDARY HUNTER &7status! &c&l🌟"
+      - "give {player} netherite_sword 1"
+      - "give {player} elytra 1"
+      - "give {player} diamond_block 5"
 ```
+
+## 🎯 Level Up Actions System
+
+JobsAdventure now features a powerful level up actions system that allows 100% customizable rewards and effects when players level up. Here's how it works:
+
+### Basic Structure
+```yaml
+levelup-actions:
+  action_name:
+    type: "action_type"
+    levels: [1, 5, 10]  # Specific levels
+    # OR
+    min-level: 5
+    level-interval: 10  # Every 10 levels starting from 5
+    # Action-specific configuration
+```
+
+### Available Action Types
+
+**Message Actions** - Send formatted messages
+```yaml
+welcome_message:
+  type: "message"
+  levels: [1]
+  messages:
+    - "&6Welcome to the {job} job!"
+    - "&7You are now level &e{level}&7!"
+```
+
+**Command Actions** - Execute any server commands
+```yaml
+tool_reward:
+  type: "command"
+  levels: [5, 10, 15]
+  commands:
+    - "give {player} iron_pickaxe 1"
+    - "tellraw {player} {\"text\":\"🎁 Tool reward!\",\"color\":\"gold\"}"
+```
+
+**Sound & Visual Effects**
+```yaml
+level_sound:
+  type: "sound"
+  min-level: 1
+  sound: "ENTITY_PLAYER_LEVELUP"
+
+level_title:
+  type: "title"
+  min-level: 2
+  title: "&6&lLEVEL UP!"
+  subtitle: "&7{job} Level &e{level}"
+
+level_particles:
+  type: "particle"
+  min-level: 1
+  particle: "FLAME"
+  count: 25
+
+announcements:
+  type: "broadcast"
+  levels: [25, 50, 75, 100]
+  messages:
+    - "&6{player} &7reached level &e{level} &7in {job}!"
+```
+
+### Placeholder Support
+All actions support these placeholders:
+- `{player}` - Player name
+- `{job}` - Job display name
+- `{level}` or `{newlevel}` - New level reached
+- `{oldlevel}` - Previous level
+- `{totalxp}` - Total XP in the job
+- `{xpgained}` - XP that triggered the level up
 
 ## 🎯 Configuration Tips
 

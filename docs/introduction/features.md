@@ -72,6 +72,51 @@ xp-message:
   show-progress: true  # Shows level progress
 ```
 
+## 🎉 Level Up Actions System
+
+### 100% Customizable Level Up Actions
+JobsAdventure features a powerful, simplified level up action system built on existing plugin infrastructure for maximum performance and reliability.
+
+#### Available Action Types
+- **Messages** - Send personalized congratulations using the existing message system
+- **Commands** - Execute any console commands with full placeholder support
+- **Sounds** - Play sound effects with automatic fallbacks
+- **Particles** - Spawn visual effects around players
+- **Titles** - Display screen titles and subtitles
+- **Boss Bar** - Show temporary notifications (currently as titles)
+- **Broadcasts** - Announce achievements server-wide
+
+#### Flexible Level Targeting
+```yaml
+levelup-actions:
+  # Specific levels
+  welcome_message:
+    type: "message"
+    levels: [1, 5, 10]
+    messages:
+      - "&6Welcome to {job} level {level}!"
+  
+  # Level ranges with intervals
+  money_rewards:
+    type: "command"
+    min-level: 10
+    level-interval: 10  # Every 10 levels starting from 10
+    commands:
+      - "eco give {player} {level}00"
+  
+  # All levels above a threshold
+  level_effects:
+    type: "sound"
+    min-level: 1
+    sound: "ENTITY_PLAYER_LEVELUP"
+```
+
+#### System Architecture
+- **Optimized Performance** - Built on existing JobsAdventure components
+- **Reused Infrastructure** - Uses established message, command, and sound systems
+- **Error Resilience** - Failed actions don't prevent other actions from executing
+- **Graceful Fallbacks** - Unknown sounds/particles automatically fall back to safe defaults
+
 ## 🎁 Smart Reward System
 
 ### Multiple Reward Types

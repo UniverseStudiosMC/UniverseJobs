@@ -30,6 +30,7 @@ public class Job {
     private final XpMessageSettings xpMessageSettings;
     private final String guiReward;
     private final String rewardsFile;
+    private final ConfigurationSection config;
     
     /**
      * Create a new Job instance.
@@ -39,6 +40,7 @@ public class Job {
      */
     public Job(String id, ConfigurationSection config) {
         this.id = id;
+        this.config = config; // Store the config reference
         this.name = config.getString("name", id);
         this.description = config.getString("description", "");
         this.lore = config.getStringList("lore");
@@ -312,6 +314,24 @@ public class Job {
      */
     public String getRewardsFile() {
         return rewardsFile;
+    }
+    
+    /**
+     * Get the display name of this job (alias for getName()).
+     * 
+     * @return The job display name
+     */
+    public String getDisplayName() {
+        return name;
+    }
+    
+    /**
+     * Get the configuration section for this job.
+     * 
+     * @return The configuration section
+     */
+    public ConfigurationSection getConfig() {
+        return config;
     }
     
     @Override

@@ -904,4 +904,13 @@ public class JobManager {
         
         return stats;
     }
+    
+    /**
+     * Get the plugin instance.
+     * 
+     * @return The plugin instance
+     */
+    public JobsAdventure getPlugin() {
+        return plugin;
+    }
 }

@@ -1,288 +1,199 @@
-# Miner Job Configuration
-# This job rewards players for mining blocks and killing underground creatures
+# ===================================
+# MINER JOB CONFIGURATION
+# ===================================
+# This job rewards players for mining blocks and fighting underground creatures
+# Configure XP rewards, level up actions, and mining-related activities
 
 # Basic job information
 name: "Miner"
-description: "Extract valuable resources from the earth"
+description: "Extract valuable resources from the depths of the earth"
 enabled: true
 max-level: 100
 permission: "jobsadventure.job.miner"
 icon: "DIAMOND_PICKAXE"
 
-rewards: "example_rewards"
-gui-reward: "example_rewards_gui"
+# XP progression curve
+xp-equation: "100 * Math.pow(level, 1.8)"
 
-
-# XP Curve Configuration (choose one):
-# Option 1: Use a predefined curve file
-# xp-curve: "steep"  # Uses /xp-curves/steep.yml
-
-# Option 2: Use a mathematical equation
-xp-equation: "100 * Math.pow(level, 1.8)"  # Custom equation where 'level' is the variable
-
+# XP message display
 xp-message:
-  type: "bossbar"  # ou "chat" ou "actionbar"
-  text: "+{exp} EXP - {job} %player_name%"
+  type: "actionbar"
+  text: "&e+{exp} XP &8| &6{job} &7Level {level}"
   actionbar:
-    duration: 60   # en ticks (60 = 3 secondes)
-  bossbar:
-    color: "red"
-    style: "segmented_0"
-    duration: 80   # en ticks (80 = 4 secondes)
-    show-progress: true  # affiche le progrès XP du niveau au lieu d'une barre pleine
+    duration: 60
 
-
-# Job lore (shown in info)
+# Job description and lore
 lore:
-  - "&7Dig deep and find riches!"
-  - "&7Level up by mining ores and stones"
-  - "&7Bonus XP for rare materials"
+  - "&7Dig deep and discover precious ores!"
+  - "&7Level up by mining stones and ores"
+  - "&7Unlock better tools and rewards"
 
-# Job actions that award XP
+# ===================================
+# JOB ACTIONS - WHAT GIVES XP
+# ===================================
 actions:
-  # Block breaking actions
   BREAK:
-    # Basic stone mining
+    # Basic materials
     stone:
       target: "STONE"
       xp: 1.0
       name: "Stone Mining"
-      description: "Basic stone mining"
+    
     coal_ore:
       target: "COAL_ORE"
-      xp: 5.0
+      xp: 3.0
       name: "Coal Mining"
-      description: "Mining coal ore"
+    
+    iron_ore:
+      target: "IRON_ORE"
+      xp: 5.0
+      name: "Iron Mining"
       requirements:
         logic: "AND"
         item:
           material: "IRON_PICKAXE"
-          accept:
-            message: "&aYAY"
           deny:
-            message: "&cYou need an iron pickaxe or better to mine coal efficiently!"
-            sound: "BLOCK_ANVIL_PLACE"
-            cancelEvent: true
-    storage_chest:
-      target: "nexo:my_block"
-      xp: 5.0
-      name: "Coal Mining"
-      description: "Mining coal ore"
-  PLACE:
-    storage_chest2:
-      target: "nexo:my_block"
-      xp: 52.0
-      name: "Coal Mining"
-      description: "Mining coal ore"
-      message:
-        type: "BOSSBAR" #CHAT, BOSSBAR, ACITONBAR
-        style: "segment_0" #for bossbar
-        color: "GREEN" #for bossbar
-        duration: 20 #for ACTIONBAR AND BOSSBAR
-        message: "HELLOOOOO"
-      commands:
-      - "broadcast test"
-      sound: "BLOCK_ANVIL_PLACE"
-      requirements:
-        logic: "AND"
-        permission:
-          permission: "jobsadventure.mine.iron"
-          require: true
-          accept:
-            message: "&aYAY"
-            commands:
-            - "give Ax_Dev diamond"
-          deny:
-            message: "&cYou need an iron pickaxe or better to mine coal efficiently!"
-            sound: "BLOCK_ANVIL_PLACE"
-            commands:
-            - "give Ax_Dev stick"
-            cancelEvent: false
-
-
-    pineapple:
-      target: "customcrops:pineapple"
-      xp: 1.0
-      name: "Coal Mining"
-      description: "Mining coal ore"
-      message:
-        type: "BOSSBAR" #CHAT, BOSSBAR, ACITONBAR
-        style: "segment_0" #for bossbar
-        color: "GREEN" #for bossbar
-        duration: 20 #for ACTIONBAR AND BOSSBAR
-        message: "HELLOOOOO"
-
-  INTERACT:
-    pineapple:
-      target: "customcrops:pineapple_stage_1"
-      xp: 1.0
-      name: "Pineapple Harvesting"
-      description: "Harvesting mature pineapple"
-      message:
-        type: "BOSSBAR" #CHAT, BOSSBAR, ACITONBAR
-        style: "segment_0" #for bossbar
-        color: "GREEN" #for bossbar
-        duration: 20 #for ACTIONBAR AND BOSSBAR
-        message: "PINEAPPLE HARVESTED!"
-
-  # CustomFishing examples - format: customfishing:fish_id
-  FISH:
-    # Basic fish
-    basic_fish:
-      target: "customfishing:cod"
-      xp: 3.0
-      name: "Cod Fishing"
-      description: "Catching cod fish"
-      message:
-        type: "CHAT"
-        message: "&aCod caught! +3 XP"
+            message: "&cYou need at least an iron pickaxe!"
     
-    # Rare fish with higher XP
-    rare_fish:
-      target: "customfishing:salmon"
-      xp: 5.0
-      name: "Salmon Fishing"
-      description: "Catching salmon"
-      message:
-        type: "BOSSBAR"
-        style: "segment_0"
-        color: "BLUE"
-        duration: 30
-        message: "SALMON CAUGHT!"
+    gold_ore:
+      target: "GOLD_ORE"
+      xp: 8.0
+      name: "Gold Mining"
     
-    # Custom fish by model data
-    custom_fish_1:
-      target: "customfishing:fish_100"
-      xp: 10.0
-      name: "Legendary Fish"
-      description: "Catching legendary fish"
-      message:
-        type: "BOSSBAR"
-        style: "segment_0"
-        color: "GOLD"
-        duration: 40
-        message: "LEGENDARY FISH!"
-
-    # Iron ore mining with multiple requirements
-    iron_ore:
-      target: "IRON_ORE"
-      xp: 10.0
-      name: "Iron Mining"
-      description: "Mining iron ore"
-      requirements:
-        logic: "AND"
-        permission:
-          permission: "jobsadventure.mine.iron"
-          require: true
-          deny:
-            message: "&cYou don't have permission to mine iron ore!"
-        placeholder:
-          placeholder: "%player_level%"
-          operator: "greater_than"
-          value: "10"
-          deny:
-            message: "&cYou need to be at least level 10 to mine iron ore!"
-            sound: "ENTITY_VILLAGER_NO"
-    
-    # Diamond ore mining with complex requirements
     diamond_ore:
       target: "DIAMOND_ORE"
-      xp: 50.0
-      name: "Diamond Mining" 
-      description: "Mining precious diamond ore"
+      xp: 15.0
+      name: "Diamond Mining"
       requirements:
         logic: "AND"
         item:
           material: "DIAMOND_PICKAXE"
           deny:
-            message: "&cYou need a diamond pickaxe to mine diamonds!"
-            sound: "BLOCK_ANVIL_PLACE"
-        world:
-          worlds:
-            - "world"
-            - "mining_world"
-          blacklist: false
+            message: "&cYou need a diamond pickaxe for this!"
+        placeholder:
+          placeholder: "%player_y%"
+          operator: "less_than"
+          value: "16"
           deny:
-            message: "&cYou can only mine diamonds in the overworld!"
-        time:
-          min: 13000
-          max: 23000
-          deny:
-            message: "&cDiamonds can only be mined during night time!"
-            sound: "ENTITY_BAT_AMBIENT"
-        groups:
-          group1:
-            logic: "OR"
-            biome:
-              biomes:
-                - "CAVES"
-                - "DEEP_DARK"
-              blacklist: false
-              deny:
-                message: "&cDiamonds are easier to find in caves!"
+            message: "&cDiamonds are only found at Y level 16 or below!"
     
-    # Ancient debris with MMOItems tool requirement
     ancient_debris:
       target: "ANCIENT_DEBRIS"
-      xp: 100.0
+      xp: 25.0
       name: "Ancient Debris Mining"
-      description: "Mining ancient debris with special tools"
       requirements:
         logic: "AND"
         item:
-          mmoitems:
-            type: "TOOL" 
-            id: "NETHERITE_MINER_PICKAXE"
+          material: "NETHERITE_PICKAXE"
           deny:
-            message: "&cYou need a special netherite mining pickaxe!"
-            sound: "BLOCK_ANVIL_PLACE"
-            commands:
-              - "tell {player} Visit the blacksmith to get a proper tool!"
-  
-  # Killing cave creatures
+            message: "&cAncient debris requires a netherite pickaxe!"
+
   KILL:
-    # Zombie mining bonus
+    # Underground creatures
     zombie:
       target: "ZOMBIE"
-      xp: 3.0
-      name: "Cave Zombie Slaying"
-      description: "Bonus XP for killing zombies while mining"
+      xp: 2.0
+      name: "Cave Zombie Elimination"
       requirements:
         logic: "AND"
         placeholder:
           placeholder: "%player_y%"
           operator: "less_than"
-          value: "60"
+          value: "50"
           deny:
             message: "&cThis bonus only applies underground!"
     
-    # Spider mining bonus
-    spider:
-      target: "SPIDER"
-      xp: 2.0
-      name: "Cave Spider Control"
-      description: "Clearing spiders from mining areas"
+    skeleton:
+      target: "SKELETON"
+      xp: 2.5
+      name: "Cave Skeleton Elimination"
       requirements:
         logic: "AND"
         placeholder:
           placeholder: "%player_y%"
-          operator: "less_than" 
-          value: "40"
-          deny:
-            message: "&cSpider bonus only applies in deep caves!"
-    
-    # MythicMobs integration example
-    cave_guardian:
-      target: "MYTHICMOB:CaveGuardian"
-      xp: 25.0
-      name: "Cave Guardian Slaying"
-      description: "Defeating the cave guardian"
-      requirements:
-        logic: "AND"
-        permission:
-          permission: "jobsadventure.boss.cave"
-          require: true
-          deny:
-            message: "&cYou're not ready to face the cave guardian!"
-            commands:
-              - "give {player} cooked_beef 5"
+          operator: "less_than"
+          value: "50"
+
+# ===================================
+# LEVEL UP ACTIONS - REWARDS & EFFECTS
+# ===================================
+levelup-actions:
+  # Welcome message for new miners
+  welcome_message:
+    type: "message"
+    levels: [1]
+    messages:
+      - "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+      - "&6&l✦ WELCOME TO THE MINER JOB! ✦"
+      - "&7You are now a level &e{level} &7miner!"
+      - "&7Mine ores and stones to gain experience!"
+      - "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+  
+  # Basic level up effects for all levels
+  level_up_sound:
+    type: "sound"
+    min-level: 1
+    sound: "ENTITY_PLAYER_LEVELUP"
+  
+  level_up_title:
+    type: "title"
+    min-level: 2
+    title: "&6&lLEVEL UP!"
+    subtitle: "&7Miner Level &e{level}"
+    fade-in: 10
+    stay: 50
+    fade-out: 20
+  
+  level_up_particles:
+    type: "particle"
+    min-level: 1
+    particle: "FLAME"
+    count: 25
+  
+  # Tool rewards at specific levels
+  iron_pickaxe_reward:
+    type: "command"
+    levels: [5]
+    commands:
+      - "give {player} iron_pickaxe 1"
+      - "tellraw {player} {\"text\":\"🎁 You received an Iron Pickaxe for reaching level 5!\",\"color\":\"gold\"}"
+  
+  diamond_pickaxe_reward:
+    type: "command"
+    levels: [25]
+    commands:
+      - "give {player} diamond_pickaxe 1"
+      - "tellraw {player} {\"text\":\"💎 You received a Diamond Pickaxe for reaching level 25!\",\"color\":\"aqua\"}"
+  
+  # Money rewards every 10 levels
+  money_rewards:
+    type: "command"
+    min-level: 10
+    level-interval: 10
+    commands:
+      - "eco give {player} {level}00"
+      - "tellraw {player} {\"text\":\"💰 You earned ${level}00 for reaching level {level}!\",\"color\":\"green\"}"
+  
+  # Major milestone announcements
+  milestone_broadcast:
+    type: "broadcast"
+    levels: [20, 40, 60, 80, 100]
+    messages:
+      - "&6⚒ {player} &7has reached level &e{level} &7in the Miner job! ⚒"
+  
+  # Special rewards for high levels
+  master_miner:
+    type: "command"
+    levels: [50]
+    commands:
+      - "broadcast &6🏆 {player} &7has become a &eMaster Miner&7! 🏆"
+      - "give {player} diamond 10"
+      - "give {player} emerald 5"
+  
+  legendary_miner:
+    type: "command"
+    levels: [100]
+    commands:
+      - "broadcast &6&l🌟 {player} &7has achieved &eLEGENDARY MINER &7status! &6&l🌟"
+      - "give {player} netherite_ingot 5"
+      - "give {player} diamond_block 3"

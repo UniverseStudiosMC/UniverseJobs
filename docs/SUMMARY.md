@@ -17,6 +17,7 @@
 * [jobs-configuration](jobs-configuration/README.md)
   * [🔧 Système de Conditions](jobs-configuration/conditions-system.md)
   * [📝 Configuration Examples](jobs-configuration/configuration-examples.md)
+  * [🎉 Level Up Actions](jobs-configuration/levelup-actions.md)
 * [player-guide](player-guide/README.md)
   * [🎮 Getting Started](player-guide/getting-started.md)
 * [reference](reference/README.md)

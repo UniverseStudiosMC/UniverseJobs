@@ -1,208 +1,267 @@
-# Hunter Job Configuration  
-# This job rewards players for hunting creatures and survival activities
+# ===================================
+# HUNTER JOB CONFIGURATION
+# ===================================
+# This job rewards players for hunting creatures and combat activities
+# Configure mob hunting, archery skills, and survival challenges
 
 # Basic job information
 name: "Hunter"
-description: "Master of the wild and creature hunting"
+description: "Master of the wild and expert tracker"
 enabled: true
 max-level: 80
 permission: "jobsadventure.job.hunter"
 icon: "BOW"
 
+# XP progression curve (moderate difficulty)
+xp-equation: "120 * Math.pow(level, 1.6)"
 
-# Job lore
+# XP message display
+xp-message:
+  type: "chat"
+  text: "&c+{exp} XP &8| &4{job} &7Level {level} &8(&e{total_xp}&8)"
+
+# Job description and lore
 lore:
-  - "&7Track and hunt creatures across the land!"
-  - "&7Bonus XP for rare creature kills"
-  - "&7Master of archery and survival"
+  - "&7Track and hunt dangerous creatures"
+  - "&7Master archery and survival skills"
+  - "&7Protect others from monster threats"
 
-# Job actions
+# ===================================
+# JOB ACTIONS - WHAT GIVES XP
+# ===================================
 actions:
-  # Creature hunting
   KILL:
     # Basic hostile mobs
     zombie:
       target: "ZOMBIE"
       xp: 3.0
       name: "Zombie Hunting"
-      description: "Eliminating zombies"
     
     skeleton:
       target: "SKELETON"
       xp: 4.0
       name: "Skeleton Hunting"
-      description: "Taking down skeletons"
     
     spider:
       target: "SPIDER"
       xp: 2.5
       name: "Spider Hunting"
-      description: "Clearing spider threats"
     
-    # Creeper with special requirements
+    # Dangerous mobs with higher XP
     creeper:
       target: "CREEPER"
       xp: 8.0
       name: "Creeper Elimination"
-      description: "Safely eliminating creepers"
       requirements:
         logic: "AND"
         item:
           material: "BOW"
           deny:
-            message: "&cUse a bow for safe creeper elimination!"
-            sound: "ENTITY_CREEPER_PRIMED"
+            message: "&cUse a bow to safely eliminate creepers!"
     
-    # Enderman with advanced requirements
     enderman:
       target: "ENDERMAN"
-      xp: 15.0
+      xp: 12.0
       name: "Enderman Hunting"
-      description: "Advanced enderman hunting"
+    
+    witch:
+      target: "WITCH"
+      xp: 10.0
+      name: "Witch Hunting"
+    
+    # Nether creatures
+    blaze:
+      target: "BLAZE"
+      xp: 15.0
+      name: "Blaze Hunting"
       requirements:
         logic: "AND"
         placeholder:
-          placeholder: "%player_level%"
-          operator: "greater_equal"
-          value: "25"
+          placeholder: "%player_world%"
+          operator: "equals"
+          value: "world_nether"
           deny:
-            message: "&cYou need to be level 25+ to hunt endermen effectively!"
-        item:
-          custom-model-data: 1001
-          deny:
-            message: "&cYou need a special weapon to hunt endermen!"
+            message: "&cBlazes can only be hunted in the Nether!"
     
-    # Animals for food
+    ghast:
+      target: "GHAST"
+      xp: 20.0
+      name: "Ghast Hunting"
+    
+    wither_skeleton:
+      target: "WITHER_SKELETON"
+      xp: 18.0
+      name: "Wither Skeleton Hunting"
+    
+    # Boss creatures
+    ender_dragon:
+      target: "ENDER_DRAGON"
+      xp: 500.0
+      name: "Dragon Slaying"
+    
+    wither:
+      target: "WITHER"
+      xp: 300.0
+      name: "Wither Slaying"
+    
+    # Animals (lower XP, for food hunting)
     cow:
       target: "COW"
-      xp: 2.0
+      xp: 1.0
       name: "Cattle Hunting"
-      description: "Hunting cattle for food"
-      requirements:
-        logic: "AND"
-        biome:
-          biomes:
-            - "PLAINS"
-            - "SAVANNA"
-          blacklist: false
-          deny:
-            message: "&cHunt cattle in their natural habitat!"
     
     pig:
       target: "PIG"
-      xp: 1.5
+      xp: 1.0
       name: "Pig Hunting"
-      description: "Hunting pigs"
     
     chicken:
       target: "CHICKEN"
-      xp: 1.0
-      name: "Poultry Hunting"
-      description: "Hunting chickens"
+      xp: 0.5
+      name: "Chicken Hunting"
     
-    # Rare creatures with MythicMobs
-    forest_spirit:
-      target: "MYTHICMOB:ForestSpirit"
-      xp: 50.0
-      name: "Forest Spirit Hunting"
-      description: "Hunting legendary forest spirits"
-      requirements:
-        logic: "AND"
-        permission:
-          permission: "jobsadventure.hunt.legendary"
-          require: true
-          deny:
-            message: "&cYou're not experienced enough to hunt legendary creatures!"
-            commands:
-              - "give {player} golden_apple 1"
-        world:
-          worlds:
-            - "world"
-          blacklist: false
-          deny:
-            message: "&cLegendary creatures only exist in the main world!"
-    
-    # Boss hunting
-    wither:
-      target: "WITHER"
-      xp: 200.0
-      name: "Wither Slaying"
-      description: "Defeating the mighty wither"
-      requirements:
-        logic: "AND"
-        placeholder:
-          placeholder: "%jobsadventure_hunter_level%"
-          operator: "greater_equal"
-          value: "50"
-          deny:
-            message: "&cYou need hunter level 50+ to face the wither!"
-            sound: "ENTITY_WITHER_SPAWN"
-            commands:
-              - "title {player} title &cNot Ready!"
-              - "title {player} subtitle &7Train more before facing bosses"
+    rabbit:
+      target: "RABBIT"
+      xp: 1.5
+      name: "Rabbit Hunting"
 
-  # Taming wild animals
-  TAME:
-    wolf:
-      target: "WOLF"
-      xp: 10.0
-      name: "Wolf Taming"
-      description: "Taming wolves as companions"
-      requirements:
-        logic: "AND"
-        item:
-          material: "BONE"
-          deny:
-            message: "&cYou need bones to tame wolves!"
-    
-    cat:
-      target: "CAT"
-      xp: 8.0
-      name: "Cat Taming"
-      description: "Taming cats"
-      requirements:
-        logic: "AND"
-        item:
-          material: "COD"
-          deny:
-            message: "&cYou need fish to tame cats!"
-    
-    horse:
-      target: "HORSE"
-      xp: 15.0
-      name: "Horse Taming"
-      description: "Taming horses for riding"
-
-  # Fishing in dangerous waters
   FISH:
-    dangerous_fishing:
-      target: "FISH"
-      xp: 5.0
-      name: "Dangerous Fishing"
-      description: "Fishing in dangerous waters at night"
-      requirements:
-        logic: "AND"
-        time:
-          min: 13000
-          max: 23000
-          deny:
-            message: "&cDangerous fishing is only available at night!"
-        weather:
-          weather: "THUNDER"
-          deny:
-            message: "&cFish during thunderstorms for the ultimate challenge!"
+    # Fishing for survival
+    cod:
+      target: "COD"
+      xp: 2.0
+      name: "Cod Fishing"
+    
+    salmon:
+      target: "SALMON"
+      xp: 2.5
+      name: "Salmon Fishing"
+    
+    tropical_fish:
+      target: "TROPICAL_FISH"
+      xp: 3.0
+      name: "Tropical Fish Fishing"
 
-  # Archery practice
-  CUSTOM:
-    # This would be handled by a custom event
-    archery_practice:
-      target: "TARGET_HIT"
-      xp: 1.0
-      name: "Archery Practice"
-      description: "Practicing archery skills"
-      requirements:
-        logic: "AND"
-        item:
-          material: "BOW"
-          deny:
-            message: "&cYou need a bow for archery practice!"
+# ===================================
+# LEVEL UP ACTIONS - REWARDS & EFFECTS
+# ===================================
+levelup-actions:
+  # Welcome message for new hunters
+  welcome_hunter:
+    type: "message"
+    levels: [1]
+    messages:
+      - "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+      - "&c&l🏹 WELCOME TO THE HUNTER JOB! 🏹"
+      - "&7You are now a level &e{level} &7hunter!"
+      - "&7Hunt creatures and master survival!"
+      - "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+  
+  # Basic level up effects
+  level_up_sound:
+    type: "sound"
+    min-level: 1
+    sound: "ENTITY_ARROW_HIT_PLAYER"
+  
+  level_up_title:
+    type: "title"
+    min-level: 2
+    title: "&c&lLEVEL UP!"
+    subtitle: "&7Hunter Level &e{level}"
+    fade-in: 10
+    stay: 50
+    fade-out: 20
+  
+  level_up_particles:
+    type: "particle"
+    min-level: 1
+    particle: "CRIT"
+    count: 30
+  
+  # Weapon progression
+  bow_upgrade:
+    type: "command"
+    levels: [5]
+    commands:
+      - "give {player} bow 1"
+      - "give {player} arrow 64"
+      - "tellraw {player} {\"text\":\"🏹 Hunter's Bow and arrows! Ready for the hunt.\",\"color\":\"red\"}"
+  
+  crossbow_upgrade:
+    type: "command"
+    levels: [20]
+    commands:
+      - "give {player} crossbow 1"
+      - "tellraw {player} {\"text\":\"🎯 Crossbow unlocked! Precise and powerful.\",\"color\":\"dark_red\"}"
+  
+  trident_reward:
+    type: "command"
+    levels: [40]
+    commands:
+      - "give {player} trident 1"
+      - "tellraw {player} {\"text\":\"🔱 Legendary Trident! A weapon of the seas.\",\"color\":\"aqua\"}"
+  
+  # Survival supplies every 10 levels
+  survival_kit:
+    type: "command"
+    min-level: 10
+    level-interval: 10
+    commands:
+      - "give {player} cooked_beef 16"
+      - "give {player} potion{Potion:\"minecraft:healing\"} 3"
+      - "tellraw {player} {\"text\":\"🥩 Survival supplies for level {level}! Stay nourished on your hunts.\",\"color\":\"gold\"}"
+  
+  # Armor upgrades
+  leather_armor:
+    type: "command"
+    levels: [8]
+    commands:
+      - "give {player} leather_helmet 1"
+      - "give {player} leather_chestplate 1"
+      - "give {player} leather_leggings 1"
+      - "give {player} leather_boots 1"
+      - "tellraw {player} {\"text\":\"🧥 Hunter's Leather Armor! Basic protection for your adventures.\",\"color\":\"brown\"}"
+  
+  iron_armor:
+    type: "command"
+    levels: [25]
+    commands:
+      - "give {player} iron_helmet 1"
+      - "give {player} iron_chestplate 1"
+      - "give {player} iron_leggings 1"
+      - "give {player} iron_boots 1"
+      - "tellraw {player} {\"text\":\"⚔️ Iron Armor set! Enhanced protection for dangerous hunts.\",\"color\":\"gray\"}"
+  
+  # Major milestones
+  milestone_broadcast:
+    type: "broadcast"
+    levels: [15, 30, 50, 70, 80]
+    messages:
+      - "&c🏹 {player} &7has reached level &e{level} &7in the Hunter job! 🏹"
+  
+  # Special achievements
+  expert_hunter:
+    type: "command"
+    levels: [35]
+    commands:
+      - "broadcast &c🎯 {player} &7has become an &4Expert Hunter&7! 🎯"
+      - "give {player} diamond 8"
+      - "give {player} enchanted_book 1"
+  
+  master_hunter:
+    type: "command"
+    levels: [60]
+    commands:
+      - "broadcast &c🏆 {player} &7has become a &4Master Hunter&7! 🏆"
+      - "give {player} netherite_ingot 2"
+      - "give {player} totem_of_undying 1"
+  
+  # Legendary achievement
+  legendary_hunter:
+    type: "command"
+    levels: [80]
+    commands:
+      - "broadcast &c&l🌟 {player} &7has achieved &4LEGENDARY HUNTER &7status! &c&l🌟"
+      - "give {player} netherite_sword 1"
+      - "give {player} elytra 1"
+      - "give {player} diamond_block 5"

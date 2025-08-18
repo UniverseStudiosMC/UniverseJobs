@@ -1,111 +1,100 @@
-# Farmer Job Configuration
-# This job rewards players for farming, breeding, and food-related activities
+# ===================================
+# FARMER JOB CONFIGURATION  
+# ===================================
+# This job rewards players for farming, breeding animals, and food production
+# Configure crop growing, animal care, and agricultural activities
 
 # Basic job information
 name: "Farmer"
-description: "Grow crops and raise animals"
+description: "Cultivate the land and raise animals for sustenance"
 enabled: true
 max-level: 75
 permission: "jobsadventure.job.farmer"
 icon: "GOLDEN_HOE"
 
-# XP Curve Configuration (choose one):
-# Option 1: Use a predefined curve file
-xp-curve: "gentle"  # Uses /xp-curves/gentle.yml
+# XP progression curve (gentler than miner)
+xp-curve: "gentle"
 
-# Option 2: Use a mathematical equation
-# xp-equation: "75 * Math.pow(level, 1.5)"  # Custom equation
+# XP message display
+xp-message:
+  type: "bossbar"
+  text: "&a+{exp} EXP &7| &2{job} &7Level {level}"
+  bossbar:
+    color: "green"
+    style: "segmented_10"
+    duration: 60
+    show-progress: true
 
-# Job lore
+# Job description and lore
 lore:
-  - "&7Feed the world with your harvests!"
-  - "&7Level up by farming and breeding"
-  - "&7Bonus XP during rain"
+  - "&7Grow crops and care for animals"
+  - "&7Master the art of sustainable farming"
+  - "&7Feed the world with your harvest"
 
-# Job actions
+# ===================================
+# JOB ACTIONS - WHAT GIVES XP
+# ===================================
 actions:
-  # Crop harvesting
   BREAK:
-    # Wheat harvesting
+    # Crop harvesting
     wheat:
       target: "WHEAT"
       xp: 2.0
       name: "Wheat Harvesting"
-      description: "Harvesting mature wheat"
-      requirements:
-        logic: "AND"
-        placeholder:
-          placeholder: "%block_data_age%"
-          operator: "equals"
-          value: "7"
-          deny:
-            message: "&cWait for the wheat to fully mature!"
     
-    # Carrot harvesting with weather bonus
     carrots:
       target: "CARROTS"
-      xp: 3.0
+      xp: 2.5
       name: "Carrot Harvesting"
-      description: "Harvesting carrots with weather bonus"
-      requirements:
-        logic: "OR"
-        weather:
-          weather: "RAIN"
-          deny:
-            message: "&7Carrots grow better in the rain for bonus XP!"
-        weather:
-          weather: "CLEAR"
     
-    # Potato harvesting
     potatoes:
       target: "POTATOES"
-      xp: 3.0
+      xp: 2.5
       name: "Potato Harvesting"
-      description: "Harvesting potatoes"
-  
-  # Crop planting
-  PLACE:
-    # Wheat seeds
-    wheat_seeds:
-      target: "WHEAT"
-      xp: 0.5
-      name: "Wheat Planting"
-      description: "Planting wheat seeds"
-      requirements:
-        logic: "AND"
-        item:
-          material: "WHEAT_SEEDS"
-          deny:
-            message: "&cYou need wheat seeds to plant wheat!"
     
-    # Carrot planting
+    beetroots:
+      target: "BEETROOTS"
+      xp: 3.0
+      name: "Beetroot Harvesting"
+    
+    pumpkin:
+      target: "PUMPKIN"
+      xp: 4.0
+      name: "Pumpkin Harvesting"
+    
+    melon:
+      target: "MELON"
+      xp: 4.0
+      name: "Melon Harvesting"
+    
+    sugar_cane:
+      target: "SUGAR_CANE"
+      xp: 1.5
+      name: "Sugar Cane Harvesting"
+
+  PLACE:
+    # Planting crops
+    wheat_seeds:
+      target: "WHEAT_SEEDS"
+      xp: 1.0
+      name: "Wheat Planting"
+    
     carrot_planting:
       target: "CARROTS"
-      xp: 0.8
-      name: "Carrot Planting"
-      description: "Planting carrots"
-      requirements:
-        logic: "AND"
-        item:
-          material: "CARROT"
-          deny:
-            message: "&cYou need carrots to plant them!"
-    
-    # Sapling planting
-    oak_sapling:
-      target: "OAK_SAPLING"
       xp: 1.0
-      name: "Tree Planting"
-      description: "Planting oak saplings"
+      name: "Carrot Planting"
+    
+    potato_planting:
+      target: "POTATOES"
+      xp: 1.0
+      name: "Potato Planting"
 
-  # Animal breeding
   BREED:
-    # Cow breeding
+    # Animal breeding
     cow:
       target: "COW"
       xp: 8.0
       name: "Cow Breeding"
-      description: "Breeding cows for sustainability"
       requirements:
         logic: "AND"
         item:
@@ -113,12 +102,10 @@ actions:
           deny:
             message: "&cYou need wheat to breed cows!"
     
-    # Pig breeding
     pig:
-      target: "PIG" 
+      target: "PIG"
       xp: 6.0
       name: "Pig Breeding"
-      description: "Breeding pigs"
       requirements:
         logic: "AND"
         item:
@@ -126,79 +113,163 @@ actions:
           deny:
             message: "&cYou need carrots to breed pigs!"
     
-    # Chicken breeding with time restriction
     chicken:
       target: "CHICKEN"
       xp: 4.0
       name: "Chicken Breeding"
-      description: "Breeding chickens during daytime"
       requirements:
         logic: "AND"
         item:
           material: "WHEAT_SEEDS"
           deny:
             message: "&cYou need seeds to breed chickens!"
-        time:
-          min: 0
-          max: 12000
-          deny:
-            message: "&cChickens breed better during the day!"
-
-  # Fishing
-  FISH:
-    # General fishing
-    fish:
-      target: "FISH"
-      xp: 3.0
-      name: "Fishing"
-      description: "Catching fish"
+    
+    sheep:
+      target: "SHEEP"
+      xp: 5.0
+      name: "Sheep Breeding"
       requirements:
         logic: "AND"
-        biome:
-          biomes:
-            - "RIVER"
-            - "OCEAN"
-            - "BEACH"
-          blacklist: false
+        item:
+          material: "WHEAT"
           deny:
-            message: "&cFish better near water biomes!"
+            message: "&cYou need wheat to breed sheep!"
 
-  # Food consumption
-  EAT:
-    # Eating bread
-    bread:
-      target: "BREAD"
-      xp: 1.0
-      name: "Bread Consumption"
-      description: "Eating homemade bread"
-    
-    # Eating carrots
-    carrot:
-      target: "CARROT"
-      xp: 0.5
-      name: "Carrot Consumption" 
-      description: "Eating fresh carrots"
-
-  # Animal care
   MILK:
-    # Milking cows
+    # Animal care
     cow_milk:
       target: "COW"
       xp: 2.0
       name: "Cow Milking"
-      description: "Milking cows for dairy"
 
-  # Sheep shearing
   SHEAR:
-    # Shearing sheep
-    sheep:
+    # Wool collection
+    sheep_shear:
       target: "SHEEP"
       xp: 3.0
       name: "Sheep Shearing"
-      description: "Shearing sheep for wool"
       requirements:
         logic: "AND"
         item:
           material: "SHEARS"
           deny:
             message: "&cYou need shears to properly shear sheep!"
+
+  FISH:
+    # Basic fishing
+    general_fishing:
+      target: "COD"
+      xp: 3.0
+      name: "Fishing"
+    
+    salmon_fishing:
+      target: "SALMON"
+      xp: 4.0
+      name: "Salmon Fishing"
+
+# ===================================
+# LEVEL UP ACTIONS - REWARDS & EFFECTS
+# ===================================
+levelup-actions:
+  # Welcome message for new farmers
+  welcome_farmer:
+    type: "message"
+    levels: [1]
+    messages:
+      - "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+      - "&a&l🌾 WELCOME TO THE FARMER JOB! 🌾"
+      - "&7You are now a level &e{level} &7farmer!"
+      - "&7Grow crops and care for animals!"
+      - "&8&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+  
+  # Basic level up effects
+  level_up_sound:
+    type: "sound"
+    min-level: 1
+    sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+  
+  level_up_title:
+    type: "title"
+    min-level: 2
+    title: "&a&lLEVEL UP!"
+    subtitle: "&7Farmer Level &e{level}"
+    fade-in: 10
+    stay: 50
+    fade-out: 15
+  
+  level_up_particles:
+    type: "particle"
+    min-level: 1
+    particle: "VILLAGER_HAPPY"
+    count: 20
+  
+  # Starter supplies
+  starter_seeds:
+    type: "command"
+    levels: [3]
+    commands:
+      - "give {player} wheat_seeds 32"
+      - "give {player} carrot 16"
+      - "give {player} potato 16"
+      - "tellraw {player} {\"text\":\"🌱 Starter farming supplies! Plant these to begin your agricultural journey.\",\"color\":\"green\"}"
+  
+  # Tool upgrades
+  iron_hoe_reward:
+    type: "command"
+    levels: [10]
+    commands:
+      - "give {player} iron_hoe 1"
+      - "tellraw {player} {\"text\":\"🔧 Iron Hoe unlocked! More efficient farming awaits.\",\"color\":\"gray\"}"
+  
+  diamond_hoe_reward:
+    type: "command"
+    levels: [30]
+    commands:
+      - "give {player} diamond_hoe 1"
+      - "tellraw {player} {\"text\":\"💎 Diamond Hoe acquired! The ultimate farming tool.\",\"color\":\"aqua\"}"
+  
+  # Animal starter pack
+  animal_starter:
+    type: "command"
+    levels: [15]
+    commands:
+      - "give {player} cow_spawn_egg 2"
+      - "give {player} pig_spawn_egg 2"
+      - "give {player} chicken_spawn_egg 2"
+      - "tellraw {player} {\"text\":\"🐄 Animal starter pack! Begin your livestock operations.\",\"color\":\"yellow\"}"
+  
+  # Food rewards every 5 levels
+  food_rewards:
+    type: "command"
+    min-level: 5
+    level-interval: 5
+    commands:
+      - "give {player} bread 16"
+      - "give {player} cooked_beef 8"
+      - "tellraw {player} {\"text\":\"🍞 Nutritious food reward for level {level}!\",\"color\":\"gold\"}"
+  
+  # Major milestones
+  milestone_broadcast:
+    type: "broadcast"
+    levels: [20, 40, 60, 75]
+    messages:
+      - "&a🌾 {player} &7has reached level &e{level} &7in the Farmer job! 🌾"
+  
+  # Master farmer achievement
+  master_farmer:
+    type: "command"
+    levels: [50]
+    commands:
+      - "broadcast &a🏆 {player} &7has become a &2Master Farmer&7! 🏆"
+      - "give {player} golden_apple 5"
+      - "give {player} enchanted_golden_apple 1"
+      - "give {player} emerald 10"
+  
+  # Legendary farmer
+  legendary_farmer:
+    type: "command"
+    levels: [75]
+    commands:
+      - "broadcast &a&l🌟 {player} &7has achieved &2LEGENDARY FARMER &7status! &a&l🌟"
+      - "give {player} totem_of_undying 1"
+      - "give {player} diamond 15"

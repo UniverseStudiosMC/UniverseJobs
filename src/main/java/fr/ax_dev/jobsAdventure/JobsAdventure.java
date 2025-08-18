@@ -7,6 +7,7 @@ import fr.ax_dev.jobsAdventure.compatibility.FoliaCompatibilityManager;
 import fr.ax_dev.jobsAdventure.config.ConfigManager;
 import fr.ax_dev.jobsAdventure.config.LanguageManager;
 import fr.ax_dev.jobsAdventure.job.JobManager;
+import fr.ax_dev.jobsAdventure.levelup.SimpleLevelUpActionManager;
 import fr.ax_dev.jobsAdventure.listener.JobActionListener;
 import fr.ax_dev.jobsAdventure.listener.NexoEventListener;
 import fr.ax_dev.jobsAdventure.listener.ItemsAdderEventListener;
@@ -35,6 +36,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
     private LanguageManager languageManager;
     private FoliaCompatibilityManager foliaManager;
     private JobManager jobManager;
+    private SimpleLevelUpActionManager levelUpActionManager;
     private ActionProcessor actionProcessor;
     private XpBonusManager bonusManager;
     private XpMessageSender messageSender;
@@ -54,6 +56,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
         this.languageManager = new LanguageManager(this);
         this.foliaManager = new FoliaCompatibilityManager(this);
         this.jobManager = new JobManager(this);
+        this.levelUpActionManager = new SimpleLevelUpActionManager(this);
         this.bonusManager = new XpBonusManager(this);
         this.messageSender = new XpMessageSender(this);
         this.protectionManager = new BlockProtectionManager(this);
@@ -78,6 +81,16 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
             // Jobs loaded successfully
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Failed to load jobs", e);
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        
+        // Load level up actions
+        try {
+            levelUpActionManager.loadJobActions();
+            // Level up actions loaded successfully
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Failed to load level up actions", e);
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -507,6 +520,15 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
      */
     public PlaceholderManager getPlaceholderManager() {
         return placeholderManager;
+    }
+    
+    /**
+     * Get the level up action manager.
+     * 
+     * @return The level up action manager
+     */
+    public SimpleLevelUpActionManager getLevelUpActionManager() {
+        return levelUpActionManager;
     }
     
     /**
