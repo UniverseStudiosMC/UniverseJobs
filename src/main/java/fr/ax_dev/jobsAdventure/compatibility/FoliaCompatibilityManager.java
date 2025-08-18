@@ -17,11 +17,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class FoliaCompatibilityManager {
     
-    private final JobsAdventure plugin;
     private final FoliaLib foliaLib;
     
     public FoliaCompatibilityManager(JobsAdventure plugin) {
-        this.plugin = plugin;
         this.foliaLib = new FoliaLib(plugin);
         
         // Platform detection complete

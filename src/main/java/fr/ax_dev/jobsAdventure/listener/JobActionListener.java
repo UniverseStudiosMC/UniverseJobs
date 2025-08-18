@@ -48,8 +48,6 @@ public class JobActionListener implements Listener {
     private Method getTypeMethod;
     private Method getInternalNameMethod;
     private boolean mythicMobsAvailable = false;
-    private boolean mythicMobsChecked = false;
-    
     // Rate limiting (per player)
     private static final long ACTION_COOLDOWN_MS = 50; // 50ms between actions
     private static final long CLEANUP_INTERVAL = 300000L; // 5 minutes
@@ -140,7 +138,6 @@ public class JobActionListener implements Listener {
                 plugin.getLogger().info("MythicMobs not available or failed to initialize: " + e.getMessage());
             }
         }
-        mythicMobsChecked = true;
     }
     
     /**
@@ -201,15 +198,6 @@ public class JobActionListener implements Listener {
             
         } catch (Exception e) {
             plugin.getLogger().warning("Error processing KILL action for player " + killer.getName() + ": " + e.getMessage());
-        }
-    }
-    
-    /**
-     * Handle MythicMobs entity kills (legacy method - kept for compatibility).
-     */
-    private void handleMythicMobKill(Player killer, Entity killed, ConditionContext context) {
-        if (mythicMobsAvailable) {
-            handleMythicMobKillOptimized(killer, killed, context);
         }
     }
     

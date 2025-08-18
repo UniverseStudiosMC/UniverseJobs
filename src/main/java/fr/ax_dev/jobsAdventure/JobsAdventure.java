@@ -18,7 +18,6 @@ import fr.ax_dev.jobsAdventure.reward.RewardManager;
 import fr.ax_dev.jobsAdventure.reward.gui.RewardGuiManager;
 import fr.ax_dev.jobsAdventure.utils.XpMessageSender;
 import fr.ax_dev.jobsAdventure.placeholder.PlaceholderManager;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

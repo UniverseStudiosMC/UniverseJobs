@@ -103,16 +103,15 @@ commands:
     
   # Help command
   help:
-    header: "&6=== JobsAdventure Help ==="
-    join: "&e/job join <job> &7- Join a job"
-    leave: "&e/job leave <job> &7- Leave a job"
-    list: "&e/job list &7- List all available jobs"
-    info: "&e/job info <job> &7- Get job information"
-    stats: "&e/job stats [player] &7- View job statistics"
-    top: "&e/job top <job> &7- View job leaderboards"
-    rewards: "&e/job rewards &7- Reward system commands"
-    xpbonus: "&e/job xpbonus &7- XP bonus commands"
-    reload: "&e/job reload &7- Reload plugin configuration"
+    header: "&6=== JobsAdventure Commands ==="
+    join: "&e/jobs join <job> &7- Join a job"
+    leave: "&e/jobs leave <job> &7- Leave a job"
+    list: "&e/jobs list &7- List available jobs"
+    info: "&e/jobs info [job/player] &7- Show job or player info"
+    stats: "&e/jobs stats [player] &7- Show job statistics"
+    rewards: "&e/jobs rewards <subcommand> &7- Manage job rewards"
+    xpbonus: "&e/jobs xpbonus &7- Manage XP bonuses"
+    reload: "&e/jobs reload &7- Reload configuration"
 
 # GUI system messages
 gui:

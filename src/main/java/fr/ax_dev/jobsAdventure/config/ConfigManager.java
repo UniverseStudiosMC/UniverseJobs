@@ -1,7 +1,6 @@
 package fr.ax_dev.jobsAdventure.config;
 
 import fr.ax_dev.jobsAdventure.JobsAdventure;
-import fr.ax_dev.jobsAdventure.utils.MessageUtils;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.HashMap;

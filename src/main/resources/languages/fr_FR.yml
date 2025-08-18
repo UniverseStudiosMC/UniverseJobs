@@ -103,16 +103,15 @@ commands:
     
   # Commande d'aide
   help:
-    header: "&6=== Aide JobsAdventure ==="
-    join: "&e/job join <métier> &7- Rejoindre un métier"
-    leave: "&e/job leave <métier> &7- Quitter un métier"
-    list: "&e/job list &7- Lister tous les métiers disponibles"
-    info: "&e/job info <métier> &7- Obtenir des informations sur un métier"
-    stats: "&e/job stats [joueur] &7- Voir les statistiques des métiers"
-    top: "&e/job top <métier> &7- Voir le classement des métiers"
-    rewards: "&e/job rewards &7- Commandes du système de récompenses"
-    xpbonus: "&e/job xpbonus &7- Commandes de bonus XP"
-    reload: "&e/job reload &7- Recharger la configuration du plugin"
+    header: "&6=== Commandes JobsAdventure ==="
+    join: "&e/jobs join <métier> &7- Rejoindre un métier"
+    leave: "&e/jobs leave <métier> &7- Quitter un métier"
+    list: "&e/jobs list &7- Lister les métiers disponibles"
+    info: "&e/jobs info [métier/joueur] &7- Afficher les infos du métier ou joueur"
+    stats: "&e/jobs stats [joueur] &7- Afficher les statistiques des métiers"
+    rewards: "&e/jobs rewards <sous-commande> &7- Gérer les récompenses des métiers"
+    xpbonus: "&e/jobs xpbonus &7- Gérer les bonus XP"
+    reload: "&e/jobs reload &7- Recharger la configuration"
 
 # Messages du système d'interface graphique
 gui:

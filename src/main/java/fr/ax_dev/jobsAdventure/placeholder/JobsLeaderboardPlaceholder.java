@@ -7,12 +7,9 @@ import fr.ax_dev.jobsAdventure.job.PlayerJobData;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
-
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 public class JobsLeaderboardPlaceholder extends PlaceholderExpansion {
 

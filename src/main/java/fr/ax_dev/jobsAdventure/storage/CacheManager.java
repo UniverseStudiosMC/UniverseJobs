@@ -38,7 +38,6 @@ public class CacheManager {
         
         CacheEntry updateAccess() {
             return new CacheEntry(this.data) {
-                final long accessTime = System.currentTimeMillis();
             };
         }
     }

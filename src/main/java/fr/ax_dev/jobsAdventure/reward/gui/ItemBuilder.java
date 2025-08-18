@@ -18,7 +18,6 @@ import java.util.List;
  */
 public class ItemBuilder {
     
-    private final JobsAdventure plugin;
     private ItemStack item;
     private ItemMeta meta;
     
@@ -29,7 +28,6 @@ public class ItemBuilder {
      * @param material The base material
      */
     public ItemBuilder(JobsAdventure plugin, Material material) {
-        this.plugin = plugin;
         this.item = new ItemStack(material);
         this.meta = item.getItemMeta();
     }
@@ -41,7 +39,6 @@ public class ItemBuilder {
      * @param item The base ItemStack
      */
     public ItemBuilder(JobsAdventure plugin, ItemStack item) {
-        this.plugin = plugin;
         this.item = item.clone();
         this.meta = this.item.getItemMeta();
     }

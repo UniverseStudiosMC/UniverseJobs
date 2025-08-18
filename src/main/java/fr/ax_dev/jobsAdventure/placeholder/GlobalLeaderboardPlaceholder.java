@@ -1,7 +1,6 @@
 package fr.ax_dev.jobsAdventure.placeholder;
 
 import fr.ax_dev.jobsAdventure.JobsAdventure;
-import fr.ax_dev.jobsAdventure.job.Job;
 import fr.ax_dev.jobsAdventure.job.JobManager;
 import fr.ax_dev.jobsAdventure.job.PlayerJobData;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;

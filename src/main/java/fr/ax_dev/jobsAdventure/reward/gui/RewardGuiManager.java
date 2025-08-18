@@ -1,8 +1,6 @@
 package fr.ax_dev.jobsAdventure.reward.gui;
 
 import fr.ax_dev.jobsAdventure.JobsAdventure;
-import fr.ax_dev.jobsAdventure.condition.ConditionContext;
-import fr.ax_dev.jobsAdventure.condition.ConditionResult;
 import fr.ax_dev.jobsAdventure.job.Job;
 import fr.ax_dev.jobsAdventure.reward.Reward;
 import fr.ax_dev.jobsAdventure.reward.RewardManager;
@@ -18,8 +16,6 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 

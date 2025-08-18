@@ -91,7 +91,6 @@ public class JobManager {
             }
         }
         
-        int loadedCount = 0;
         for (File jobFile : jobFiles) {
             try {
                 String jobId = jobFile.getName().replace(".yml", "");
@@ -104,8 +103,6 @@ public class JobManager {
                     
                     if (job.isEnabled()) {
                         jobs.put(jobId, job);
-                        loadedCount++;
-                        // Loaded job successfully
                     } else {
                         plugin.getLogger().severe("Job " + jobId + " is disabled due to XP curve error: " + job.getXpCurveErrorMessage());
                     }

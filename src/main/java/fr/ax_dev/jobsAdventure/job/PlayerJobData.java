@@ -207,26 +207,6 @@ public class PlayerJobData {
     }
     
     /**
-     * Calculate required XP for a specific level using job's XP curve.
-     * 
-     * @param jobId The job ID
-     * @param level The target level
-     * @return Required XP
-     */
-    private double getRequiredXp(String jobId, int level) {
-        if (jobManager == null) {
-            return fallbackRequiredXp(level); // Fallback to old system
-        }
-        
-        Job job = jobManager.getJob(jobId);
-        if (job != null && job.getXpCurve() != null) {
-            return job.getXpCurve().getXpForLevel(level);
-        }
-        
-        return fallbackRequiredXp(level);
-    }
-    
-    /**
      * Calculate total XP required to reach a level using job's XP curve.
      * 
      * @param jobId The job ID  

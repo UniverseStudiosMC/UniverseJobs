@@ -75,8 +75,6 @@ public class LegacyConverterTest {
             try {
                 String output = LegacyToMiniMessageConverter.convert(input);
                 boolean hasLegacy = LegacyToMiniMessageConverter.containsLegacyCodes(input);
-                boolean isMiniMessage = LegacyToMiniMessageConverter.isMiniMessageFormat(output);
-                
                 System.out.printf("Test %2d: %-40s -> %s%n", 
                     i + 1, 
                     truncate(input, 40), 

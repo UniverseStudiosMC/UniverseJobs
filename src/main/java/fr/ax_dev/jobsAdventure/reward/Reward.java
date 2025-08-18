@@ -2,8 +2,6 @@ package fr.ax_dev.jobsAdventure.reward;
 
 import fr.ax_dev.jobsAdventure.condition.ConditionGroup;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.inventory.ItemStack;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

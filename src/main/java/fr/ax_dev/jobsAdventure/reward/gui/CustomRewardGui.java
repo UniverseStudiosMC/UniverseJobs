@@ -338,21 +338,6 @@ public class CustomRewardGui implements InventoryHolder {
     }
     
     /**
-     * Format time in seconds to a readable string.
-     */
-    private String formatTime(long seconds) {
-        if (seconds < 60) {
-            return seconds + "s";
-        } else if (seconds < 3600) {
-            return (seconds / 60) + "m";
-        } else if (seconds < 86400) {
-            return (seconds / 3600) + "h";
-        } else {
-            return (seconds / 86400) + "d";
-        }
-    }
-    
-    /**
      * Check if there is a next page.
      */
     private boolean hasNextPage() {

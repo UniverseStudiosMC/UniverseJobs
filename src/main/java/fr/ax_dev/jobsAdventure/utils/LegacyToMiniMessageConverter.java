@@ -2,7 +2,6 @@ package fr.ax_dev.jobsAdventure.utils;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**

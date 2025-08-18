@@ -1,7 +1,6 @@
 package fr.ax_dev.jobsAdventure.protection;
 
 import fr.ax_dev.jobsAdventure.JobsAdventure;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -21,7 +20,6 @@ import java.util.logging.Level;
 public class BlockProtectionManager {
     
     private final JobsAdventure plugin;
-    private final NamespacedKey playerPlacedKey;
     private boolean enabled;
     private boolean nexoEnabled;
     
@@ -32,7 +30,7 @@ public class BlockProtectionManager {
      */
     public BlockProtectionManager(JobsAdventure plugin) {
         this.plugin = plugin;
-        this.playerPlacedKey = new NamespacedKey(plugin, "player_placed");
+        new NamespacedKey(plugin, "player_placed");
         
         loadConfiguration();
         checkNexoCompatibility();

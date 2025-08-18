@@ -24,7 +24,6 @@ public class ConnectionPool {
     private final String password;
     private final int minConnections;
     private final int maxConnections;
-    private final long connectionTimeoutMs;
     private final long validationIntervalMs;
     
     private final ConcurrentLinkedQueue<PooledConnection> availableConnections;
@@ -61,7 +60,7 @@ public class ConnectionPool {
                              config.getInt("storage.database.pool.min-connections", 2));
         this.maxConnections = config.getInt("database.pool.max-connections", 
                              config.getInt("storage.database.pool.max-connections", 10));
-        this.connectionTimeoutMs = config.getLong("database.pool.connection-timeout-ms", 
+        config.getLong("database.pool.connection-timeout-ms", 
                                    config.getLong("storage.database.pool.connection-timeout-ms", 30000));
         this.validationIntervalMs = config.getLong("database.pool.validation-interval-ms", 
                                     config.getLong("storage.database.pool.validation-interval-ms", 300000));

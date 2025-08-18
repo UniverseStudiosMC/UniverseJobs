@@ -3,7 +3,6 @@ package fr.ax_dev.jobsAdventure.levelup;
 import fr.ax_dev.jobsAdventure.JobsAdventure;
 import fr.ax_dev.jobsAdventure.condition.ConditionResult;
 import fr.ax_dev.jobsAdventure.job.Job;
-import fr.ax_dev.jobsAdventure.utils.XpMessageSender;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;

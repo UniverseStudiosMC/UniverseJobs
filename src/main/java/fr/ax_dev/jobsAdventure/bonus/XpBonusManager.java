@@ -5,8 +5,6 @@ import fr.ax_dev.jobsAdventure.compatibility.FoliaCompatibilityManager;
 import fr.ax_dev.jobsAdventure.utils.MessageUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;

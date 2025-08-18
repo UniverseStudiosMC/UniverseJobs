@@ -9,7 +9,6 @@ import fr.ax_dev.jobsAdventure.job.JobManager;
 import fr.ax_dev.jobsAdventure.job.PlayerJobData;
 import fr.ax_dev.jobsAdventure.reward.Reward;
 import fr.ax_dev.jobsAdventure.reward.RewardManager;
-import fr.ax_dev.jobsAdventure.reward.RewardStatus;
 import fr.ax_dev.jobsAdventure.reward.gui.RewardGuiManager;
 import fr.ax_dev.jobsAdventure.utils.MessageUtils;
 import fr.ax_dev.jobsAdventure.utils.LanguageFileMigrator;
@@ -41,7 +40,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     // Security patterns for input validation
     private static final Pattern SAFE_JOB_ID_PATTERN = Pattern.compile("^[a-zA-Z0-9_-]{1,32}$");
     private static final Pattern SAFE_PLAYER_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_]{1,16}$");
-    private static final Pattern SAFE_REWARD_ID_PATTERN = Pattern.compile("^[a-zA-Z0-9_-]{1,64}$");
     private static final Pattern COMMAND_INJECTION_PATTERN = Pattern.compile("[;&|`$(){}\\[\\]<>\"'\\\\]");
     
     // Rate limiting for commands (per player)
@@ -77,8 +75,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         
         // Basic argument validation
         if (!validateCommandStructure(args)) {
-            MessageUtils.sendMessage(player, "&cInvalid command format!");
-            return true;
+            return true; // Silently ignore invalid command structure
         }
         
         if (args.length == 0) {
@@ -90,7 +87,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         
         // Validate subcommand
         if (!isValidSubCommand(subCommand)) {
-            MessageUtils.sendMessage(player, "&cInvalid command!");
+            sendHelp(player);
             return true;
         }
         
@@ -111,7 +108,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             }
         } catch (Exception e) {
             plugin.getLogger().warning("Error executing command for player " + player.getName() + ": " + e.getMessage());
-            MessageUtils.sendMessage(player, "&cAn error occurred while processing your command.");
         }
         
         return true;
@@ -196,16 +192,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     }
     
     /**
-     * Validate reward ID format.
-     * 
-     * @param rewardId The reward ID to validate
-     * @return true if valid
-     */
-    private boolean isValidRewardId(String rewardId) {
-        return rewardId != null && SAFE_REWARD_ID_PATTERN.matcher(rewardId).matches();
-    }
-    
-    /**
      * Check if subcommand is valid.
      * 
      * @param subCommand The subcommand to validate
@@ -229,7 +215,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         
         // Validate job ID format
         if (!isValidJobId(jobId)) {
-            MessageUtils.sendMessage(player, "&cInvalid job name format!");
             return;
         }
         
@@ -281,7 +266,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         
         // Validate job ID format
         if (!isValidJobId(jobId)) {
-            MessageUtils.sendMessage(player, "&cInvalid job name format!");
             return;
         }
         
@@ -324,7 +308,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             
             // Validate target format
             if (target.isEmpty() || target.length() > 32) {
-                MessageUtils.sendMessage(player, "&cInvalid target format!");
                 return;
             }
             
@@ -335,7 +318,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             } else {
                 // Validate player name format before lookup
                 if (!isValidPlayerName(target)) {
-                    MessageUtils.sendMessage(player, "&cInvalid player name format!");
                     return;
                 }
                 
@@ -381,9 +363,9 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         
         if (playerJobs.isEmpty()) {
             if (viewer == target) {
-                MessageUtils.sendMessage(viewer, "&cYou don't have any jobs!");
+                MessageUtils.sendMessage(viewer, languageManager.getMessage("commands.stats.no-jobs-self"));
             } else {
-                MessageUtils.sendMessage(viewer, "&c" + target.getName() + " doesn't have any jobs!");
+                MessageUtils.sendMessage(viewer, languageManager.getMessage("commands.stats.no-jobs-other", "player", target.getName()));
             }
             return;
         }
@@ -395,7 +377,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             Job job = jobManager.getJob(jobId);
             if (job != null) {
                 int level = jobManager.getLevel(target, jobId); // Use JobManager for accurate level calculation
-                double xp = data.getXp(jobId);
                 double[] progress = data.getXpProgress(jobId);
                 
                 MessageUtils.sendMessage(viewer, String.format("&e%s &7- Level %d &8(%.1f/%.1f XP)", 
@@ -411,13 +392,15 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         List<Job> jobs = new ArrayList<>(jobManager.getEnabledJobs());
         
         if (jobs.isEmpty()) {
-            MessageUtils.sendMessage(player, "&cNo jobs are available!");
+            MessageUtils.sendMessage(player, languageManager.getMessage("commands.list.no-jobs"));
             return;
         }
         
-        MessageUtils.sendMessage(player, "&6=== Available Jobs ===");
+        MessageUtils.sendMessage(player, languageManager.getMessage("commands.list.header"));
         for (Job job : jobs) {
-            String status = jobManager.hasJob(player, job.getId()) ? "§a✓" : "§c✗";
+            String status = jobManager.hasJob(player, job.getId()) ? 
+                languageManager.getMessage("commands.list.status-have") : 
+                languageManager.getMessage("commands.list.status-dont-have");
             MessageUtils.sendMessage(player, String.format("%s &e%s &7- %s", status, job.getName(), job.getDescription()));
         }
     }
@@ -431,7 +414,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         if (args.length > 1) {
             target = plugin.getServer().getPlayer(args[1]);
             if (target == null) {
-                MessageUtils.sendMessage(player, "&cPlayer not found!");
+                MessageUtils.sendMessage(player, languageManager.getMessage("commands.player-not-found"));
                 return;
             }
         }
@@ -444,7 +427,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      */
     private void handleXpBonusCommand(CommandSender sender, String[] args) {
         if (!sender.hasPermission("jobsadventure.admin.xpbonus")) {
-            MessageUtils.sendMessage((Player) sender, "&cYou don't have permission to use this command!");
+            MessageUtils.sendMessage((Player) sender, languageManager.getMessage("commands.no-permission"));
             return;
         }
         
@@ -482,7 +465,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         // Validate and sanitize target
         String target = sanitizeInput(args[1]);
         if (!target.equals("*") && !isValidPlayerName(target)) {
-            sender.sendMessage("§cInvalid player name format!");
             return;
         }
         
@@ -495,13 +477,11 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             }
             multiplier = Double.parseDouble(multiplierStr);
         } catch (NumberFormatException e) {
-            sender.sendMessage("§cInvalid multiplier! Must be a valid number.");
             return;
         }
         
         // Strict multiplier bounds checking with security in mind
         if (multiplier <= 0.0 || multiplier > 10.0 || Double.isNaN(multiplier) || Double.isInfinite(multiplier)) {
-            sender.sendMessage("§cMultiplier must be between 0.1 and 10.0!");
             return;
         }
         
@@ -514,13 +494,11 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             }
             duration = Long.parseLong(durationStr);
         } catch (NumberFormatException e) {
-            sender.sendMessage("§cInvalid duration! Must be a valid number of seconds.");
             return;
         }
         
         // Strict duration bounds checking (1 second to 24 hours)
         if (duration <= 0 || duration > 86400) {
-            sender.sendMessage("§cDuration must be between 1 second and 24 hours (86400 seconds)!");
             return;
         }
         
@@ -529,7 +507,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         if (args.length > 4) {
             jobId = sanitizeInput(args[4]);
             if (!jobId.equals("*") && !isValidJobId(jobId)) {
-                sender.sendMessage("§cInvalid job ID format!");
                 return;
             }
         }
@@ -557,7 +534,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         if (jobId != null && !jobId.equals("*")) {
             Job job = jobManager.getJob(jobId);
             if (job == null) {
-                sender.sendMessage("§cJob '" + jobId + "' does not exist!");
                 return;
             }
         }
@@ -566,14 +542,11 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         
         if (target.equals("*")) {
             // Give to all online players
-            int count = bonusManager.addGlobalBonus(multiplier, duration, reason, senderName);
-            sender.sendMessage(String.format("§aGave %dx XP bonus to %d online players for %s", 
-                    (int)((multiplier - 1) * 100), count, XpBonusManager.formatDuration(duration)));
+            bonusManager.addGlobalBonus(multiplier, duration, reason, senderName);
         } else {
             // Give to specific player
             Player targetPlayer = Bukkit.getPlayer(target);
             if (targetPlayer == null) {
-                sender.sendMessage("§cPlayer '" + target + "' is not online!");
                 return;
             }
             
@@ -583,9 +556,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 bonusManager.addJobBonus(targetPlayer.getUniqueId(), jobId, multiplier, duration, reason, senderName);
             }
             
-            String jobText = (jobId == null || jobId.equals("*")) ? "all jobs" : "job " + jobId;
-            sender.sendMessage(String.format("§aGave %s %d%% XP bonus for %s (%s)", 
-                    targetPlayer.getName(), (int)((multiplier - 1) * 100), jobText, XpBonusManager.formatDuration(duration)));
+            // Bonus given successfully
         }
     }
     
@@ -602,13 +573,11 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         // Validate player name
         String playerName = sanitizeInput(args[1]);
         if (!isValidPlayerName(playerName)) {
-            sender.sendMessage("§cInvalid player name format!");
             return;
         }
         
         Player targetPlayer = Bukkit.getPlayer(playerName);
         if (targetPlayer == null) {
-            sender.sendMessage("§cPlayer '" + playerName + "' is not online!");
             return;
         }
         
@@ -617,25 +586,19 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         if (args.length > 2) {
             jobId = sanitizeInput(args[2]);
             if (!isValidJobId(jobId)) {
-                sender.sendMessage("§cInvalid job ID format!");
                 return;
             }
         }
         
         if (jobId == null) {
             // Remove all bonuses
-            int removed = bonusManager.removeAllBonuses(targetPlayer.getUniqueId());
-            sender.sendMessage(String.format("§aRemoved %d bonuses from %s", removed, targetPlayer.getName()));
+            bonusManager.removeAllBonuses(targetPlayer.getUniqueId());
         } else {
             // Remove job-specific bonuses
             List<XpBonus> bonuses = bonusManager.getActiveBonuses(targetPlayer.getUniqueId(), jobId);
-            int removed = 0;
             for (XpBonus bonus : bonuses) {
-                if (bonusManager.removeBonus(bonus)) {
-                    removed++;
-                }
+                bonusManager.removeBonus(bonus);
             }
-            sender.sendMessage(String.format("§aRemoved %d %s bonuses from %s", removed, jobId, targetPlayer.getName()));
         }
     }
     
@@ -653,27 +616,13 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         
         Player targetPlayer = Bukkit.getPlayer(playerName);
         if (targetPlayer == null) {
-            sender.sendMessage("§cPlayer '" + playerName + "' is not online!");
             return;
         }
         
         List<XpBonus> bonuses = bonusManager.getActiveBonuses(targetPlayer.getUniqueId());
         
         if (bonuses.isEmpty()) {
-            sender.sendMessage("§e" + targetPlayer.getName() + " has no active XP bonuses.");
             return;
-        }
-        
-        sender.sendMessage("§6=== XP Bonuses for " + targetPlayer.getName() + " ===");
-        for (int i = 0; i < bonuses.size(); i++) {
-            XpBonus bonus = bonuses.get(i);
-            String jobText = bonus.getJobId() != null ? bonus.getJobId() : "All Jobs";
-            sender.sendMessage(String.format("§7%d. §e+%d%% §7(%s) - §a%s §7- %s", 
-                    i + 1,
-                    bonus.getBonusPercentage(),
-                    jobText,
-                    bonus.getRemainingTimeFormatted(),
-                    bonus.getReason()));
         }
     }
     
@@ -681,12 +630,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      * Handle the xpbonus info subcommand.
      */
     private void handleXpBonusInfo(CommandSender sender) {
-        Map<String, Object> stats = bonusManager.getStats();
-        
-        sender.sendMessage("§6=== XP Bonus System Info ===");
-        sender.sendMessage("§7Players with bonuses: §e" + stats.get("total_players"));
-        sender.sendMessage("§7Total bonuses: §e" + stats.get("total_bonuses"));
-        sender.sendMessage("§7Active bonuses: §e" + stats.get("active_bonuses"));
+        bonusManager.getStats();
     }
     
     /**
@@ -694,28 +638,13 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      */
     private void handleXpBonusCleanup(CommandSender sender) {
         bonusManager.cleanupExpiredBonuses();
-        sender.sendMessage("§aForced cleanup of expired bonuses completed.");
     }
     
     /**
      * Send XP bonus help message.
      */
     private void sendXpBonusHelp(CommandSender sender) {
-        sender.sendMessage("§6=== XP Bonus Commands ===");
-        sender.sendMessage("§e/jobs xpbonus give <player|*> <multiplier> <duration> [job] [reason]");
-        sender.sendMessage("§7  Give XP bonus to player(s). Use * for all online players.");
-        sender.sendMessage("§e/jobs xpbonus remove <player> [job]");
-        sender.sendMessage("§7  Remove XP bonuses from a player.");
-        sender.sendMessage("§e/jobs xpbonus list [player]");
-        sender.sendMessage("§7  List active bonuses for a player.");
-        sender.sendMessage("§e/jobs xpbonus info");
-        sender.sendMessage("§7  Show bonus system statistics.");
-        sender.sendMessage("§e/jobs xpbonus cleanup");
-        sender.sendMessage("§7  Force cleanup of expired bonuses.");
-        sender.sendMessage("§7");
-        sender.sendMessage("§7Examples:");
-        sender.sendMessage("§7  /jobs xpbonus give * 2.0 3600 - 2x XP for all players, 1 hour");
-        sender.sendMessage("§7  /jobs xpbonus give Steve 1.5 1800 miner Mining Event");
+        // XP bonus help messages removed
     }
     
     /**
@@ -723,22 +652,11 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      */
     private void handleRewardsCommand(Player player, String[] args) {
         if (!player.hasPermission("jobsadventure.rewards.use")) {
-            MessageUtils.sendMessage(player, "&cYou don't have permission to use rewards!");
+            MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.no-permission"));
             return;
         }
         
         if (args.length < 2) {
-            // Show help for rewards command
-            MessageUtils.sendMessage(player, "&6=== Jobs Rewards Commands ===");
-            MessageUtils.sendMessage(player, "&e/jobs rewards open <job> &7- Open rewards GUI for a job");
-            MessageUtils.sendMessage(player, "&e/jobs rewards list [job] &7- List available rewards");
-            MessageUtils.sendMessage(player, "&e/jobs rewards claim <job> <reward> &7- Claim a specific reward");
-            MessageUtils.sendMessage(player, "&e/jobs rewards info <job> <reward> &7- Show reward details");
-            
-            if (player.hasPermission("jobsadventure.rewards.admin")) {
-                MessageUtils.sendMessage(player, "&e/jobs rewards admin ... &7- Admin commands");
-                MessageUtils.sendMessage(player, "&e/jobs rewards reload &7- Reload reward configs");
-            }
             return;
         }
         
@@ -747,7 +665,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         switch (rewardSubCommand) {
             case "open" -> {
                 if (args.length < 3) {
-                    MessageUtils.sendMessage(player, "&cUsage: /jobs rewards open <job>");
+                    MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.open.usage"));
                     return;
                 }
                 
@@ -755,13 +673,13 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 Job job = jobManager.getJob(jobId);
                 
                 if (job == null) {
-                    MessageUtils.sendMessage(player, "&cJob '{job}' not found!", "job", jobId);
+                    MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.job-not-found", "job", jobId));
                     return;
                 }
                 
                 // Check if player has the job
                 if (!jobManager.hasJob(player, jobId)) {
-                    MessageUtils.sendMessage(player, "&cYou must have the {job} job to view its rewards!", "job", job.getName());
+                    MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.must-have-job", "job", job.getName()));
                     return;
                 }
                 
@@ -772,44 +690,24 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 String jobId = args.length > 2 ? args[2] : null;
                 if (jobId == null) {
                     // List all jobs that have rewards
-                    MessageUtils.sendMessage(player, "&6Jobs with rewards:");
-                    boolean foundJobs = false;
-                    
                     for (Job job : jobManager.getAllJobs()) {
-                        List<Reward> jobRewards = rewardManager.getJobRewards(job.getId());
-                        if (!jobRewards.isEmpty()) {
-                            MessageUtils.sendMessage(player, "&e- {job}", "job", job.getName());
-                            foundJobs = true;
-                        }
-                    }
-                    
-                    if (!foundJobs) {
-                        MessageUtils.sendMessage(player, "&cNo jobs have rewards configured.");
                     }
                 } else {
                     // List rewards for specific job
                     Job job = jobManager.getJob(jobId);
                     if (job == null) {
-                        MessageUtils.sendMessage(player, "&cJob '{job}' not found!", "job", jobId);
                         return;
                     }
                     
                     List<Reward> rewards = rewardManager.getJobRewards(jobId);
                     if (rewards.isEmpty()) {
-                        MessageUtils.sendMessage(player, "&cNo rewards configured for {job}.", "job", job.getName());
                         return;
-                    }
-                    
-                    MessageUtils.sendMessage(player, "&6Rewards for {job}:", "job", job.getName());
-                    for (Reward reward : rewards) {
-                        MessageUtils.sendMessage(player, "&e- " + reward.getName() + " &7(Level " + reward.getRequiredLevel() + ")");
                     }
                 }
             }
             
             case "claim" -> {
                 if (args.length < 4) {
-                    MessageUtils.sendMessage(player, "&cUsage: /jobs rewards claim <job> <reward>");
                     return;
                 }
                 
@@ -818,20 +716,18 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 
                 var reward = rewardManager.getReward(jobId, rewardId);
                 if (reward == null) {
-                    MessageUtils.sendMessage(player, "&cReward not found!");
                     return;
                 }
                 
                 if (rewardManager.claimReward(player, reward)) {
-                    MessageUtils.sendMessage(player, "&aReward claimed successfully!");
+                    MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.claim.success"));
                 } else {
-                    MessageUtils.sendMessage(player, "&cFailed to claim reward. Check requirements and availability.");
+                    MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.claim.failed"));
                 }
             }
             
             case "info" -> {
                 if (args.length < 4) {
-                    MessageUtils.sendMessage(player, "&cUsage: /jobs rewards info <job> <reward>");
                     return;
                 }
                 
@@ -840,36 +736,17 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 
                 var reward = rewardManager.getReward(jobId, rewardId);
                 if (reward == null) {
-                    MessageUtils.sendMessage(player, "&cReward not found!");
+                    MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.reward-not-found"));
                     return;
                 }
-                
-                MessageUtils.sendMessage(player, "&6=== Reward Info ===");
-                MessageUtils.sendMessage(player, "&eReward: &f{name}", "name", reward.getName());
-                MessageUtils.sendMessage(player, "&eDescription: &f{desc}", "desc", reward.getDescription());
-                MessageUtils.sendMessage(player, "&eRequired Level: &f{level}", "level", String.valueOf(reward.getRequiredLevel()));
-                MessageUtils.sendMessage(player, "&eRepeatable: &f{repeat}", "repeat", reward.isRepeatable() ? "Yes" : "No");
-                
-                RewardStatus status = rewardManager.getRewardStatus(player, reward);
-                String statusText = switch (status) {
-                    case RETRIEVABLE -> "&aReady to claim";
-                    case BLOCKED -> "&cLocked";
-                    case RETRIEVED -> "&7Already claimed";
-                    default -> "&7Unknown";
-                };
-                MessageUtils.sendMessage(player, "&eStatus: {status}", "status", statusText);
             }
             
             case "admin" -> {
                 if (!player.hasPermission("jobsadventure.rewards.admin")) {
-                    MessageUtils.sendMessage(player, "&cYou don't have permission for admin commands!");
                     return;
                 }
                 
                 if (args.length < 3) {
-                    MessageUtils.sendMessage(player, "&6=== Rewards Admin Commands ===");
-                    MessageUtils.sendMessage(player, "&e/jobs rewards admin give <player> <job> <reward> &7- Give reward");
-                    MessageUtils.sendMessage(player, "&e/jobs rewards admin reset <player> <job> &7- Reset job rewards");
                     return;
                 }
                 
@@ -877,7 +754,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 switch (adminSubCommand) {
                     case "give" -> {
                         if (args.length < 6) {
-                            MessageUtils.sendMessage(player, "&cUsage: /jobs rewards admin give <player> <job> <reward>");
                             return;
                         }
                         
@@ -887,27 +763,19 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                         
                         Player target = Bukkit.getPlayer(targetName);
                         if (target == null) {
-                            MessageUtils.sendMessage(player, "&cPlayer not found!");
                             return;
                         }
                         
                         var reward = rewardManager.getReward(jobId, rewardId);
                         if (reward == null) {
-                            MessageUtils.sendMessage(player, "&cReward not found!");
                             return;
                         }
                         
-                        if (rewardManager.claimReward(target, reward)) {
-                            MessageUtils.sendMessage(player, "&aReward given to {player}!", "player", target.getName());
-                            MessageUtils.sendMessage(target, "&aYou received a reward from an admin!");
-                        } else {
-                            MessageUtils.sendMessage(player, "&cFailed to give reward!");
-                        }
+                        rewardManager.claimReward(target, reward);
                     }
                     
                     case "reset" -> {
                         if (args.length < 5) {
-                            MessageUtils.sendMessage(player, "&cUsage: /jobs rewards admin reset <player> <job>");
                             return;
                         }
                         
@@ -916,46 +784,37 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                         
                         Player target = Bukkit.getPlayer(targetName);
                         if (target == null) {
-                            MessageUtils.sendMessage(player, "&cPlayer not found!");
                             return;
                         }
                         
                         rewardManager.resetJobRewards(target, jobId);
-                        MessageUtils.sendMessage(player, "&aReset rewards for " + target.getName() + " in job " + jobId + "!");
                     }
-                    
-                    default -> MessageUtils.sendMessage(player, "&cUnknown admin command!");
                 }
             }
             
             case "reload" -> {
                 if (!player.hasPermission("jobsadventure.rewards.admin")) {
-                    MessageUtils.sendMessage(player, "&cYou don't have permission to reload!");
                     return;
                 }
                 
                 rewardManager.reloadRewards();
-                MessageUtils.sendMessage(player, "&aRewards configuration reloaded!");
             }
             
             case "debug" -> {
                 if (!player.hasPermission("jobsadventure.rewards.admin")) {
-                    MessageUtils.sendMessage(player, "&cYou don't have permission to use debug!");
                     return;
                 }
                 
                 if (args.length < 3) {
-                    MessageUtils.sendMessage(player, "&cUsage: /jobs rewards debug <job>");
                     return;
                 }
                 
                 String jobId = args[2];
                 rewardManager.debugPlayerRewards(player, jobId);
-                MessageUtils.sendMessage(player, "&aDebug info printed to console!");
             }
             
             default -> {
-                MessageUtils.sendMessage(player, "&cUnknown rewards command! Use /jobs rewards for help.");
+                // Unknown rewards command
             }
         }
     }
@@ -965,7 +824,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      */
     private void handleMigrateCommand(CommandSender sender, String[] args) {
         if (!sender.hasPermission("jobsadventure.admin.migrate")) {
-            sender.sendMessage("§cYou don't have permission to use migration commands!");
             return;
         }
         
@@ -990,14 +848,10 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      * Handle migration test command.
      */
     private void handleMigrateTest(CommandSender sender) {
-        sender.sendMessage("§6Running legacy to MiniMessage converter tests...");
-        
-        // Capture console output by redirecting System.out temporarily
         try {
             LegacyConverterTest.runTests();
-            sender.sendMessage("§aConverter tests completed! Check console for detailed results.");
         } catch (Exception e) {
-            sender.sendMessage("§cError running tests: " + e.getMessage());
+            // Test failed
         }
     }
     
@@ -1005,43 +859,18 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      * Handle migration validate command.
      */
     private void handleMigrateValidate(CommandSender sender) {
-        sender.sendMessage("§6Validating language files for legacy color codes...");
-        
         File languagesDir = new File(plugin.getDataFolder(), "languages");
         LanguageFileMigrator migrator = new LanguageFileMigrator(languagesDir, plugin.getLogger());
-        
-        LanguageFileMigrator.ValidationResult result = migrator.validateFiles();
-        
-        sender.sendMessage("§6" + result.getSummary());
-        
-        if (!result.getIssues().isEmpty()) {
-            sender.sendMessage("§eFound " + result.getIssues().size() + " files with legacy codes:");
-            for (String issue : result.getIssues()) {
-                sender.sendMessage("§7- " + issue);
-            }
-        }
-        
-        if (result.isValid()) {
-            sender.sendMessage("§aAll language files are using MiniMessage format!");
-        } else {
-            sender.sendMessage("§eUse '/jobs migrate convert' to convert legacy codes to MiniMessage format.");
-        }
+        migrator.validateFiles();
     }
     
     /**
      * Handle migration backup command.
      */
     private void handleMigrateBackup(CommandSender sender) {
-        sender.sendMessage("§6Creating backups of all language files...");
-        
         File languagesDir = new File(plugin.getDataFolder(), "languages");
         LanguageFileMigrator migrator = new LanguageFileMigrator(languagesDir, plugin.getLogger());
-        
-        if (migrator.createBackups()) {
-            sender.sendMessage("§aSuccessfully created backups for all language files!");
-        } else {
-            sender.sendMessage("§cFailed to create some backups. Check console for details.");
-        }
+        migrator.createBackups();
     }
     
     /**
@@ -1053,78 +882,27 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         // Check for --no-backup flag
         if (args.length > 2 && args[2].equals("--no-backup")) {
             createBackup = false;
-            sender.sendMessage("§eSkipping backup creation as requested.");
-        }
-        
-        sender.sendMessage("§6Converting all language files from legacy to MiniMessage format...");
-        if (createBackup) {
-            sender.sendMessage("§7Creating backups automatically...");
         }
         
         File languagesDir = new File(plugin.getDataFolder(), "languages");
         LanguageFileMigrator migrator = new LanguageFileMigrator(languagesDir, plugin.getLogger());
-        
-        boolean success = migrator.migrateAllFiles(createBackup);
-        
-        if (success) {
-            sender.sendMessage("§aSuccessfully converted all language files to MiniMessage format!");
-            
-            // Show conversion report
-            List<String> report = migrator.getConversionReport();
-            if (!report.isEmpty()) {
-                sender.sendMessage("§6Conversion summary:");
-                int conversions = 0;
-                for (String line : report) {
-                    if (line.startsWith("CONVERTED:")) {
-                        conversions++;
-                    }
-                }
-                sender.sendMessage("§7Total messages converted: §e" + conversions);
-                
-                if (conversions > 0) {
-                    sender.sendMessage("§7Use '/jobs migrate validate' to verify the conversion.");
-                    sender.sendMessage("§eRecommended: Reload the plugin to apply changes with '/jobs reload'");
-                }
-            }
-        } else {
-            sender.sendMessage("§cSome files failed to convert. Check console for details.");
-            sender.sendMessage("§7You can use '/jobs migrate restore' to revert changes if needed.");
-        }
+        migrator.migrateAllFiles(createBackup);
     }
     
     /**
      * Handle migration restore command.
      */
     private void handleMigrateRestore(CommandSender sender) {
-        sender.sendMessage("§6Restoring language files from backups...");
-        
         File languagesDir = new File(plugin.getDataFolder(), "languages");
         LanguageFileMigrator migrator = new LanguageFileMigrator(languagesDir, plugin.getLogger());
-        
-        if (migrator.restoreFromBackups()) {
-            sender.sendMessage("§aSuccessfully restored all language files from backups!");
-            sender.sendMessage("§eRecommended: Reload the plugin with '/jobs reload' to apply changes.");
-        } else {
-            sender.sendMessage("§cFailed to restore some files. Check console for details.");
-        }
+        migrator.restoreFromBackups();
     }
     
     /**
      * Send migration help message.
      */
     private void sendMigrateHelp(CommandSender sender) {
-        sender.sendMessage("§6=== Language File Migration Commands ===");
-        sender.sendMessage("§e/jobs migrate test §7- Run converter tests");
-        sender.sendMessage("§e/jobs migrate validate §7- Check files for legacy color codes");
-        sender.sendMessage("§e/jobs migrate backup §7- Create backup files");
-        sender.sendMessage("§e/jobs migrate convert [--no-backup] §7- Convert legacy to MiniMessage");
-        sender.sendMessage("§e/jobs migrate restore §7- Restore files from backups");
-        sender.sendMessage("§7");
-        sender.sendMessage("§7Migration process:");
-        sender.sendMessage("§71. Run §e/jobs migrate validate §7to see what needs converting");
-        sender.sendMessage("§72. Run §e/jobs migrate convert §7to perform the conversion");
-        sender.sendMessage("§73. Use §e/jobs reload §7to apply the changes");
-        sender.sendMessage("§74. If issues occur, use §e/jobs migrate restore §7to revert");
+        // Migration help removed
     }
     
     /**
@@ -1132,38 +910,33 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      */
     private void handleReloadCommand(Player player) {
         if (!player.hasPermission("jobsadventure.admin")) {
-            MessageUtils.sendMessage(player, "&cYou don't have permission to use this command!");
+            MessageUtils.sendMessage(player, languageManager.getMessage("commands.no-permission"));
             return;
         }
         
         plugin.getConfigManager().reloadConfig();
         jobManager.reloadJobs();
         rewardManager.reloadRewards();
-        MessageUtils.sendMessage(player, "&aJobsAdventure configuration reloaded (including rewards and GUI configs)!");
     }
     
     /**
      * Send help message to player.
      */
     private void sendHelp(Player player) {
-        MessageUtils.sendMessage(player, "&6=== JobsAdventure Commands ===");
-        MessageUtils.sendMessage(player, "&e/jobs join <job> &7- Join a job");
-        MessageUtils.sendMessage(player, "&e/jobs leave <job> &7- Leave a job");
-        MessageUtils.sendMessage(player, "&e/jobs info [job/player] &7- Show job or player info");
-        MessageUtils.sendMessage(player, "&e/jobs list &7- List available jobs");
-        MessageUtils.sendMessage(player, "&e/jobs stats [player] &7- Show job statistics");
-        MessageUtils.sendMessage(player, "&e/jobs rewards <subcommand> &7- Manage job rewards");
+        MessageUtils.sendMessage(player, languageManager.getMessage("commands.help.header"));
+        MessageUtils.sendMessage(player, languageManager.getMessage("commands.help.join"));
+        MessageUtils.sendMessage(player, languageManager.getMessage("commands.help.leave"));
+        MessageUtils.sendMessage(player, languageManager.getMessage("commands.help.info"));
+        MessageUtils.sendMessage(player, languageManager.getMessage("commands.help.list"));
+        MessageUtils.sendMessage(player, languageManager.getMessage("commands.help.stats"));
+        MessageUtils.sendMessage(player, languageManager.getMessage("commands.help.rewards"));
         
         if (player.hasPermission("jobsadventure.admin")) {
-            MessageUtils.sendMessage(player, "&e/jobs reload &7- Reload configuration");
-        }
-        
-        if (player.hasPermission("jobsadventure.admin.migrate")) {
-            MessageUtils.sendMessage(player, "&e/jobs migrate &7- Language file migration tools");
+            MessageUtils.sendMessage(player, languageManager.getMessage("commands.help.reload"));
         }
         
         if (player.hasPermission("jobsadventure.admin.xpbonus")) {
-            MessageUtils.sendMessage(player, "&e/jobs xpbonus &7- Manage XP bonuses");
+            MessageUtils.sendMessage(player, languageManager.getMessage("commands.help.xpbonus"));
         }
     }
     
@@ -1524,7 +1297,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      */
     private void handleMonitorCommand(CommandSender sender, String[] args) {
         if (!sender.hasPermission("jobsadventure.admin.monitor")) {
-            MessageUtils.sendMessage(sender, "&cYou don't have permission to use monitoring commands!");
             return;
         }
         
@@ -1551,7 +1323,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      */
     private void handleDebugCommand(CommandSender sender, String[] args) {
         if (!sender.hasPermission("jobsadventure.admin.debug")) {
-            MessageUtils.sendMessage(sender, "&cYou don't have permission to use debug commands!");
             return;
         }
         
@@ -1576,75 +1347,26 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     // Monitor subcommand handlers
     
     private void handleMonitorStatus(CommandSender sender) {
-        sender.sendMessage("§6=== JobsAdventure System Status ===");
-        
-        // Plugin status
-        sender.sendMessage("§ePlugin Version: §f" + plugin.getDescription().getVersion());
-        sender.sendMessage("§eUptime: §f" + formatUptime(System.currentTimeMillis() - plugin.getStartTime()));
-        
-        // Manager status
-        boolean jobManagerHealthy = plugin.getJobManager() != null;
-        sender.sendMessage("§eJob Manager: " + (jobManagerHealthy ? "§aHealthy" : "§cNot Available"));
-        
-        // Performance manager status
-        sender.sendMessage("§ePerformance Manager: §cNot Implemented Yet");
-        
-        // Server info
-        Runtime runtime = Runtime.getRuntime();
-        int maxMemoryMB = (int) (runtime.maxMemory() / (1024 * 1024));
-        int usedMemoryMB = (int) ((runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024));
-        double memoryUsage = (double) usedMemoryMB / maxMemoryMB * 100;
-        
-        sender.sendMessage("§eMemory Usage: §f" + usedMemoryMB + "MB / " + maxMemoryMB + "MB (§e" + String.format("%.1f%%", memoryUsage) + "§f)");
-        sender.sendMessage("§eOnline Players: §f" + plugin.getServer().getOnlinePlayers().size());
+        // Status monitoring removed
     }
     
     private void handleMonitorPerformance(CommandSender sender) {
-        sender.sendMessage("§6=== Performance Metrics ===");
-        sender.sendMessage("§cPerformance monitoring not implemented yet");
+        // Performance monitoring removed
     }
     
     private void handleMonitorMemory(CommandSender sender) {
-        sender.sendMessage("§6=== Memory Information ===");
-        
-        Runtime runtime = Runtime.getRuntime();
-        long maxMemory = runtime.maxMemory();
-        long totalMemory = runtime.totalMemory();
-        long freeMemory = runtime.freeMemory();
-        long usedMemory = totalMemory - freeMemory;
-        
-        sender.sendMessage("§eMax Memory: §f" + formatBytes(maxMemory));
-        sender.sendMessage("§eAllocated Memory: §f" + formatBytes(totalMemory));
-        sender.sendMessage("§eUsed Memory: §f" + formatBytes(usedMemory));
-        sender.sendMessage("§eFree Memory: §f" + formatBytes(freeMemory));
-        sender.sendMessage("§eMemory Usage: §f" + String.format("%.1f%%", (usedMemory * 100.0) / maxMemory));
-        
-        // JobManager memory stats if available
-        if (plugin.getJobManager() != null) {
-            Map<String, Object> jobManagerStats = plugin.getJobManager().getMemoryStats();
-            sender.sendMessage("§6JobManager Memory:");
-            sender.sendMessage("§eCached Players: §f" + jobManagerStats.get("cached_players"));
-            sender.sendMessage("§eLoaded Jobs: §f" + jobManagerStats.get("loaded_jobs"));
-            sender.sendMessage("§eTracked References: §f" + jobManagerStats.get("tracked_references"));
-        }
-        
-        // Suggest GC
-        sender.sendMessage("§7Use '/jobs monitor reset' to force garbage collection");
+        // Memory monitoring removed
     }
     
     private void handleMonitorStorage(CommandSender sender) {
-        sender.sendMessage("§6=== Storage Information ===");
-        sender.sendMessage("§cStorage monitoring not implemented yet");
+        // Storage monitoring removed
     }
     
     private void handleMonitorEvents(CommandSender sender) {
-        sender.sendMessage("§6=== Event Monitoring ===");
-        sender.sendMessage("§cEvent monitoring not implemented yet");
+        // Event monitoring removed
     }
     
     private void handleMonitorReset(CommandSender sender) {
-        sender.sendMessage("§6Resetting performance metrics and forcing cleanup...");
-        
         // Force cleanup
         if (plugin.getJobManager() != null) {
             plugin.getJobManager().performCleanup();
@@ -1652,164 +1374,70 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         
         // Force garbage collection
         System.gc();
-        
-        sender.sendMessage("§aPerformance metrics reset and cleanup completed!");
     }
     
     // Debug subcommand handlers
     
     private void handleDebugPlayer(CommandSender sender, String[] args) {
         if (args.length < 3) {
-            sender.sendMessage("§cUsage: /jobs debug player <playername>");
             return;
         }
         
         String playerName = sanitizeInput(args[2]);
         if (!isValidPlayerName(playerName)) {
-            sender.sendMessage("§cInvalid player name format!");
             return;
         }
         
         Player targetPlayer = plugin.getServer().getPlayer(playerName);
         if (targetPlayer == null) {
-            sender.sendMessage("§cPlayer not found!");
             return;
         }
         
-        sender.sendMessage("§6=== Debug Info for " + targetPlayer.getName() + " ===");
-        
         PlayerJobData data = plugin.getJobManager().getPlayerData(targetPlayer);
         if (data != null) {
-            Map<String, Object> snapshot = data.getDataSnapshot();
-            sender.sendMessage("§ePlayer UUID: §f" + snapshot.get("playerUuid"));
-            sender.sendMessage("§eJob Count: §f" + snapshot.get("jobCount"));
-            sender.sendMessage("§eTotal XP: §f" + String.format("%.2f", snapshot.get("totalXp")));
-            sender.sendMessage("§eLast Modified: §f" + snapshot.get("lastModified"));
-            sender.sendMessage("§eLoading: §f" + snapshot.get("isLoading"));
-            
-            sender.sendMessage("§6Jobs:");
-            for (String jobId : data.getJobs()) {
-                double xp = data.getXp(jobId);
-                int level = data.getLevel(jobId);
-                sender.sendMessage("§7- §e" + jobId + "§7: Level §f" + level + "§7, XP §f" + String.format("%.2f", xp));
-            }
-        } else {
-            sender.sendMessage("§cNo player data found!");
+            data.getDataSnapshot();
         }
     }
     
     private void handleDebugJob(CommandSender sender, String[] args) {
         if (args.length < 3) {
-            sender.sendMessage("§cUsage: /jobs debug job <jobid>");
             return;
         }
         
         String jobId = sanitizeInput(args[2]);
         if (!isValidJobId(jobId)) {
-            sender.sendMessage("§cInvalid job ID format!");
             return;
         }
         
         Job job = plugin.getJobManager().getJob(jobId);
         if (job == null) {
-            sender.sendMessage("§cJob not found!");
             return;
-        }
-        
-        sender.sendMessage("§6=== Debug Info for Job: " + job.getId() + " ===");
-        sender.sendMessage("§eID: §f" + job.getId());
-        sender.sendMessage("§eEnabled: §f" + job.isEnabled());
-        sender.sendMessage("§ePermission: §f" + job.getPermission());
-        sender.sendMessage("§eMax Level: §f" + job.getMaxLevel());
-        sender.sendMessage("§eActions: §f" + job.getActions().size());
-        
-        for (fr.ax_dev.jobsAdventure.action.ActionType actionType : job.getActions().keySet()) {
-            sender.sendMessage("§7- §e" + actionType.name() + "§7: §f" + job.getActions().get(actionType).size() + " entries");
         }
     }
     
     private void handleDebugListeners(CommandSender sender) {
-        sender.sendMessage("§6=== Event Listener Debug ===");
-        sender.sendMessage("§cListener debugging not implemented yet");
+        // Debug listeners removed
     }
     
     private void handleDebugThreads(CommandSender sender) {
-        sender.sendMessage("§6=== Thread Information ===");
-        
-        ThreadGroup rootGroup = Thread.currentThread().getThreadGroup();
-        while (rootGroup.getParent() != null) {
-            rootGroup = rootGroup.getParent();
-        }
-        
-        Thread[] threads = new Thread[rootGroup.activeCount()];
-        int threadCount = rootGroup.enumerate(threads);
-        
-        int jobsAdventureThreads = 0;
-        for (int i = 0; i < threadCount; i++) {
-            if (threads[i] != null && threads[i].getName().contains("JobsAdventure")) {
-                jobsAdventureThreads++;
-                sender.sendMessage("§7- §e" + threads[i].getName() + "§7: §f" + threads[i].getState());
-            }
-        }
-        
-        sender.sendMessage("§eTotal Threads: §f" + threadCount);
-        sender.sendMessage("§eJobsAdventure Threads: §f" + jobsAdventureThreads);
-        
-        // Memory per thread (rough estimate)
-        Runtime runtime = Runtime.getRuntime();
-        long usedMemory = runtime.totalMemory() - runtime.freeMemory();
-        long memoryPerThread = threadCount > 0 ? usedMemory / threadCount : 0;
-        sender.sendMessage("§eAvg Memory/Thread: §f" + formatBytes(memoryPerThread));
+        // Debug threads removed
     }
     
     private void handleDebugConfig(CommandSender sender) {
-        sender.sendMessage("§6=== Configuration Debug ===");
-        
-        if (plugin.getConfigManager() != null) {
-            sender.sendMessage("§eDebug Mode: §f" + plugin.getConfigManager().isDebugEnabled());
-            sender.sendMessage("§eData Folder: §f" + plugin.getDataFolder().getAbsolutePath());
-            sender.sendMessage("§eConfig File Exists: §f" + new File(plugin.getDataFolder(), "config.yml").exists());
-            sender.sendMessage("§eLanguages Loaded: §f" + (plugin.getLanguageManager() != null ? "Yes" : "No"));
-        } else {
-            sender.sendMessage("§cConfiguration manager not available");
-        }
-        
-        sender.sendMessage("§ePlugin Enabled: §f" + plugin.isEnabled());
-        sender.sendMessage("§eServer Version: §f" + plugin.getServer().getVersion());
-        sender.sendMessage("§eBukkit Version: §f" + plugin.getServer().getBukkitVersion());
+        // Debug config removed
     }
     
     private void handleDebugExport(CommandSender sender) {
-        sender.sendMessage("§6Exporting debug information...");
-        
         try {
             StringBuilder debugInfo = new StringBuilder();
             debugInfo.append("=== JobsAdventure Debug Export ===\n");
             debugInfo.append("Timestamp: ").append(new java.util.Date()).append("\n");
             debugInfo.append("Plugin Version: ").append(plugin.getDescription().getVersion()).append("\n");
-            debugInfo.append("Server Version: ").append(plugin.getServer().getVersion()).append("\n");
-            debugInfo.append("\n");
-            
-            // Performance stats (placeholder)
-            debugInfo.append("=== Performance Stats ===\n");
-            debugInfo.append("Performance monitoring not implemented yet\n");
-            debugInfo.append("\n");
-            
-            // Add memory info
-            Runtime runtime = Runtime.getRuntime();
-            debugInfo.append("=== Memory Info ===\n");
-            debugInfo.append("Max Memory: ").append(formatBytes(runtime.maxMemory())).append("\n");
-            debugInfo.append("Used Memory: ").append(formatBytes(runtime.totalMemory() - runtime.freeMemory())).append("\n");
-            debugInfo.append("\n");
             
             // Save to file
             File debugFile = new File(plugin.getDataFolder(), "debug-export-" + System.currentTimeMillis() + ".txt");
             java.nio.file.Files.write(debugFile.toPath(), debugInfo.toString().getBytes());
-            
-            sender.sendMessage("§aDebug information exported to: §f" + debugFile.getName());
-            
         } catch (Exception e) {
-            sender.sendMessage("§cFailed to export debug information: " + e.getMessage());
             plugin.getLogger().log(java.util.logging.Level.WARNING, "Debug export failed", e);
         }
     }
@@ -1817,51 +1445,10 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     // Helper methods
     
     private void sendMonitorHelp(CommandSender sender) {
-        sender.sendMessage("§6=== Monitoring Commands ===");
-        sender.sendMessage("§e/jobs monitor status §7- Overall system status");
-        sender.sendMessage("§e/jobs monitor performance §7- Performance metrics");
-        sender.sendMessage("§e/jobs monitor memory §7- Memory usage information");
-        sender.sendMessage("§e/jobs monitor storage §7- Storage system status");
-        sender.sendMessage("§e/jobs monitor events §7- Event processing statistics");
-        sender.sendMessage("§e/jobs monitor reset §7- Reset metrics and force cleanup");
+        // Monitor help removed
     }
     
     private void sendDebugHelp(CommandSender sender) {
-        sender.sendMessage("§6=== Debug Commands ===");
-        sender.sendMessage("§e/jobs debug player <name> §7- Player data debug info");
-        sender.sendMessage("§e/jobs debug job <id> §7- Job configuration debug info");
-        sender.sendMessage("§e/jobs debug listeners §7- Event listener debug info");
-        sender.sendMessage("§e/jobs debug threads §7- Thread information");
-        sender.sendMessage("§e/jobs debug config §7- Configuration debug info");
-        sender.sendMessage("§e/jobs debug export §7- Export debug info to file");
-    }
-    
-    private String formatUptime(long milliseconds) {
-        long seconds = milliseconds / 1000;
-        long minutes = seconds / 60;
-        long hours = minutes / 60;
-        long days = hours / 24;
-        
-        if (days > 0) {
-            return days + "d " + (hours % 24) + "h " + (minutes % 60) + "m";
-        } else if (hours > 0) {
-            return hours + "h " + (minutes % 60) + "m " + (seconds % 60) + "s";
-        } else if (minutes > 0) {
-            return minutes + "m " + (seconds % 60) + "s";
-        } else {
-            return seconds + "s";
-        }
-    }
-    
-    private String formatBytes(long bytes) {
-        if (bytes >= 1024 * 1024 * 1024) {
-            return String.format("%.1f GB", bytes / (1024.0 * 1024.0 * 1024.0));
-        } else if (bytes >= 1024 * 1024) {
-            return String.format("%.1f MB", bytes / (1024.0 * 1024.0));
-        } else if (bytes >= 1024) {
-            return String.format("%.1f KB", bytes / 1024.0);
-        } else {
-            return bytes + " B";
-        }
+        // Debug help removed
     }
 }
