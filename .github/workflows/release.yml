@@ -1,113 +1,51 @@
-name: 🚀 Release JobsAdventure
+name: Release
 
 on:
   push:
     tags:
-      - 'v*'  # Déclenche sur les tags version (v1.0, v1.1, etc.)
-  workflow_dispatch:  # Permet de déclencher manuellement
+      - 'v*'
 
 jobs:
-  build-and-release:
-    name: 🔨 Build & Release
+  release:
     runs-on: ubuntu-latest
     
     steps:
-    - name: 📥 Checkout Repository
-      uses: actions/checkout@v4
-      
-    - name: ☕ Setup Java 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'temurin'
-        cache: 'maven'
+      - name: Checkout code
+        uses: actions/checkout@v4
         
-    - name: 🔍 Extract Version
-      id: version
-      run: |
-        if [[ $GITHUB_REF == refs/tags/* ]]; then
-          VERSION=${GITHUB_REF#refs/tags/v}
-        else
-          VERSION=$(date +'%Y%m%d')-$(echo $GITHUB_SHA | cut -c1-7)
-        fi
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
-        echo "Building version: $VERSION"
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
         
-    - name: 📝 Update Version in POM
-      run: |
-        sed -i "s/<version>.*-SNAPSHOT<\/version>/<version>${{ steps.version.outputs.version }}<\/version>/" pom.xml
-        sed -i "s/<finalName>.*<\/finalName>/<finalName>JobsAdventure-v${{ steps.version.outputs.version }}<\/finalName>/" pom.xml
+      - name: Update version in pom.xml
+        run: mvn versions:set -DnewVersion=${{ steps.version.outputs.VERSION }}
         
-    - name: 🔨 Build with Maven
-      run: |
-        mvn clean package -DskipTests
+      - name: Build with Maven
+        run: mvn clean package
         
-    - name: 🔍 Find JAR File
-      id: jar
-      run: |
-        JAR_FILE=$(find target -name "JobsAdventure-v*.jar" -type f)
-        echo "jar_file=$JAR_FILE" >> $GITHUB_OUTPUT
-        echo "jar_name=$(basename $JAR_FILE)" >> $GITHUB_OUTPUT
-        echo "Found JAR: $JAR_FILE"
-        
-    - name: 📊 Generate Release Notes
-      id: notes
-      run: |
-        cat > release_notes.md << 'EOF'
-        # 🚀 JobsAdventure v${{ steps.version.outputs.version }}
-        
-        ## ✨ What's New
-        
-        ### 🎮 Features
-        - 🏆 **Folia Compatible**: Full regionised multithreading support
-        - 🧩 **6+ Plugin Integrations**: MythicMobs, CustomCrops, Nexo, and more
-        - 🛡️ **Advanced Anti-Exploit**: NBT-based block protection system
-        - 📊 **60+ PlaceholderAPI**: Comprehensive placeholder system
-        - 🎨 **Customizable GUIs**: Per-job interface designs
-        - 🧮 **Mathematical XP**: Custom formulas with Math functions
-        
-        ### 🔧 Technical Specs
-        - **Platforms**: Folia 1.21+, Paper 1.13+, Spigot 1.13+
-        - **Java**: OpenJDK 21 (LTS)
-        - **Performance**: < 1ms action processing
-        - **Memory**: < 50MB for 1000 players
-        - **Thread Safety**: 100% concurrent-safe
-        
-        ### 📦 Installation
-        1. Download `JobsAdventure-v${{ steps.version.outputs.version }}.jar`
-        2. Place in your `/plugins` folder
-        3. Install PlaceholderAPI (recommended)
-        4. Restart your server
-        5. Enjoy! 🎉
-        
-        ### 🔗 Links
-        - [📚 Documentation](https://github.com/${{ github.repository }})
-        - [🐛 Report Issues](https://github.com/${{ github.repository }}/issues)
-        - [💡 Feature Requests](https://github.com/${{ github.repository }}/discussions)
-        
-        ---
-        
-        **Built with ❤️ for the Minecraft Community**
-        *"The future of Minecraft servers starts with JobsAdventure"*
-        EOF
-        
-    - name: 🎉 Create GitHub Release
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: v${{ steps.version.outputs.version }}
-        name: "🚀 JobsAdventure v${{ steps.version.outputs.version }}"
-        body_path: release_notes.md
-        files: |
-          ${{ steps.jar.outputs.jar_file }}
-        draft: false
-        prerelease: false
-        generate_release_notes: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
-    - name: 📈 Upload Build Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: JobsAdventure-v${{ steps.version.outputs.version }}
-        path: ${{ steps.jar.outputs.jar_file }}
-        retention-days: 90
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: JobsAdventure ${{ steps.version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+          
+      - name: Upload JAR to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./target/JobsAdventure-${{ steps.version.outputs.VERSION }}.jar
+          asset_name: JobsAdventure-${{ steps.version.outputs.VERSION }}.jar
+          asset_content_type: application/java-archive
