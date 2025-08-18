@@ -6,6 +6,9 @@ debug: false
 language: "en"
 auto-save-interval-minutes: 5
 
+# Job Settings
+create-example-jobs: true  # Set to false to prevent automatic creation of example job files
+
 # Performance Settings
 performance:
   # Enable high-performance storage system
@@ -124,6 +127,12 @@ integrations:
   # WorldGuard integration
   worldguard:
     enabled: false
+
+# Economy Settings
+economy:
+  # Command to give money to players (fallback when Vault is not available)
+  # Available placeholders: {player}, {amount}
+  money-command: "eco give {player} {amount}"
 
 # Logging Settings
 logging:

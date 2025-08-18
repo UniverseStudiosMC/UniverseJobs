@@ -77,16 +77,26 @@ public class JobManager {
         if (!jobsFolder.exists()) {
             plugin.getLogger().warning("Jobs folder does not exist, creating it...");
             jobsFolder.mkdirs();
-            createExampleJobs();
         }
         
         File[] jobFiles = jobsFolder.listFiles((dir, name) -> name.endsWith(".yml"));
         if (jobFiles == null || jobFiles.length == 0) {
             plugin.getLogger().warning("No job files found in " + jobsFolder.getPath());
-            createExampleJobs();
-            // Reload after creating example jobs
-            jobFiles = jobsFolder.listFiles((dir, name) -> name.endsWith(".yml"));
+            
+            // Only create example job if configured to do so (default: true for first startup)
+            boolean createExamples = plugin.getConfig().getBoolean("create-example-jobs", true);
+            if (createExamples) {
+                createExampleJobs();
+                // Set the config to false after first creation to prevent re-creation on reload
+                plugin.getConfig().set("create-example-jobs", false);
+                plugin.saveConfig();
+                
+                // Reload after creating example jobs
+                jobFiles = jobsFolder.listFiles((dir, name) -> name.endsWith(".yml"));
+            }
+            
             if (jobFiles == null || jobFiles.length == 0) {
+                plugin.getLogger().info("JobsAdventure started with no jobs. Add .yml files to " + jobsFolder.getPath() + " to create jobs.");
                 return;
             }
         }
@@ -539,17 +549,15 @@ public class JobManager {
      */
     private void createExampleJobs() {
         // Creating example job files
-        
-        // Save miner.yml
-        plugin.saveResource("jobs/miner.yml", false);
-        
-        // Save farmer.yml
-        plugin.saveResource("jobs/farmer.yml", false);
-        
-        // Save hunter.yml
-        plugin.saveResource("jobs/hunter.yml", false);
-        
-        // Example job files created
+        try {
+            // Save example.yml (the only job file that exists in resources)
+            plugin.saveResource("jobs/example.yml", false);
+            plugin.getLogger().info("Created example job file: example.yml");
+        } catch (IllegalArgumentException e) {
+            // Handle case where example.yml doesn't exist in resources
+            plugin.getLogger().warning("Could not create example job file: " + e.getMessage());
+            plugin.getLogger().info("No example jobs will be created. You can create your own job files manually.");
+        }
     }
     
     /**
