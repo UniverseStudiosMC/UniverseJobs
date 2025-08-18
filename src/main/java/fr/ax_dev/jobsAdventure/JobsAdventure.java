@@ -183,7 +183,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
             getLogger().info("Shutting down managers...");
             
             // Shutdown reward GUI manager first to close any open GUIs
-            //
+            
             if (rewardGuiManager != null) {
                 try {
                     // Close all open GUIs
