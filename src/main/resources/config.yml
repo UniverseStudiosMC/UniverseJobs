@@ -11,7 +11,7 @@ create-example-jobs: true  # Set to false to prevent automatic creation of examp
 
 # Performance Settings
 performance:
-  # Enable high-performance storage system
+  # Enable high-performance storage
   enabled: true
   
   # Cache configuration
