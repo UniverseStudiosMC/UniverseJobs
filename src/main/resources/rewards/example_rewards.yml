@@ -1,5 +1,4 @@
 # Example Rewards Configuration
-# This file contains 3 simple reward examples with requirements.
 # Copy and modify these examples for your own jobs.
 # To use this file, add to your job configuration:
 # rewards: "example_rewards"
