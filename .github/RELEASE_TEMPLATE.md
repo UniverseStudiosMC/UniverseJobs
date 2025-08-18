@@ -69,7 +69,7 @@ ls target/JobsAdventure-*.jar
 4. Enjoy! 🎉
 
 ## 🔗 Links
-- [📚 Full Documentation](README.md)
+- [📚 Full Documentation](README.md) #
 - [🐛 Report Issues](../../issues)
 - [💡 Discussions](../../discussions)
 ```
