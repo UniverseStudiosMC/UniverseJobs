@@ -22,8 +22,8 @@ public class Job {
     private final Map<ActionType, List<JobAction>> actions;
     private final String icon;
     private final boolean enabled;
-    private final String xpCurveName;
-    private final String xpEquation;
+    private final String xpType; // CURVE or EQUATION
+    private final String xpValue; // curve name or equation
     private XpCurve xpCurve;
     private boolean xpCurveError = false;
     private String xpCurveErrorMessage;
@@ -48,10 +48,24 @@ public class Job {
         this.maxLevel = config.getInt("max-level", 100);
         this.icon = config.getString("icon", "STONE");
         this.enabled = config.getBoolean("enabled", true);
-        this.xpCurveName = config.getString("xp-curve");
-        this.xpEquation = config.getString("xp-equation");
+        // Load new XP format
+        ConfigurationSection xpSection = config.getConfigurationSection("xp");
+        if (xpSection != null) {
+            this.xpType = xpSection.getString("type", "CURVE");
+            this.xpValue = xpSection.getString("xp");
+            this.xpMessageSettings = new XpMessageSettings(xpSection.getConfigurationSection("message"));
+        } else {
+            // Fallback for old format
+            if (config.contains("xp-equation")) {
+                this.xpType = "EQUATION";
+                this.xpValue = config.getString("xp-equation");
+            } else {
+                this.xpType = "CURVE";
+                this.xpValue = config.getString("xp-curve", "default");
+            }
+            this.xpMessageSettings = new XpMessageSettings(config.getConfigurationSection("xp-message"));
+        }
         this.xpCurve = null; // Will be set by JobManager
-        this.xpMessageSettings = new XpMessageSettings(config.getConfigurationSection("xp-message"));
         this.guiReward = config.getString("gui-reward");
         this.rewardsFile = config.getString("rewards");
         
@@ -215,21 +229,39 @@ public class Job {
     }
     
     /**
-     * Get the XP curve name for this job.
+     * Get the XP type for this job (CURVE or EQUATION).
      * 
-     * @return The XP curve name or null if using equation or default
+     * @return The XP type
      */
-    public String getXpCurveName() {
-        return xpCurveName;
+    public String getXpType() {
+        return xpType;
     }
     
     /**
-     * Get the XP equation for this job.
+     * Get the XP value for this job (curve name or equation).
      * 
-     * @return The XP equation or null if using curve file or default
+     * @return The XP value
+     */
+    public String getXpValue() {
+        return xpValue;
+    }
+    
+    /**
+     * Get the XP curve name for this job (for backward compatibility).
+     * 
+     * @return The XP curve name or null if using equation
+     */
+    public String getXpCurveName() {
+        return "CURVE".equals(xpType) ? xpValue : null;
+    }
+    
+    /**
+     * Get the XP equation for this job (for backward compatibility).
+     * 
+     * @return The XP equation or null if using curve file
      */
     public String getXpEquation() {
-        return xpEquation;
+        return "EQUATION".equals(xpType) ? xpValue : null;
     }
     
     /**
@@ -257,7 +289,7 @@ public class Job {
      * @return true if using custom curve or equation
      */
     public boolean hasCustomXpCurve() {
-        return xpCurveName != null || xpEquation != null;
+        return xpValue != null;
     }
     
     /**
@@ -337,7 +369,7 @@ public class Job {
     @Override
     public String toString() {
         return "Job{id='" + id + "', name='" + name + "', enabled=" + enabled + 
-               ", xpCurve='" + (xpCurveName != null ? xpCurveName : "equation/default") + "'}";
+               ", xpType='" + xpType + "', xpValue='" + (xpValue != null ? xpValue : "default") + "'}";
     }
     
     @Override

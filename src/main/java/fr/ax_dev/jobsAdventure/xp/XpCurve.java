@@ -36,18 +36,18 @@ public class XpCurve {
         YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
         TreeMap<Integer, Double> curve = new TreeMap<>();
         
-        // Load level -> xp mappings
+        // Simple format - direct level mappings
         for (String key : config.getKeys(false)) {
             try {
                 int level = Integer.parseInt(key);
                 double xp = config.getDouble(key);
                 curve.put(level, xp);
             } catch (NumberFormatException e) {
-                // Skip non-numeric keys
+                // Skip non-numeric keys (like comments)
             }
         }
         
-        // Ensure level 1 starts at 0 XP
+        // Ensure level 1 starts at 0 XP if not specified
         if (!curve.containsKey(1)) {
             curve.put(1, 0.0);
         }

@@ -77,12 +77,12 @@ public class ConditionResult {
             this.acceptMessage = config.getString("message");
             this.acceptSound = parseSound(config.getString("sound"));
             this.acceptCommands = config.getStringList("commands");
-            this.acceptCancelEvent = config.getBoolean("cancelEvent", false);
+            this.acceptCancelEvent = config.getBoolean("cancel-event", false);
         } else {
             this.denyMessage = config.getString("message");
             this.denySound = parseSound(config.getString("sound"));
             this.denyCommands = config.getStringList("commands");
-            this.denyCancelEvent = config.getBoolean("cancelEvent", false);
+            this.denyCancelEvent = config.getBoolean("cancel-event", false);
             
             this.acceptMessage = null;
             this.acceptSound = null;

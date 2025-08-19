@@ -63,7 +63,7 @@ public abstract class AbstractCondition implements Condition {
                 } catch (Exception ignored) {}
             }
             
-            denyCancelEvent = denySection.getBoolean("cancelEvent", false);
+            denyCancelEvent = denySection.getBoolean("cancel-event", false);
         }
         
         // Parse accept configuration
@@ -103,7 +103,7 @@ public abstract class AbstractCondition implements Condition {
                 } catch (Exception ignored) {}
             }
             
-            acceptCancelEvent = acceptSection.getBoolean("cancelEvent", false);
+            acceptCancelEvent = acceptSection.getBoolean("cancel-event", false);
         }
         
         // Create enhanced condition results

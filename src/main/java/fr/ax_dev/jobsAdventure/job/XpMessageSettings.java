@@ -77,7 +77,7 @@ public class XpMessageSettings {
             this.bossbarStyle = tempBossbarStyle;
             
             this.bossbarDuration = config.getInt("bossbar.duration", 60);
-            this.bossbarShowProgress = config.getBoolean("bossbar.show-progress", false);
+            this.bossbarShowProgress = config.getBoolean("show-progress", false);
         }
     }
     

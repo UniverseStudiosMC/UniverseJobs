@@ -4,67 +4,29 @@ enabled: true                               # Enable (true) or disable (false) t
 max-level: 100                              # Maximum achievable level
 permission: "jobsadventure.job.example"       # Permission required to have this job
 icon: 
-  material: "DIAMOND_PICKAXE"               
+  material: "DIAMOND_PICKAXE"          
   
-# ⭐ XP EQUATION - How XP scales by level
-# Higher the number, harder it is to level up
+xp: 
+  type: "CURVE" ##CURVE OR EQUATION
+  xp: "example" ##FILE OR EQUATION
+  message:
+    type: "BOSSBAR" # Types: CHAT, ACTIONBAR, BOSSBAR, TITLE
+    text: "&e+{exp} XP &6+{money} MONEY &8| &6{job} &7Level {level}"
+    show-progress: true
 
-# xp-curve: "steep"
-# OR 
-# xp-equation: "100 * Math.pow(level, 1.8)"
-
-# ⭐ XP MESSAGE - How to display XP gains
-xp-message:
-  type: "BOSSBAR" # Types: CHAT, ACTIONBAR, BOSSBAR, TITLE
-  text: "&e+{exp} XP &6+{money} MONEY &8| &6{job} &7Level {level}"
-  actionbar:
-    duration: 60                            # Duration in ticks (60 = 3 seconds)
-
-# ⭐ DESCRIPTION FOR MENUS
-lore:
-  - "&7Dig deep and discover precious ores!"
 
 actions:
   BREAK:
-    mine_stone_simple:
+    simple_stone:
       target: "STONE"                       # Block to break
       xp: 1.0                              # XP earned
-      money: 3.0                           # Money earned
-      name: "Stone Extraction"              # Optional name for messages
-
-    mine_emerald_expert:
-      target: "EMERALD_ORE"
-      xp: 20.0
-      money: 50.0
-      name: "Expert Emerald Extraction"
-      requirements:
-        logic: "AND"                        # ALL conditions must be true
-        diamond_tool:                       # First condition
-          item:
-            material: "DIAMOND_PICKAXE"
-            deny:
-              message: "&c❌ Diamond pickaxe required!"
-        minimum_level:                      # Second condition
-          placeholder:
-            placeholder: "%jobsadventure_level_example%"
-            operator: "greater_equal"
-            value: "25"
-            deny:
-              message: "&c❌ Example level 25 required!"
-              cancelEvent: true #cancel the action : BREAK
-        correct_depth:                     # Third condition
-          placeholder:
-            placeholder: "%player_y%"
-            operator: "less_than"
-            value: "32"
-            deny:
-              message: "&c❌ Emeralds are rare on the surface!"
+      money: 3.0                           # Money earned (optional)
 
     mine_diamond_vip:
       target: "DIAMOND_ORE"
       xp: 30.0
       money: 100.0
-      name: "VIP Diamond Mining"
+      name: "VIP Diamond Mining" # Optional name for messages
       requirements:
         logic: "AND"
         multiple_condition:
@@ -80,48 +42,20 @@ actions:
               value: "STEVE"
           deny:
             message: "&c❌ NOT STEVE or insufficient level!"
-            cancelEvent: true
+            cancel-event: true
           accept:
             commands:
             - "eco give %player_name% 200"
  
+#################################################################
+
 levelup-actions:
   level_sound:
-    type: "sound"
-    min-level: 1                           # From level 1
-    sound: "ENTITY_PLAYER_LEVELUP"         # Minecraft sounds: ENTITY_PLAYER_LEVELUP, UI_TOAST_CHALLENGE_COMPLETE, etc.
-  level_title:
-    type: "title"
-    min-level: 2
-    title: "&6&lLEVEL UP!"
-    subtitle: "&7Example job Level &e{level}"
-    fade-in: 10                            # Fade in time (ticks)
-    stay: 50                               # Display time (ticks)
-    fade-out: 20                           # Fade out time (ticks)
-  level_particles:
-    type: "particle" 
-    min-level: 1
-    particle: "FLAME"                      # Particles: FLAME, HEART, VILLAGER_HAPPY, CRIT, etc.
-    count: 25                              # Number of particles
-  money_reward:
     type: "command"
-    min-level: 10                          # From level 10
-    level-interval: 10                     # Every 10 levels
+    min-level: 1    
+    level-interval: 1 
     commands:
-      - "eco give {player} {level}00"      # {level} = current level (level 20 = 2000$)
-  milestone_announcement:
-    type: "broadcast"                      # Announce to entire server
-    levels: [20, 40, 60, 80, 100]         # Important levels
-    messages:
-      - "&6⚒ {player} &7has reached level &e{level} &7in Example! ⚒"
-  legendary_example:
-    type: "command"
-    levels: [100]
-    commands:
-      - "broadcast &6&l🌟 {player} &7has achieved &eLEGENDARY EXAMPLE&7 status! &6&l🌟"
-      - "give {player} beacon 1"
-
-      
+    - "broadcast {player} upgrade level {level} in {job} !"
 # ==================================================================================
 #
 # - Documentation: Check the plugin wiki
