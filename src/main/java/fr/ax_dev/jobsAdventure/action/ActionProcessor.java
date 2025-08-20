@@ -121,7 +121,19 @@ public class ActionProcessor {
             plugin.getLogger().info("Checking action target: " + action.getTarget() + " against context target: " + target);
         }
         
-        if (!action.matchesTarget(target, nexoBlockId)) {
+        // Check target matching based on action type
+        ActionType actionType = job.getActionTypeForAction(action);
+        boolean targetMatches = false;
+        
+        if (actionType == ActionType.ENCHANT) {
+            // Use enchantment-specific matching for ENCHANT actions
+            targetMatches = action.matchesEnchantTarget(target);
+        } else {
+            // Use standard matching for all other action types
+            targetMatches = action.matchesTarget(target, nexoBlockId);
+        }
+        
+        if (!targetMatches) {
             if (plugin.getConfigManager().isDebugEnabled()) {
                 plugin.getLogger().info("Target mismatch - action target: " + action.getTarget() + ", context target: " + target);
             }
@@ -133,7 +145,6 @@ public class ActionProcessor {
         }
         
         // For BLOCK_INTERACT and ENTITY_INTERACT, check if interact type matches
-        ActionType actionType = job.getActionTypeForAction(action);
         if (actionType == ActionType.BLOCK_INTERACT || actionType == ActionType.ENTITY_INTERACT) {
             String eventInteractType = context.get("interact-type");
             String actionInteractType = action.getInteractType();
@@ -143,7 +154,7 @@ public class ActionProcessor {
             }
             
             // If action specifies an interact-type but event doesn't provide one, skip
-            if (actionInteractType != null && !actionInteractType.equals("RIGHT") && eventInteractType == null) {
+            if (actionInteractType != null && !actionInteractType.equals("RIGHT_CLICK") && eventInteractType == null) {
                 if (plugin.getConfigManager().isDebugEnabled()) {
                     plugin.getLogger().info("Action requires specific interact-type (" + actionInteractType + ") but event doesn't provide interact-type info - skipping");
                 }

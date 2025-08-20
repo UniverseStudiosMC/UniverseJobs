@@ -105,8 +105,8 @@ public class CustomCropsEventListener implements Listener {
             return; // CustomCrops doesn't fire interact events for left clicks
         }
         
-        // Determine interact type based on sneak state (only RIGHT and SHIFT-RIGHT are possible)
-        String interactType = player.isSneaking() ? "SHIFT-RIGHT" : "RIGHT";
+        // Determine interact type based on sneak state (only RIGHT_CLICK and RIGHT_SHIFT_CLICK are possible)
+        String interactType = player.isSneaking() ? "RIGHT_SHIFT_CLICK" : "RIGHT_CLICK";
         
         // Cache the interact type for this player
         UUID playerUUID = player.getUniqueId();

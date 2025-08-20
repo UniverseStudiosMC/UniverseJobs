@@ -455,7 +455,7 @@ public class JobActionListener implements Listener {
         }
         
         // Determine interact type (only right clicks)
-        String interactType = player.isSneaking() ? "SHIFT-RIGHT" : "RIGHT";
+        String interactType = player.isSneaking() ? "RIGHT_SHIFT_CLICK" : "RIGHT_CLICK";
         
         // Create context
         ConditionContext context = new ConditionContext()
@@ -513,7 +513,7 @@ public class JobActionListener implements Listener {
         }
         
         // Determine interact type (left clicks)
-        String interactType = player.isSneaking() ? "SHIFT-LEFT" : "LEFT";
+        String interactType = player.isSneaking() ? "LEFT_SHIFT_CLICK" : "LEFT_CLICK";
         
         // Create context
         ConditionContext context = new ConditionContext()
@@ -577,7 +577,7 @@ public class JobActionListener implements Listener {
         }
         
         // Determine interact type (right-click interaction)
-        String interactType = player.isSneaking() ? "SHIFT-RIGHT" : "RIGHT";
+        String interactType = player.isSneaking() ? "RIGHT_SHIFT_CLICK" : "RIGHT_CLICK";
         
         // Create context
         ConditionContext context = new ConditionContext()
@@ -634,7 +634,7 @@ public class JobActionListener implements Listener {
         }
         
         // Determine interact type (left-click interaction)
-        String interactType = player.isSneaking() ? "SHIFT-LEFT" : "LEFT";
+        String interactType = player.isSneaking() ? "LEFT_SHIFT_CLICK" : "LEFT_CLICK";
         
         // Create context
         ConditionContext context = new ConditionContext()

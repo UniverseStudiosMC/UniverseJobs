@@ -83,7 +83,7 @@ actions:
   BLOCK_INTERACT:
     # Crop harvesting - only blocks XP, keeps money
     wheat_harvest:
-      interact-type: "RIGHT"
+      interact-type: "RIGHT_CLICK"
       target: "WHEAT"
       xp: 2.0
       money: 3.0
@@ -95,7 +95,7 @@ actions:
         
     # Premium interaction (no limits for VIP players could be handled via conditions)
     premium_block:
-      interact-type: "SHIFT-RIGHT"
+      interact-type: "RIGHT_SHIFT_CLICK"
       target: "EMERALD_BLOCK"
       xp: 100.0
       money: 500.0

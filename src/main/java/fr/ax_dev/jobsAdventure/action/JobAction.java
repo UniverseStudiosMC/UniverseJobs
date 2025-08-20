@@ -34,7 +34,7 @@ public class JobAction {
         this.money = config.getDouble("money", 0.0);
         this.name = config.getString("name", "");
         this.description = config.getString("description", "");
-        this.interactType = config.getString("interact-type", "RIGHT").toUpperCase();
+        this.interactType = config.getString("interact-type", "RIGHT_CLICK").toUpperCase();
         
         // Load message configuration
         ConfigurationSection messageSection = config.getConfigurationSection("message");
@@ -169,7 +169,7 @@ public class JobAction {
     }
     
     /**
-     * Get the interact type for this action (LEFT, SHIFT-LEFT, RIGHT, SHIFT-RIGHT).
+     * Get the interact type for this action (LEFT_CLICK, LEFT_SHIFT_CLICK, RIGHT_CLICK, RIGHT_SHIFT_CLICK).
      * 
      * @return The interact type
      */
@@ -198,6 +198,66 @@ public class JobAction {
         
         // Standard matching for vanilla blocks
         return matchesTarget(targetToCheck);
+    }
+    
+    /**
+     * Check if the target matches the given enchantment with namespace support.
+     * Supports namespaces like "excellentenchants:tunnel", "advancedenchantments:harvest".
+     * Default namespace is "minecraft" if none specified.
+     * 
+     * @param enchantmentKey The enchantment key to check (e.g., "minecraft:sharpness" or "tunnel")
+     * @return true if it matches
+     */
+    public boolean matchesEnchantTarget(String enchantmentKey) {
+        if (target == null || enchantmentKey == null) {
+            return false;
+        }
+        
+        // Parse target namespace and key
+        String targetNamespace = "minecraft"; // default
+        String targetKey = target;
+        
+        if (target.contains(":")) {
+            String[] targetParts = target.split(":", 2);
+            targetNamespace = targetParts[0];
+            targetKey = targetParts[1];
+        }
+        
+        // Parse enchantment namespace and key
+        String enchantNamespace = "minecraft"; // default
+        String enchantKey = enchantmentKey;
+        
+        if (enchantmentKey.contains(":")) {
+            String[] enchantParts = enchantmentKey.split(":", 2);
+            enchantNamespace = enchantParts[0];
+            enchantKey = enchantParts[1];
+        }
+        
+        // Check for exact match (case-insensitive)
+        if (targetNamespace.equalsIgnoreCase(enchantNamespace) && targetKey.equalsIgnoreCase(enchantKey)) {
+            return true;
+        }
+        
+        // Support wildcards in the key part
+        if (targetKey.equals("*")) {
+            return targetNamespace.equalsIgnoreCase(enchantNamespace);
+        }
+        
+        // Prefix wildcard (e.g., "excellentenchants:tunnel_*")
+        if (targetKey.endsWith("*")) {
+            String prefix = targetKey.substring(0, targetKey.length() - 1);
+            return targetNamespace.equalsIgnoreCase(enchantNamespace) && 
+                   enchantKey.toUpperCase().startsWith(prefix.toUpperCase());
+        }
+        
+        // Suffix wildcard (e.g., "excellentenchants:*_tunnel")
+        if (targetKey.startsWith("*")) {
+            String suffix = targetKey.substring(1);
+            return targetNamespace.equalsIgnoreCase(enchantNamespace) && 
+                   enchantKey.toUpperCase().endsWith(suffix.toUpperCase());
+        }
+        
+        return false;
     }
     
     /**

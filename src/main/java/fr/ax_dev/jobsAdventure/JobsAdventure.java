@@ -117,6 +117,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
         
         // Register event listeners
         getServer().getPluginManager().registerEvents(new JobActionListener(this, actionProcessor, protectionManager), this);
+        getServer().getPluginManager().registerEvents(new fr.ax_dev.jobsAdventure.listener.EnchantEventListener(this, actionProcessor), this);
         getServer().getPluginManager().registerEvents(this, this);
         
         // Register Nexo event listener if Nexo is present

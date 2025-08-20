@@ -116,11 +116,11 @@ public class NexoEventListener implements Listener {
             // Try to get interaction type from event if available
             boolean isRightClick = event.getHand() != null; // This is a guess - check actual API
             interactType = player.isSneaking() ? 
-                (isRightClick ? "SHIFT-RIGHT" : "SHIFT-LEFT") : 
-                (isRightClick ? "RIGHT" : "LEFT");
+                (isRightClick ? "RIGHT_SHIFT_CLICK" : "LEFT_SHIFT_CLICK") : 
+                (isRightClick ? "RIGHT_CLICK" : "LEFT_CLICK");
         } catch (Exception e) {
-            // Fallback to RIGHT if we can't determine the interaction type
-            interactType = player.isSneaking() ? "SHIFT-RIGHT" : "RIGHT";
+            // Fallback to RIGHT_CLICK if we can't determine the interaction type
+            interactType = player.isSneaking() ? "RIGHT_SHIFT_CLICK" : "RIGHT_CLICK";
         }
         
         // Create context with Nexo information
