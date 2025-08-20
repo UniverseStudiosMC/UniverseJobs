@@ -18,6 +18,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Processes actions and awards XP when requirements are met.
@@ -56,13 +57,33 @@ public class ActionProcessor {
     public boolean processAction(Player player, ActionType actionType, Event event, ConditionContext context) {
         boolean shouldCancel = false;
         
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("Processing action " + actionType + " for player " + player.getName());
+        }
+        
         // Get all jobs the player has
-        for (String jobId : jobManager.getPlayerJobs(player)) {
+        Set<String> playerJobs = jobManager.getPlayerJobs(player);
+        
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("Player " + player.getName() + " has jobs: " + playerJobs);
+        }
+        
+        for (String jobId : playerJobs) {
             Job job = jobManager.getJob(jobId);
-            if (job == null || !job.isEnabled()) continue;
+            if (job == null || !job.isEnabled()) {
+                if (plugin.getConfigManager().isDebugEnabled()) {
+                    plugin.getLogger().info("Job " + jobId + " is null or disabled");
+                }
+                continue;
+            }
             
             // Process all actions of this type for the job
             List<JobAction> actions = job.getActions(actionType);
+            
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("Job " + jobId + " has " + actions.size() + " actions for type " + actionType);
+            }
+            
             for (JobAction action : actions) {
                 boolean cancelThisAction = processJobAction(player, job, action, event, context);
                 if (cancelThisAction) {
@@ -89,8 +110,47 @@ public class ActionProcessor {
         String target = context.getTarget();
         String nexoBlockId = context.getNexoBlockId();
         
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("Checking action target: " + action.getTarget() + " against context target: " + target);
+        }
+        
         if (!action.matchesTarget(target, nexoBlockId)) {
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("Target mismatch - action target: " + action.getTarget() + ", context target: " + target);
+            }
             return false;
+        }
+        
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("Target matched! Processing action for " + player.getName());
+        }
+        
+        // For BLOCK_INTERACT and ENTITY_INTERACT, check if interact type matches
+        ActionType actionType = job.getActionTypeForAction(action);
+        if (actionType == ActionType.BLOCK_INTERACT || actionType == ActionType.ENTITY_INTERACT) {
+            String eventInteractType = context.get("interact-type");
+            String actionInteractType = action.getInteractType();
+            
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("Interact type check - event: " + eventInteractType + ", action: " + actionInteractType);
+            }
+            
+            // If action specifies an interact-type but event doesn't provide one, skip
+            if (actionInteractType != null && !actionInteractType.equals("RIGHT") && eventInteractType == null) {
+                if (plugin.getConfigManager().isDebugEnabled()) {
+                    plugin.getLogger().info("Action requires specific interact-type (" + actionInteractType + ") but event doesn't provide interact-type info - skipping");
+                }
+                return false;
+            }
+            
+            if (eventInteractType != null && actionInteractType != null && 
+                !eventInteractType.equalsIgnoreCase(actionInteractType)) {
+                if (plugin.getConfigManager().isDebugEnabled()) {
+                    plugin.getLogger().info("Interact type mismatch: expected " + actionInteractType + 
+                                          ", got " + eventInteractType);
+                }
+                return false;
+            }
         }
         
         boolean shouldCancel = false;
@@ -338,20 +398,9 @@ public class ActionProcessor {
      * @param level The new level
      */
     private void executeLevelUpCommands(Player player, Job job, int level) {
-        // This could be expanded to read level-specific commands from job config
-        List<String> commands = plugin.getConfig().getStringList("level-up-commands");
-        
-        for (String command : commands) {
-            String processedCommand = command
-                    .replace("{player}", player.getName())
-                    .replace("{job}", job.getId())
-                    .replace("{level}", String.valueOf(level));
-            
-            plugin.getServer().dispatchCommand(
-                plugin.getServer().getConsoleSender(),
-                processedCommand
-            );
-        }
+        // Level-up commands are now handled by LevelUpActionManager
+        // This method is kept for backward compatibility but does nothing
+        // The levelup-actions are configured in individual job files
     }
     
     /**

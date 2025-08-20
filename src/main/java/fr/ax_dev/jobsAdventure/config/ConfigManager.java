@@ -44,130 +44,9 @@ public class ConfigManager {
      * @param config The configuration to validate
      */
     private void validateConfig(FileConfiguration config) {
-        boolean changed = false;
-        
-        // Messages section
-        if (!config.contains("messages.level-up")) {
-            config.set("messages.level-up", "&aCongratulations! You reached level {level} in {job}!");
-            changed = true;
-        }
-        
-        if (!config.contains("messages.xp-gain")) {
-            config.set("messages.xp-gain", "&e+{xp} XP ({job})");
-            changed = true;
-        }
-        
-        if (!config.contains("messages.show-xp-gain")) {
-            config.set("messages.show-xp-gain", true);
-            changed = true;
-        }
-        
-        if (!config.contains("messages.job-joined")) {
-            config.set("messages.job-joined", "&aYou joined the {job} job!");
-            changed = true;
-        }
-        
-        if (!config.contains("messages.job-left")) {
-            config.set("messages.job-left", "&cYou left the {job} job!");
-            changed = true;
-        }
-        
-        if (!config.contains("messages.already-have-job")) {
-            config.set("messages.already-have-job", "&cYou already have the {job} job!");
-            changed = true;
-        }
-        
-        if (!config.contains("messages.dont-have-job")) {
-            config.set("messages.dont-have-job", "&cYou don't have the {job} job!");
-            changed = true;
-        }
-        
-        if (!config.contains("messages.job-not-found")) {
-            config.set("messages.job-not-found", "&cJob '{job}' not found!");
-            changed = true;
-        }
-        
-        if (!config.contains("messages.no-permission")) {
-            config.set("messages.no-permission", "&cYou don't have permission to join the {job} job!");
-            changed = true;
-        }
-        
-        // Sounds section
-        if (!config.contains("sounds.level-up")) {
-            config.set("sounds.level-up", "ENTITY_PLAYER_LEVELUP");
-            changed = true;
-        }
-        
-        if (!config.contains("sounds.xp-gain")) {
-            config.set("sounds.xp-gain", "ENTITY_EXPERIENCE_ORB_PICKUP");
-            changed = true;
-        }
-        
-        // Settings section
-        if (!config.contains("settings.save-interval")) {
-            config.set("settings.save-interval", 300); // 5 minutes
-            changed = true;
-        }
-        
-        if (!config.contains("settings.max-jobs-per-player")) {
-            config.set("settings.max-jobs-per-player", 3);
-            changed = true;
-        }
-        
-        if (!config.contains("settings.debug")) {
-            config.set("settings.debug", false);
-            changed = true;
-        }
-        
-        // Level up commands
-        if (!config.contains("level-up-commands")) {
-            config.set("level-up-commands", java.util.Arrays.asList(
-                "broadcast {player} reached level {level} in {job}!",
-                "give {player} diamond 1"
-            ));
-            changed = true;
-        }
-        
-        // Database settings (for future use)
-        if (!config.contains("database.enabled")) {
-            config.set("database.enabled", false);
-            changed = true;
-        }
-        
-        if (!config.contains("database.type")) {
-            config.set("database.type", "mysql");
-            changed = true;
-        }
-        
-        if (!config.contains("database.host")) {
-            config.set("database.host", "localhost");
-            changed = true;
-        }
-        
-        if (!config.contains("database.port")) {
-            config.set("database.port", 3306);
-            changed = true;
-        }
-        
-        if (!config.contains("database.database")) {
-            config.set("database.database", "jobsadventure");
-            changed = true;
-        }
-        
-        if (!config.contains("database.username")) {
-            config.set("database.username", "username");
-            changed = true;
-        }
-        
-        if (!config.contains("database.password")) {
-            config.set("database.password", "password");
-            changed = true;
-        }
-        
-        if (changed) {
-            plugin.saveConfig();
-            // Configuration updated with new default values
-        }
+        // No longer add default values automatically
+        // The config.yml in resources already contains all necessary values
+        // This prevents the config from being polluted with old/duplicate values
     }
     
     /**
@@ -224,7 +103,7 @@ public class ConfigManager {
      * @return true if debug mode is enabled
      */
     public boolean isDebugEnabled() {
-        return plugin.getConfig().getBoolean("settings.debug", false);
+        return plugin.getConfig().getBoolean("debug", false);
     }
     
     /**

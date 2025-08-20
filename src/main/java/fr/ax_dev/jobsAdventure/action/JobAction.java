@@ -20,6 +20,7 @@ public class JobAction {
     private final String description;
     private final MessageConfig message;
     private final List<String> commands;
+    private final String interactType;
     
     /**
      * Create a new JobAction from configuration.
@@ -32,6 +33,7 @@ public class JobAction {
         this.money = config.getDouble("money", 0.0);
         this.name = config.getString("name", "");
         this.description = config.getString("description", "");
+        this.interactType = config.getString("interact-type", "RIGHT").toUpperCase();
         
         // Load message configuration
         ConfigurationSection messageSection = config.getConfigurationSection("message");
@@ -146,6 +148,15 @@ public class JobAction {
      */
     public boolean hasCommands() {
         return commands != null && !commands.isEmpty();
+    }
+    
+    /**
+     * Get the interact type for this action (LEFT, SHIFT-LEFT, RIGHT, SHIFT-RIGHT).
+     * 
+     * @return The interact type
+     */
+    public String getInteractType() {
+        return interactType;
     }
     
     /**

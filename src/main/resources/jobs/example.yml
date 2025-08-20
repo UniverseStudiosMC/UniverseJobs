@@ -6,6 +6,8 @@ permission: "jobsadventure.job.example"       # Permission required to have this
 icon: 
   material: "DIAMOND_PICKAXE"          
   
+rewards: "example_rewards"  # Link to the rewards file
+
 xp: 
   type: "CURVE" ##CURVE OR EQUATION
   xp: "example" ##FILE OR EQUATION
@@ -21,6 +23,24 @@ actions:
       target: "STONE"                       # Block to break
       xp: 1.0                              # XP earned
       money: 3.0                           # Money earned (optional)
+  BLOCK_INTERACT: ##
+    simple_cobble:
+      interact-type: "RIGHT" #LEFT, SHIFT-LEFT, RIGHT, SHIFT-RIGHT (default: right click)
+      target: "COBBLESTONE"
+      xp: 1.0 
+    simple_customcrops_right:
+      interact-type: "RIGHT" # CustomCrops only supports RIGHT and SHIFT-RIGHT interactions
+      target: "customcrops:pineapple_stage_1"
+      xp: 1.0                              # XP earned
+    simple_customcrops_shift_right:
+      interact-type: "SHIFT-RIGHT" # Shift-right click with CustomCrops
+      target: "customcrops:pineapple_stage_1"
+      xp: 3.0
+  ENTITY_INTERACT:
+    zombiekiill:
+      interact-type: "SHIFT-LEFT" #LEFT, SHIFT-LEFT, RIGHT, SHIFT-RIGHT (default: right click)
+      target: "mythicmobs:ZOMBIZZZ"
+      xp: 1.0   
 
     mine_diamond_vip:
       target: "DIAMOND_ORE"

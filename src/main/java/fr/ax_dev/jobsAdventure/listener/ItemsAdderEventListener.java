@@ -3,6 +3,7 @@ package fr.ax_dev.jobsAdventure.listener;
 import dev.lone.itemsadder.api.CustomBlock;
 import dev.lone.itemsadder.api.Events.CustomBlockBreakEvent;
 import dev.lone.itemsadder.api.Events.CustomBlockPlaceEvent;
+import dev.lone.itemsadder.api.Events.CustomBlockInteractEvent;
 
 import fr.ax_dev.jobsAdventure.JobsAdventure;
 import fr.ax_dev.jobsAdventure.action.ActionProcessor;
@@ -108,6 +109,46 @@ public class ItemsAdderEventListener implements Listener {
         
         if (plugin.getConfigManager().isDebugEnabled()) {
             plugin.getLogger().info("ItemsAdder block broken: " + itemsAdderBlockId + " by " + player.getName() + " at " + block.getLocation());
+        }
+    }
+    
+    /**
+     * Handle ItemsAdder custom block interactions.
+     * Uses ItemsAdder's direct API for better accuracy and performance.
+     */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onItemsAdderBlockInteract(CustomBlockInteractEvent event) {
+        Player player = event.getPlayer();
+        Block block = event.getBlockClicked(); // Correct API method name
+        String itemsAdderBlockId = event.getNamespacedID();
+        
+        // Determine interact type based on the interaction
+        String interactType;
+        try {
+            // Get action type from event
+            org.bukkit.event.block.Action action = event.getAction();
+            boolean isRightClick = (action == org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK);
+            
+            interactType = player.isSneaking() ? 
+                (isRightClick ? "SHIFT-RIGHT" : "SHIFT-LEFT") : 
+                (isRightClick ? "RIGHT" : "LEFT");
+        } catch (Exception e) {
+            // Fallback to RIGHT if we can't determine the interaction type
+            interactType = player.isSneaking() ? "SHIFT-RIGHT" : "RIGHT";
+        }
+        
+        // Create context with ItemsAdder information
+        ConditionContext context = new ConditionContext()
+                .setBlock(block)
+                .set("target", "itemsadder:" + itemsAdderBlockId)
+                .set("itemsadder_block_id", itemsAdderBlockId)
+                .set("interact-type", interactType);
+        
+        // Process the action
+        actionProcessor.processAction(player, ActionType.BLOCK_INTERACT, event, context);
+        
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("ItemsAdder block interact: " + itemsAdderBlockId + " by " + player.getName() + " - interact-type: " + interactType);
         }
     }
 }

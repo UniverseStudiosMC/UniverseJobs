@@ -27,9 +27,14 @@ public enum ActionType {
     HARVEST,
     
     /**
-     * Interacting with blocks/crops (CustomCrops)
+     * Interacting with blocks
      */
-    INTERACT,
+    BLOCK_INTERACT,
+    
+    /**
+     * Interacting with entities
+     */
+    ENTITY_INTERACT,
     
     /**
      * Breeding animals
@@ -80,6 +85,11 @@ public enum ActionType {
      * Eating food
      */
     EAT,
+    
+    /**
+     * Drinking potions
+     */
+    POTION,
     
     /**
      * Custom action for plugin integrations

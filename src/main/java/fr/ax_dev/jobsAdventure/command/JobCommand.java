@@ -63,23 +63,17 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage(languageManager.getMessage("commands.players-only"));
-            return true;
-        }
-        
-        // Rate limiting check
-        if (!checkRateLimit(player)) {
-            return true; // Silently ignore rapid commands
-        }
-        
         // Basic argument validation
         if (!validateCommandStructure(args)) {
             return true; // Silently ignore invalid command structure
         }
         
         if (args.length == 0) {
-            sendHelp(player);
+            if (sender instanceof Player player) {
+                sendHelp(player);
+            } else {
+                sendConsoleHelp(sender);
+            }
             return true;
         }
         
@@ -87,27 +81,49 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         
         // Validate subcommand
         if (!isValidSubCommand(subCommand)) {
-            sendHelp(player);
+            if (sender instanceof Player player) {
+                sendHelp(player);
+            } else {
+                sendConsoleHelp(sender);
+            }
             return true;
+        }
+        
+        // Check if command requires a player
+        boolean requiresPlayer = requiresPlayer(subCommand);
+        if (requiresPlayer && !(sender instanceof Player)) {
+            sender.sendMessage(languageManager.getMessage("commands.players-only"));
+            return true;
+        }
+        
+        // Rate limiting check for players only
+        if (sender instanceof Player player && !checkRateLimit(player)) {
+            return true; // Silently ignore rapid commands
         }
         
         try {
             switch (subCommand) {
-                case "join" -> handleJoinCommand(player, args);
-                case "leave" -> handleLeaveCommand(player, args);
-                case "info" -> handleInfoCommand(player, args);
-                case "list" -> handleListCommand(player);
-                case "stats" -> handleStatsCommand(player, args);
-                case "rewards" -> handleRewardsCommand(player, args);
+                case "join" -> handleJoinCommand((Player) sender, args);
+                case "leave" -> handleLeaveCommand((Player) sender, args);
+                case "info" -> handleInfoCommand((Player) sender, args);
+                case "list" -> handleListCommand((Player) sender);
+                case "stats" -> handleStatsCommand((Player) sender, args);
+                case "rewards" -> handleRewardsCommand((Player) sender, args);
                 case "xpbonus" -> handleXpBonusCommand(sender, args);
                 case "migrate" -> handleMigrateCommand(sender, args);
-                case "reload" -> handleReloadCommand(player);
-                case "monitor" -> handleMonitorCommand(sender, args);
+                case "reload" -> handleReloadCommand(sender);
                 case "debug" -> handleDebugCommand(sender, args);
-                default -> sendHelp(player);
+                default -> {
+                    if (sender instanceof Player player) {
+                        sendHelp(player);
+                    } else {
+                        sendConsoleHelp(sender);
+                    }
+                }
             }
         } catch (Exception e) {
-            plugin.getLogger().warning("Error executing command for player " + player.getName() + ": " + e.getMessage());
+            String senderName = sender instanceof Player ? sender.getName() : "Console";
+            plugin.getLogger().warning("Error executing command for " + senderName + ": " + e.getMessage());
         }
         
         return true;
@@ -200,6 +216,31 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     private boolean isValidSubCommand(String subCommand) {
         Set<String> validCommands = Set.of("join", "leave", "info", "list", "stats", "rewards", "xpbonus", "migrate", "reload", "monitor", "debug");
         return validCommands.contains(subCommand);
+    }
+    
+    /**
+     * Check if a command requires a player.
+     * 
+     * @param subCommand The subcommand to check
+     * @return true if the command requires a player
+     */
+    private boolean requiresPlayer(String subCommand) {
+        Set<String> playerOnlyCommands = Set.of("join", "leave", "info", "list", "stats", "rewards");
+        return playerOnlyCommands.contains(subCommand);
+    }
+    
+    /**
+     * Send help message to console.
+     * 
+     * @param sender The console sender
+     */
+    private void sendConsoleHelp(CommandSender sender) {
+        sender.sendMessage("§6JobsAdventure Console Commands:");
+        sender.sendMessage("§e/jobs reload §7- Reload the plugin configuration");
+        sender.sendMessage("§e/jobs xpbonus <add|remove|list> §7- Manage XP bonuses");
+        sender.sendMessage("§e/jobs migrate §7- Migrate data between storage types");
+        sender.sendMessage("§e/jobs monitor <player> §7- Monitor a player's actions");
+        sender.sendMessage("§e/jobs debug §7- Toggle debug mode");
     }
     
     /**
@@ -908,15 +949,16 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     /**
      * Handle the reload subcommand.
      */
-    private void handleReloadCommand(Player player) {
-        if (!player.hasPermission("jobsadventure.admin")) {
-            MessageUtils.sendMessage(player, languageManager.getMessage("commands.no-permission"));
+    private void handleReloadCommand(CommandSender sender) {
+        if (!sender.hasPermission("jobsadventure.admin")) {
+            sender.sendMessage(languageManager.getMessage("commands.no-permission"));
             return;
         }
         
         plugin.getConfigManager().reloadConfig();
         jobManager.reloadJobs();
         rewardManager.reloadRewards();
+        sender.sendMessage("§aJobsAdventure configuration reloaded successfully!");
     }
     
     /**
@@ -942,25 +984,32 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (!(sender instanceof Player player)) {
-            return new ArrayList<>();
-        }
+        Player player = sender instanceof Player ? (Player) sender : null;
         
         List<String> completions = new ArrayList<>();
         
         if (args.length == 1) {
             // Main subcommands
-            List<String> subCommands = new ArrayList<>(Arrays.asList("join", "leave", "info", "list", "stats"));
-            if (player.hasPermission("jobsadventure.rewards.use")) {
-                subCommands.add("rewards");
+            List<String> subCommands = new ArrayList<>();
+            
+            // Commands available to players
+            if (player != null) {
+                subCommands.addAll(Arrays.asList("join", "leave", "info", "list", "stats"));
+                if (sender.hasPermission("jobsadventure.rewards.use")) {
+                    subCommands.add("rewards");
+                }
             }
-            if (player.hasPermission("jobsadventure.admin")) {
+            
+            // Admin commands available to both console and players
+            if (sender.hasPermission("jobsadventure.admin")) {
                 subCommands.add("reload");
+                subCommands.add("debug");
+                subCommands.add("monitor");
             }
-            if (player.hasPermission("jobsadventure.admin.migrate")) {
+            if (sender.hasPermission("jobsadventure.admin.migrate")) {
                 subCommands.add("migrate");
             }
-            if (player.hasPermission("jobsadventure.admin.xpbonus")) {
+            if (sender.hasPermission("jobsadventure.admin.xpbonus")) {
                 subCommands.add("xpbonus");
             }
             
@@ -977,18 +1026,22 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             switch (subCommand) {
                 case "join" -> {
                     // Available jobs that player doesn't have
-                    for (Job job : jobManager.getEnabledJobs()) {
-                        if (!jobManager.hasJob(player, job.getId()) && 
-                            job.getId().toLowerCase().startsWith(input)) {
-                            completions.add(job.getId());
+                    if (player != null) {
+                        for (Job job : jobManager.getEnabledJobs()) {
+                            if (!jobManager.hasJob(player, job.getId()) && 
+                                job.getId().toLowerCase().startsWith(input)) {
+                                completions.add(job.getId());
+                            }
                         }
                     }
                 }
                 case "leave" -> {
                     // Jobs that player has
-                    for (String jobId : jobManager.getPlayerJobs(player)) {
-                        if (jobId.toLowerCase().startsWith(input)) {
-                            completions.add(jobId);
+                    if (player != null) {
+                        for (String jobId : jobManager.getPlayerJobs(player)) {
+                            if (jobId.toLowerCase().startsWith(input)) {
+                                completions.add(jobId);
+                            }
                         }
                     }
                 }
@@ -1323,17 +1376,37 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      */
     private void handleDebugCommand(CommandSender sender, String[] args) {
         if (!sender.hasPermission("jobsadventure.admin.debug")) {
+            sender.sendMessage("§cYou don't have permission to use this command.");
             return;
         }
         
+        // Toggle debug mode if no subcommand
         if (args.length < 2) {
-            sendDebugHelp(sender);
+            boolean currentDebug = plugin.getConfig().getBoolean("debug", false);
+            plugin.getConfig().set("debug", !currentDebug);
+            plugin.saveConfig();
+            
+            if (!currentDebug) {
+                sender.sendMessage("§aDebug mode enabled.");
+            } else {
+                sender.sendMessage("§cDebug mode disabled.");
+            }
             return;
         }
         
         String debugSubCommand = sanitizeInput(args[1].toLowerCase());
         
         switch (debugSubCommand) {
+            case "on" -> {
+                plugin.getConfig().set("debug", true);
+                plugin.saveConfig();
+                sender.sendMessage("§aDebug mode enabled.");
+            }
+            case "off" -> {
+                plugin.getConfig().set("debug", false);
+                plugin.saveConfig();
+                sender.sendMessage("§cDebug mode disabled.");
+            }
             case "player" -> handleDebugPlayer(sender, args);
             case "job" -> handleDebugJob(sender, args);
             case "listeners" -> handleDebugListeners(sender);
@@ -1449,6 +1522,15 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     }
     
     private void sendDebugHelp(CommandSender sender) {
-        // Debug help removed
+        sender.sendMessage("§6JobsAdventure Debug Commands:");
+        sender.sendMessage("§e/jobs debug §7- Toggle debug mode");
+        sender.sendMessage("§e/jobs debug on §7- Enable debug mode");
+        sender.sendMessage("§e/jobs debug off §7- Disable debug mode");
+        sender.sendMessage("§e/jobs debug player <name> §7- Debug player data");
+        sender.sendMessage("§e/jobs debug job <id> §7- Debug job data");
+        sender.sendMessage("§e/jobs debug listeners §7- Show registered listeners");
+        sender.sendMessage("§e/jobs debug threads §7- Show thread information");
+        sender.sendMessage("§e/jobs debug config §7- Show configuration");
+        sender.sendMessage("§e/jobs debug export §7- Export debug data");
     }
 }

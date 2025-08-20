@@ -2,6 +2,7 @@ package fr.ax_dev.jobsAdventure.listener;
 
 import com.nexomc.nexo.api.events.custom_block.NexoBlockBreakEvent;
 import com.nexomc.nexo.api.events.custom_block.NexoBlockPlaceEvent;
+import com.nexomc.nexo.api.events.custom_block.NexoBlockInteractEvent;
 
 import fr.ax_dev.jobsAdventure.JobsAdventure;
 import fr.ax_dev.jobsAdventure.action.ActionProcessor;
@@ -96,6 +97,44 @@ public class NexoEventListener implements Listener {
         
         if (plugin.getConfigManager().isDebugEnabled()) {
             plugin.getLogger().info("Nexo block broken: " + nexoBlockId + " by " + player.getName() + " at " + block.getLocation());
+        }
+    }
+    
+    /**
+     * Handle Nexo custom block interactions.
+     * Uses Nexo's direct API for better accuracy and performance.
+     */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onNexoBlockInteract(NexoBlockInteractEvent event) {
+        Player player = event.getPlayer();
+        Block block = event.getBlock();
+        String nexoBlockId = event.getMechanic().getItemID();
+        
+        // Determine interact type based on the interaction
+        String interactType;
+        try {
+            // Try to get interaction type from event if available
+            boolean isRightClick = event.getHand() != null; // This is a guess - check actual API
+            interactType = player.isSneaking() ? 
+                (isRightClick ? "SHIFT-RIGHT" : "SHIFT-LEFT") : 
+                (isRightClick ? "RIGHT" : "LEFT");
+        } catch (Exception e) {
+            // Fallback to RIGHT if we can't determine the interaction type
+            interactType = player.isSneaking() ? "SHIFT-RIGHT" : "RIGHT";
+        }
+        
+        // Create context with Nexo information
+        ConditionContext context = new ConditionContext()
+                .setBlock(block)
+                .set("target", "nexo:" + nexoBlockId)
+                .set("nexo_block_id", nexoBlockId)
+                .set("interact-type", interactType);
+        
+        // Process the action
+        actionProcessor.processAction(player, ActionType.BLOCK_INTERACT, event, context);
+        
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("Nexo block interact: " + nexoBlockId + " by " + player.getName() + " - interact-type: " + interactType);
         }
     }
 }

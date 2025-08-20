@@ -349,6 +349,22 @@ public class Job {
     }
     
     /**
+     * Get the action type for a specific job action.
+     * This is used to determine which action type contains the given action.
+     * 
+     * @param jobAction The job action to find
+     * @return The action type, or null if not found
+     */
+    public ActionType getActionTypeForAction(JobAction jobAction) {
+        for (Map.Entry<ActionType, List<JobAction>> entry : actions.entrySet()) {
+            if (entry.getValue().contains(jobAction)) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+    
+    /**
      * Get the display name of this job (alias for getName()).
      * 
      * @return The job display name

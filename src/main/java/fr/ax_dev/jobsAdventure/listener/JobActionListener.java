@@ -14,11 +14,17 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityBreedEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
+import org.bukkit.GameMode;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.event.block.Action;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -240,8 +246,15 @@ public class JobActionListener implements Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("Block break event: " + event.getBlock().getType() + " by " + player.getName());
+        }
+        
         // Rate limiting check
         if (!checkRateLimit(player)) {
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("Rate limited for player " + player.getName());
+            }
             return;
         }
         
@@ -262,6 +275,10 @@ public class JobActionListener implements Listener {
                     .setBlock(event.getBlock())
                     .set("target", event.getBlock().getType().name());
             
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("Processing BREAK action for " + player.getName() + " - target: " + event.getBlock().getType().name());
+            }
+            
             // Process the action and check if we should cancel
             boolean shouldCancel = actionProcessor.processAction(player, ActionType.BREAK, event, context);
             if (shouldCancel) {
@@ -272,6 +289,7 @@ public class JobActionListener implements Listener {
             
         } catch (Exception e) {
             plugin.getLogger().warning("Error processing BREAK action for player " + player.getName() + ": " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
@@ -382,7 +400,7 @@ public class JobActionListener implements Listener {
     }
     
     /**
-     * Handle food consumption (EAT action).
+     * Handle food and potion consumption (EAT and POTION actions).
      */
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPlayerItemConsume(PlayerItemConsumeEvent event) {
@@ -393,11 +411,266 @@ public class JobActionListener implements Listener {
                 .setItem(event.getItem())
                 .set("target", event.getItem().getType().name());
         
+        // Determine if it's a potion or food
+        ActionType actionType;
+        if (event.getItem().getType().name().contains("POTION")) {
+            actionType = ActionType.POTION;
+        } else {
+            actionType = ActionType.EAT;
+        }
+        
         // Process the action and check if we should cancel
-        boolean shouldCancel = actionProcessor.processAction(player, ActionType.EAT, event, context);
+        boolean shouldCancel = actionProcessor.processAction(player, actionType, event, context);
         if (shouldCancel) {
             event.setCancelled(true);
         }
+    }
+    
+    /**
+     * Handle block interactions (BLOCK_INTERACT action).
+     * Only handles RIGHT_CLICK interactions - left clicks that break blocks are handled by BlockBreakEvent
+     */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        
+        // Only handle main hand interactions to avoid duplicate events
+        if (event.getHand() != EquipmentSlot.HAND) {
+            return;
+        }
+        
+        // Only handle block interactions (right click on blocks)
+        if (event.getClickedBlock() == null) {
+            return;
+        }
+        
+        // Only handle RIGHT_CLICK actions - left clicks are handled by BlockBreakEvent
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+        
+        // Rate limiting check
+        if (!checkRateLimit(player)) {
+            return;
+        }
+        
+        // Determine interact type (only right clicks)
+        String interactType = player.isSneaking() ? "SHIFT-RIGHT" : "RIGHT";
+        
+        // Create context
+        ConditionContext context = new ConditionContext()
+                .setBlock(event.getClickedBlock())
+                .set("target", event.getClickedBlock().getType().name())
+                .set("interact-type", interactType);
+        
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("Block interact (RIGHT_CLICK): " + event.getClickedBlock().getType() + " by " + player.getName() + " - interact-type: " + interactType);
+        }
+        
+        // Process the action and check if we should cancel
+        boolean shouldCancel = actionProcessor.processAction(player, ActionType.BLOCK_INTERACT, event, context);
+        if (shouldCancel) {
+            event.setCancelled(true);
+        }
+        
+        processedEvents.incrementAndGet();
+    }
+    
+    /**
+     * Handle LEFT_CLICK block interactions that don't break blocks (BLOCK_INTERACT action).
+     * This handles LEFT_CLICK interactions where the block isn't actually broken.
+     */
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onPlayerLeftClickBlock(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        
+        // Only handle LEFT_CLICK_BLOCK actions
+        if (event.getAction() != Action.LEFT_CLICK_BLOCK) {
+            return;
+        }
+        
+        // Only handle main hand interactions to avoid duplicate events
+        if (event.getHand() != EquipmentSlot.HAND) {
+            return;
+        }
+        
+        // Only handle block interactions
+        if (event.getClickedBlock() == null) {
+            return;
+        }
+        
+        // Skip if this left click will break the block (to avoid conflict with BlockBreakEvent)
+        if (willBreakBlock(player, event.getClickedBlock())) {
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("Skipping LEFT_CLICK interact - block will be broken by BlockBreakEvent");
+            }
+            return;
+        }
+        
+        // Rate limiting check
+        if (!checkRateLimit(player)) {
+            return;
+        }
+        
+        // Determine interact type (left clicks)
+        String interactType = player.isSneaking() ? "SHIFT-LEFT" : "LEFT";
+        
+        // Create context
+        ConditionContext context = new ConditionContext()
+                .setBlock(event.getClickedBlock())
+                .set("target", event.getClickedBlock().getType().name())
+                .set("interact-type", interactType);
+        
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("Block interact (LEFT_CLICK): " + event.getClickedBlock().getType() + " by " + player.getName() + " - interact-type: " + interactType);
+        }
+        
+        // Process the action and check if we should cancel
+        boolean shouldCancel = actionProcessor.processAction(player, ActionType.BLOCK_INTERACT, event, context);
+        if (shouldCancel) {
+            event.setCancelled(true);
+        }
+        
+        processedEvents.incrementAndGet();
+    }
+    
+    /**
+     * Check if a left click will break the block.
+     * This helps avoid conflicts between PlayerInteractEvent and BlockBreakEvent.
+     */
+    private boolean willBreakBlock(Player player, org.bukkit.block.Block block) {
+        // In creative mode, left click always breaks blocks instantly
+        if (player.getGameMode() == GameMode.CREATIVE) {
+            return true;
+        }
+        
+        // In survival/adventure, check if player can break the block
+        // This is a simplified check - you might want to make it more sophisticated
+        if (player.getGameMode() == GameMode.SURVIVAL || 
+            player.getGameMode() == GameMode.ADVENTURE) {
+            
+            // Check if block is breakable and player has proper tool
+            // For now, assume most blocks can be broken in survival mode
+            return block.getType().getHardness() >= 0; // Negative hardness means unbreakable
+        }
+        
+        // In spectator mode, can't break blocks
+        return false;
+    }
+    
+    /**
+     * Handle entity interactions (ENTITY_INTERACT action) - Right click.
+     */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+        Player player = event.getPlayer();
+        Entity entity = event.getRightClicked();
+        
+        // Only handle main hand interactions to avoid duplicate events
+        if (event.getHand() != EquipmentSlot.HAND) {
+            return;
+        }
+        
+        // Rate limiting check
+        if (!checkRateLimit(player)) {
+            return;
+        }
+        
+        // Determine interact type (right-click interaction)
+        String interactType = player.isSneaking() ? "SHIFT-RIGHT" : "RIGHT";
+        
+        // Create context
+        ConditionContext context = new ConditionContext()
+                .setEntity(entity)
+                .set("target", entity.getType().name())
+                .set("interact-type", interactType);
+        
+        // Check for MythicMobs
+        if (mythicMobsAvailable) {
+            try {
+                Object apiInstance = mythicMobsInstMethod.invoke(null);
+                Object mobManager = getMobManagerMethod.invoke(apiInstance);
+                Object activeMob = getActiveMobMethod.invoke(mobManager, entity);
+                
+                if (activeMob != null) {
+                    Object mobType = getTypeMethod.invoke(activeMob);
+                    String internalName = (String) getInternalNameMethod.invoke(mobType);
+                    context.set("target", "mythicmobs:" + internalName);
+                    context.set("mythicmob", true);
+                    context.set("mythicmob_type", internalName);
+                }
+            } catch (Exception e) {
+                if (plugin.getConfigManager().isDebugEnabled()) {
+                    plugin.getLogger().warning("Failed to check MythicMobs data: " + e.getMessage());
+                }
+            }
+        }
+        
+        // Process the action and check if we should cancel
+        boolean shouldCancel = actionProcessor.processAction(player, ActionType.ENTITY_INTERACT, event, context);
+        if (shouldCancel) {
+            event.setCancelled(true);
+        }
+        
+        processedEvents.incrementAndGet();
+    }
+    
+    /**
+     * Handle entity interactions (ENTITY_INTERACT action) - Left click.
+     * We use EntityDamageByEntityEvent with 0 damage to detect left-clicks.
+     */
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onEntityDamageForInteract(EntityDamageByEntityEvent event) {
+        // Only handle player damage
+        if (!(event.getDamager() instanceof Player player)) {
+            return;
+        }
+        
+        Entity entity = event.getEntity();
+        
+        // Rate limiting check
+        if (!checkRateLimit(player)) {
+            return;
+        }
+        
+        // Determine interact type (left-click interaction)
+        String interactType = player.isSneaking() ? "SHIFT-LEFT" : "LEFT";
+        
+        // Create context
+        ConditionContext context = new ConditionContext()
+                .setEntity(entity)
+                .set("target", entity.getType().name())
+                .set("interact-type", interactType);
+        
+        // Check for MythicMobs
+        if (mythicMobsAvailable) {
+            try {
+                Object apiInstance = mythicMobsInstMethod.invoke(null);
+                Object mobManager = getMobManagerMethod.invoke(apiInstance);
+                Object activeMob = getActiveMobMethod.invoke(mobManager, entity);
+                
+                if (activeMob != null) {
+                    Object mobType = getTypeMethod.invoke(activeMob);
+                    String internalName = (String) getInternalNameMethod.invoke(mobType);
+                    context.set("target", "mythicmobs:" + internalName);
+                    context.set("mythicmob", true);
+                    context.set("mythicmob_type", internalName);
+                }
+            } catch (Exception e) {
+                if (plugin.getConfigManager().isDebugEnabled()) {
+                    plugin.getLogger().warning("Failed to check MythicMobs data: " + e.getMessage());
+                }
+            }
+        }
+        
+        // Process the action and check if we should cancel
+        // We cancel the damage event if the action is processed to prevent actual damage
+        boolean shouldCancel = actionProcessor.processAction(player, ActionType.ENTITY_INTERACT, event, context);
+        if (shouldCancel) {
+            event.setCancelled(true);
+        }
+        
+        processedEvents.incrementAndGet();
     }
     
 }
