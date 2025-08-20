@@ -22,6 +22,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
+import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.GameMode;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.event.block.Action;
@@ -608,6 +609,40 @@ public class JobActionListener implements Listener {
         
         // Process the action and check if we should cancel
         boolean shouldCancel = actionProcessor.processAction(player, ActionType.ENTITY_INTERACT, event, context);
+        if (shouldCancel) {
+            event.setCancelled(true);
+        }
+        
+        processedEvents.incrementAndGet();
+    }
+    
+    /**
+     * Handle item crafting (CRAFT action).
+     */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onCraftItem(CraftItemEvent event) {
+        if (!(event.getWhoClicked() instanceof Player player)) return;
+        
+        // Rate limiting check
+        if (!checkRateLimit(player)) {
+            return;
+        }
+        
+        // Get the crafted item
+        if (event.getCurrentItem() == null) return;
+        
+        // Create context
+        ConditionContext context = new ConditionContext()
+                .setItem(event.getCurrentItem())
+                .set("target", event.getCurrentItem().getType().name())
+                .set("amount", event.getCurrentItem().getAmount());
+        
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("Craft event: " + event.getCurrentItem().getType() + " x" + event.getCurrentItem().getAmount() + " by " + player.getName());
+        }
+        
+        // Process the action and check if we should cancel
+        boolean shouldCancel = actionProcessor.processAction(player, ActionType.CRAFT, event, context);
         if (shouldCancel) {
             event.setCancelled(true);
         }
