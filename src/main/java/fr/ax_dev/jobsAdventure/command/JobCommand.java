@@ -110,6 +110,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 case "stats" -> handleStatsCommand((Player) sender, args);
                 case "rewards" -> handleRewardsCommand((Player) sender, args);
                 case "xpbonus" -> handleXpBonusCommand(sender, args);
+                case "exp" -> handleExpCommand(sender, args);
                 case "migrate" -> handleMigrateCommand(sender, args);
                 case "reload" -> handleReloadCommand(sender);
                 case "debug" -> handleDebugCommand(sender, args);
@@ -214,7 +215,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      * @return true if valid
      */
     private boolean isValidSubCommand(String subCommand) {
-        Set<String> validCommands = Set.of("join", "leave", "info", "list", "stats", "rewards", "xpbonus", "migrate", "reload", "monitor", "debug");
+        Set<String> validCommands = Set.of("join", "leave", "info", "list", "stats", "rewards", "xpbonus", "exp", "migrate", "reload", "monitor", "debug");
         return validCommands.contains(subCommand);
     }
     
@@ -238,6 +239,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage("§6JobsAdventure Console Commands:");
         sender.sendMessage("§e/jobs reload §7- Reload the plugin configuration");
         sender.sendMessage("§e/jobs xpbonus <add|remove|list> §7- Manage XP bonuses");
+        sender.sendMessage("§e/jobs exp give <player> [job] <exp> <true/false> §7- Give XP to players");
         sender.sendMessage("§e/jobs migrate §7- Migrate data between storage types");
         sender.sendMessage("§e/jobs monitor <player> §7- Monitor a player's actions");
         sender.sendMessage("§e/jobs debug §7- Toggle debug mode");
@@ -689,6 +691,185 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     }
     
     /**
+     * Handle the exp subcommand.
+     */
+    private void handleExpCommand(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("jobsadventure.admin.exp")) {
+            MessageUtils.sendMessage((Player) sender, languageManager.getMessage("commands.no-permission"));
+            return;
+        }
+        
+        if (args.length == 1) {
+            sendExpHelp(sender);
+            return;
+        }
+        
+        String expSubCommand = args[1].toLowerCase();
+        String[] expArgs = Arrays.copyOfRange(args, 1, args.length);
+        
+        switch (expSubCommand) {
+            case "give" -> handleExpGive(sender, expArgs);
+            default -> sendExpHelp(sender);
+        }
+    }
+    
+    /**
+     * Handle the exp give subcommand.
+     */
+    private void handleExpGive(CommandSender sender, String[] args) {
+        // /jobs exp give <player> [job] <exp> <true/false>
+        if (args.length < 4) {
+            sender.sendMessage("§cUsage: /jobs exp give <player> [job] <exp> <true/false>");
+            sender.sendMessage("§7Examples:");
+            sender.sendMessage("§7  /jobs exp give Player123 100 false - Give 100 exact XP to all jobs");
+            sender.sendMessage("§7  /jobs exp give Player123 miner 100 true - Give 100 XP with multipliers to miner job");
+            return;
+        }
+        
+        // Validate and sanitize player name
+        String playerName = sanitizeInput(args[1]);
+        if (!isValidPlayerName(playerName)) {
+            sender.sendMessage("§cInvalid player name format.");
+            return;
+        }
+        
+        Player targetPlayer = Bukkit.getPlayer(playerName);
+        if (targetPlayer == null) {
+            sender.sendMessage("§cPlayer not found: " + playerName);
+            return;
+        }
+        
+        // Determine if we have a job parameter by checking if args[2] is a valid job ID
+        String jobId = null;
+        int expIndex;
+        int multiplierIndex;
+        
+        if (args.length >= 5) {
+            // 5 args: /jobs exp give <player> <job> <exp> <true/false>
+            String potentialJobId = sanitizeInput(args[2]);
+            if (isValidJobId(potentialJobId)) {
+                Job job = jobManager.getJob(potentialJobId);
+                if (job != null) {
+                    jobId = potentialJobId;
+                    expIndex = 3;
+                    multiplierIndex = 4;
+                } else {
+                    sender.sendMessage("§cJob not found: " + potentialJobId);
+                    return;
+                }
+            } else {
+                sender.sendMessage("§cInvalid job ID format: " + potentialJobId);
+                return;
+            }
+        } else {
+            // 4 args: /jobs exp give <player> <exp> <true/false>
+            expIndex = 2;
+            multiplierIndex = 3;
+        }
+        
+        // Validate XP amount
+        double expAmount;
+        try {
+            String expStr = sanitizeInput(args[expIndex]);
+            if (expStr.isEmpty() || expStr.length() > 10) {
+                throw new NumberFormatException("Invalid XP format");
+            }
+            expAmount = Double.parseDouble(expStr);
+        } catch (NumberFormatException e) {
+            sender.sendMessage("§cInvalid XP amount format.");
+            return;
+        }
+        
+        // Validate XP amount bounds
+        if (expAmount <= 0.0 || expAmount > 1000000.0 || Double.isNaN(expAmount) || Double.isInfinite(expAmount)) {
+            sender.sendMessage("§cXP amount must be between 0.1 and 1,000,000.");
+            return;
+        }
+        
+        // Validate apply multipliers flag
+        boolean applyMultipliers;
+        String multiplierStr = sanitizeInput(args[multiplierIndex]).toLowerCase();
+        if (multiplierStr.equals("true")) {
+            applyMultipliers = true;
+        } else if (multiplierStr.equals("false")) {
+            applyMultipliers = false;
+        } else {
+            sender.sendMessage("§cThe true/false parameter must be exactly 'true' or 'false'.");
+            return;
+        }
+        
+        // Validate job if provided
+        if (jobId != null) {
+            // Check if player has the job
+            if (!jobManager.hasJob(targetPlayer, jobId)) {
+                Job job = jobManager.getJob(jobId);
+                sender.sendMessage("§cPlayer " + targetPlayer.getName() + " does not have the job: " + (job != null ? job.getName() : jobId));
+                return;
+            }
+        }
+        
+        // Give XP
+        if (jobId != null) {
+            // Give to specific job
+            if (applyMultipliers) {
+                // Apply multipliers and bonuses (same as regular actions)
+                double finalExp = expAmount;
+                
+                // Apply XP bonuses if they exist
+                if (bonusManager != null) {
+                    double multiplier = bonusManager.getTotalMultiplier(targetPlayer.getUniqueId(), jobId);
+                    finalExp = expAmount * multiplier;
+                }
+                
+                jobManager.addXp(targetPlayer, jobId, finalExp);
+                sender.sendMessage("§aGave " + finalExp + " XP (with multipliers) to " + targetPlayer.getName() + " for job " + jobId);
+            } else {
+                // Give exact amount
+                jobManager.addXp(targetPlayer, jobId, expAmount);
+                sender.sendMessage("§aGave " + expAmount + " XP (exact) to " + targetPlayer.getName() + " for job " + jobId);
+            }
+        } else {
+            // Give to all jobs the player has
+            Set<String> playerJobs = jobManager.getPlayerJobs(targetPlayer);
+            
+            if (playerJobs.isEmpty()) {
+                sender.sendMessage("§cPlayer " + targetPlayer.getName() + " has no jobs.");
+                return;
+            }
+            
+            for (String playerJobId : playerJobs) {
+                if (applyMultipliers) {
+                    // Apply multipliers and bonuses
+                    double finalExp = expAmount;
+                    
+                    if (bonusManager != null) {
+                        double multiplier = bonusManager.getTotalMultiplier(targetPlayer.getUniqueId(), playerJobId);
+                        finalExp = expAmount * multiplier;
+                    }
+                    
+                    jobManager.addXp(targetPlayer, playerJobId, finalExp);
+                } else {
+                    // Give exact amount
+                    jobManager.addXp(targetPlayer, playerJobId, expAmount);
+                }
+            }
+            
+            String multiplierText = applyMultipliers ? " (with multipliers)" : " (exact)";
+            sender.sendMessage("§aGave " + expAmount + " XP" + multiplierText + " to " + targetPlayer.getName() + " for all jobs (" + playerJobs.size() + " jobs)");
+        }
+    }
+    
+    /**
+     * Send exp command help message.
+     */
+    private void sendExpHelp(CommandSender sender) {
+        sender.sendMessage("§6JobsAdventure Experience Commands:");
+        sender.sendMessage("§e/jobs exp give <player> [job] <exp> <true/false> §7- Give XP to a player");
+        sender.sendMessage("§7  §o[job]: Specific job (optional, defaults to all player jobs)");
+        sender.sendMessage("§7  §otrue/false: Apply multipliers and bonuses (true) or exact amount (false)");
+    }
+    
+    /**
      * Handle the rewards subcommand.
      */
     private void handleRewardsCommand(Player player, String[] args) {
@@ -980,6 +1161,10 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         if (player.hasPermission("jobsadventure.admin.xpbonus")) {
             MessageUtils.sendMessage(player, languageManager.getMessage("commands.help.xpbonus"));
         }
+        
+        if (player.hasPermission("jobsadventure.admin.exp")) {
+            MessageUtils.sendMessage(player, "§e/jobs exp give §7- Give XP to players");
+        }
     }
     
     @Override
@@ -1011,6 +1196,9 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             }
             if (sender.hasPermission("jobsadventure.admin.xpbonus")) {
                 subCommands.add("xpbonus");
+            }
+            if (sender.hasPermission("jobsadventure.admin.exp")) {
+                subCommands.add("exp");
             }
             
             String input = args[0].toLowerCase();
@@ -1101,6 +1289,17 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                         }
                     }
                 }
+                case "exp" -> {
+                    // Experience subcommands
+                    if (sender.hasPermission("jobsadventure.admin.exp")) {
+                        List<String> expSubCommands = Arrays.asList("give");
+                        for (String expSubCommand : expSubCommands) {
+                            if (expSubCommand.startsWith(input)) {
+                                completions.add(expSubCommand);
+                            }
+                        }
+                    }
+                }
             }
         } else if (args.length >= 3 && args[0].equalsIgnoreCase("rewards")) {
             // Handle Rewards tab completion
@@ -1116,6 +1315,11 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             // Handle XP Bonus tab completion
             if (player.hasPermission("jobsadventure.admin.xpbonus")) {
                 completions.addAll(getXpBonusTabCompletions(args));
+            }
+        } else if (args.length >= 3 && args[0].equalsIgnoreCase("exp")) {
+            // Handle Experience tab completion
+            if (sender.hasPermission("jobsadventure.admin.exp")) {
+                completions.addAll(getExpTabCompletions(args));
             }
         }
         
@@ -1340,6 +1544,70 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                     .map(Job::getId)
                     .filter(jobId -> jobId.toLowerCase().startsWith(input))
                     .collect(Collectors.toList()));
+        }
+        
+        return completions;
+    }
+    
+    /**
+     * Get tab completions for Experience commands.
+     */
+    private List<String> getExpTabCompletions(String[] args) {
+        List<String> completions = new ArrayList<>();
+        String expSubCommand = args[1].toLowerCase();
+        
+        if (args.length == 3) {
+            String input = args[2].toLowerCase();
+            
+            if (expSubCommand.equals("give")) {
+                // Player names
+                completions.addAll(Bukkit.getOnlinePlayers().stream()
+                        .map(Player::getName)
+                        .filter(name -> name.toLowerCase().startsWith(input))
+                        .collect(Collectors.toList()));
+            }
+        } else if (args.length == 4 && expSubCommand.equals("give")) {
+            String input = args[3].toLowerCase();
+            // Job names OR XP amount (since job is optional)
+            // Add job names
+            completions.addAll(jobManager.getAllJobs().stream()
+                    .map(Job::getId)
+                    .filter(jobId -> jobId.toLowerCase().startsWith(input))
+                    .collect(Collectors.toList()));
+            // Add XP amount suggestions
+            List<String> xpAmounts = Arrays.asList("10", "50", "100", "250", "500", "1000");
+            completions.addAll(xpAmounts.stream()
+                    .filter(amount -> amount.startsWith(input))
+                    .collect(Collectors.toList()));
+        } else if (args.length == 5 && expSubCommand.equals("give")) {
+            String input = args[4].toLowerCase();
+            // This could be XP amount (if previous was job) OR true/false (if previous was XP)
+            // Check if args[2] looks like a job ID
+            String potentialJobId = sanitizeInput(args[2]);
+            if (isValidJobId(potentialJobId) && jobManager.getJob(potentialJobId) != null) {
+                // Previous was job, this should be XP amount
+                List<String> xpAmounts = Arrays.asList("10", "50", "100", "250", "500", "1000");
+                completions.addAll(xpAmounts.stream()
+                        .filter(amount -> amount.startsWith(input))
+                        .collect(Collectors.toList()));
+            } else {
+                // Previous was XP, this should be true/false
+                if ("true".startsWith(input)) {
+                    completions.add("true");
+                }
+                if ("false".startsWith(input)) {
+                    completions.add("false");
+                }
+            }
+        } else if (args.length == 6 && expSubCommand.equals("give")) {
+            String input = args[5].toLowerCase();
+            // This should be true/false (when we have job specified)
+            if ("true".startsWith(input)) {
+                completions.add("true");
+            }
+            if ("false".startsWith(input)) {
+                completions.add("false");
+            }
         }
         
         return completions;
