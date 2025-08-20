@@ -27,6 +27,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     private final InfoStatsCommandHandler infoStatsHandler;
     private final RewardsCommandHandler rewardsHandler;
     private final XpBonusCommandHandler xpBonusHandler;
+    private final MoneyBonusCommandHandler moneyBonusHandler;
     private final ActionLimitCommandHandler actionLimitHandler;
     private final AdminCommandHandler adminHandler;
     
@@ -53,6 +54,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         this.infoStatsHandler = new InfoStatsCommandHandler(plugin);
         this.rewardsHandler = new RewardsCommandHandler(plugin);
         this.xpBonusHandler = new XpBonusCommandHandler(plugin);
+        this.moneyBonusHandler = new MoneyBonusCommandHandler(plugin);
         this.actionLimitHandler = new ActionLimitCommandHandler(plugin);
         this.adminHandler = new AdminCommandHandler(plugin);
     }
@@ -105,6 +107,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 case "info", "list", "stats" -> handled = infoStatsHandler.handleCommand(sender, args);
                 case "rewards" -> handled = rewardsHandler.handleCommand(sender, args);
                 case "xpbonus" -> handled = xpBonusHandler.handleCommand(sender, args);
+                case "moneybonus" -> handled = moneyBonusHandler.handleCommand(sender, args);
                 case "actionlimit" -> handled = actionLimitHandler.handleCommand(sender, args);
                 case "exp", "migrate", "reload", "debug" -> handled = adminHandler.handleCommand(sender, args);
                 default -> handled = false;
@@ -152,6 +155,9 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             if (sender.hasPermission("jobsadventure.admin.xpbonus")) {
                 subCommands.add("xpbonus");
             }
+            if (sender.hasPermission("jobsadventure.admin.moneybonus")) {
+                subCommands.add("moneybonus");
+            }
             if (sender.hasPermission("jobsadventure.admin.exp")) {
                 subCommands.add("exp");
             }
@@ -174,6 +180,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 case "info", "list", "stats" -> completions.addAll(infoStatsHandler.getTabCompletions(sender, args));
                 case "rewards" -> completions.addAll(rewardsHandler.getTabCompletions(sender, args));
                 case "xpbonus" -> completions.addAll(xpBonusHandler.getTabCompletions(sender, args));
+                case "moneybonus" -> completions.addAll(moneyBonusHandler.getTabCompletions(sender, args));
                 case "actionlimit" -> completions.addAll(actionLimitHandler.getTabCompletions(sender, args));
                 case "exp", "migrate", "reload", "debug" -> completions.addAll(adminHandler.getTabCompletions(sender, args));
             }

@@ -3,6 +3,7 @@ package fr.ax_dev.jobsAdventure;
 import fr.ax_dev.jobsAdventure.action.ActionProcessor;
 import fr.ax_dev.jobsAdventure.action.ActionLimitManager;
 import fr.ax_dev.jobsAdventure.bonus.XpBonusManager;
+import fr.ax_dev.jobsAdventure.bonus.MoneyBonusManager;
 import fr.ax_dev.jobsAdventure.command.JobCommand;
 import fr.ax_dev.jobsAdventure.compatibility.FoliaCompatibilityManager;
 import fr.ax_dev.jobsAdventure.config.ConfigManager;
@@ -40,6 +41,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
     private ActionProcessor actionProcessor;
     private ActionLimitManager limitManager;
     private XpBonusManager bonusManager;
+    private MoneyBonusManager moneyBonusManager;
     private XpMessageSender messageSender;
     private BlockProtectionManager protectionManager;
     private RewardManager rewardManager;
@@ -60,12 +62,13 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
         this.levelUpActionManager = new SimpleLevelUpActionManager(this);
         this.limitManager = new ActionLimitManager(this);
         this.bonusManager = new XpBonusManager(this);
+        this.moneyBonusManager = new MoneyBonusManager(this);
         this.messageSender = new XpMessageSender(this);
         this.protectionManager = new BlockProtectionManager(this);
         this.rewardManager = new RewardManager(this);
         this.rewardGuiManager = new RewardGuiManager(this, rewardManager);
         this.placeholderManager = new PlaceholderManager(this);
-        this.actionProcessor = new ActionProcessor(this, jobManager, bonusManager, messageSender, limitManager);
+        this.actionProcessor = new ActionProcessor(this, jobManager, bonusManager, moneyBonusManager, messageSender, limitManager);
         
         // Load configuration
         try {
@@ -240,6 +243,16 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
                     bonusManager = null;
                 } catch (Exception e) {
                     getLogger().log(Level.WARNING, "Error shutting down bonus manager", e);
+                }
+            }
+            
+            // Shutdown money bonus manager
+            if (moneyBonusManager != null) {
+                try {
+                    moneyBonusManager.shutdown();
+                    moneyBonusManager = null;
+                } catch (Exception e) {
+                    getLogger().log(Level.WARNING, "Error shutting down money bonus manager", e);
                 }
             }
             
@@ -487,6 +500,15 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
      */
     public XpBonusManager getBonusManager() {
         return bonusManager;
+    }
+    
+    /**
+     * Get the money bonus manager.
+     * 
+     * @return The money bonus manager
+     */
+    public MoneyBonusManager getMoneyBonusManager() {
+        return moneyBonusManager;
     }
     
     /**

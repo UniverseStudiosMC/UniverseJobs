@@ -3,6 +3,7 @@ package fr.ax_dev.jobsAdventure.command.handler;
 import fr.ax_dev.jobsAdventure.JobsAdventure;
 import fr.ax_dev.jobsAdventure.action.ActionLimitManager;
 import fr.ax_dev.jobsAdventure.bonus.XpBonusManager;
+import fr.ax_dev.jobsAdventure.bonus.MoneyBonusManager;
 import fr.ax_dev.jobsAdventure.config.LanguageManager;
 import fr.ax_dev.jobsAdventure.job.JobManager;
 import fr.ax_dev.jobsAdventure.reward.RewardManager;
@@ -22,6 +23,7 @@ public abstract class JobCommandHandler {
     protected final JobManager jobManager;
     protected final LanguageManager languageManager;
     protected final XpBonusManager bonusManager;
+    protected final MoneyBonusManager moneyBonusManager;
     protected final RewardManager rewardManager;
     protected final RewardGuiManager rewardGuiManager;
     protected final ActionLimitManager limitManager;
@@ -36,6 +38,7 @@ public abstract class JobCommandHandler {
         this.jobManager = plugin.getJobManager();
         this.languageManager = plugin.getLanguageManager();
         this.bonusManager = plugin.getBonusManager();
+        this.moneyBonusManager = plugin.getMoneyBonusManager();
         this.rewardManager = plugin.getRewardManager();
         this.rewardGuiManager = plugin.getRewardGuiManager();
         this.limitManager = plugin.getLimitManager();

@@ -2,6 +2,7 @@ package fr.ax_dev.jobsAdventure.action;
 
 import fr.ax_dev.jobsAdventure.JobsAdventure;
 import fr.ax_dev.jobsAdventure.bonus.XpBonusManager;
+import fr.ax_dev.jobsAdventure.bonus.MoneyBonusManager;
 import fr.ax_dev.jobsAdventure.condition.ConditionContext;
 import fr.ax_dev.jobsAdventure.condition.ConditionResult;
 import fr.ax_dev.jobsAdventure.config.MessageConfig;
@@ -28,6 +29,7 @@ public class ActionProcessor {
     private final JobsAdventure plugin;
     private final JobManager jobManager;
     private final XpBonusManager bonusManager;
+    private final MoneyBonusManager moneyBonusManager;
     private final XpMessageSender messageSender;
     private final ActionLimitManager limitManager;
     
@@ -37,13 +39,15 @@ public class ActionProcessor {
      * @param plugin The plugin instance
      * @param jobManager The job manager
      * @param bonusManager The XP bonus manager
+     * @param moneyBonusManager The money bonus manager
      * @param messageSender The XP message sender
      * @param limitManager The action limit manager
      */
-    public ActionProcessor(JobsAdventure plugin, JobManager jobManager, XpBonusManager bonusManager, XpMessageSender messageSender, ActionLimitManager limitManager) {
+    public ActionProcessor(JobsAdventure plugin, JobManager jobManager, XpBonusManager bonusManager, MoneyBonusManager moneyBonusManager, XpMessageSender messageSender, ActionLimitManager limitManager) {
         this.plugin = plugin;
         this.jobManager = jobManager;
         this.bonusManager = bonusManager;
+        this.moneyBonusManager = moneyBonusManager;
         this.messageSender = messageSender;
         this.limitManager = limitManager;
     }
@@ -246,9 +250,9 @@ public class ActionProcessor {
             // Apply any money multipliers
             finalMoney = applyMoneyMultipliers(player, job, money);
             
-            // Apply bonus multipliers (same as XP for consistency)
-            double bonusMultiplier = bonusManager.getTotalMultiplier(player.getUniqueId(), job.getId());
-            finalMoney *= bonusMultiplier;
+            // Apply money bonus multipliers
+            double moneyBonusMultiplier = moneyBonusManager.getTotalMultiplier(player.getUniqueId(), job.getId());
+            finalMoney *= moneyBonusMultiplier;
             
             // Add money to the player
             addPlayerMoney(player, finalMoney);
