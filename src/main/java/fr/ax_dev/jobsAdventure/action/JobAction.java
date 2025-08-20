@@ -21,6 +21,7 @@ public class JobAction {
     private final MessageConfig message;
     private final List<String> commands;
     private final String interactType;
+    private final ActionLimitManager.ActionLimit actionLimit;
     
     /**
      * Create a new JobAction from configuration.
@@ -48,6 +49,23 @@ public class JobAction {
             this.requirements = new ConditionGroup(requirementsSection);
         } else {
             this.requirements = null;
+        }
+        
+        // Load action limits
+        ConfigurationSection limitsSection = config.getConfigurationSection("limits");
+        if (limitsSection != null) {
+            int maxActionsPerPeriod = limitsSection.getInt("max-action-per-period", 0);
+            int cooldownMinutes = limitsSection.getInt("cooldown-minutes", 60);
+            boolean blockExp = limitsSection.getBoolean("block-exp", false);
+            boolean blockMoney = limitsSection.getBoolean("block-money", false);
+            
+            if (maxActionsPerPeriod > 0) {
+                this.actionLimit = new ActionLimitManager.ActionLimit(maxActionsPerPeriod, cooldownMinutes, blockExp, blockMoney);
+            } else {
+                this.actionLimit = null;
+            }
+        } else {
+            this.actionLimit = null;
         }
     }
     
@@ -226,6 +244,24 @@ public class JobAction {
      */
     public boolean isNexoTarget() {
         return target != null && target.startsWith("nexo:");
+    }
+    
+    /**
+     * Get the action limit configuration for this action.
+     * 
+     * @return The action limit or null if no limits configured
+     */
+    public ActionLimitManager.ActionLimit getActionLimit() {
+        return actionLimit;
+    }
+    
+    /**
+     * Check if this action has limits configured.
+     * 
+     * @return true if limits exist
+     */
+    public boolean hasLimits() {
+        return actionLimit != null;
     }
     
     @Override

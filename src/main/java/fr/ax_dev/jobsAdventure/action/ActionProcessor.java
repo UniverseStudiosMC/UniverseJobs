@@ -29,6 +29,7 @@ public class ActionProcessor {
     private final JobManager jobManager;
     private final XpBonusManager bonusManager;
     private final XpMessageSender messageSender;
+    private final ActionLimitManager limitManager;
     
     /**
      * Create a new ActionProcessor.
@@ -37,12 +38,14 @@ public class ActionProcessor {
      * @param jobManager The job manager
      * @param bonusManager The XP bonus manager
      * @param messageSender The XP message sender
+     * @param limitManager The action limit manager
      */
-    public ActionProcessor(JobsAdventure plugin, JobManager jobManager, XpBonusManager bonusManager, XpMessageSender messageSender) {
+    public ActionProcessor(JobsAdventure plugin, JobManager jobManager, XpBonusManager bonusManager, XpMessageSender messageSender, ActionLimitManager limitManager) {
         this.plugin = plugin;
         this.jobManager = jobManager;
         this.bonusManager = bonusManager;
         this.messageSender = messageSender;
+        this.limitManager = limitManager;
     }
     
     /**
@@ -179,7 +182,7 @@ public class ActionProcessor {
         double money = action.getMoney();
         
         if (xp > 0 || money > 0) {
-            awardRewards(player, job, xp, money);
+            awardRewards(player, job, action, xp, money);
         }
         
         // Execute action-level message and commands (after XP award)
@@ -193,10 +196,25 @@ public class ActionProcessor {
      * 
      * @param player The player
      * @param job The job
+     * @param action The job action
      * @param xp The XP amount
      * @param money The money amount
      */
-    private void awardRewards(Player player, Job job, double xp, double money) {
+    private void awardRewards(Player player, Job job, JobAction action, double xp, double money) {
+        // Check action limits first
+        if (action.hasLimits()) {
+            ActionLimitManager.ActionGains allowedGains = limitManager.checkAndConsumeLimit(
+                player, job.getId(), action.getTarget(), xp, money);
+            
+            xp = allowedGains.getXp();
+            money = allowedGains.getMoney();
+            
+            // If no gains allowed due to limits, return early
+            if (!allowedGains.hasGains()) {
+                return;
+            }
+        }
+        
         double finalXp = 0.0;
         double finalMoney = 0.0;
         

@@ -1,6 +1,7 @@
 package fr.ax_dev.jobsAdventure;
 
 import fr.ax_dev.jobsAdventure.action.ActionProcessor;
+import fr.ax_dev.jobsAdventure.action.ActionLimitManager;
 import fr.ax_dev.jobsAdventure.bonus.XpBonusManager;
 import fr.ax_dev.jobsAdventure.command.JobCommand;
 import fr.ax_dev.jobsAdventure.compatibility.FoliaCompatibilityManager;
@@ -37,6 +38,7 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
     private JobManager jobManager;
     private SimpleLevelUpActionManager levelUpActionManager;
     private ActionProcessor actionProcessor;
+    private ActionLimitManager limitManager;
     private XpBonusManager bonusManager;
     private XpMessageSender messageSender;
     private BlockProtectionManager protectionManager;
@@ -56,13 +58,14 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
         this.foliaManager = new FoliaCompatibilityManager(this);
         this.jobManager = new JobManager(this);
         this.levelUpActionManager = new SimpleLevelUpActionManager(this);
+        this.limitManager = new ActionLimitManager(this);
         this.bonusManager = new XpBonusManager(this);
         this.messageSender = new XpMessageSender(this);
         this.protectionManager = new BlockProtectionManager(this);
         this.rewardManager = new RewardManager(this);
         this.rewardGuiManager = new RewardGuiManager(this, rewardManager);
         this.placeholderManager = new PlaceholderManager(this);
-        this.actionProcessor = new ActionProcessor(this, jobManager, bonusManager, messageSender);
+        this.actionProcessor = new ActionProcessor(this, jobManager, bonusManager, messageSender, limitManager);
         
         // Load configuration
         try {
@@ -267,6 +270,16 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
                     jobManager = null;
                 } catch (Exception e) {
                     getLogger().log(Level.WARNING, "Error shutting down job manager", e);
+                }
+            }
+            
+            // Shutdown action limit manager
+            if (limitManager != null) {
+                try {
+                    limitManager.clearAllLimits();
+                    limitManager = null;
+                } catch (Exception e) {
+                    getLogger().log(Level.WARNING, "Error shutting down action limit manager", e);
                 }
             }
             
@@ -519,6 +532,15 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
      */
     public PlaceholderManager getPlaceholderManager() {
         return placeholderManager;
+    }
+    
+    /**
+     * Get the action limit manager.
+     * 
+     * @return The action limit manager
+     */
+    public ActionLimitManager getLimitManager() {
+        return limitManager;
     }
     
     /**

@@ -134,6 +134,40 @@ economy:
   # Available placeholders: {player}, {amount}
   money-command: "eco give {player} {amount}"
 
+# Action Limits Settings
+action-limits:
+  # Global settings for action limits
+  enabled: true
+  
+  # Automatic restoration settings
+  auto-restore:
+    # Enable automatic restoration of action limits
+    enabled: true
+    
+    # Time to restore limits (HH:mm format in server local time)
+    # Example: "00:00" for midnight, "12:00" for noon
+    time: "00:00"
+    
+    # Alternative: restore every X hours instead of at specific time
+    # interval-hours: 24
+  
+  # Default limits for actions without specific limits configured
+  # These will be applied to all actions unless overridden in job files
+  default-limits:
+    enabled: false
+    max-action-per-period: 100
+    cooldown-minutes: 60
+    block-exp: false
+    block-money: false
+    
+  # Logging settings for action limits
+  logging:
+    # Log when players hit their action limits
+    log-limit-reached: true
+    
+    # Log when limits are restored (manually or automatically)
+    log-restoration: true
+
 # Logging Settings
 logging:
   # Log level: INFO, WARNING, SEVERE

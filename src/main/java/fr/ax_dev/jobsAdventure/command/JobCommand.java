@@ -1,6 +1,7 @@
 package fr.ax_dev.jobsAdventure.command;
 
 import fr.ax_dev.jobsAdventure.JobsAdventure;
+import fr.ax_dev.jobsAdventure.action.ActionLimitManager;
 import fr.ax_dev.jobsAdventure.bonus.XpBonus;
 import fr.ax_dev.jobsAdventure.bonus.XpBonusManager;
 import fr.ax_dev.jobsAdventure.config.LanguageManager;
@@ -36,6 +37,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     private final XpBonusManager bonusManager;
     private final RewardManager rewardManager;
     private final RewardGuiManager rewardGuiManager;
+    private final ActionLimitManager limitManager;
     
     // Security patterns for input validation
     private static final Pattern SAFE_JOB_ID_PATTERN = Pattern.compile("^[a-zA-Z0-9_-]{1,32}$");
@@ -59,6 +61,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         this.bonusManager = plugin.getBonusManager();
         this.rewardManager = plugin.getRewardManager();
         this.rewardGuiManager = plugin.getRewardGuiManager();
+        this.limitManager = plugin.getLimitManager();
     }
     
     @Override
@@ -110,6 +113,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 case "stats" -> handleStatsCommand((Player) sender, args);
                 case "rewards" -> handleRewardsCommand((Player) sender, args);
                 case "xpbonus" -> handleXpBonusCommand(sender, args);
+                case "actionlimit" -> handleActionLimitCommand(sender, args);
                 case "exp" -> handleExpCommand(sender, args);
                 case "migrate" -> handleMigrateCommand(sender, args);
                 case "reload" -> handleReloadCommand(sender);
@@ -215,7 +219,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      * @return true if valid
      */
     private boolean isValidSubCommand(String subCommand) {
-        Set<String> validCommands = Set.of("join", "leave", "info", "list", "stats", "rewards", "xpbonus", "exp", "migrate", "reload", "monitor", "debug");
+        Set<String> validCommands = Set.of("join", "leave", "info", "list", "stats", "rewards", "xpbonus", "actionlimit", "exp", "migrate", "reload", "monitor", "debug");
         return validCommands.contains(subCommand);
     }
     
@@ -239,6 +243,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage("§6JobsAdventure Console Commands:");
         sender.sendMessage("§e/jobs reload §7- Reload the plugin configuration");
         sender.sendMessage("§e/jobs xpbonus <add|remove|list> §7- Manage XP bonuses");
+        sender.sendMessage("§e/jobs actionlimit <restore|status> §7- Manage action limits");
         sender.sendMessage("§e/jobs exp give <player> [job] <exp> <true/false> §7- Give XP to players");
         sender.sendMessage("§e/jobs migrate §7- Migrate data between storage types");
         sender.sendMessage("§e/jobs monitor <player> §7- Monitor a player's actions");
@@ -1165,6 +1170,10 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         if (player.hasPermission("jobsadventure.admin.exp")) {
             MessageUtils.sendMessage(player, "§e/jobs exp give §7- Give XP to players");
         }
+        
+        if (player.hasPermission("jobsadventure.admin.actionlimits")) {
+            MessageUtils.sendMessage(player, "§e/jobs actionlimit §7- Manage action limits");
+        }
     }
     
     @Override
@@ -1199,6 +1208,9 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             }
             if (sender.hasPermission("jobsadventure.admin.exp")) {
                 subCommands.add("exp");
+            }
+            if (sender.hasPermission("jobsadventure.admin.actionlimits")) {
+                subCommands.add("actionlimit");
             }
             
             String input = args[0].toLowerCase();
@@ -1280,11 +1292,22 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 }
                 case "xpbonus" -> {
                     // XP Bonus subcommands
-                    if (player.hasPermission("jobsadventure.admin.xpbonus")) {
+                    if (sender.hasPermission("jobsadventure.admin.xpbonus")) {
                         List<String> xpSubCommands = Arrays.asList("give", "remove", "list", "info", "cleanup");
                         for (String xpSubCommand : xpSubCommands) {
                             if (xpSubCommand.startsWith(input)) {
                                 completions.add(xpSubCommand);
+                            }
+                        }
+                    }
+                }
+                case "actionlimit" -> {
+                    // Action limit subcommands
+                    if (sender.hasPermission("jobsadventure.admin.actionlimits")) {
+                        List<String> actionLimitSubCommands = Arrays.asList("restore", "status");
+                        for (String actionLimitSubCommand : actionLimitSubCommands) {
+                            if (actionLimitSubCommand.startsWith(input)) {
+                                completions.add(actionLimitSubCommand);
                             }
                         }
                     }
@@ -1320,6 +1343,11 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             // Handle Experience tab completion
             if (sender.hasPermission("jobsadventure.admin.exp")) {
                 completions.addAll(getExpTabCompletions(args));
+            }
+        } else if (args.length >= 3 && args[0].equalsIgnoreCase("actionlimit")) {
+            // Handle Action Limit tab completion
+            if (sender.hasPermission("jobsadventure.admin.actionlimits")) {
+                completions.addAll(getActionLimitTabCompletions(args));
             }
         }
         
@@ -1614,6 +1642,71 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     }
     
     /**
+     * Get tab completions for Action Limit commands.
+     */
+    private List<String> getActionLimitTabCompletions(String[] args) {
+        List<String> completions = new ArrayList<>();
+        String actionLimitSubCommand = args[1].toLowerCase();
+        
+        if (args.length == 3) {
+            String input = args[2].toLowerCase();
+            
+            switch (actionLimitSubCommand) {
+                case "restore" -> {
+                    // Player names + asterisk
+                    completions.add("*");
+                    completions.addAll(Bukkit.getOnlinePlayers().stream()
+                            .map(Player::getName)
+                            .filter(name -> name.toLowerCase().startsWith(input))
+                            .collect(Collectors.toList()));
+                }
+                case "status" -> {
+                    // Player names only
+                    completions.addAll(Bukkit.getOnlinePlayers().stream()
+                            .map(Player::getName)
+                            .filter(name -> name.toLowerCase().startsWith(input))
+                            .collect(Collectors.toList()));
+                }
+            }
+        } else if (args.length == 4) {
+            String input = args[3].toLowerCase();
+            
+            if (actionLimitSubCommand.equals("restore")) {
+                // Job IDs + asterisk
+                completions.add("*");
+                completions.addAll(jobManager.getAllJobs().stream()
+                        .map(Job::getId)
+                        .filter(jobId -> jobId.toLowerCase().startsWith(input))
+                        .collect(Collectors.toList()));
+            } else if (actionLimitSubCommand.equals("status")) {
+                // Job IDs only
+                completions.addAll(jobManager.getAllJobs().stream()
+                        .map(Job::getId)
+                        .filter(jobId -> jobId.toLowerCase().startsWith(input))
+                        .collect(Collectors.toList()));
+            }
+        } else if (args.length == 5) {
+            String input = args[4].toLowerCase();
+            
+            // Target completions
+            if (actionLimitSubCommand.equals("restore")) {
+                // Common targets + asterisk
+                completions.add("*");
+                completions.addAll(Arrays.asList("STONE", "DIAMOND_ORE", "COAL_ORE", "IRON_ORE", "WHEAT", "ZOMBIE", "CREEPER").stream()
+                        .filter(target -> target.toLowerCase().startsWith(input.toUpperCase()))
+                        .collect(Collectors.toList()));
+            } else if (actionLimitSubCommand.equals("status")) {
+                // Common targets only
+                completions.addAll(Arrays.asList("STONE", "DIAMOND_ORE", "COAL_ORE", "IRON_ORE", "WHEAT", "ZOMBIE", "CREEPER").stream()
+                        .filter(target -> target.toLowerCase().startsWith(input.toUpperCase()))
+                        .collect(Collectors.toList()));
+            }
+        }
+        
+        return completions;
+    }
+    
+    /**
      * Handle the monitor subcommand for performance monitoring.
      */
     private void handleMonitorCommand(CommandSender sender, String[] args) {
@@ -1781,6 +1874,127 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         } catch (Exception e) {
             plugin.getLogger().log(java.util.logging.Level.WARNING, "Debug export failed", e);
         }
+    }
+    
+    /**
+     * Handle action limit commands.
+     * Usage: /jobs actionlimit <restore|status> [args...]
+     */
+    private void handleActionLimitCommand(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("jobsadventure.admin.actionlimits")) {
+            MessageUtils.sendMessage(sender, "&cYou don't have permission to use this command.");
+            return;
+        }
+        
+        if (args.length == 1) {
+            sendActionLimitHelp(sender);
+            return;
+        }
+        
+        String subCommand = args[1].toLowerCase();
+        
+        switch (subCommand) {
+            case "restore" -> handleActionLimitRestore(sender, args);
+            case "status" -> handleActionLimitStatus(sender, args);
+            default -> sendActionLimitHelp(sender);
+        }
+    }
+    
+    private void handleActionLimitRestore(CommandSender sender, String[] args) {
+        if (args.length < 3) {
+            MessageUtils.sendMessage(sender, "&cUsage: /jobs actionlimit restore <player|*> [job] [target]");
+            return;
+        }
+        
+        String playerName = args[2];
+        String jobId = args.length > 3 ? args[3] : "*";
+        String target = args.length > 4 ? args[4] : "*";
+        
+        int totalRestored = 0;
+        
+        if ("*".equals(playerName)) {
+            // Restore for all online players
+            for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+                int restored = limitManager.restorePlayerLimit(onlinePlayer, jobId, target);
+                totalRestored += restored;
+            }
+            
+            MessageUtils.sendMessage(sender, "&aRestored &e" + totalRestored + "&a action limits for all online players.");
+        } else {
+            Player targetPlayer = Bukkit.getPlayer(playerName);
+            if (targetPlayer == null) {
+                MessageUtils.sendMessage(sender, "&cPlayer &e" + playerName + "&c not found or not online.");
+                return;
+            }
+            
+            int restored = limitManager.restorePlayerLimit(targetPlayer, jobId, target);
+            MessageUtils.sendMessage(sender, "&aRestored &e" + restored + "&a action limits for player &e" + targetPlayer.getName() + "&a.");
+            
+            // Notify the player
+            MessageUtils.sendMessage(targetPlayer, "&aYour action limits have been restored by an administrator.");
+        }
+    }
+    
+    private void handleActionLimitStatus(CommandSender sender, String[] args) {
+        if (args.length < 5) {
+            MessageUtils.sendMessage(sender, "&cUsage: /jobs actionlimit status <player> <job> <target>");
+            return;
+        }
+        
+        String playerName = args[2];
+        Player targetPlayer = Bukkit.getPlayer(playerName);
+        
+        if (targetPlayer == null) {
+            MessageUtils.sendMessage(sender, "&cPlayer &e" + playerName + "&c not found or not online.");
+            return;
+        }
+        
+        String jobId = args[3];
+        String target = args[4];
+        
+        ActionLimitManager.ActionLimitStatus status = limitManager.getPlayerLimitStatus(targetPlayer, jobId, target);
+        
+        if (status == null) {
+            MessageUtils.sendMessage(sender, "&cNo limits configured for job &e" + jobId + "&c and target &e" + target + "&c.");
+            return;
+        }
+        
+        MessageUtils.sendMessage(sender, "&6=== Action Limit Status ===");
+        MessageUtils.sendMessage(sender, "&ePlayer: &f" + targetPlayer.getName());
+        MessageUtils.sendMessage(sender, "&eJob: &f" + jobId);
+        MessageUtils.sendMessage(sender, "&eTarget: &f" + target);
+        
+        if (status.isOnCooldown()) {
+            long remainingSeconds = status.getRemainingCooldownSeconds();
+            long minutes = remainingSeconds / 60;
+            long seconds = remainingSeconds % 60;
+            MessageUtils.sendMessage(sender, "&cStatus: &4On Cooldown &c(Remaining: " + minutes + "m " + seconds + "s)");
+        } else {
+            MessageUtils.sendMessage(sender, "&aStatus: &2Available");
+        }
+        
+        MessageUtils.sendMessage(sender, "&eActions: &f" + status.getCurrentActionsPerformed() + "&7/&f" + 
+                status.getLimit().getMaxActionsPerPeriod() + " &7(Remaining: &f" + status.getRemainingActions() + "&7)");
+        
+        String blockingStatus = "";
+        if (status.getLimit().isBlockExp() && status.getLimit().isBlockMoney()) {
+            blockingStatus = "&cBlocking: XP & Money";
+        } else if (status.getLimit().isBlockExp()) {
+            blockingStatus = "&cBlocking: XP only";
+        } else if (status.getLimit().isBlockMoney()) {
+            blockingStatus = "&cBlocking: Money only";
+        } else {
+            blockingStatus = "&aBlocking: None";
+        }
+        MessageUtils.sendMessage(sender, blockingStatus);
+    }
+    
+    private void sendActionLimitHelp(CommandSender sender) {
+        MessageUtils.sendMessage(sender, "&6=== Action Limit Commands ===");
+        MessageUtils.sendMessage(sender, "&e/jobs actionlimit restore <player|*> [job] [target] &7- Restore action limits");
+        MessageUtils.sendMessage(sender, "&e/jobs actionlimit status <player> <job> <target> &7- Check limit status");
+        MessageUtils.sendMessage(sender, "&7Use '*' for player to restore all online players");
+        MessageUtils.sendMessage(sender, "&7Use '*' for job/target to restore all jobs/targets");
     }
     
     // Helper methods

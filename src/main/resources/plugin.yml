@@ -11,8 +11,8 @@ softdepend: [PlaceholderAPI, MythicMobs, MMOItems, CustomCrops, Nexo, ItemsAdder
 
 commands:
   jobs:
-    description: Main jobs command with rewards and XP bonus management
-    usage: /jobs <join|leave|info|list|rewards|xpbonus> [args...]
+    description: Main jobs command with rewards, XP bonus management, and action limits
+    usage: /jobs <join|leave|info|list|rewards|xpbonus|actionlimit> [args...]
     aliases: [job]
     permission: jobsadventure.use
 
@@ -23,6 +23,7 @@ permissions:
       jobsadventure.use: true
       jobsadventure.admin: true
       jobsadventure.admin.xpbonus: true
+      jobsadventure.admin.actionlimits: true
       jobsadventure.rewards.*: true
   jobsadventure.use:
     description: Allows using basic job commands
@@ -58,4 +59,7 @@ permissions:
     default: true
   jobsadventure.rewards.admin:
     description: Allows using admin reward commands (reset, give, etc.)
+    default: op
+  jobsadventure.admin.actionlimits:
+    description: Allows managing action limits (restore, check status)
     default: op
