@@ -149,11 +149,14 @@ public final class JobsAdventure extends JavaPlugin implements Listener {
         
         // Register CustomFishing event listener if CustomFishing is present
         if (getServer().getPluginManager().isPluginEnabled("CustomFishing")) {
+            getLogger().info("CustomFishing plugin detected - registering event listener");
             getServer().getPluginManager().registerEvents(
                 new CustomFishingEventListener(this, actionProcessor), 
                 this
             );
-            // CustomFishing event listener registered
+            getLogger().info("CustomFishing event listener registered successfully");
+        } else {
+            getLogger().info("CustomFishing plugin not found - skipping CustomFishing integration");
         }
         
         // Load player data for online players

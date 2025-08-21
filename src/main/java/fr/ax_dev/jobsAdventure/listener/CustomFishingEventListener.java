@@ -6,6 +6,7 @@ import fr.ax_dev.jobsAdventure.action.ActionType;
 import fr.ax_dev.jobsAdventure.condition.ConditionContext;
 import net.momirealms.customfishing.api.BukkitCustomFishingPlugin;
 import net.momirealms.customfishing.api.event.FishingLootSpawnEvent;
+import net.momirealms.customfishing.api.event.FishingResultEvent;
 import net.momirealms.customfishing.api.mechanic.item.ItemManager;
 
 import org.bukkit.entity.Item;
@@ -35,17 +36,26 @@ public class CustomFishingEventListener implements Listener {
     public CustomFishingEventListener(JobsAdventure plugin, ActionProcessor actionProcessor) {
         this.plugin = plugin;
         this.actionProcessor = actionProcessor;
+
+        // Always log creation (not just in debug mode)
+        plugin.getLogger().info("CustomFishingEventListener initialized successfully");
+        
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("CustomFishing integration enabled with debug mode");
+        }
     }
-    
     /**
      * Handle CustomFishing loot spawn events.
      * Uses the same pattern as Nexo and ItemsAdder with target format "customfishing:fish_id".
      * Includes anti-double action protection.
-     */
+     */   
+
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onFishingLootSpawn(FishingLootSpawnEvent event) {
         Player player = event.getPlayer();
-        
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("CustomFishing trigger onFishingLootSpawn");
+        }
         // Anti-double action protection
         UUID playerUUID = player.getUniqueId();
         long currentTime = System.currentTimeMillis();
@@ -100,11 +110,16 @@ public class CustomFishingEventListener implements Listener {
                 .set("customfishing_fish_id", fishId)
                 .set("itemstack", itemStack);
         
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("CustomFishing caught: customfishing:" + fishId + " by " + player.getName());
+            plugin.getLogger().info("Processing FISH action with target: customfishing:" + fishId + " by " + player.getName());
+        }
+        
         // Process as fish action
         actionProcessor.processAction(player, ActionType.FISH, event, context);
         
         if (plugin.getConfigManager().isDebugEnabled()) {
-            plugin.getLogger().info("CustomFishing loot spawn: " + fishId + " by " + player.getName() + " at " + player.getLocation());
+            plugin.getLogger().info("CustomFishing loot spawn processed: " + fishId + " by " + player.getName() + " at " + player.getLocation());
         }
     }
     

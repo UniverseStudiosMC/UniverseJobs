@@ -7,7 +7,7 @@ description: A flexible and customizable jobs plugin for Minecraft servers with 
 author: ax_dev
 website: https://github.com/ax-dev/JobsAdventure
 
-softdepend: [PlaceholderAPI, MythicMobs, MMOItems, CustomCrops, Nexo, ItemsAdder, Vault]
+softdepend: [PlaceholderAPI, MythicMobs, MMOItems, CustomCrops, Nexo, ItemsAdder, Vault, CustomFishing]
 
 commands:
   jobs:

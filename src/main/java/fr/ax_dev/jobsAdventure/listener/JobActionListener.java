@@ -341,19 +341,46 @@ public class JobActionListener implements Listener {
     
     /**
      * Handle fishing (FISH action).
+     * Supports both vanilla fish and items from fishing.
      */
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPlayerFish(PlayerFishEvent event) {
         if (event.getState() != PlayerFishEvent.State.CAUGHT_FISH) return;
         
         Player player = event.getPlayer();
+        String target = "FISH"; // Default fallback
         
-        // Create context
+        // Try to determine the specific fish type caught
+        if (event.getCaught() instanceof org.bukkit.entity.Item) {
+            org.bukkit.entity.Item caughtItem = (org.bukkit.entity.Item) event.getCaught();
+            org.bukkit.inventory.ItemStack itemStack = caughtItem.getItemStack();
+            
+            if (itemStack != null) {
+                // Use the material name as target for vanilla fish
+                target = itemStack.getType().name();
+                
+                if (plugin.getConfigManager().isDebugEnabled()) {
+                    plugin.getLogger().info("Vanilla fishing caught: " + target + " by " + player.getName());
+                }
+            }
+        }
+        
+        // Create context with specific fish type
         ConditionContext context = new ConditionContext()
-                .set("target", "FISH");
+                .set("target", target);
         
         if (event.getCaught() != null) {
             context.setEntity(event.getCaught());
+            
+            // Add item info if it's an item entity
+            if (event.getCaught() instanceof org.bukkit.entity.Item) {
+                org.bukkit.entity.Item itemEntity = (org.bukkit.entity.Item) event.getCaught();
+                context.setItem(itemEntity.getItemStack());
+            }
+        }
+        
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("Processing FISH action with target: " + target + " by " + player.getName());
         }
         
         // Process the action and check if we should cancel
@@ -478,87 +505,7 @@ public class JobActionListener implements Listener {
         processedEvents.incrementAndGet();
     }
     
-    /**
-     * Handle LEFT_CLICK block interactions that don't break blocks (BLOCK_INTERACT action).
-     * This handles LEFT_CLICK interactions where the block isn't actually broken.
-     */
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onPlayerLeftClickBlock(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        
-        // Only handle LEFT_CLICK_BLOCK actions
-        if (event.getAction() != Action.LEFT_CLICK_BLOCK) {
-            return;
-        }
-        
-        // Only handle main hand interactions to avoid duplicate events
-        if (event.getHand() != EquipmentSlot.HAND) {
-            return;
-        }
-        
-        // Only handle block interactions
-        if (event.getClickedBlock() == null) {
-            return;
-        }
-        
-        // Skip if this left click will break the block (to avoid conflict with BlockBreakEvent)
-        if (willBreakBlock(player, event.getClickedBlock())) {
-            if (plugin.getConfigManager().isDebugEnabled()) {
-                plugin.getLogger().info("Skipping LEFT_CLICK interact - block will be broken by BlockBreakEvent");
-            }
-            return;
-        }
-        
-        // Rate limiting check
-        if (!checkRateLimit(player)) {
-            return;
-        }
-        
-        // Determine interact type (left clicks)
-        String interactType = player.isSneaking() ? "LEFT_SHIFT_CLICK" : "LEFT_CLICK";
-        
-        // Create context
-        ConditionContext context = new ConditionContext()
-                .setBlock(event.getClickedBlock())
-                .set("target", event.getClickedBlock().getType().name())
-                .set("interact-type", interactType);
-        
-        if (plugin.getConfigManager().isDebugEnabled()) {
-            plugin.getLogger().info("Block interact (LEFT_CLICK): " + event.getClickedBlock().getType() + " by " + player.getName() + " - interact-type: " + interactType);
-        }
-        
-        // Process the action and check if we should cancel
-        boolean shouldCancel = actionProcessor.processAction(player, ActionType.BLOCK_INTERACT, event, context);
-        if (shouldCancel) {
-            event.setCancelled(true);
-        }
-        
-        processedEvents.incrementAndGet();
-    }
     
-    /**
-     * Check if a left click will break the block.
-     * This helps avoid conflicts between PlayerInteractEvent and BlockBreakEvent.
-     */
-    private boolean willBreakBlock(Player player, org.bukkit.block.Block block) {
-        // In creative mode, left click always breaks blocks instantly
-        if (player.getGameMode() == GameMode.CREATIVE) {
-            return true;
-        }
-        
-        // In survival/adventure, check if player can break the block
-        // This is a simplified check - you might want to make it more sophisticated
-        if (player.getGameMode() == GameMode.SURVIVAL || 
-            player.getGameMode() == GameMode.ADVENTURE) {
-            
-            // Check if block is breakable and player has proper tool
-            // For now, assume most blocks can be broken in survival mode
-            return block.getType().getHardness() >= 0; // Negative hardness means unbreakable
-        }
-        
-        // In spectator mode, can't break blocks
-        return false;
-    }
     
     /**
      * Handle entity interactions (ENTITY_INTERACT action) - Right click.
