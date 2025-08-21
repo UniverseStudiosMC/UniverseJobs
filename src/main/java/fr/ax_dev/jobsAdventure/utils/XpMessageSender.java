@@ -60,12 +60,6 @@ public class XpMessageSender {
         
         XpMessageSettings settings = job.getXpMessageSettings();
         
-        // Use custom text from job settings, fallback to global config
-        String messageTemplate = settings.getText();
-        if (messageTemplate == null || messageTemplate.isEmpty()) {
-            messageTemplate = plugin.getConfig().getString("messages.xp-gain", "&e+{xp} XP ({job})");
-        }
-        
         // Get current level and progress for additional placeholders
         int currentLevel = plugin.getJobManager().getLevel(player, job.getId());
         double[] progress = playerData.getXpProgress(job.getId());
@@ -73,10 +67,8 @@ public class XpMessageSender {
         double xpNeededForNext = progress[1];
         double progressPercent = (xpNeededForNext > 0) ? (currentXpInLevel / xpNeededForNext) * 100 : 100;
         
-        String message = messageTemplate
-                .replace("{xp}", String.format("%.1f", xp))
-                .replace("{exp}", String.format("%.1f", xp)) // Support both {xp} and {exp}
-                .replace("{money}", String.format("%.1f", money))
+        // Use the new processMessage method that handles custom placeholders
+        String message = settings.processMessage(xp, money)
                 .replace("{job}", job.getName())
                 .replace("{level}", String.valueOf(currentLevel))
                 .replace("{progress}", String.format("%.1f", progressPercent))

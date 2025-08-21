@@ -103,32 +103,32 @@ xp:
   type: "CURVE"
   
   # XP curve file name (without .yml extension) or equation
-  xp: "standard"
+  xp: "example"
   
   # Message configuration for XP gain notifications
   message:
     # Message type: CHAT, ACTIONBAR, BOSSBAR, TITLE
     type: "BOSSBAR"
     
-    # Message text with placeholders: {xp}, {money}, {job}, {level}, {exp}
-    text: "&e+{xp} XP &6+{money} MONEY &8| &6{job} &7Level {level}"
+    # Message text with placeholders: {message_xp}, {message_money}, {job}, {level}
+    text: "{message_xp} {message_money} &8| &6{job} &7Level {level}"
     
     # BOSSBAR specific settings
     # Color: PINK, BLUE, RED, GREEN, YELLOW, PURPLE, WHITE
     color: "RED"
     
     # Style: SOLID, SEGMENTED_6, SEGMENTED_10, SEGMENTED_12, SEGMENTED_20
-    style: "SOLID"
+    style: "SEGMENTED_10"
     
     # Duration in ticks (20 ticks = 1 second)
-    duration: 60
+    duration: 100
     
     # Show XP progress on bossbar instead of full bar
     show-progress: false
     
-    # Custom messages for specific rewards (optional)
-    money: "test2"
-    xp: "test"
+    # Custom message formats
+    xp: "+{xp} xp"
+    money: "+{money} money"
 
 # Placeholder Settings (for PlaceholderAPI)
 placeholders:

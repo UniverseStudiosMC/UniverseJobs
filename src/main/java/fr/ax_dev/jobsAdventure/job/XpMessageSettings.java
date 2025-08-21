@@ -28,6 +28,8 @@ public class XpMessageSettings {
     private final BossBarStyle bossbarStyle;
     private final int bossbarDuration;
     private final boolean bossbarShowProgress;
+    private final String xpMessageFormat;
+    private final String moneyMessageFormat;
     
     /**
      * Create XP message settings from configuration.
@@ -44,6 +46,8 @@ public class XpMessageSettings {
             this.bossbarStyle = BossBarStyle.SOLID;
             this.bossbarDuration = 60;
             this.bossbarShowProgress = false;
+            this.xpMessageFormat = "+{xp} XP";
+            this.moneyMessageFormat = "+{money} money";
         } else {
             // Parse configuration
             String typeStr = config.getString("type", "actionbar").toUpperCase();
@@ -81,6 +85,10 @@ public class XpMessageSettings {
             // Support both "duration" and "bossbar.duration" configuration paths
             this.bossbarDuration = config.getInt("duration", config.getInt("bossbar.duration", 60));
             this.bossbarShowProgress = config.getBoolean("show-progress", false);
+            
+            // Custom message formats
+            this.xpMessageFormat = config.getString("xp", "+{xp} XP");
+            this.moneyMessageFormat = config.getString("money", "+{money} money");
         }
     }
     
@@ -145,6 +153,58 @@ public class XpMessageSettings {
      */
     public boolean shouldShowProgress() {
         return bossbarShowProgress;
+    }
+    
+    /**
+     * Get the custom XP message format.
+     * 
+     * @return The XP message format with {xp} placeholder
+     */
+    public String getXpMessageFormat() {
+        return xpMessageFormat;
+    }
+    
+    /**
+     * Get the custom money message format.
+     * 
+     * @return The money message format with {money} placeholder
+     */
+    public String getMoneyMessageFormat() {
+        return moneyMessageFormat;
+    }
+    
+    /**
+     * Process the message text by replacing custom placeholders.
+     * Replaces {message_xp} and {message_money} with their respective formats.
+     * 
+     * @param xp The XP amount
+     * @param money The money amount
+     * @return The processed message text
+     */
+    public String processMessage(double xp, double money) {
+        String processedText = this.text;
+        
+        // Replace {message_xp} with the formatted XP message
+        if (xp > 0) {
+            String xpMessage = xpMessageFormat.replace("{xp}", String.valueOf((int) xp));
+            processedText = processedText.replace("{message_xp}", xpMessage);
+        } else {
+            processedText = processedText.replace("{message_xp}", "");
+        }
+        
+        // Replace {message_money} with the formatted money message
+        if (money > 0) {
+            String moneyMessage = moneyMessageFormat.replace("{money}", String.valueOf(money));
+            processedText = processedText.replace("{message_money}", moneyMessage);
+        } else {
+            processedText = processedText.replace("{message_money}", "");
+        }
+        
+        // Replace standard placeholders
+        processedText = processedText.replace("{xp}", String.valueOf((int) xp));
+        processedText = processedText.replace("{money}", String.valueOf(money));
+        
+        return processedText;
     }
     
     /**
