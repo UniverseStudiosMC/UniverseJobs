@@ -58,7 +58,8 @@ public class XpMessageSettings {
             this.text = config.getString("text", "&e+{xp} XP ({job})");
             this.actionbarDuration = config.getInt("actionbar.duration", 60);
             
-            String colorStr = config.getString("bossbar.color", "green").toUpperCase();
+            // Support both "color" and "bossbar.color" configuration paths
+            String colorStr = config.getString("color", config.getString("bossbar.color", "green")).toUpperCase();
             BossBarColor tempBossbarColor;
             try {
                 tempBossbarColor = BossBarColor.valueOf(colorStr);
@@ -67,7 +68,8 @@ public class XpMessageSettings {
             }
             this.bossbarColor = tempBossbarColor;
             
-            String styleStr = config.getString("bossbar.style", "solid").toUpperCase();
+            // Support both "style" and "bossbar.style" configuration paths
+            String styleStr = config.getString("style", config.getString("bossbar.style", "solid")).toUpperCase();
             BossBarStyle tempBossbarStyle;
             try {
                 tempBossbarStyle = BossBarStyle.valueOf(styleStr);
@@ -76,7 +78,8 @@ public class XpMessageSettings {
             }
             this.bossbarStyle = tempBossbarStyle;
             
-            this.bossbarDuration = config.getInt("bossbar.duration", 60);
+            // Support both "duration" and "bossbar.duration" configuration paths
+            this.bossbarDuration = config.getInt("duration", config.getInt("bossbar.duration", 60));
             this.bossbarShowProgress = config.getBoolean("show-progress", false);
         }
     }
