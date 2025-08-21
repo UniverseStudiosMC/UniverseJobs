@@ -196,6 +196,20 @@ public class ActionProcessor {
         double xp = action.getXp();
         double money = action.getMoney();
         
+        // Apply craft multiplier if present in context
+        Object craftMultiplierObj = context.get("craft_multiplier");
+        if (craftMultiplierObj instanceof Integer) {
+            int craftMultiplier = (Integer) craftMultiplierObj;
+            xp *= craftMultiplier;
+            money *= craftMultiplier;
+            
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("Applied craft multiplier " + craftMultiplier + 
+                    " - XP: " + action.getXp() + " -> " + xp + 
+                    ", Money: " + action.getMoney() + " -> " + money);
+            }
+        }
+        
         if (xp > 0 || money > 0) {
             awardRewards(player, job, action, xp, money);
         }

@@ -25,6 +25,7 @@ import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.GameMode;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.event.block.Action;
 
 import java.lang.reflect.Method;
@@ -618,9 +619,31 @@ public class JobActionListener implements Listener {
     
     /**
      * Handle item crafting (CRAFT action).
+     * Post-detection for shift-clicks.
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCraftItem(CraftItemEvent event) {
+        // Filter invalid actions
+        switch (event.getAction()) {
+            case NOTHING:
+            case PLACE_ONE:
+            case PLACE_ALL:
+            case PLACE_SOME:
+                return;
+            default:
+                break;
+        }
+        
+        // Must be result slot
+        if (event.getSlotType() != org.bukkit.event.inventory.InventoryType.SlotType.RESULT) {
+            return;
+        }
+        
+        // Must be left or right click
+        if (!event.isLeftClick() && !event.isRightClick()) {
+            return;
+        }
+        
         if (!(event.getWhoClicked() instanceof Player player)) return;
         
         // Rate limiting check
@@ -628,26 +651,188 @@ public class JobActionListener implements Listener {
             return;
         }
         
-        // Get the crafted item
-        if (event.getCurrentItem() == null) return;
+        ItemStack resultStack = event.getRecipe().getResult();
+        ItemStack toCraft = event.getCurrentItem();
         
-        // Create context
-        ConditionContext context = new ConditionContext()
-                .setItem(event.getCurrentItem())
-                .set("target", event.getCurrentItem().getType().name())
-                .set("amount", event.getCurrentItem().getAmount());
-        
-        if (plugin.getConfigManager().isDebugEnabled()) {
-            plugin.getLogger().info("Craft event: " + event.getCurrentItem().getType() + " x" + event.getCurrentItem().getAmount() + " by " + player.getName());
+        // Check if inventory can accept the crafted items (prevent duplication)
+        if (event.isShiftClick() && !canInventoryAcceptItems(player.getInventory(), resultStack)) {
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("Craft blocked - inventory cannot accept items with shift-click by " + player.getName());
+            }
+            return;
         }
         
-        // Process the action and check if we should cancel
-        boolean shouldCancel = actionProcessor.processAction(player, ActionType.CRAFT, event, context);
-        if (shouldCancel) {
-            event.setCancelled(true);
+        // Make sure we are actually crafting anything
+        if (!hasItems(toCraft)) {
+            return;
+        }
+        
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("Craft event: " + toCraft.getType() + 
+                " x" + toCraft.getAmount() + 
+                ", Action: " + event.getAction() + 
+                ", Shift-click: " + event.isShiftClick() + 
+                " by " + player.getName());
+        }
+        
+        if (event.isShiftClick()) {
+            // Use post-detection for shift-clicks
+            schedulePostDetection(player, toCraft.clone(), resultStack.clone());
+        } else {
+            // Direct processing for normal clicks
+            // The items are stored in the cursor. Make sure there's enough space.
+            if (isStackSumLegal(toCraft, event.getCursor())) {
+                int craftCount = toCraft.getAmount() / resultStack.getAmount();
+                processCraftRewards(player, resultStack, craftCount);
+            }
         }
         
         processedEvents.incrementAndGet();
+    }
+    
+    /**
+     * Schedule post-detection for shift-click crafting
+     * Compare inventory before and after to determine actual crafted amount.
+     * 
+     * @param player The player crafting
+     * @param compareItem The item to compare
+     * @param resultStack The recipe result
+     */
+    private void schedulePostDetection(Player player, org.bukkit.inventory.ItemStack compareItem, org.bukkit.inventory.ItemStack resultStack) {
+        final org.bukkit.inventory.ItemStack[] preInv = player.getInventory().getContents();
+        // Clone the array - content may be mutable
+        for (int i = 0; i < preInv.length; i++) {
+            if (preInv[i] != null) {
+                preInv[i] = preInv[i].clone();
+            }
+        }
+        
+        // Schedule comparison for next tick
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            final org.bukkit.inventory.ItemStack[] postInv = player.getInventory().getContents();
+            int newItemsCount = 0;
+            
+            // Count new items by comparing before/after inventory
+            for (int i = 0; i < preInv.length; i++) {
+                org.bukkit.inventory.ItemStack pre = preInv[i];
+                org.bukkit.inventory.ItemStack post = postInv[i];
+                
+                // We're only interested in filled slots that are different
+                if (hasSameItem(compareItem, post) && (hasSameItem(compareItem, pre) || pre == null)) {
+                    newItemsCount += post.getAmount() - (pre != null ? pre.getAmount() : 0);
+                }
+            }
+            
+            if (resultStack != null && newItemsCount > 0) {
+                int craftCount = newItemsCount / resultStack.getAmount();
+                
+                if (plugin.getConfigManager().isDebugEnabled()) {
+                    plugin.getLogger().info("Post-detection: " + player.getName() + " crafted " + newItemsCount + " " + compareItem.getType() + " (" + craftCount + " crafts)");
+                }
+                
+                processCraftRewards(player, resultStack, craftCount);
+            }
+        }, 1L);
+    }
+    
+    /**
+     * Process craft rewards for the player.
+     * 
+     * @param player The player
+     * @param resultStack The crafted item
+     * @param craftCount Number of times the recipe was executed
+     */
+    private void processCraftRewards(Player player, org.bukkit.inventory.ItemStack resultStack, int craftCount) {
+        if (craftCount <= 0) return;
+        
+        // Create context with craft multiplier
+        ConditionContext context = new ConditionContext()
+                .setItem(resultStack)
+                .set("target", resultStack.getType().name())
+                .set("amount", resultStack.getAmount() * craftCount)
+                .set("recipe_yield", resultStack.getAmount())
+                .set("recipe_executions", craftCount)
+                .set("craft_multiplier", craftCount);
+        
+        // Process the action with multiplier
+        actionProcessor.processAction(player, ActionType.CRAFT, null, context);
+    }
+    
+    /**
+     * Check if an ItemStack has items (not null and amount > 0).
+     * 
+     * @param stack The ItemStack to check
+     * @return true if it has items
+     */
+    private boolean hasItems(org.bukkit.inventory.ItemStack stack) {
+        return stack != null && stack.getAmount() > 0;
+    }
+    
+    /**
+     * Check if two ItemStacks are the same item (ignoring amount).
+     * 
+     * @param a First ItemStack
+     * @param b Second ItemStack
+     * @return true if they're the same item
+     */
+    private boolean hasSameItem(org.bukkit.inventory.ItemStack a, org.bukkit.inventory.ItemStack b) {
+        if (a == null) return b == null;
+        else if (b == null) return false;
+        
+        return a.getType() == b.getType() && 
+               a.getDurability() == b.getDurability() &&
+               java.util.Objects.equals(a.getEnchantments(), b.getEnchantments()) &&
+               java.util.Objects.equals(a.getItemMeta(), b.getItemMeta());
+    }
+    
+    /**
+     * Check if the sum of two stacks is legal (doesn't exceed max stack size).
+     * 
+     * @param a First ItemStack
+     * @param b Second ItemStack  
+     * @return true if sum is legal
+     */
+    private boolean isStackSumLegal(ItemStack a, ItemStack b) {
+        // Treat null as empty stack
+        if (a == null || b == null) return true;
+        
+        return a.getAmount() + b.getAmount() <= a.getType().getMaxStackSize();
+    }
+    
+    /**
+     * Check if an inventory can accept items by considering both empty slots and stackable items.
+     * 
+     * @param inventory The inventory to check
+     * @param itemToAdd The item that would be added
+     * @return true if the inventory can accept at least some of the items
+     */
+    private boolean canInventoryAcceptItems(org.bukkit.inventory.PlayerInventory inventory, org.bukkit.inventory.ItemStack itemToAdd) {
+        if (itemToAdd == null || itemToAdd.getAmount() <= 0) {
+            return true;
+        }
+        
+        // Check for empty slots first (fastest check)
+        if (inventory.firstEmpty() != -1) {
+            return true; // Has empty slots, can definitely accept items
+        }
+        
+        // No empty slots - check if we can stack with existing items
+        int maxStackSize = itemToAdd.getMaxStackSize();
+        
+        // Go through inventory slots (exclude armor, offhand, etc.)
+        for (int i = 0; i < 36; i++) { // Main inventory slots (0-35)
+            org.bukkit.inventory.ItemStack slot = inventory.getItem(i);
+            
+            if (slot != null && hasSameItem(itemToAdd, slot)) {
+                // Found same item - check if we can add to this stack
+                if (slot.getAmount() < maxStackSize) {
+                    return true; // Can stack with this item
+                }
+            }
+        }
+        
+        // No empty slots and no stackable items found
+        return false;
     }
     
     /**
