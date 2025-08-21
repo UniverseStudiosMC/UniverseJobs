@@ -113,22 +113,18 @@ xp:
     # Message text with placeholders: {message_xp}, {message_money}, {job}, {level}
     text: "{message_xp} {message_money} &8| &6{job} &7Level {level}"
     
-    # BOSSBAR specific settings
-    # Color: PINK, BLUE, RED, GREEN, YELLOW, PURPLE, WHITE
-    color: "RED"
-    
-    # Style: SOLID, SEGMENTED_6, SEGMENTED_10, SEGMENTED_12, SEGMENTED_20
-    style: "SEGMENTED_10"
-    
-    # Duration in ticks (20 ticks = 1 second)
-    duration: 100
-    
-    # Show XP progress on bossbar instead of full bar
-    show-progress: false
-    
     # Custom message formats
-    xp: "+{xp} xp"
     money: "+{money} money"
+    xp: "+{xp} xp"
+    
+    # Options for all message types (flexible configuration)
+    options:
+      color: "RED"                   # BOSSBAR: PINK, BLUE, RED, GREEN, YELLOW, PURPLE, WHITE
+      style: "SEGMENTED_20"         # BOSSBAR: SOLID, SEGMENTED_6, SEGMENTED_10, SEGMENTED_12, SEGMENTED_20
+      duration: "1"                  # TITLE, BOSSBAR, ACTIONBAR: Duration in ticks
+      fade-in: 10                    # TITLE: Fade in time in ticks
+      fade-out: 20                   # TITLE: Fade out time in ticks
+      show-progress: true            # BOSSBAR: Show XP progress instead of full bar
 
 # Placeholder Settings (for PlaceholderAPI)
 placeholders:
