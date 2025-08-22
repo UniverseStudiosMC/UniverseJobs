@@ -1280,20 +1280,17 @@ public class JobActionListener implements Listener {
             }
             
             // Check for custom potion effects (for custom potions)
-            if (potionMeta.hasCustomEffects()) {
-                for (PotionEffect effect : potionMeta.getCustomEffects()) {
-                    String effectType = effect.getType().getName().toUpperCase();
-                    int amplifier = effect.getAmplifier() + 1; // Amplifier is 0-based, but we want 1-based
-                    
-                    String customPotionType = effectType + ":" + amplifier;
-                    context.set("potion-type", customPotionType);
-                    
-                    if (plugin.getConfigManager().isDebugEnabled()) {
-                        plugin.getLogger().info("Detected custom potion effect: " + customPotionType);
-                    }
-                    
-                    // Use the first effect for the potion-type
-                    break;
+            if (potionMeta.hasCustomEffects() && !potionMeta.getCustomEffects().isEmpty()) {
+                // Use the first custom effect for the potion-type
+                PotionEffect firstEffect = potionMeta.getCustomEffects().get(0);
+                String effectType = firstEffect.getType().getName().toUpperCase();
+                int amplifier = firstEffect.getAmplifier() + 1; // Amplifier is 0-based, but we want 1-based
+                
+                String customPotionType = effectType + ":" + amplifier;
+                context.set("potion-type", customPotionType);
+                
+                if (plugin.getConfigManager().isDebugEnabled()) {
+                    plugin.getLogger().info("Detected custom potion effect: " + customPotionType);
                 }
             }
             

@@ -20,13 +20,13 @@ public abstract class BonusCommandHandler<T, M extends BonusManager<T>> extends 
     private static final String CMD_REMOVE = "remove";
     private static final String USAGE_PREFIX = "§cUsage: /jobs ";
     
-    protected final M bonusManager;
+    protected final M specificBonusManager;
     private final String bonusType;
     private final String permission;
     
     protected BonusCommandHandler(UniverseJobs plugin, M bonusManager, String bonusType, String permission) {
         super(plugin);
-        this.bonusManager = bonusManager;
+        this.specificBonusManager = bonusManager;
         this.bonusType = bonusType;
         this.permission = permission;
     }
@@ -114,15 +114,15 @@ public abstract class BonusCommandHandler<T, M extends BonusManager<T>> extends 
         String senderName = sender instanceof Player ? sender.getName() : "Console";
         
         if (target.equals("*")) {
-            bonusManager.addGlobalBonus(multiplier, duration, reason, senderName);
+            specificBonusManager.addGlobalBonus(multiplier, duration, reason, senderName);
         } else {
             Player targetPlayer = Bukkit.getPlayer(target);
             if (targetPlayer == null) return;
             
             if (jobId == null || jobId.equals("*")) {
-                bonusManager.addPlayerBonus(targetPlayer.getUniqueId(), multiplier, duration, reason, senderName);
+                specificBonusManager.addPlayerBonus(targetPlayer.getUniqueId(), multiplier, duration, reason, senderName);
             } else {
-                bonusManager.addJobBonus(targetPlayer.getUniqueId(), jobId, multiplier, duration, reason, senderName);
+                specificBonusManager.addJobBonus(targetPlayer.getUniqueId(), jobId, multiplier, duration, reason, senderName);
             }
         }
     }
@@ -143,10 +143,10 @@ public abstract class BonusCommandHandler<T, M extends BonusManager<T>> extends 
         if (jobId != null && !isValidJobId(jobId)) return;
         
         if (jobId == null) {
-            bonusManager.removeAllBonuses(targetPlayer.getUniqueId());
+            specificBonusManager.removeAllBonuses(targetPlayer.getUniqueId());
         } else {
-            List<T> bonuses = bonusManager.getActiveBonuses(targetPlayer.getUniqueId(), jobId);
-            bonuses.forEach(bonusManager::removeBonus);
+            List<T> bonuses = specificBonusManager.getActiveBonuses(targetPlayer.getUniqueId(), jobId);
+            bonuses.forEach(specificBonusManager::removeBonus);
         }
     }
     
@@ -161,7 +161,7 @@ public abstract class BonusCommandHandler<T, M extends BonusManager<T>> extends 
         Player targetPlayer = Bukkit.getPlayer(playerName);
         if (targetPlayer == null) return;
         
-        List<T> bonuses = bonusManager.getActiveBonuses(targetPlayer.getUniqueId());
+        List<T> bonuses = specificBonusManager.getActiveBonuses(targetPlayer.getUniqueId());
         if (bonuses.isEmpty()) return;
     }
     
@@ -169,7 +169,7 @@ public abstract class BonusCommandHandler<T, M extends BonusManager<T>> extends 
     }
     
     private void handleBonusCleanup(CommandSender sender) {
-        bonusManager.cleanupExpiredBonuses();
+        specificBonusManager.cleanupExpiredBonuses();
     }
     
     private double parseMultiplier(String input) {
