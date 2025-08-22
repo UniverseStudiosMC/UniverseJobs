@@ -196,6 +196,9 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 case CMD_MONEY_BONUS -> completions.addAll(moneyBonusHandler.getTabCompletions(sender, args));
                 case CMD_ACTION_LIMIT -> completions.addAll(actionLimitHandler.getTabCompletions(sender, args));
                 case CMD_EXP, CMD_MIGRATE, CMD_RELOAD, CMD_DEBUG -> completions.addAll(adminHandler.getTabCompletions(sender, args));
+                default -> {
+                    // Unknown subcommand - no additional completions
+                }
             }
         }
         

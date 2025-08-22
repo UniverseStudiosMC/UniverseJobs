@@ -17,6 +17,10 @@ import java.util.logging.Level;
  */
 public class SimpleLevelUpActionManager {
     
+    private static final String LEVELS_KEY = LEVELS_KEY;
+    private static final String MESSAGE_KEY = MESSAGE_KEY;
+    private static final String TITLE_KEY = TITLE_KEY;
+    
     private final UniverseJobs plugin;
     private final Map<String, List<LevelUpActionConfig>> jobActions = new ConcurrentHashMap<>();
     
@@ -39,13 +43,13 @@ public class SimpleLevelUpActionManager {
             this.levelInterval = config.getInt("level-interval", 0);
             
             this.specificLevels = new HashSet<>();
-            if (config.contains("levels")) {
-                if (config.isList("levels")) {
-                    for (int level : config.getIntegerList("levels")) {
+            if (config.contains(LEVELS_KEY)) {
+                if (config.isList(LEVELS_KEY)) {
+                    for (int level : config.getIntegerList(LEVELS_KEY)) {
                         this.specificLevels.add(level);
                     }
                 } else {
-                    this.specificLevels.add(config.getInt("levels"));
+                    this.specificLevels.add(config.getInt(LEVELS_KEY));
                 }
             }
         }
@@ -151,7 +155,7 @@ public class SimpleLevelUpActionManager {
             
             try {
                 switch (actionConfig.getType()) {
-                    case "message":
+                    case MESSAGE_KEY:
                         executeMessageAction(player, job, level, oldLevel, actionConfig);
                         break;
                     case "command":
@@ -166,7 +170,7 @@ public class SimpleLevelUpActionManager {
                     case "broadcast":
                         executeBroadcastAction(player, job, level, oldLevel, actionConfig);
                         break;
-                    case "title":
+                    case TITLE_KEY:
                         executeTitleAction(player, job, level, oldLevel, actionConfig);
                         break;
                     case "particle":
@@ -192,7 +196,7 @@ public class SimpleLevelUpActionManager {
     private void executeMessageAction(Player player, Job job, int level, int oldLevel, LevelUpActionConfig config) {
         List<String> messages = config.getConfig().getStringList("messages");
         if (messages.isEmpty()) {
-            String singleMessage = config.getConfig().getString("message");
+            String singleMessage = config.getConfig().getString(MESSAGE_KEY);
             if (singleMessage != null && !singleMessage.isEmpty()) {
                 messages = List.of(singleMessage);
             }
@@ -245,7 +249,7 @@ public class SimpleLevelUpActionManager {
         // Use existing XpMessageSender for boss bar functionality
         // This would require extending XpMessageSender to accept custom boss bar messages
         // For now, we can create a simple implementation
-        String title = processPlaceholders(config.getConfig().getString("title", "Level Up!"), player, job, level, oldLevel);
+        String title = processPlaceholders(config.getConfig().getString(TITLE_KEY, "Level Up!"), player, job, level, oldLevel);
         
         // Simple title as fallback (since we're simplifying)
         if (title != null && !title.isEmpty()) {
@@ -259,7 +263,7 @@ public class SimpleLevelUpActionManager {
     private void executeBroadcastAction(Player player, Job job, int level, int oldLevel, LevelUpActionConfig config) {
         List<String> messages = config.getConfig().getStringList("messages");
         if (messages.isEmpty()) {
-            String singleMessage = config.getConfig().getString("message");
+            String singleMessage = config.getConfig().getString(MESSAGE_KEY);
             if (singleMessage != null) {
                 messages = List.of(singleMessage);
             }
@@ -272,7 +276,7 @@ public class SimpleLevelUpActionManager {
     }
     
     private void executeTitleAction(Player player, Job job, int level, int oldLevel, LevelUpActionConfig config) {
-        String title = processPlaceholders(config.getConfig().getString("title", ""), player, job, level, oldLevel);
+        String title = processPlaceholders(config.getConfig().getString(TITLE_KEY, ""), player, job, level, oldLevel);
         String subtitle = processPlaceholders(config.getConfig().getString("subtitle", ""), player, job, level, oldLevel);
         int fadeIn = config.getConfig().getInt("fade-in", 10);
         int stay = config.getConfig().getInt("stay", 70);

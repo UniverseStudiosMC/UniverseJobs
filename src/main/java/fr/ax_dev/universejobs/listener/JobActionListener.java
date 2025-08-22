@@ -49,6 +49,7 @@ public class JobActionListener implements Listener {
     
     private static final String TARGET_SUFFIX = " - target: ";
     private static final String COLOR_CODE_PATTERN = "§[0-9a-fk-or]";
+    private static final String TARGET_KEY = "target";
     
     private final UniverseJobs plugin;
     private final ActionProcessor actionProcessor;
@@ -183,7 +184,7 @@ public class JobActionListener implements Listener {
             // Create context
             ConditionContext context = new ConditionContext()
                     .setEntity(killed)
-                    .set("target", killed.getType().name());
+                    .set(TARGET_KEY, killed.getType().name());
             
             // Check for MythicMobs using official API
             mythicMobsHandler.populateMythicMobContext(killed, context);
@@ -233,7 +234,7 @@ public class JobActionListener implements Listener {
             // Create context
             ConditionContext context = new ConditionContext()
                     .setBlock(event.getBlock())
-                    .set("target", event.getBlock().getType().name());
+                    .set(TARGET_KEY, event.getBlock().getType().name());
             
             if (plugin.getConfigManager().isDebugEnabled()) {
                 plugin.getLogger().info("Processing BREAK action for " + player.getName() + TARGET_SUFFIX + event.getBlock().getType().name());
@@ -266,7 +267,7 @@ public class JobActionListener implements Listener {
         // Create context
         ConditionContext context = new ConditionContext()
                 .setBlock(event.getBlock())
-                .set("target", event.getBlock().getType().name());
+                .set(TARGET_KEY, event.getBlock().getType().name());
         
         // Process the action and check if we should cancel
         boolean shouldCancel = actionProcessor.processAction(player, ActionType.PLACE, event, context);
@@ -287,7 +288,7 @@ public class JobActionListener implements Listener {
         // Create context
         ConditionContext context = new ConditionContext()
                 .setEntity(event.getEntity())
-                .set("target", event.getEntityType().name());
+                .set(TARGET_KEY, event.getEntityType().name());
         
         // Process the action and check if we should cancel
         boolean shouldCancel = actionProcessor.processAction(player, ActionType.BREED, event, context);
@@ -324,7 +325,7 @@ public class JobActionListener implements Listener {
         
         // Create context with specific fish type
         ConditionContext context = new ConditionContext()
-                .set("target", target);
+                .set(TARGET_KEY, target);
         
         if (event.getCaught() != null) {
             context.setEntity(event.getCaught());
@@ -357,7 +358,7 @@ public class JobActionListener implements Listener {
         // Create context
         ConditionContext context = new ConditionContext()
                 .setEntity(event.getEntity())
-                .set("target", event.getEntityType().name());
+                .set(TARGET_KEY, event.getEntityType().name());
         
         // Process the action and check if we should cancel
         boolean shouldCancel = actionProcessor.processAction(player, ActionType.TAME, event, context);
@@ -377,7 +378,7 @@ public class JobActionListener implements Listener {
         // Create context
         ConditionContext context = new ConditionContext()
                 .setEntity(event.getEntity())
-                .set("target", event.getEntity().getType().name());
+                .set(TARGET_KEY, event.getEntity().getType().name());
         
         // Add sheep color information if it's a sheep
         if (event.getEntity() instanceof Sheep) {
@@ -414,7 +415,7 @@ public class JobActionListener implements Listener {
         // Create context with enhanced item information
         ConditionContext context = new ConditionContext()
                 .setItem(item)
-                .set("target", target);
+                .set(TARGET_KEY, target);
         
         // Add NBT information if available
         if (item.hasItemMeta()) {
@@ -478,7 +479,7 @@ public class JobActionListener implements Listener {
         // Create context
         ConditionContext context = new ConditionContext()
                 .setBlock(event.getClickedBlock())
-                .set("target", event.getClickedBlock().getType().name())
+                .set(TARGET_KEY, event.getClickedBlock().getType().name())
                 .set("interact-type", interactType);
         
         if (plugin.getConfigManager().isDebugEnabled()) {
@@ -520,7 +521,7 @@ public class JobActionListener implements Listener {
         // Create context
         ConditionContext context = new ConditionContext()
                 .setEntity(entity)
-                .set("target", entity.getType().name())
+                .set(TARGET_KEY, entity.getType().name())
                 .set("interact-type", interactType);
         
         // Check for MythicMobs using official API
@@ -717,7 +718,7 @@ public class JobActionListener implements Listener {
         // Create context with craft multiplier
         ConditionContext context = new ConditionContext()
                 .setItem(resultStack)
-                .set("target", resultStack.getType().name())
+                .set(TARGET_KEY, resultStack.getType().name())
                 .set("amount", resultStack.getAmount() * craftCount)
                 .set("recipe_yield", resultStack.getAmount())
                 .set("recipe_executions", craftCount)
@@ -889,7 +890,7 @@ public class JobActionListener implements Listener {
             // Create context with item information
             ConditionContext context = new ConditionContext()
                     .setItem(result)
-                    .set("target", detectItemTarget(result))
+                    .set(TARGET_KEY, detectItemTarget(result))
                     .set("amount", result.getAmount());
             
             // Add source item information if available
@@ -901,7 +902,7 @@ public class JobActionListener implements Listener {
             
             if (plugin.getConfigManager().isDebugEnabled()) {
                 plugin.getLogger().info("Processing SMELT action for " + player.getName() + 
-                    TARGET_SUFFIX + context.get("target") + 
+                    TARGET_SUFFIX + context.get(TARGET_KEY) + 
                     " - source: " + context.get("source_target"));
             }
             
@@ -1104,7 +1105,7 @@ public class JobActionListener implements Listener {
             // Create context with trade information
             ConditionContext context = new ConditionContext()
                     .setItem(result)
-                    .set("target", result.getType().name());
+                    .set(TARGET_KEY, result.getType().name());
             
             // Add villager profession if the merchant is a villager
             if (merchant instanceof Villager) {

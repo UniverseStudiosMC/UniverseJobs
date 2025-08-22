@@ -75,9 +75,9 @@ public class RewardsCommandHandler extends JobCommandHandler {
             String input = args[1].toLowerCase();
             
             // Rewards subcommands
-            List<String> rewardSubCommands = new ArrayList<>(Arrays.asList("open", "list", "claim", "info"));
-            if (player.hasPermission("universejobs.rewards.admin")) {
-                rewardSubCommands.addAll(Arrays.asList("admin", "reload", "debug"));
+            List<String> rewardSubCommands = new ArrayList<>(Arrays.asList("open", "list", CMD_CLAIM, "info"));
+            if (player.hasPermission(PERM_REWARDS_ADMIN)) {
+                rewardSubCommands.addAll(Arrays.asList(CMD_ADMIN, "reload", CMD_DEBUG));
             }
             
             for (String rewardSubCommand : rewardSubCommands) {
@@ -278,6 +278,9 @@ public class RewardsCommandHandler extends JobCommandHandler {
             case "list", "info" -> addAllJobCompletions(input, completions);
             case CMD_ADMIN -> addAdminSubCommandCompletions(player, input, completions);
             case CMD_DEBUG -> addDebugJobCompletions(player, input, completions);
+            default -> {
+                // Unknown subcommand - no completions
+            }
         }
         return completions;
     }
@@ -297,6 +300,9 @@ public class RewardsCommandHandler extends JobCommandHandler {
                 if (player.hasPermission(PERM_REWARDS_ADMIN)) {
                     return getPlayerNameCompletions(input);
                 }
+            }
+            default -> {
+                // Unknown subcommand - no completions
             }
         }
         return completions;

@@ -234,6 +234,9 @@ public abstract class BonusCommandHandler<T, M extends BonusManager<T>> extends 
                 completions.addAll(getFilteredPlayerNames(input));
             }
             case CMD_REMOVE, "list" -> completions.addAll(getFilteredPlayerNames(input));
+            default -> {
+                // Unknown subcommand - no completions
+            }
         }
         return completions;
     }

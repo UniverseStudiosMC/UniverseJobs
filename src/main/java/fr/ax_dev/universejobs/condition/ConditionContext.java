@@ -15,12 +15,17 @@ import java.util.Map;
  */
 public class ConditionContext {
     
+    private static final String MATERIAL_KEY = MATERIAL_KEY;
+    
     private final Map<String, Object> data = new HashMap<>();
     
     /**
      * Create a new empty context.
+     * The empty constructor initializes the internal data map for storing context values.
      */
-    public ConditionContext() {}
+    public ConditionContext() {
+        // Initialize with empty data map - this is the standard pattern for builder classes
+    }
     
     /**
      * Set a value in the context.
@@ -82,7 +87,7 @@ public class ConditionContext {
      * @return This context for chaining
      */
     public ConditionContext setBlock(Block block) {
-        set("block", block).set("material", block.getType());
+        set("block", block).set(MATERIAL_KEY, block.getType());
         
         // Try to detect Nexo block ID
         String nexoBlockId = detectNexoBlockId(block);
@@ -111,7 +116,7 @@ public class ConditionContext {
      */
     public ConditionContext setItem(ItemStack item) {
         if (item != null) {
-            set("item", item).set("material", item.getType());
+            set("item", item).set(MATERIAL_KEY, item.getType());
         }
         return this;
     }
@@ -123,7 +128,7 @@ public class ConditionContext {
      * @return This context for chaining
      */
     public ConditionContext setMaterial(Material material) {
-        return set("material", material);
+        return set(MATERIAL_KEY, material);
     }
     
     /**
@@ -159,7 +164,7 @@ public class ConditionContext {
      * @return The material or null
      */
     public Material getMaterial() {
-        return get("material");
+        return get(MATERIAL_KEY);
     }
     
     /**

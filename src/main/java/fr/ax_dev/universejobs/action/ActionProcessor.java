@@ -26,6 +26,8 @@ import java.util.Set;
  */
 public class ActionProcessor {
     
+    private static final String MATCHES_SUFFIX = MATCHES_SUFFIX;
+    
     private final UniverseJobs plugin;
     private final JobManager jobManager;
     private final XpBonusManager bonusManager;
@@ -231,7 +233,7 @@ public class ActionProcessor {
         
         debugLog("Profession check - required: " + action.getProfessions() + 
                 ", villager: " + villagerProfession + 
-                ", matches: " + professionMatches);
+                MATCHES_SUFFIX + professionMatches);
         
         return professionMatches;
     }
@@ -255,7 +257,7 @@ public class ActionProcessor {
         
         debugLog("Color check - required: " + action.getColors() + 
                 ", sheep: " + sheepColor + 
-                ", matches: " + colorMatches);
+                MATCHES_SUFFIX + colorMatches);
         
         return colorMatches;
     }
@@ -279,7 +281,7 @@ public class ActionProcessor {
         
         debugLog("NBT check - required: " + action.getNbtTags() + 
                 ", item: " + itemNbt + 
-                ", matches: " + nbtMatches);
+                MATCHES_SUFFIX + nbtMatches);
         
         return nbtMatches;
     }
@@ -303,7 +305,7 @@ public class ActionProcessor {
         
         debugLog("Potion-type check - required: " + action.getPotionTypes() + 
                 ", potion: " + potionType + 
-                ", matches: " + potionTypeMatches);
+                MATCHES_SUFFIX + potionTypeMatches);
         
         return potionTypeMatches;
     }
