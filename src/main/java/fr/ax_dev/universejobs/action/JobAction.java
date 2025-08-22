@@ -25,6 +25,7 @@ public class JobAction {
     private final ActionLimitManager.ActionLimit actionLimit;
     private final String enchantLevel;
     private final List<String> professions;
+    private final List<String> colors;
     
     /**
      * Create a new JobAction from configuration.
@@ -42,6 +43,9 @@ public class JobAction {
         
         // Load profession requirements for TRADE actions
         this.professions = loadProfessions(config);
+        
+        // Load color requirements for SHEAR actions
+        this.colors = loadColors(config);
         
         // Load message configuration
         ConfigurationSection messageSection = config.getConfigurationSection("message");
@@ -98,6 +102,34 @@ public class JobAction {
             String prof = config.getString("profession");
             if (prof != null && !prof.trim().isEmpty()) {
                 result.add(prof.trim().toUpperCase());
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Load color requirements from configuration.
+     * Supports both single color and list of colors.
+     * 
+     * @param config The configuration section
+     * @return List of required colors (uppercase), or empty list if none specified
+     */
+    private List<String> loadColors(ConfigurationSection config) {
+        List<String> result = new ArrayList<>();
+        
+        if (config.isList("color")) {
+            // Handle list format: color: ["RED", "BLUE"]
+            for (String color : config.getStringList("color")) {
+                if (color != null && !color.trim().isEmpty()) {
+                    result.add(color.trim().toUpperCase());
+                }
+            }
+        } else if (config.isString("color")) {
+            // Handle single string format: color: "RED"
+            String color = config.getString("color");
+            if (color != null && !color.trim().isEmpty()) {
+                result.add(color.trim().toUpperCase());
             }
         }
         
@@ -464,6 +496,47 @@ public class JobAction {
         if (villagerProfession != null) {
             String professionUpper = villagerProfession.toUpperCase();
             return professions.contains(professionUpper);
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Get the list of required colors for this action.
+     * Only applicable for SHEAR actions.
+     * 
+     * @return List of color names (uppercase), empty if no color requirements
+     */
+    public List<String> getColors() {
+        return colors;
+    }
+    
+    /**
+     * Check if this action has color requirements.
+     * 
+     * @return true if color requirements exist
+     */
+    public boolean hasColorRequirements() {
+        return colors != null && !colors.isEmpty();
+    }
+    
+    /**
+     * Check if a sheep color matches the requirements for this action.
+     * If no color requirements are specified, all colors are accepted.
+     * 
+     * @param sheepColor The sheep's wool color name (case-insensitive)
+     * @return true if the color matches or no requirements exist
+     */
+    public boolean matchesColor(String sheepColor) {
+        // If no color requirements, accept any color
+        if (!hasColorRequirements()) {
+            return true;
+        }
+        
+        // Check if the sheep's color matches any required color
+        if (sheepColor != null) {
+            String colorUpper = sheepColor.toUpperCase();
+            return colors.contains(colorUpper);
         }
         
         return false;

@@ -141,6 +141,10 @@ public class ActionProcessor {
             return false;
         }
         
+        if (!validateColor(action, context, job)) {
+            return false;
+        }
+        
         boolean shouldCancel = processActionRequirements(player, action, event, context);
         
         processActionRewards(player, job, action, context);
@@ -222,6 +226,30 @@ public class ActionProcessor {
                 ", matches: " + professionMatches);
         
         return professionMatches;
+    }
+    
+    /**
+     * Validate color requirements for SHEAR actions.
+     */
+    private boolean validateColor(JobAction action, ConditionContext context, Job job) {
+        ActionType actionType = job.getActionTypeForAction(action);
+        if (actionType != ActionType.SHEAR) {
+            return true; // Color validation only applies to SHEAR actions
+        }
+        
+        // If no color requirements specified, allow all colors
+        if (!action.hasColorRequirements()) {
+            return true;
+        }
+        
+        String sheepColor = context.get("color");
+        boolean colorMatches = action.matchesColor(sheepColor);
+        
+        debugLog("Color check - required: " + action.getColors() + 
+                ", sheep: " + sheepColor + 
+                ", matches: " + colorMatches);
+        
+        return colorMatches;
     }
     
     /**

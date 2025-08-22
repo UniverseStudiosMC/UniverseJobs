@@ -10,6 +10,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
+import org.bukkit.entity.Sheep;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -361,6 +362,7 @@ public class JobActionListener implements Listener {
     
     /**
      * Handle sheep shearing (SHEAR action).
+     * Supports color filtering for sheep.
      */
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPlayerShearEntity(PlayerShearEntityEvent event) {
@@ -370,6 +372,17 @@ public class JobActionListener implements Listener {
         ConditionContext context = new ConditionContext()
                 .setEntity(event.getEntity())
                 .set("target", event.getEntity().getType().name());
+        
+        // Add sheep color information if it's a sheep
+        if (event.getEntity() instanceof Sheep) {
+            Sheep sheep = (Sheep) event.getEntity();
+            context.set("color", sheep.getColor().name());
+            
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("Shearing sheep with color: " + sheep.getColor().name() + 
+                    " by " + player.getName());
+            }
+        }
         
         // Process the action and check if we should cancel
         boolean shouldCancel = actionProcessor.processAction(player, ActionType.SHEAR, event, context);
