@@ -8,6 +8,10 @@ icon:
   
 rewards: "example_rewards"  # Link to the rewards file
 
+action-limits:
+    auto-restore:
+      enabled: true
+      time: "00:00"  # midnight
 xp: 
   type: "CURVE" ##CURVE OR EQUATION
   xp: "example" ##FILE OR EQUATION

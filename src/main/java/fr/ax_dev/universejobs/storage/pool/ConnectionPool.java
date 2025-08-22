@@ -47,23 +47,21 @@ public class ConnectionPool {
     public ConnectionPool(UniverseJobs plugin, FileConfiguration config) {
         this.plugin = plugin;
         
-        // Try to read from main config first, then fall back to performance config
-        this.enabled = config.getBoolean("database.enabled", 
-                      config.getBoolean("storage.database.enabled", false));
-        this.jdbcUrl = config.getString("database.url", 
-                       config.getString("storage.database.url", "jdbc:mysql://localhost:3306/UniverseJobs"));
-        this.username = config.getString("database.username", 
-                        config.getString("storage.database.username", "UniverseJobs"));
-        this.password = config.getString("database.password", 
-                        config.getString("storage.database.password", ""));
-        this.minConnections = config.getInt("database.pool.min-connections", 
-                             config.getInt("storage.database.pool.min-connections", 2));
-        this.maxConnections = config.getInt("database.pool.max-connections", 
-                             config.getInt("storage.database.pool.max-connections", 10));
-        config.getLong("database.pool.connection-timeout-ms", 
-                                   config.getLong("storage.database.pool.connection-timeout-ms", 30000));
-        this.validationIntervalMs = config.getLong("database.pool.validation-interval-ms", 
-                                    config.getLong("storage.database.pool.validation-interval-ms", 300000));
+        // Read database configuration
+        this.enabled = config.getBoolean("database.enabled", false);
+        
+        // Build JDBC URL from host, port and prefix
+        String host = config.getString("database.host", "localhost");
+        String port = config.getString("database.port", "3306");
+        String prefix = config.getString("database.prefix", "UniverseJobs_");
+        this.jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + prefix;
+        
+        this.username = config.getString("database.username", "UniverseJobs");
+        this.password = config.getString("database.password", "your_password_here");
+        this.minConnections = config.getInt("database.pool.min-connections", 2);
+        this.maxConnections = config.getInt("database.pool.max-connections", 10);
+        config.getLong("database.pool.connection-timeout-ms", 30000);
+        this.validationIntervalMs = config.getLong("database.pool.validation-interval-ms", 300000);
         
         this.availableConnections = new ConcurrentLinkedQueue<>();
         this.activeConnections = new AtomicInteger(0);

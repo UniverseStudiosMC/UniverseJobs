@@ -5,7 +5,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,6 +26,9 @@ public class ActionLimitManager {
     // Map: Job ID -> Action Target -> ActionLimit configuration
     private final Map<String, Map<String, ActionLimit>> actionLimits = new ConcurrentHashMap<>();
     
+    // Map: Job ID -> Auto-restore configuration
+    private final Map<String, AutoRestoreConfig> autoRestoreConfigs = new ConcurrentHashMap<>();
+    
     public ActionLimitManager(UniverseJobs plugin) {
         this.plugin = plugin;
         startAutoRestoreTask();
@@ -38,6 +43,21 @@ public class ActionLimitManager {
      */
     public void setActionLimit(String jobId, String target, ActionLimit limit) {
         actionLimits.computeIfAbsent(jobId, k -> new ConcurrentHashMap<>()).put(target, limit);
+    }
+    
+    /**
+     * Set auto-restore configuration for a specific job.
+     * 
+     * @param jobId The job ID
+     * @param enabled Whether auto-restore is enabled
+     * @param time The restore time in HH:mm format
+     */
+    public void setAutoRestoreConfig(String jobId, boolean enabled, String time) {
+        if (enabled && time != null) {
+            autoRestoreConfigs.put(jobId, new AutoRestoreConfig(enabled, time));
+        } else {
+            autoRestoreConfigs.remove(jobId);
+        }
     }
     
     /**
@@ -249,28 +269,35 @@ public class ActionLimitManager {
      * Check if it's time for scheduled restore and execute if needed.
      */
     private void checkScheduledRestore() {
-        String scheduleTime = plugin.getConfig().getString("action-limits.auto-restore.time");
-        if (scheduleTime == null || scheduleTime.isEmpty()) return;
+        LocalDateTime now = LocalDateTime.now();
         
-        try {
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime scheduled = parseTime(scheduleTime);
+        for (Map.Entry<String, AutoRestoreConfig> entry : autoRestoreConfigs.entrySet()) {
+            String jobId = entry.getKey();
+            AutoRestoreConfig config = entry.getValue();
             
-            // Check if we're within 1 minute of the scheduled time
-            if (Math.abs(now.getHour() - scheduled.getHour()) == 0 && 
-                Math.abs(now.getMinute() - scheduled.getMinute()) == 0) {
-                
-                // Execute auto restore
-                executeAutoRestore();
+            if (!config.isEnabled()) {
+                continue;
             }
-        } catch (Exception e) {
-            plugin.getLogger().warning("Invalid auto-restore time format: " + scheduleTime + 
-                ". Supported formats: HH:mm (24h), h:mm AM/PM, hh:mm AM/PM");
+            
+            try {
+                LocalDateTime scheduled = parseTime(config.getTime());
+                
+                // Check if we're within 1 minute of the scheduled time
+                if (Math.abs(now.getHour() - scheduled.getHour()) == 0 && 
+                    Math.abs(now.getMinute() - scheduled.getMinute()) == 0) {
+                    
+                    // Execute auto restore for this job
+                    executeAutoRestoreForJob(jobId);
+                }
+            } catch (Exception e) {
+                plugin.getLogger().warning("Invalid auto-restore time format for job " + jobId + 
+                    ": " + config.getTime() + ". Supported formats: HH:mm (24h), h:mm AM/PM");
+            }
         }
     }
+    
     /**
      * Parse time string supporting multiple formats.
-     * Supports: HH:mm (24-hour), h:mm AM/PM, hh:mm AM/PM
      * 
      * @param timeString The time string to parse
      * @return LocalDateTime with the parsed time (using current date)
@@ -281,25 +308,16 @@ public class ActionLimitManager {
         
         // Try different time formats
         DateTimeFormatter[] formatters = {
-            DateTimeFormatter.ofPattern("HH:mm"),     // 24-hour format (e.g., "14:30")
-            DateTimeFormatter.ofPattern("H:mm"),      // 24-hour format single digit (e.g., "9:30")
-            DateTimeFormatter.ofPattern("h:mm a"),    // 12-hour format with AM/PM (e.g., "2:30 PM")
-            DateTimeFormatter.ofPattern("hh:mm a"),   // 12-hour format with leading zero (e.g., "02:30 PM")
-            DateTimeFormatter.ofPattern("h:mma"),     // 12-hour format without space (e.g., "2:30PM")
-            DateTimeFormatter.ofPattern("hh:mma")     // 12-hour format without space and leading zero (e.g., "02:30PM")
+            DateTimeFormatter.ofPattern("HH:mm"),     // 24-hour format
+            DateTimeFormatter.ofPattern("H:mm"),      // 24-hour format single digit
+            DateTimeFormatter.ofPattern("h:mm a"),    // 12-hour format with AM/PM
+            DateTimeFormatter.ofPattern("hh:mm a")    // 12-hour format with leading zero
         };
         
         for (DateTimeFormatter formatter : formatters) {
             try {
-                // For 24-hour formats, parse directly
-                if (formatter.toString().contains("HH") || formatter.toString().contains("H:")) {
-                    java.time.LocalTime time = java.time.LocalTime.parse(normalizedTime, formatter);
-                    return baseDate.with(time);
-                } else {
-                    // For 12-hour formats with AM/PM
-                    java.time.LocalTime time = java.time.LocalTime.parse(normalizedTime.toUpperCase(), formatter);
-                    return baseDate.with(time);
-                }
+                LocalTime time = LocalTime.parse(normalizedTime, formatter);
+                return baseDate.with(time);
             } catch (Exception ignored) {
                 // Try next formatter
             }
@@ -309,13 +327,16 @@ public class ActionLimitManager {
     }
     
     /**
-     * Execute automatic restore for all players.
+     * Execute automatic restore for a specific job.
+     * 
+     * @param jobId The job ID to restore limits for
      */
-    private void executeAutoRestore() {
+    private void executeAutoRestoreForJob(String jobId) {
         int totalRestored = 0;
         
         for (Map<String, Map<String, ActionLimitData>> playerJobLimits : playerLimits.values()) {
-            for (Map<String, ActionLimitData> jobLimits : playerJobLimits.values()) {
+            Map<String, ActionLimitData> jobLimits = playerJobLimits.get(jobId);
+            if (jobLimits != null) {
                 for (ActionLimitData data : jobLimits.values()) {
                     data.reset();
                     totalRestored++;
@@ -324,7 +345,7 @@ public class ActionLimitManager {
         }
         
         if (totalRestored > 0) {
-            plugin.getLogger().info("Auto-restored " + totalRestored + " action limits");
+            plugin.getLogger().info("Auto-restored " + totalRestored + " action limits for job: " + jobId);
         }
     }
     
@@ -334,6 +355,7 @@ public class ActionLimitManager {
     public void clearAllLimits() {
         playerLimits.clear();
         actionLimits.clear();
+        autoRestoreConfigs.clear();
     }
     
     /**
@@ -435,5 +457,21 @@ public class ActionLimitManager {
         
         public ActionLimit getLimit() { return limit; }
         public int getCurrentActionsPerformed() { return currentActionsPerformed; }
+    }
+    
+    /**
+     * Configuration for auto-restore functionality per job.
+     */
+    private static class AutoRestoreConfig {
+        private final boolean enabled;
+        private final String time;
+        
+        public AutoRestoreConfig(boolean enabled, String time) {
+            this.enabled = enabled;
+            this.time = time;
+        }
+        
+        public boolean isEnabled() { return enabled; }
+        public String getTime() { return time; }
     }
 }

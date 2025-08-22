@@ -384,6 +384,27 @@ public class Job {
         return config;
     }
     
+    /**
+     * Check if auto-restore is enabled for action limits.
+     * 
+     * @return true if auto-restore is enabled
+     */
+    public boolean isAutoRestoreEnabled() {
+        return config.getBoolean("action-limits.auto-restore.enabled", false);
+    }
+    
+    /**
+     * Get the auto-restore time for action limits.
+     * 
+     * @return The restore time in HH:mm format, or null if not set
+     */
+    public String getAutoRestoreTime() {
+        if (!isAutoRestoreEnabled()) {
+            return null;
+        }
+        return config.getString("action-limits.auto-restore.time", "00:00");
+    }
+    
     @Override
     public String toString() {
         return "Job{id='" + id + "', name='" + name + "', enabled=" + enabled + 

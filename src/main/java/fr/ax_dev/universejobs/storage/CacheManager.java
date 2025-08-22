@@ -48,8 +48,8 @@ public class CacheManager {
      * @param config Configuration containing cache settings
      */
     public CacheManager(FileConfiguration config) {
-        this.maxSize = config.getInt("cache.max-entries", 1000);
-        this.maxMemoryMB = config.getLong("cache.max-memory-mb", 256);
+        this.maxSize = 1000;
+        this.maxMemoryMB = 256;
         this.cache = new ConcurrentHashMap<>(Math.min(maxSize, 1024));
         this.accessOrder = new LinkedHashMap<UUID, CacheEntry>(16, 0.75f, true) {
             @Override

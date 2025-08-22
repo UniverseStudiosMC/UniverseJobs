@@ -506,7 +506,7 @@ public class ActionProcessor {
         }
         
         // Fallback: Use commands to give money (works with most economy plugins)
-        String command = plugin.getConfig().getString("economy.money-command", "eco give {player} {amount}")
+        String command = "eco give {player} {amount}"
                 .replace("{player}", player.getName())
                 .replace("{amount}", String.valueOf(amount));
         
@@ -548,7 +548,7 @@ public class ActionProcessor {
         
         // Play level up sound
         try {
-            String soundName = plugin.getConfig().getString("sounds.level-up", "ENTITY_PLAYER_LEVELUP");
+            String soundName = "ENTITY_PLAYER_LEVELUP";
             // Try new Registry method first
             NamespacedKey key = NamespacedKey.minecraft(soundName.toLowerCase().replace("_", "."));
             Sound sound = Registry.SOUNDS.get(key);

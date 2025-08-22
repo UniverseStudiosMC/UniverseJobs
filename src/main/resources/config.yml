@@ -1,49 +1,27 @@
 # UniverseJobs Configuration
-# Main configuration file with performance optimizations
+# Main configuration file - only includes settings actually used by the plugin
 
 # General Settings
 debug: false
-language: "en"
-auto-save-interval-minutes: 5
+language:
+  locale: "en"
+
+# Auto-save settings  
+settings:
+  save-interval: 300  # Auto-save interval in seconds
 
 # Job Settings
 create-example-jobs: true  # Set to false to prevent automatic creation of example job files
 
-# Performance Settings
-performance:
-  # Enable high-performance storage
-  enabled: true
-  
-  # Cache configuration
-  cache:
-    max-entries: 1000
-    max-memory-mb: 256
-    cleanup-interval-minutes: 30
-  
-  # Compression settings
-  compression:
-    enabled: true
-    min-size-bytes: 512
-  
-  # Async operation settings
-  async:
-    core-threads: 2
-    max-threads: 8
-    keep-alive-seconds: 60
-    queue-size: 1000
-  
-  # Monitoring
-  monitoring:
-    enabled: true
-    report-interval-minutes: 15
 
 # Database Configuration
 # Set enabled to true to use database instead of files
 database:
   enabled: false
-  
   # Database connection settings
-  url: "jdbc:mysql://localhost:3306/UniverseJobs"
+  host: "localhost"
+  port: "3306"
+  prefix: "UniverseJobs_"
   username: "UniverseJobs"
   password: "your_password_here"
   
@@ -69,159 +47,3 @@ jobs:
   # Only works when 'all-jobs-by-default' is false
   # Example: ["miner", "farmer", "hunter"]
   jobs-by-default: []
-  # Default XP curve settings
-  default-xp-curve: "standard"
-  
-  # Job permission format: universejobs.job.<jobid>
-  permission-format: "universejobs.job.%job%"
-
-# Reward Settings
-rewards:
-  # Enable reward system
-  enabled: true
-  
-  # GUI settings
-  gui:
-    title: "&6Job Rewards"
-    size: 54
-    
-    # Update interval in ticks (20 ticks = 1 second)
-    update-interval: 100
-
-# XP Settings
-xp:
-  # Enable XP gain messages
-  messages: true
-  
-  # XP multiplier for all jobs
-  global-multiplier: 1.0
-  
-  # Level up sound
-  level-up-sound: "ENTITY_PLAYER_LEVELUP"
-  
-  # XP curve type: CURVE or EQUATION
-  type: "CURVE"
-  
-  # XP curve file name (without .yml extension) or equation
-  xp: "example"
-  
-  # Message configuration for XP gain notifications
-  message:
-    # Message type: CHAT, ACTIONBAR, BOSSBAR, TITLE
-    type: "BOSSBAR"
-    
-    # Message text with placeholders: {message_xp}, {message_money}, {job}, {level}
-    text: "{message_xp} {message_money} &8| &6{job} &7Level {level}"
-    
-    # Custom message formats
-    money: "+{money} money"
-    xp: "+{xp} xp"
-    
-    # Options for all message types (flexible configuration)
-    options:
-      color: "RED"                   # BOSSBAR: PINK, BLUE, RED, GREEN, YELLOW, PURPLE, WHITE
-      style: "SEGMENTED_20"         # BOSSBAR: SOLID, SEGMENTED_6, SEGMENTED_10, SEGMENTED_12, SEGMENTED_20
-      duration: "1"                  # TITLE, BOSSBAR, ACTIONBAR: Duration in ticks
-      fade-in: 10                    # TITLE: Fade in time in ticks
-      fade-out: 20                   # TITLE: Fade out time in ticks
-      show-progress: true            # BOSSBAR: Show XP progress instead of full bar
-
-# Placeholder Settings (for PlaceholderAPI)
-placeholders:
-  # Enable placeholders
-  enabled: true
-  
-  # Placeholder refresh interval in seconds
-  refresh-interval: 30
-  
-  # Cache placeholders for better performance
-  cache-enabled: true
-
-# Integration Settings
-integrations:
-  # Vault economy integration
-  vault:
-    enabled: true
-  
-  # PlaceholderAPI integration
-  placeholderapi:
-    enabled: true
-  
-  # Citizens NPC integration
-  citizens:
-    enabled: false
-  
-  # WorldGuard integration
-  worldguard:
-    enabled: false
-
-# Economy Settings
-economy:
-  # Command to give money to players (fallback when Vault is not available)
-  # Available placeholders: {player}, {amount}
-  money-command: "eco give {player} {amount}"
-
-# Action Limits Settings
-action-limits:
-  # Global settings for action limits
-  enabled: true
-  
-  # Automatic restoration settings
-  auto-restore:
-    # Enable automatic restoration of action limits
-    enabled: true
-    
-    # Time to restore limits (HH:mm format in server local time)
-    # Example: "00:00" for midnight, "12:00" for noon
-    time: "00:00"
-    
-    # Alternative: restore every X hours instead of at specific time
-    # interval-hours: 24
-  
-  # Default limits for actions without specific limits configured
-  # These will be applied to all actions unless overridden in job files
-  default-limits:
-    enabled: false
-    max-action-per-period: 100
-    cooldown-minutes: 60
-    block-exp: false
-    block-money: false
-    
-  # Logging settings for action limits
-  logging:
-    # Log when players hit their action limits
-    log-limit-reached: true
-    
-    # Log when limits are restored (manually or automatically)
-    log-restoration: true
-
-# Logging Settings
-logging:
-  # Log level: INFO, WARNING, SEVERE
-  level: "INFO"
-  
-  # Log performance metrics
-  performance-metrics: false
-  
-  # Log database operations
-  database-operations: false
-
-# Advanced Settings
-advanced:
-  # Enable experimental features
-  experimental-features: false
-  
-  # Thread safety level: LOW, MEDIUM, HIGH
-  thread-safety: "HIGH"
-  
-  # Memory optimization level: LOW, MEDIUM, HIGH
-  memory-optimization: "MEDIUM"
-  
-  # I/O optimization level: LOW, MEDIUM, HIGH
-  io-optimization: "HIGH"
-
-# Update Checker
-update-checker:
-  enabled: true
-  check-interval-hours: 24
-  notify-ops: true

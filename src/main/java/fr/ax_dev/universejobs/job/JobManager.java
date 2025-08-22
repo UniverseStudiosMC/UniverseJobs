@@ -1,6 +1,7 @@
 package fr.ax_dev.universejobs.job;
 
 import fr.ax_dev.universejobs.UniverseJobs;
+import fr.ax_dev.universejobs.action.ActionLimitManager;
 import fr.ax_dev.universejobs.config.ConfigManager;
 import fr.ax_dev.universejobs.xp.XpCurve;
 import fr.ax_dev.universejobs.xp.XpCurveManager;
@@ -110,6 +111,13 @@ public class JobManager {
                     
                     if (job.isEnabled()) {
                         jobs.put(jobId, job);
+                        
+                        // Configure auto-restore for action limits if enabled
+                        if (job.isAutoRestoreEnabled()) {
+                            ActionLimitManager limitManager = plugin.getLimitManager();
+                            limitManager.setAutoRestoreConfig(jobId, true, job.getAutoRestoreTime());
+                            plugin.getLogger().info("Auto-restore enabled for job '" + jobId + "' at " + job.getAutoRestoreTime());
+                        }
                     } else {
                         plugin.getLogger().severe("Job " + jobId + " is disabled due to XP curve error: " + job.getXpCurveErrorMessage());
                     }
