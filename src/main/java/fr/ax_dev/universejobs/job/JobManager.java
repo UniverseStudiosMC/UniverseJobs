@@ -93,7 +93,7 @@ public class JobManager {
             }
             
             if (jobFiles == null || jobFiles.length == 0) {
-                plugin.getLogger().info("JobsAdventure started with no jobs. Add .yml files to " + jobsFolder.getPath() + " to create jobs.");
+                plugin.getLogger().info("UniverseJobs started with no jobs. Add .yml files to " + jobsFolder.getPath() + " to create jobs.");
                 return;
             }
         }

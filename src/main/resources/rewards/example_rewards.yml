@@ -24,7 +24,7 @@ rewards:
       logic: "AND"
       multiple_condition:
         placeholder:
-          placeholder: "%jobsadventure_level_example%"
+          placeholder: "%UniverseJobs_level_example%"
           operator: "greater_equal"
           value: "10"
         placeholder2:

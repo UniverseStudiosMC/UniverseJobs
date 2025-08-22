@@ -1,11 +1,11 @@
 # ⭐ Main Features
 
-JobsAdventure offers a comprehensive array of advanced features to create the perfect jobs experience on your Minecraft server.
+UniverseJobs offers a comprehensive array of advanced features to create the perfect jobs experience on your Minecraft server.
 
 ## 🏢 Advanced Job System
 
 ### Supported Action Types (15+)
-JobsAdventure recognizes and rewards a wide variety of actions:
+UniverseJobs recognizes and rewards a wide variety of actions:
 
 | Action Type | Description | Examples |
 |:---|:---|:---|
@@ -75,7 +75,7 @@ xp-message:
 ## 🎉 Level Up Actions System
 
 ### 100% Customizable Level Up Actions
-JobsAdventure features a powerful, simplified level up action system built on existing plugin infrastructure for maximum performance and reliability.
+UniverseJobs features a powerful, simplified level up action system built on existing plugin infrastructure for maximum performance and reliability.
 
 #### Available Action Types
 - **Messages** - Send personalized congratulations using the existing message system
@@ -112,7 +112,7 @@ levelup-actions:
 ```
 
 #### System Architecture
-- **Optimized Performance** - Built on existing JobsAdventure components
+- **Optimized Performance** - Built on existing UniverseJobs components
 - **Reused Infrastructure** - Uses established message, command, and sound systems
 - **Error Resilience** - Failed actions don't prevent other actions from executing
 - **Graceful Fallbacks** - Unknown sounds/particles automatically fall back to safe defaults
@@ -189,8 +189,8 @@ repeatable: true          # Can be claimed multiple times
 
 #### Player Information
 ```
-%jobsadventure_miner_player_level%       # Player's mining level
-%jobsadventure_farmer_player_xp%         # Player's farming XP
+%UniverseJobs_miner_player_level%       # Player's mining level
+%UniverseJobs_farmer_player_xp%         # Player's farming XP
 %jobsglobal_player_totaljobs%            # Total number of jobs
 %jobsglobal_player_totallevels%          # Sum of all levels
 %jobsglobal_player_rank%                 # Player's global rank
@@ -198,8 +198,8 @@ repeatable: true          # Can be claimed multiple times
 
 #### Leaderboards
 ```
-%jobsadventure_miner_leaderboard_1_name%    # Top 1 miner name
-%jobsadventure_miner_leaderboard_1_level%   # Top 1 miner level
+%UniverseJobs_miner_leaderboard_1_name%    # Top 1 miner name
+%UniverseJobs_miner_leaderboard_1_level%   # Top 1 miner level
 %jobsglobal_totalxp_1_displayname%          # Global XP top 1
 %jobsglobal_totallevels_5_name%             # 5th player by levels
 ```
@@ -369,7 +369,7 @@ JobActionEvent           - Job action performed
 ### Easy Integration
 ```java
 // API usage example
-JobManager jobManager = JobsAdventure.getInstance().getJobManager();
+JobManager jobManager = UniverseJobs.getInstance().getJobManager();
 Player player = Bukkit.getPlayer("Steve");
 
 // Add XP

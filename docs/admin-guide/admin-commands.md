@@ -1,6 +1,6 @@
 # ⚔️ Administration Guide - Essential Commands
 
-This guide presents all administration commands to efficiently manage JobsAdventure on your server.
+This guide presents all administration commands to efficiently manage UniverseJobs on your server.
 
 ## 🔑 Administrator Permissions
 
@@ -8,9 +8,9 @@ First, make sure you have the right permissions:
 
 | Permission | Description |
 |:---|:---|
-| `jobsadventure.admin` | Access to basic administration commands |
-| `jobsadventure.admin.xpbonus` | XP bonus management |
-| `jobsadventure.rewards.admin` | Reward administration |
+| `UniverseJobs.admin` | Access to basic administration commands |
+| `UniverseJobs.admin.xpbonus` | XP bonus management |
+| `UniverseJobs.rewards.admin` | Reward administration |
 
 ## 🔧 General Plugin Management
 
@@ -35,7 +35,7 @@ First, make sure you have the right permissions:
 ```
 **Example output:**
 ```
-=== JobsAdventure Statistics ===
+=== UniverseJobs Statistics ===
 Active players: 42
 Active jobs: 3
 Actions processed (last hour): 1,847

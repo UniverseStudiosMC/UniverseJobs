@@ -1,6 +1,6 @@
-﻿# 🔧 API JobsAdventure - Introduction
+﻿# 🔧 API UniverseJobs - Introduction
 
-JobsAdventure provides a API complète allowing développeurs d'intégrer leurs Plugins avec the system de jobs. Cette API is designed pour être simple à utiliser while offering flexibility maximum.
+UniverseJobs provides a API complète allowing développeurs d'intégrer leurs Plugins avec the system de jobs. Cette API is designed pour être simple à utiliser while offering flexibility maximum.
 
 ## 🎯 Vue d'ensemble of the API
 
@@ -26,7 +26,7 @@ JobsAdventure provides a API complète allowing développeurs d'intégrer leurs 
 ```xml
 <dependency>
     <groupId>fr.ax_dev</groupId>
-    <artifactId>JobsAdventure</artifactId>
+    <artifactId>UniverseJobs</artifactId>
     <version>1.0-SNAPSHOT</version>
     <scope>provided</scope>
 </dependency>
@@ -35,45 +35,45 @@ JobsAdventure provides a API complète allowing développeurs d'intégrer leurs 
 #### Gradle
 ```gradle
 dependencies {
-    compileOnly 'fr.ax_dev:JobsAdventure:1.0-SNAPSHOT'
+    compileOnly 'fr.ax_dev:UniverseJobs:1.0-SNAPSHOT'
 }
 ```
 
 ### 2. Déclaration dans Plugin.yml
 ```yaml
 name: MonPlugin
-depend: [JobsAdventure]
+depend: [UniverseJobs]
 # ou pour une dépendance optionnelle :
-softdepend: [JobsAdventure]
+softdepend: [UniverseJobs]
 ```
 
 ### 3. Accès à the API
 ```java
 public class MonPlugin extends JavaPlugin {
     
-    private JobsAdventure jobsAdventure;
+    private UniverseJobs UniverseJobs;
     
     @Override
     public void onEnable() {
-        // Vérifier que JobsAdventure est présent
-        if (!setupJobsAdventure()) {
-            getLogger().severe("JobsAdventure n'est pas installé !");
+        // Vérifier que UniverseJobs est présent
+        if (!setupUniverseJobs()) {
+            getLogger().severe("UniverseJobs n'est pas installé !");
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
         
         // L'API est maintenant disponible
-        JobManager jobManager = jobsAdventure.getJobManager();
+        JobManager jobManager = UniverseJobs.getJobManager();
         // ... utiliser the API
     }
     
-    private boolean setupJobsAdventure() {
-        Plugin Plugin = getServer().getPluginManager().getPlugin("JobsAdventure");
-        if (Plugin == null || !(Plugin instanceof JobsAdventure)) {
+    private boolean setupUniverseJobs() {
+        Plugin Plugin = getServer().getPluginManager().getPlugin("UniverseJobs");
+        if (Plugin == null || !(Plugin instanceof UniverseJobs)) {
             return false;
         }
         
-        this.jobsAdventure = (JobsAdventure) Plugin;
+        this.UniverseJobs = (UniverseJobs) Plugin;
         return true;
     }
 }
@@ -82,11 +82,11 @@ public class MonPlugin extends JavaPlugin {
 ## 📋 Managers Disponibles
 
 ### 1. JobManager
-**Accès** : `JobsAdventure.getInstance().getJobManager()`
+**Accès** : `UniverseJobs.getInstance().getJobManager()`
 
 Gestion complète of jobs et données players :
 ```java
-JobManager jobManager = JobsAdventure.getInstance().getJobManager();
+JobManager jobManager = UniverseJobs.getInstance().getJobManager();
 
 // Gestion of jobs
 Job job = jobManager.getJob("miner");
@@ -105,11 +105,11 @@ int level = jobManager.getLevel(player, "miner");
 ```
 
 ### 2. ActionProcessor
-**Accès** : `JobsAdventure.getInstance().getActionProcessor()`
+**Accès** : `UniverseJobs.getInstance().getActionProcessor()`
 
 Traitement of actions customs :
 ```java
-ActionProcessor processor = JobsAdventure.getInstance().getActionProcessor();
+ActionProcessor processor = UniverseJobs.getInstance().getActionProcessor();
 
 // Traitement manuel d'an action
 ConditionContext context = new ConditionContext(player, block, "STONE");
@@ -117,11 +117,11 @@ boolean shouldCancel = processor.processAction(player, ActionType.BREAK, event, 
 ```
 
 ### 3. RewardManager
-**Accès** : `JobsAdventure.getInstance().getRewardManager()`
+**Accès** : `UniverseJobs.getInstance().getRewardManager()`
 
 Gestion des récompenses :
 ```java
-RewardManager rewardManager = JobsAdventure.getInstance().getRewardManager();
+RewardManager rewardManager = UniverseJobs.getInstance().getRewardManager();
 
 // Vérifier the rewards disponibles
 List<Reward> available = rewardManager.getAvailableRewards(player);
@@ -131,19 +131,19 @@ rewardManager.giveReward(player, "daily_mining_bonus");
 ```
 
 ### 4. PlaceholderManager
-**Accès** : `JobsAdventure.getInstance().getPlaceholderManager()`
+**Accès** : `UniverseJobs.getInstance().getPlaceholderManager()`
 
 Accès aux placeholders :
 ```java
-PlaceholderManager placeholderManager = JobsAdventure.getInstance().getPlaceholderManager();
+PlaceholderManager placeholderManager = UniverseJobs.getInstance().getPlaceholderManager();
 
 // Récupérer une valeur de placeholder
-String value = placeholderManager.getPlaceholderValue(player, "jobsadventure_miner_player_level");
+String value = placeholderManager.getPlaceholderValue(player, "UniverseJobs_miner_player_level");
 ```
 
 ## 🎭 Events Disponibles
 
-JobsAdventure émet plusieurs events que votre Plugin peut écouter :
+UniverseJobs émet plusieurs events que votre Plugin peut écouter :
 
 ### PlayerJobJoinEvent
 Déclenché quand un Player rejoint a job :
@@ -247,10 +247,10 @@ You can create your own types d'actions :
 ```java
 public class MonActionListener implements Listener {
     
-    private final JobsAdventure jobsAdventure;
+    private final UniverseJobs UniverseJobs;
     
-    public MonActionListener(JobsAdventure jobsAdventure) {
-        this.jobsAdventure = jobsAdventure;
+    public MonActionListener(UniverseJobs UniverseJobs) {
+        this.UniverseJobs = UniverseJobs;
     }
     
     @EventHandler
@@ -265,7 +265,7 @@ public class MonActionListener implements Listener {
         );
         
         // Traiter the action
-        ActionProcessor processor = jobsAdventure.getActionProcessor();
+        ActionProcessor processor = UniverseJobs.getActionProcessor();
         processor.processAction(player, ActionType.CUSTOM, event, context);
     }
 }
@@ -273,7 +273,7 @@ public class MonActionListener implements Listener {
 
 ### 2. Intégration avec PlaceholderAPI
 
-Utiliser les placeholders JobsAdventure dans vos Plugins :
+Utiliser les placeholders UniverseJobs dans vos Plugins :
 
 ```java
 public class MonPlaceholderExtension extends PlaceholderExpansion {
@@ -286,7 +286,7 @@ public class MonPlaceholderExtension extends PlaceholderExpansion {
     @Override
     public String onPlaceholderRequest(Player player, String identifier) {
         if (identifier.equals("total_mining_xp")) {
-            JobManager jobManager = JobsAdventure.getInstance().getJobManager();
+            JobManager jobManager = UniverseJobs.getInstance().getJobManager();
             double xp = jobManager.getXp(player, "miner");
             return String.format("%.1f", xp);
         }
@@ -301,7 +301,7 @@ Accéder et modifier les courbes XP :
 
 ```java
 public void modifyXpCurve(String jobId) {
-    JobManager jobManager = JobsAdventure.getInstance().getJobManager();
+    JobManager jobManager = UniverseJobs.getInstance().getJobManager();
     Job job = jobManager.getJob(jobId);
     
     if (job != null && job.getXpCurve() != null) {
@@ -321,19 +321,19 @@ public void modifyXpCurve(String jobId) {
 ### 1. Gestion des Erreurs
 ```java
 try {
-    JobManager jobManager = JobsAdventure.getInstance().getJobManager();
+    JobManager jobManager = UniverseJobs.getInstance().getJobManager();
     if (jobManager != null) {
         // Utiliser the API
     }
 } catch (Exception e) {
-    getLogger().warning("Erreur lors de l'accès à the API JobsAdventure: " + e.getMessage());
+    getLogger().warning("Erreur lors de l'accès à the API UniverseJobs: " + e.getMessage());
 }
 ```
 
 ### 2. Vérification de Compatibilité
 ```java
-public boolean isJobsAdventureCompatible() {
-    Plugin Plugin = Bukkit.getPluginManager().getPlugin("JobsAdventure");
+public boolean isUniverseJobsCompatible() {
+    Plugin Plugin = Bukkit.getPluginManager().getPlugin("UniverseJobs");
     if (Plugin == null) return false;
     
     // Vérifier la version
@@ -345,7 +345,7 @@ public boolean isJobsAdventureCompatible() {
 ### 3. Threading et Folia
 ```java
 public void addXpSafely(Player player, String jobId, double xp) {
-    JobsAdventure jobs = JobsAdventure.getInstance();
+    UniverseJobs jobs = UniverseJobs.getInstance();
     
     // Utiliser le manager de compatibilité Folia
     jobs.getFoliaManager().runAsync(() -> {
@@ -365,4 +365,4 @@ Voir les fichiers suivants pour of examples détaillés :
 
 ---
 
-L'API JobsAdventure is designed pour être puissante et flexible tout en restant simple à utiliser. Elle permet une intégration profonde avec the system de jobs to create gaming experiences uniques.
+L'API UniverseJobs is designed pour être puissante et flexible tout en restant simple à utiliser. Elle permet une intégration profonde avec the system de jobs to create gaming experiences uniques.

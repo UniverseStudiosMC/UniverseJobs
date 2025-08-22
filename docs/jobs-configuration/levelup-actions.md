@@ -2,9 +2,9 @@
 
 ## Overview
 
-JobsAdventure provides a powerful and 100% customizable level up action system. When players level up in a job, you can trigger any combination of actions, from simple messages to complex reward systems.
+UniverseJobs provides a powerful and 100% customizable level up action system. When players level up in a job, you can trigger any combination of actions, from simple messages to complex reward systems.
 
-The system is built on top of existing JobsAdventure components, ensuring optimal performance and consistency with the rest of the plugin.
+The system is built on top of existing UniverseJobs components, ensuring optimal performance and consistency with the rest of the plugin.
 
 ## Configuration
 
@@ -258,7 +258,7 @@ levelup-actions:
 
 ## Performance Considerations
 
-- **Optimized System**: Built on existing JobsAdventure components for maximum efficiency
+- **Optimized System**: Built on existing UniverseJobs components for maximum efficiency
 - **Reused Components**: Uses existing ConditionResult, MessageUtils, and command systems
 - **Minimal Overhead**: Simple action execution without complex abstractions
 - **Error Handling**: Failed actions won't prevent other actions from executing
@@ -266,7 +266,7 @@ levelup-actions:
 
 ## System Architecture
 
-The simplified level up action system leverages existing JobsAdventure infrastructure:
+The simplified level up action system leverages existing UniverseJobs infrastructure:
 
 - **Messages**: Uses existing `ConditionResult.execute()` for consistent message handling
 - **Commands**: Reuses the established command execution system with placeholder support

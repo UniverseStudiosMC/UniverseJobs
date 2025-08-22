@@ -1,4 +1,4 @@
-# Français (France) language file for JobsAdventure
+# Français (France) language file for UniverseJobs
 # Ce fichier contient tous les messages traduisibles du plugin
 
 # Messages XP et de niveau
@@ -103,7 +103,7 @@ commands:
     
   # Commande d'aide
   help:
-    header: "&6=== Commandes JobsAdventure ==="
+    header: "&6=== Commandes UniverseJobs ==="
     join: "&e/jobs join <métier> &7- Rejoindre un métier"
     leave: "&e/jobs leave <métier> &7- Quitter un métier"
     list: "&e/jobs list &7- Lister les métiers disponibles"
@@ -137,8 +137,8 @@ system:
   rewards-initialized: "Système de récompenses initialisé avec succès"
   nexo-registered: "Écouteur d'événements Nexo enregistré pour le support amélioré des blocs personnalisés"
   itemsadder-registered: "Écouteur d'événements ItemsAdder enregistré pour le support amélioré des blocs personnalisés"
-  plugin-enabled: "JobsAdventure a été activé avec succès !"
-  plugin-disabled: "JobsAdventure a été désactivé"
+  plugin-enabled: "UniverseJobs a été activé avec succès !"
+  plugin-disabled: "UniverseJobs a été désactivé"
 
 # Support des messages hérités (rétrocompatibilité)
 messages:

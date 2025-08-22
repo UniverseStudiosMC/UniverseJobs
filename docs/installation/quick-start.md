@@ -1,6 +1,6 @@
 # 🚀 Quick Installation
 
-This guide will help you install JobsAdventure in less than 5 minutes!
+This guide will help you install UniverseJobs in less than 5 minutes!
 
 ## 📋 Prerequisites
 
@@ -13,8 +13,8 @@ Before starting, make sure you have:
 
 ## 📥 Download
 
-1. **Download the latest version** of JobsAdventure from:
-   * GitHub Releases: [JobsAdventure Releases](https://github.com/axdevv/JobsAdventure/releases)
+1. **Download the latest version** of UniverseJobs from:
+   * GitHub Releases: [UniverseJobs Releases](https://github.com/axdevv/UniverseJobs/releases)
 2. **Download PlaceholderAPI** if you don't have it already:
    * [PlaceholderAPI on SpigotMC](https://www.spigotmc.org/resources/placeholderapi.6245/)
 
@@ -22,16 +22,16 @@ Before starting, make sure you have:
 
 ### Step 1: Install Plugins
 
-1. **Place** the `JobsAdventure-v1.0.jar` file in your `/plugins` folder
+1. **Place** the `UniverseJobs-v1.0.jar` file in your `/plugins` folder
 2. **Place** the `PlaceholderAPI.jar` file in your `/plugins` folder
 3. **Restart** your server
 
 ### Step 2: Verification
 
-1.  Check in the console that JobsAdventure loaded correctly:
+1.  Check in the console that UniverseJobs loaded correctly:
 
     ```
-    [INFO] JobsAdventure has been successfully enabled!
+    [INFO] UniverseJobs has been successfully enabled!
     [INFO] Configuration loaded successfully
     [INFO] Jobs loaded successfully
     [INFO] PlaceholderAPI integration initialized successfully
@@ -44,7 +44,7 @@ Before starting, make sure you have:
 
 ## ✅ Default Configuration
 
-JobsAdventure comes with **3 pre-configured jobs** ready to use:
+UniverseJobs comes with **3 pre-configured jobs** ready to use:
 
 ### ⛏️ Miner
 
@@ -101,7 +101,7 @@ For a complete experience, install these plugins:
 
 ## 🎯 Next Steps
 
-Now that JobsAdventure is installed:
+Now that UniverseJobs is installed:
 
 1. **Explore** the [default jobs](../player-guide/getting-started.md)
 2. **Configure** your [first custom jobs](../jobs-configuration/creating-jobs.md)
@@ -134,4 +134,4 @@ Now that JobsAdventure is installed:
 
 ***
 
-**Congratulations! JobsAdventure is now installed and ready to transform your server! 🎉**
+**Congratulations! UniverseJobs is now installed and ready to transform your server! 🎉**

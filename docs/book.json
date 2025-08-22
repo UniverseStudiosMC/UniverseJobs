@@ -1,6 +1,6 @@
 {
-  "title": "JobsAdventure Wiki",
-  "description": "Complete documentation for JobsAdventure - The ultimate jobs plugin for Minecraft",
+  "title": "UniverseJobs Wiki",
+  "description": "Complete documentation for UniverseJobs - The ultimate jobs plugin for Minecraft",
   "author": "Ax_Dev",
   "language": "en",
   "root": "./",
@@ -50,10 +50,10 @@
       "size": 2
     },
     "github": {
-      "url": "https://github.com/ax-dev/JobsAdventure"
+      "url": "https://github.com/ax-dev/UniverseJobs"
     },
     "edit-link": {
-      "base": "https://github.com/ax-dev/JobsAdventure/tree/main/docs",
+      "base": "https://github.com/ax-dev/UniverseJobs/tree/main/docs",
       "label": "Edit this page"
     },
     "prism": {
@@ -62,7 +62,7 @@
       ]
     },
     "sitemap-general": {
-      "prefix": "https://jobsadventure.wiki/"
+      "prefix": "https://UniverseJobs.wiki/"
     },
     "favicon": {
       "shortcut": "assets/favicon.ico",

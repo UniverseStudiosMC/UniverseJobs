@@ -109,7 +109,7 @@ public class LegacyConverterTest {
     private static void testPerformance() {
         System.out.println("\n=== Performance Test ===");
         
-        String testMessage = "&6&lJobsAdventure &r&eYou gained &a{xp} XP &ein &b{job}&e! &#FF0000Red &#00FF00Green";
+        String testMessage = "&6&lUniverseJobs &r&eYou gained &a{xp} XP &ein &b{job}&e! &#FF0000Red &#00FF00Green";
         int iterations = 10000;
         
         long startTime = System.nanoTime();
@@ -145,7 +145,7 @@ public class LegacyConverterTest {
         
         String[] scenarios = {
             // Chat prefixes
-            "&7[&6JobsAdventure&7] &a",
+            "&7[&6UniverseJobs&7] &a",
             
             // Progress bars
             "&a████████&7██ &e80%",

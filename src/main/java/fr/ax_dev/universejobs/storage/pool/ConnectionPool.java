@@ -51,9 +51,9 @@ public class ConnectionPool {
         this.enabled = config.getBoolean("database.enabled", 
                       config.getBoolean("storage.database.enabled", false));
         this.jdbcUrl = config.getString("database.url", 
-                       config.getString("storage.database.url", "jdbc:mysql://localhost:3306/jobsadventure"));
+                       config.getString("storage.database.url", "jdbc:mysql://localhost:3306/UniverseJobs"));
         this.username = config.getString("database.username", 
-                        config.getString("storage.database.username", "jobsadventure"));
+                        config.getString("storage.database.username", "UniverseJobs"));
         this.password = config.getString("database.password", 
                         config.getString("storage.database.password", ""));
         this.minConnections = config.getInt("database.pool.min-connections", 
@@ -76,7 +76,7 @@ public class ConnectionPool {
         this.totalGetConnectionCalls = new AtomicLong(0);
         this.totalConnectionWaitTime = new AtomicLong(0);
         this.healthChecker = Executors.newSingleThreadScheduledExecutor(
-            r -> new Thread(r, "JobsAdventure-ConnectionPool-HealthChecker"));
+            r -> new Thread(r, "UniverseJobs-ConnectionPool-HealthChecker"));
     }
     
     /**

@@ -2,7 +2,7 @@ name: "Miner with Limits"
 description: "Mining job with action limits to prevent farming"
 enabled: true
 max-level: 100
-permission: "jobsadventure.job.miner"
+permission: "UniverseJobs.job.miner"
 icon: 
   material: "IRON_PICKAXE"
   
@@ -101,7 +101,7 @@ actions:
       money: 500.0
       requirements:
         permission:
-          permission: "jobsadventure.vip"
+          permission: "UniverseJobs.vip"
           deny:
             message: "&cVIP required for premium actions!"
         # No limits section = no limits applied
@@ -157,6 +157,6 @@ levelup-actions:
 # - /jobs actionlimit status <player> <job> <target> - Check status
 #
 # Permissions:
-# - jobsadventure.admin.actionlimits - Access to limit commands
+# - UniverseJobs.admin.actionlimits - Access to limit commands
 #
 # ==================================================================================

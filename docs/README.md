@@ -1,19 +1,19 @@
-# 📖 JobsAdventure Wiki
+# 📖 UniverseJobs Wiki
 
-Welcome to the complete documentation for **JobsAdventure**, the ultimate jobs plugin for Minecraft!
+Welcome to the complete documentation for **UniverseJobs**, the ultimate jobs plugin for Minecraft!
 
 ## 🎯 About this Wiki
 
 This wiki contains all the necessary documentation to:
-- **Install and configure** JobsAdventure on your server
+- **Install and configure** UniverseJobs on your server
 - **Understand** all plugin features
 - **Configure** your custom jobs and rewards
-- **Integrate** JobsAdventure with other plugins
+- **Integrate** UniverseJobs with other plugins
 - **Troubleshoot** common issues
 
-## 🚀 What is JobsAdventure?
+## 🚀 What is UniverseJobs?
 
-JobsAdventure is an advanced Minecraft plugin that transforms your server into a true RPG economic experience. With its sophisticated job system, your players can:
+UniverseJobs is an advanced Minecraft plugin that transforms your server into a true RPG economic experience. With its sophisticated job system, your players can:
 
 - **Gain experience** by performing various actions (mining, farming, combat, etc.)
 - **Progress through jobs** with customizable levels and XP curves
@@ -86,7 +86,7 @@ JobsAdventure is an advanced Minecraft plugin that transforms your server into a
 
 ## 🎉 Ready to Begin?
 
-Click on **[Quick Installation](installation/quick-start.md)** to install JobsAdventure in less than 5 minutes!
+Click on **[Quick Installation](installation/quick-start.md)** to install UniverseJobs in less than 5 minutes!
 
 ---
 

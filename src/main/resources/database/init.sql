@@ -2,15 +2,15 @@
 -- SET QUOTED_IDENTIFIER ON;
 -- GO
 
--- JobsAdventure Database Schema
+-- UniverseJobs Database Schema
 -- Cross-database compatible schema for player job data and rewards
 -- 
 -- Supported databases: H2, SQLite, PostgreSQL, MySQL/MariaDB, SQL Server
 -- This schema uses standard SQL syntax for maximum compatibility
 
 -- Create database (if using MySQL/PostgreSQL)
--- CREATE DATABASE IF NOT EXISTS jobsadventure;
--- USE jobsadventure;
+-- CREATE DATABASE IF NOT EXISTS UniverseJobs;
+-- USE UniverseJobs;
 
 -- Main player job data table
 CREATE TABLE IF NOT EXISTS player_job_data (

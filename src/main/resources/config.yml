@@ -1,4 +1,4 @@
-# JobsAdventure Configuration
+# UniverseJobs Configuration
 # Main configuration file with performance optimizations
 
 # General Settings
@@ -43,8 +43,8 @@ database:
   enabled: false
   
   # Database connection settings
-  url: "jdbc:mysql://localhost:3306/jobsadventure"
-  username: "jobsadventure"
+  url: "jdbc:mysql://localhost:3306/UniverseJobs"
+  username: "UniverseJobs"
   password: "your_password_here"
   
   # Connection pool settings

@@ -223,7 +223,7 @@ public class AdminCommandHandler extends JobCommandHandler {
             return;
         }
         
-        MessageUtils.sendMessage(sender, "&6Reloading JobsAdventure...");
+        MessageUtils.sendMessage(sender, "&6Reloading UniverseJobs...");
         
         try {
             // Reload individual components
@@ -232,7 +232,7 @@ public class AdminCommandHandler extends JobCommandHandler {
             jobManager.reloadJobs();
             rewardManager.reloadRewards();
             
-            MessageUtils.sendMessage(sender, "&aJobsAdventure reloaded successfully!");
+            MessageUtils.sendMessage(sender, "&aUniverseJobs reloaded successfully!");
         } catch (Exception e) {
             MessageUtils.sendMessage(sender, "&cFailed to reload: " + e.getMessage());
             plugin.getLogger().severe("Failed to reload plugin: " + e.getMessage());

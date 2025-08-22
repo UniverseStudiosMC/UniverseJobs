@@ -288,7 +288,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      * @param player The player to send help to
      */
     private void sendHelp(Player player) {
-        player.sendMessage("§6=== JobsAdventure Commands ===");
+        player.sendMessage("§6=== UniverseJobs Commands ===");
         player.sendMessage("§e/jobs join <job> §7- Join a job");
         player.sendMessage("§e/jobs leave <job> §7- Leave a job");
         player.sendMessage("§e/jobs list §7- List all available jobs");
@@ -314,7 +314,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      * @param sender The console sender
      */
     private void sendConsoleHelp(CommandSender sender) {
-        sender.sendMessage("§6JobsAdventure Console Commands:");
+        sender.sendMessage("§6UniverseJobs Console Commands:");
         sender.sendMessage("§e/jobs reload §7- Reload the plugin configuration");
         sender.sendMessage("§e/jobs xpbonus <give|remove|list> §7- Manage XP bonuses");
         sender.sendMessage("§e/jobs actionlimit <restore|status> §7- Manage action limits");

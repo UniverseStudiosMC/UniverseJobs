@@ -1,6 +1,6 @@
 # Jobs Configuration
 
-This section covers everything you need to know about configuring jobs in JobsAdventure.
+This section covers everything you need to know about configuring jobs in UniverseJobs.
 
 ## Configuration Topics
 
@@ -15,7 +15,7 @@ Configure customizable actions that trigger when players level up in a job, incl
 
 ## Quick Overview
 
-Each job in JobsAdventure is defined by a YAML configuration file located in the `plugins/JobsAdventure/jobs/` directory. A job configuration includes:
+Each job in UniverseJobs is defined by a YAML configuration file located in the `plugins/UniverseJobs/jobs/` directory. A job configuration includes:
 
 - **Basic Information**: Name, description, icon, and permissions
 - **XP System**: Experience curves and leveling configuration
@@ -27,7 +27,7 @@ Each job in JobsAdventure is defined by a YAML configuration file located in the
 ## File Structure
 
 ```
-plugins/JobsAdventure/
+plugins/UniverseJobs/
 └── jobs/
     ├── miner.yml
     ├── farmer.yml

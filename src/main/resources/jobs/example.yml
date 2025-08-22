@@ -2,7 +2,7 @@ name: "Example"                               # The displayed job name
 description: "Extract treasures from the depths of the earth!"  # Short description
 enabled: true                               # Enable (true) or disable (false) the job
 max-level: 100                              # Maximum achievable level
-permission: "jobsadventure.job.example"       # Permission required to have this job
+permission: "UniverseJobs.job.example"       # Permission required to have this job
 icon: 
   material: "DIAMOND_PICKAXE"          
   
@@ -83,7 +83,7 @@ actions:
         multiple_condition:
           level_check:
             placeholder:
-              placeholder: "%jobsadventure_level_example%"
+              placeholder: "%UniverseJobs_level_example%"
               operator: "greater_equal"
               value: "10"
           player_name_check:

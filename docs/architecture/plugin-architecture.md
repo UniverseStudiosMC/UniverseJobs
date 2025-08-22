@@ -1,8 +1,8 @@
-# 🏗️ JobsAdventure Plugin Architecture
+# 🏗️ UniverseJobs Plugin Architecture
 
 ## Overview
 
-JobsAdventure is built with a modern modular architecture optimized for performance and Folia compatibility. The plugin uses a layered design with clear separation of responsibilities.
+UniverseJobs is built with a modern modular architecture optimized for performance and Folia compatibility. The plugin uses a layered design with clear separation of responsibilities.
 
 ## 🎯 Design Philosophy
 
@@ -26,8 +26,8 @@ JobsAdventure is built with a modern modular architecture optimized for performa
 ## 📋 Package Structure
 
 ```
-fr.ax_dev.jobsAdventure/
-├── JobsAdventure.java           # Main plugin class
+fr.ax_dev.UniverseJobs/
+├── UniverseJobs.java           # Main plugin class
 ├── action/                      # Action processing system
 │   ├── ActionProcessor.java     # Main action processor
 │   ├── ActionType.java          # Supported action types
@@ -92,8 +92,8 @@ fr.ax_dev.jobsAdventure/
 
 ## 🔧 Main Components
 
-### 1. JobsAdventure (Main Class)
-**File** : `JobsAdventure.java:30`
+### 1. UniverseJobs (Main Class)
+**File** : `UniverseJobs.java:30`
 
 The main plugin class that:
 - **Initializes all managers** in the correct order
@@ -332,4 +332,4 @@ Map<String, Object> health = jobManager.getHealthInfo();
 
 ---
 
-This modular and optimized architecture allows JobsAdventure to efficiently manage thousands of players while remaining extensible and maintainable.
+This modular and optimized architecture allows UniverseJobs to efficiently manage thousands of players while remaining extensible and maintainable.

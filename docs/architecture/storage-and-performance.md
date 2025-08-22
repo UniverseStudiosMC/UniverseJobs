@@ -1,6 +1,6 @@
 # 🚀 Storage and Performance System
 
-JobsAdventure implements a high-performance storage system designed to efficiently manage data for thousands of simultaneous players while maintaining perfect compatibility with Folia.
+UniverseJobs implements a high-performance storage system designed to efficiently manage data for thousands of simultaneous players while maintaining perfect compatibility with Folia.
 
 ## 🎯 Overview
 
@@ -164,7 +164,7 @@ storage:
 mysql:
   host: "localhost"
   port: 3306
-  database: "jobsadventure"
+  database: "UniverseJobs"
   username: "user"
   password: "password"
   
@@ -263,7 +263,7 @@ public class SystemStats {
 #### Via API
 ```java
 // Get performance statistics
-JobManager jobManager = JobsAdventure.getInstance().getJobManager();
+JobManager jobManager = UniverseJobs.getInstance().getJobManager();
 Map<String, Object> stats = jobManager.getPerformanceStats();
 
 // Examples of available metrics
@@ -286,7 +286,7 @@ double avgQueryTime = (Double) stats.get("avg_query_time_ms");
 
 ### Automatic Reports
 ```
-[15:30:00] [JobsAdventure] Performance Report:
+[15:30:00] [UniverseJobs] Performance Report:
 ├── Cache Statistics:
 │   ├── Hit Rate: 94.2% (18,842 hits, 1,158 misses)
 │   ├── Memory Usage: 128MB / 256MB (50%)
@@ -430,4 +430,4 @@ compression:
 
 ---
 
-The JobsAdventure storage and performance system is designed to scale with your server, from small communities to large networks, while maintaining exceptional performance.
+The UniverseJobs storage and performance system is designed to scale with your server, from small communities to large networks, while maintaining exceptional performance.

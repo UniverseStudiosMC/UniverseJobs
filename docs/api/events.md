@@ -1,11 +1,11 @@
-﻿# 🎭 JobsAdventure API Events
+﻿# 🎭 UniverseJobs API Events
 
-JobsAdventure emits a variety of events that allow third-party Plugins to integrate deeply with the job system. All events inherit from the Bukkit `Event` class and can be listened to via the `@EventHandler` annotation.
+UniverseJobs emits a variety of events that allow third-party Plugins to integrate deeply with the job system. All events inherit from the Bukkit `Event` class and can be listened to via the `@EventHandler` annotation.
 
 ## 📋 Complete Event List
 
 ### 1. PlayerJobJoinEvent
-**Package**: `fr.ax_dev.jobsAdventure.api.events`
+**Package**: `fr.ax_dev.UniverseJobs.api.events`
 **Cancellable**: ❌ No
 
 Triggered when a player successfully joins a job.
@@ -50,7 +50,7 @@ public void onPlayerJobJoin(PlayerJobJoinEvent event) {
 ```
 
 ### 2. PlayerJobLeaveEvent
-**Package**: `fr.ax_dev.jobsAdventure.api.events`
+**Package**: `fr.ax_dev.UniverseJobs.api.events`
 **Cancellable**: ❌ No
 
 Triggered when a player leaves a job.
@@ -98,7 +98,7 @@ public void onPlayerJobLeave(PlayerJobLeaveEvent event) {
 ```
 
 ### 3. PlayerXpGainEvent
-**Package** : `fr.ax_dev.jobsAdventure.api.events`
+**Package** : `fr.ax_dev.UniverseJobs.api.events`
 **Cancellable** : ✅ Yes
 
 Triggered before a player gains XP. Can be cancelled or modified.
@@ -161,7 +161,7 @@ public void onPlayerXpGain(PlayerXpGainEvent event) {
 ```
 
 ### 4. PlayerLevelUpEvent
-**Package** : `fr.ax_dev.jobsAdventure.api.events`
+**Package** : `fr.ax_dev.UniverseJobs.api.events`
 **Cancellable** : ❌ No
 
 Déclenché lorsqu'un Player monte de Level dans a job.
@@ -222,7 +222,7 @@ public void onPlayerLevelUp(PlayerLevelUpEvent event) {
 ```
 
 ### 5. PlayerRewardClaimEvent
-**Package** : `fr.ax_dev.jobsAdventure.api.events`
+**Package** : `fr.ax_dev.UniverseJobs.api.events`
 **Cancellable** : ✅ Yes
 
 Déclenché lorsqu'un Player tente de réclamer une récompense.
@@ -282,7 +282,7 @@ public void onPlayerRewardClaim(PlayerRewardClaimEvent event) {
 ```
 
 ### 6. JobActionEvent
-**Package** : `fr.ax_dev.jobsAdventure.api.events`
+**Package** : `fr.ax_dev.UniverseJobs.api.events`
 **Cancellable** : ❌ No
 
 Déclenché après qu'an action de job ait été traitée avec succès.
@@ -466,4 +466,4 @@ public void onRewardClaim(PlayerRewardClaimEvent event) {
 
 ---
 
-Les events JobsAdventure offer points of powerful integration to create gaming experiences riches et customs. Utilisez-les to extend the system de jobs according to the needs specific to your Server.
+Les events UniverseJobs offer points of powerful integration to create gaming experiences riches et customs. Utilisez-les to extend the system de jobs according to the needs specific to your Server.

@@ -1,6 +1,6 @@
-﻿# 📊 Placeholders JobsAdventure
+﻿# 📊 Placeholders UniverseJobs
 
-JobsAdventure s'intègre parfaitement avec PlaceholderAPI pour fournir plus de 60 placeholders différents, permettant d'afficher des informations dynamiques sur les jobs, Levelx, classements et Statistics dans votre Server.
+UniverseJobs s'intègre parfaitement avec PlaceholderAPI pour fournir plus de 60 placeholders différents, permettant d'afficher des informations dynamiques sur les jobs, Levelx, classements et Statistics dans votre Server.
 
 ## 🎯 Vue d'ensemble
 
@@ -13,94 +13,94 @@ JobsAdventure s'intègre parfaitement avec PlaceholderAPI pour fournir plus de 6
 
 ### Configuration Requise
 - **PlaceholderAPI** : Plugin requis (téléchargeable sur Spigot)
-- **JobsAdventure** : Version 1.0+ avec placeholders activés
+- **UniverseJobs** : Version 1.0+ avec placeholders activés
 - **Permissions** : Aucune permission spéciale requise
 
 ## 📋 Placeholders par Job
 
-Tous les placeholders suivants utilisent le format : `%jobsadventure_<job>_<type>_<info>%`
+Tous les placeholders suivants utilisent le format : `%UniverseJobs_<job>_<type>_<info>%`
 
 ### Informations Player
 
 #### Levelx et XP
 ```
-%jobsadventure_miner_player_level%          # Level of the player en mining
-%jobsadventure_farmer_player_level%         # Level of the player en farming
-%jobsadventure_hunter_player_level%         # Level of the player en hunting
+%UniverseJobs_miner_player_level%          # Level of the player en mining
+%UniverseJobs_farmer_player_level%         # Level of the player en farming
+%UniverseJobs_hunter_player_level%         # Level of the player en hunting
 
-%jobsadventure_miner_player_xp%             # XP total of the Player en mining
-%jobsadventure_farmer_player_xp%            # XP total of the Player en farming
-%jobsadventure_hunter_player_xp%            # XP total of the Player en hunting
+%UniverseJobs_miner_player_xp%             # XP total of the Player en mining
+%UniverseJobs_farmer_player_xp%            # XP total of the Player en farming
+%UniverseJobs_hunter_player_xp%            # XP total of the Player en hunting
 ```
 
 #### Progression et Statistics
 ```
-%jobsadventure_miner_player_xp_current%     # XP actuel dans le Level
-%jobsadventure_miner_player_xp_required%    # XP requis pour Level suivant
-%jobsadventure_miner_player_xp_remaining%   # XP restant pour Level suivant
-%jobsadventure_miner_player_progress%       # Progression en % (0-100)
+%UniverseJobs_miner_player_xp_current%     # XP actuel dans le Level
+%UniverseJobs_miner_player_xp_required%    # XP requis pour Level suivant
+%UniverseJobs_miner_player_xp_remaining%   # XP restant pour Level suivant
+%UniverseJobs_miner_player_progress%       # Progression en % (0-100)
 
-%jobsadventure_miner_player_rank%           # Rang of the player dans ce job
-%jobsadventure_miner_player_actions%        # Nombre d'actions effectuées
-%jobsadventure_miner_player_playtime%       # Temps de jeu dans ce job
+%UniverseJobs_miner_player_rank%           # Rang of the player dans ce job
+%UniverseJobs_miner_player_actions%        # Nombre d'actions effectuées
+%UniverseJobs_miner_player_playtime%       # Temps de jeu dans ce job
 ```
 
 #### Formatage et Affichage
 ```
-%jobsadventure_miner_player_level_formatted%    # Level avec formatage coloré
-%jobsadventure_miner_player_xp_formatted%       # XP avec séparateurs (125,430)
-%jobsadventure_miner_player_progress_bar%       # Barre de progression ████████░░
-%jobsadventure_miner_player_status%             # Statut (Actif/Inactif)
+%UniverseJobs_miner_player_level_formatted%    # Level avec formatage coloré
+%UniverseJobs_miner_player_xp_formatted%       # XP avec séparateurs (125,430)
+%UniverseJobs_miner_player_progress_bar%       # Barre de progression ████████░░
+%UniverseJobs_miner_player_status%             # Statut (Actif/Inactif)
 ```
 
 ### Informations sur les Jobs
 
 #### Statistics Générales
 ```
-%jobsadventure_miner_job_name%              # Nom affiché du job
-%jobsadventure_miner_job_description%       # Description du job
-%jobsadventure_miner_job_max_level%         # Level maximum
-%jobsadventure_miner_job_enabled%           # Statut activé/désactivé
+%UniverseJobs_miner_job_name%              # Nom affiché du job
+%UniverseJobs_miner_job_description%       # Description du job
+%UniverseJobs_miner_job_max_level%         # Level maximum
+%UniverseJobs_miner_job_enabled%           # Statut activé/désactivé
 
-%jobsadventure_miner_job_total_players%     # Nombre total de players
-%jobsadventure_miner_job_active_players%    # players actifs (en ligne)
-%jobsadventure_miner_job_actions_today%     # Actions effectuées aujourd'hui
-%jobsadventure_miner_job_actions_total%     # Total d'actions depuis création
+%UniverseJobs_miner_job_total_players%     # Nombre total de players
+%UniverseJobs_miner_job_active_players%    # players actifs (en ligne)
+%UniverseJobs_miner_job_actions_today%     # Actions effectuées aujourd'hui
+%UniverseJobs_miner_job_actions_total%     # Total d'actions depuis création
 ```
 
 #### Performance et Statistics
 ```
-%jobsadventure_miner_job_avg_level%         # Level moyen des players
-%jobsadventure_miner_job_top_level%         # Level le plus élevé
-%jobsadventure_miner_job_total_xp%          # XP total de tous les players
-%jobsadventure_miner_job_popularity%        # Popularité (rang parmi jobs)
+%UniverseJobs_miner_job_avg_level%         # Level moyen des players
+%UniverseJobs_miner_job_top_level%         # Level le plus élevé
+%UniverseJobs_miner_job_total_xp%          # XP total de tous les players
+%UniverseJobs_miner_job_popularity%        # Popularité (rang parmi jobs)
 ```
 
 ## 🏆 Placeholders de Classement
 
 ### Classements par Job
-Format : `%jobsadventure_<job>_leaderboard_<position>_<info>%`
+Format : `%UniverseJobs_<job>_leaderboard_<position>_<info>%`
 
 #### Informations des players au Classement
 ```
 # Top 1 du mining
-%jobsadventure_miner_leaderboard_1_name%         # Nom of the player #1
-%jobsadventure_miner_leaderboard_1_displayname%  # Nom d'affichage #1
-%jobsadventure_miner_leaderboard_1_level%        # Level of the player #1
-%jobsadventure_miner_leaderboard_1_xp%           # XP of the player #1
-%jobsadventure_miner_leaderboard_1_actions%      # Actions of the player #1
+%UniverseJobs_miner_leaderboard_1_name%         # Nom of the player #1
+%UniverseJobs_miner_leaderboard_1_displayname%  # Nom d'affichage #1
+%UniverseJobs_miner_leaderboard_1_level%        # Level of the player #1
+%UniverseJobs_miner_leaderboard_1_xp%           # XP of the player #1
+%UniverseJobs_miner_leaderboard_1_actions%      # Actions of the player #1
 
 # Top 2 du mining
-%jobsadventure_miner_leaderboard_2_name%         # Nom of the player #2
-%jobsadventure_miner_leaderboard_2_level%        # Level of the player #2
+%UniverseJobs_miner_leaderboard_2_name%         # Nom of the player #2
+%UniverseJobs_miner_leaderboard_2_level%        # Level of the player #2
 # ... et ainsi de suite jusqu'à la position 10
 ```
 
 #### Formatage du Classement
 ```
-%jobsadventure_miner_leaderboard_1_formatted%    # Format complete: "1. Steve (Lvl 45)"
-%jobsadventure_miner_leaderboard_1_xp_formatted% # XP formaté: "125,430 XP"
-%jobsadventure_miner_leaderboard_1_badge%        # Badge de rang: 🥇🥈🥉
+%UniverseJobs_miner_leaderboard_1_formatted%    # Format complete: "1. Steve (Lvl 45)"
+%UniverseJobs_miner_leaderboard_1_xp_formatted% # XP formaté: "125,430 XP"
+%UniverseJobs_miner_leaderboard_1_badge%        # Badge de rang: 🥇🥈🥉
 ```
 
 ### Classements Globaux
@@ -174,53 +174,53 @@ Format : `%jobsglobal_player_<stat>%`
 
 ## 📊 Placeholders de Server
 
-Format : `%jobsadventure_server_<stat>%`
+Format : `%UniverseJobs_server_<stat>%`
 
 ### Statistics Générales
 ```
-%jobsadventure_server_total_players%      # Nombre total de players enregistrés
-%jobsadventure_server_active_players%     # players actifs dans les jobs
-%jobsadventure_server_total_jobs%         # Nombre de jobs configurés
-%jobsadventure_server_enabled_jobs%       # Nombre de jobs activés
+%UniverseJobs_server_total_players%      # Nombre total de players enregistrés
+%UniverseJobs_server_active_players%     # players actifs dans les jobs
+%UniverseJobs_server_total_jobs%         # Nombre de jobs configurés
+%UniverseJobs_server_enabled_jobs%       # Nombre de jobs activés
 
-%jobsadventure_server_actions_today%      # Actions totales aujourd'hui
-%jobsadventure_server_actions_total%      # Actions totales depuis création
-%jobsadventure_server_uptime%             # Temps depuis démarrage Plugin
+%UniverseJobs_server_actions_today%      # Actions totales aujourd'hui
+%UniverseJobs_server_actions_total%      # Actions totales depuis création
+%UniverseJobs_server_uptime%             # Temps depuis démarrage Plugin
 ```
 
 ### Performance et Activité
 ```
-%jobsadventure_server_performance%        # Performance moyenne (ms)
-%jobsadventure_server_cache_hit_rate%     # Taux de succès du cache
-%jobsadventure_server_memory_usage%       # Usage mémoire (MB)
-%jobsadventure_server_database_status%    # Statut de la base de données
+%UniverseJobs_server_performance%        # Performance moyenne (ms)
+%UniverseJobs_server_cache_hit_rate%     # Taux de succès du cache
+%UniverseJobs_server_memory_usage%       # Usage mémoire (MB)
+%UniverseJobs_server_database_status%    # Statut de la base de données
 
-%jobsadventure_server_most_popular_job%   # Job le plus populaire
-%jobsadventure_server_peak_players%       # Pic de players simultanés
-%jobsadventure_server_version%            # Version of the plugin
+%UniverseJobs_server_most_popular_job%   # Job le plus populaire
+%UniverseJobs_server_peak_players%       # Pic de players simultanés
+%UniverseJobs_server_version%            # Version of the plugin
 ```
 
 ## 🎨 Placeholders de Formatage
 
 ### Barres de Progression
 ```
-%jobsadventure_miner_player_progress_bar_10%     # Barre 10 caractères ████████░░
-%jobsadventure_miner_player_progress_bar_20%     # Barre 20 caractères
-%jobsadventure_miner_player_progress_bar_custom% # Barre personnalisable
+%UniverseJobs_miner_player_progress_bar_10%     # Barre 10 caractères ████████░░
+%UniverseJobs_miner_player_progress_bar_20%     # Barre 20 caractères
+%UniverseJobs_miner_player_progress_bar_custom% # Barre personnalisable
 ```
 
 ### Couleurs et Styles
 ```
-%jobsadventure_miner_player_level_colored%       # Level avec couleur selon rang
-%jobsadventure_miner_player_status_badge%        # Badge de statut ✅❌⏸️
-%jobsadventure_miner_job_icon%                   # Icône du job 🛠️🌾🏹
+%UniverseJobs_miner_player_level_colored%       # Level avec couleur selon rang
+%UniverseJobs_miner_player_status_badge%        # Badge de statut ✅❌⏸️
+%UniverseJobs_miner_job_icon%                   # Icône du job 🛠️🌾🏹
 ```
 
 ### Formatage Numérique
 ```
-%jobsadventure_miner_player_xp_compact%          # XP en format compact (125k)
-%jobsadventure_miner_player_xp_percentage%       # XP en pourcentage du max
-%jobsadventure_miner_player_level_roman%         # Level en chiffres romains
+%UniverseJobs_miner_player_xp_compact%          # XP en format compact (125k)
+%UniverseJobs_miner_player_xp_percentage%       # XP en pourcentage du max
+%UniverseJobs_miner_player_level_roman%         # Level en chiffres romains
 ```
 
 ## ⚙️ Configuration et Usage
@@ -230,14 +230,14 @@ Format : `%jobsadventure_server_<stat>%`
 #### Scoreboard (avec ScoreboardManager)
 ```yaml
 # scoreboard.yml
-title: "&6&lJobsAdventure"
+title: "&6&lUniverseJobs"
 lines:
-  - "&7Level Mining: &e%jobsadventure_miner_player_level%"
-  - "&7XP: &a%jobsadventure_miner_player_xp_formatted%"
-  - "&7Progression: %jobsadventure_miner_player_progress_bar%"
+  - "&7Level Mining: &e%UniverseJobs_miner_player_level%"
+  - "&7XP: &a%UniverseJobs_miner_player_xp_formatted%"
+  - "&7Progression: %UniverseJobs_miner_player_progress_bar%"
   - ""
-  - "&7Rang: &6#%jobsadventure_miner_player_rank%"
-  - "&7Top 1: &b%jobsadventure_miner_leaderboard_1_name%"
+  - "&7Rang: &6#%UniverseJobs_miner_player_rank%"
+  - "&7Top 1: &b%UniverseJobs_miner_leaderboard_1_name%"
 ```
 
 #### Chat (avec ChatManager)
@@ -251,8 +251,8 @@ join-message: "&e%player_name% &7rejoint the server (Rang: &6#%jobsglobal_player
 ```yaml
 # tab.yml
 header:
-  - "&6&lJobsAdventure Server"
-  - "&7Total players: &e%jobsadventure_server_total_players%"
+  - "&6&lUniverseJobs Server"
+  - "&7Total players: &e%UniverseJobs_server_total_players%"
 
 footer:
   - "&7Votre rang global: &6#%jobsglobal_player_rank%"
@@ -264,9 +264,9 @@ footer:
 # Hologramme classement
 lines:
   - "&6&l🏆 TOP MINERS 🏆"
-  - "&e1. %jobsadventure_miner_leaderboard_1_formatted%"
-  - "&e2. %jobsadventure_miner_leaderboard_2_formatted%"
-  - "&e3. %jobsadventure_miner_leaderboard_3_formatted%"
+  - "&e1. %UniverseJobs_miner_leaderboard_1_formatted%"
+  - "&e2. %UniverseJobs_miner_leaderboard_2_formatted%"
+  - "&e3. %UniverseJobs_miner_leaderboard_3_formatted%"
   - ""
   - "&7Mise à jour automatique"
 ```
@@ -313,7 +313,7 @@ Certains placeholders retournent des valeurs spéciales :
 ```yaml
 # Avec ConditionalCommands
 conditions:
-  - placeholder: "%jobsadventure_miner_player_level%"
+  - placeholder: "%UniverseJobs_miner_player_level%"
     value: "50"
     commands:
       - "give %player% diamond_pickaxe{Enchantments:[{id:efficiency,lvl:5}]}"
@@ -325,9 +325,9 @@ conditions:
 <?php
 // Via PlaceholderAPI Web Hook
 $top_miners = [
-    get_placeholder("jobsadventure_miner_leaderboard_1_name"),
-    get_placeholder("jobsadventure_miner_leaderboard_2_name"),
-    get_placeholder("jobsadventure_miner_leaderboard_3_name")
+    get_placeholder("UniverseJobs_miner_leaderboard_1_name"),
+    get_placeholder("UniverseJobs_miner_leaderboard_2_name"),
+    get_placeholder("UniverseJobs_miner_leaderboard_3_name")
 ];
 ?>
 ```
@@ -353,4 +353,4 @@ tracks:
 
 ---
 
-Les placeholders JobsAdventure offrent une intégration profonde avec l'écosystème PlaceholderAPI, permettant de créer des expériences utilisateur riches et dynamiques sur votre Server Minecraft.
+Les placeholders UniverseJobs offrent une intégration profonde avec l'écosystème PlaceholderAPI, permettant de créer des expériences utilisateur riches et dynamiques sur votre Server Minecraft.

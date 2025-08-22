@@ -1,4 +1,4 @@
-# 🚀 JobsAdventure
+# 🚀 UniverseJobs
 ### *The Ultimate Next-Generation Jobs Plugin for Minecraft Servers*
 
 [![Folia Compatible](https://img.shields.io/badge/Folia-✅%20Compatible-brightgreen?style=for-the-badge&logo=minecraft)](https://github.com/PaperMC/Folia)
@@ -9,7 +9,7 @@
 
 ---
 
-## 📊 **Why Server Admins Choose JobsAdventure**
+## 📊 **Why Server Admins Choose UniverseJobs**
 
 ### 🎯 **Performance That Scales**
 - **⚡ 90% Faster** than traditional job plugins
@@ -36,7 +36,7 @@
 ## 🏆 **Key Features That Set Us Apart**
 
 ### 🚀 **Next-Gen Performance**
-| Feature | JobsAdventure | Traditional Plugins |
+| Feature | UniverseJobs | Traditional Plugins |
 |---------|---------------|---------------------|
 | **Players Supported** | 1000+ | 200-300 |
 | **Database Queries/sec** | <50 | 500+ |
@@ -100,7 +100,7 @@
 - 💡 Optimization tips
 
 ### 📥 **Downloads**
-[![Download Now](https://img.shields.io/badge/Download-Latest%20Release-success?style=for-the-badge&logo=download)](https://github.com/AxDevv/JobsAdventure/releases/latest)
+[![Download Now](https://img.shields.io/badge/Download-Latest%20Release-success?style=for-the-badge&logo=download)](https://github.com/AxDevv/UniverseJobs/releases/latest)
 
 **Release includes:**
 - 📦 Ready-to-use plugin JAR
@@ -118,7 +118,7 @@
 
 ## 📜 **Licensing & Legal**
 
-JobsAdventure is released under the **MIT License**:
+UniverseJobs is released under the **MIT License**:
 
 ```yaml
 ✅ Free Forever - No hidden costs
@@ -138,7 +138,7 @@ JobsAdventure is released under the **MIT License**:
 
 <div align="center">
 
-[![Download Latest Release](https://img.shields.io/badge/Download-JobsAdventure%20v1.0-success?style=for-the-badge&logo=download)](https://github.com/AxDevv/JobsAdventure/releases/latest)
+[![Download Latest Release](https://img.shields.io/badge/Download-UniverseJobs%20v1.0-success?style=for-the-badge&logo=download)](https://github.com/AxDevv/UniverseJobs/releases/latest)
 [![Read Documentation](https://img.shields.io/badge/📖%20Read-Documentation-blue?style=for-the-badge&logo=gitbook)](https://universestudios.gitbook.io/universejobs)
 
 **Made with ❤️ by Ax_Dev**  

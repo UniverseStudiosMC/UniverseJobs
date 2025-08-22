@@ -1,6 +1,6 @@
 ﻿# 🔧 Système de Conditions
 
-The system de conditions de JobsAdventure permet de créer des règles complexes pour contrôler quand the actions donnent de l'XP et quand the rewards peuvent être claimeds. Il utilise une logique AND/OR flexible avec support des groupes imbriqués.
+The system de conditions de UniverseJobs permet de créer des règles complexes pour contrôler quand the actions donnent de l'XP et quand the rewards peuvent être claimeds. Il utilise une logique AND/OR flexible avec support des groupes imbriqués.
 
 ## 🎯 Vue d'ensemble
 
@@ -75,7 +75,7 @@ placeholder:
 
 # Vérifier un autre job
 placeholder:
-  placeholder: "%jobsadventure_farmer_player_level%"
+  placeholder: "%UniverseJobs_farmer_player_level%"
   operator: "greater_than"
   value: "10"
 
@@ -301,7 +301,7 @@ requirements:
   multiple_condition:
     # Conditions individuelles avec leurs propres deny messages
     permission:
-      permission: "jobsadventure.mine.iron"
+      permission: "UniverseJobs.mine.iron"
       require: true
       deny:
         message: "&cVous n'avez pas la permission de miner le fer !"
@@ -402,7 +402,7 @@ coal_ore:
     multiple_condition:
       # Vérification des permissions
       mining_permission:
-        permission: "jobsadventure.mine.coal"
+        permission: "UniverseJobs.mine.coal"
         require: true
         deny:
           message: "&c🚫 Permission manquante pour miner le charbon !"
@@ -410,11 +410,11 @@ coal_ore:
       
       # Niveau minimum requis
       level_check:
-        placeholder: "%jobsadventure_miner_player_level%"
+        placeholder: "%UniverseJobs_miner_player_level%"
         operator: "greater_than_or_equal"
         value: "5"
         deny:
-          message: "&c📊 Niveau mineur 5+ requis (actuel: %jobsadventure_miner_player_level%)"
+          message: "&c📊 Niveau mineur 5+ requis (actuel: %UniverseJobs_miner_player_level%)"
           sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
       
       # Vérification de l'outil
@@ -545,7 +545,7 @@ requirements:
       high_level:
         logic: "AND"
         placeholder:
-          placeholder: "%jobsadventure_miner_player_level%"
+          placeholder: "%UniverseJobs_miner_player_level%"
           operator: "greater_than"
           value: "50"
         time:
@@ -590,7 +590,7 @@ permission:
 ### Commands Conditionnelles
 ```yaml
 placeholder:
-  placeholder: "%jobsadventure_miner_player_level%"
+  placeholder: "%UniverseJobs_miner_player_level%"
   operator: "equals"
   value: "100"
   accept:
@@ -628,7 +628,7 @@ prestige_action:
   requirements:
     logic: "AND"
     placeholder:
-      placeholder: "%jobsadventure_miner_player_level%"
+      placeholder: "%UniverseJobs_miner_player_level%"
       operator: "equals"
       value: "100"
     item:
@@ -769,4 +769,4 @@ permission:
 
 ---
 
-The system de conditions JobsAdventure offre flexibility maximum to create mécaniques de jeu complexes et engageantes, adaptées aux besoins specific to your Server.
+The system de conditions UniverseJobs offre flexibility maximum to create mécaniques de jeu complexes et engageantes, adaptées aux besoins specific to your Server.

@@ -26,7 +26,7 @@ public class JobsLeaderboardPlaceholder extends PlaceholderExpansion {
 
     @Override
     public String getIdentifier() {
-        return "jobsadventure";
+        return "UniverseJobs";
     }
 
     @Override
@@ -51,7 +51,7 @@ public class JobsLeaderboardPlaceholder extends PlaceholderExpansion {
         String[] args = params.split("_");
         if (args.length < 2) return null;
 
-        // Format: jobsadventure_<job>_<type>_<position/info>
+        // Format: UniverseJobs_<job>_<type>_<position/info>
         String jobId = args[0];
         String type = args[1];
 
@@ -71,7 +71,7 @@ public class JobsLeaderboardPlaceholder extends PlaceholderExpansion {
     }
 
     private String handleLeaderboardPlaceholder(String jobId, String[] args) {
-        // Format: jobsadventure_<job>_leaderboard_<position>_<info>
+        // Format: UniverseJobs_<job>_leaderboard_<position>_<info>
         if (args.length < 4) return null;
 
         try {

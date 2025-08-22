@@ -1,10 +1,10 @@
-# 🤔 What is JobsAdventure?
+# 🤔 What is UniverseJobs?
 
-JobsAdventure is the **next-generation** jobs plugin for Minecraft, designed to transform your server into a true RPG economic experience.
+UniverseJobs is the **next-generation** jobs plugin for Minecraft, designed to transform your server into a true RPG economic experience.
 
 ## 🎯 Project Vision
 
-JobsAdventure was created with a clear vision: **offer the most advanced, flexible, and performant jobs system** available for Minecraft. Unlike other job plugins, JobsAdventure completely rethinks the traditional approach to provide:
+UniverseJobs was created with a clear vision: **offer the most advanced, flexible, and performant jobs system** available for Minecraft. Unlike other job plugins, UniverseJobs completely rethinks the traditional approach to provide:
 
 - A **modern architecture** compatible with Folia
 - **Maximum flexibility** in configuration
@@ -15,7 +15,7 @@ JobsAdventure was created with a clear vision: **offer the most advanced, flexib
 
 ### Simplicity for players, power for administrators
 
-JobsAdventure follows the principle **"Simple on the surface, powerful in depth"**:
+UniverseJobs follows the principle **"Simple on the surface, powerful in depth"**:
 
 - **Players**: Intuitive interface, clear progression, motivating rewards
 - **Administrators**: Advanced configuration, complete management tools, extensible API
@@ -31,7 +31,7 @@ Every line of code is optimized for:
 
 ## 🔍 Comparison with other plugins
 
-| Feature | JobsAdventure | Other plugins |
+| Feature | UniverseJobs | Other plugins |
 |:---|:---:|:---:|
 | **Folia Compatibility** | ✅ Complete | ❌ Not supported |
 | **Mathematical XP Formulas** | ✅ Yes | ❌ Fixed curves |
@@ -77,7 +77,7 @@ Every line of code is optimized for:
 ## 🛠️ Technical Architecture
 
 ### Modular system
-JobsAdventure is built on a modular architecture allowing:
+UniverseJobs is built on a modular architecture allowing:
 - **Adding features** without impacting existing ones
 - **Easy third-party integrations** to develop
 - **Simplified maintenance** and safe updates
@@ -120,7 +120,7 @@ Each action generates appropriate feedback:
 
 ## 🔮 Future Vision
 
-JobsAdventure continues to evolve with:
+UniverseJobs continues to evolve with:
 
 ### Features in development
 - **MySQL clustering support** for large networks
@@ -143,7 +143,7 @@ JobsAdventure continues to evolve with:
 
 ## 🤝 Open-source Philosophy
 
-JobsAdventure believes in:
+UniverseJobs believes in:
 - **Development transparency**
 - **Encouraged community contributions**
 - **User feedback** taken into account
@@ -151,11 +151,11 @@ JobsAdventure believes in:
 
 ## 🚀 Ready to Start?
 
-Now that you understand the vision of JobsAdventure, discover:
+Now that you understand the vision of UniverseJobs, discover:
 - [Detailed features](features.md)
 - [Compatibility and requirements](compatibility.md)  
 - [Quick installation](../installation/quick-start.md)
 
 ---
 
-*JobsAdventure: The future of job plugins for Minecraft*
+*UniverseJobs: The future of job plugins for Minecraft*

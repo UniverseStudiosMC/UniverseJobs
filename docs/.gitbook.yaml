@@ -9,19 +9,19 @@ structure:
   summary: SUMMARY.md
 
 # Metadata
-title: JobsAdventure Wiki
-description: Complete documentation for JobsAdventure - The ultimate jobs plugin for Minecraft
+title: UniverseJobs Wiki
+description: Complete documentation for UniverseJobs - The ultimate jobs plugin for Minecraft
 
 # Site configuration
 site:
-  title: JobsAdventure Wiki
-  description: Complete guide to install, configure and use JobsAdventure
+  title: UniverseJobs Wiki
+  description: Complete guide to install, configure and use UniverseJobs
   
 # Integrations
 integrations:
   github:
     enabled: true
-    repository: ax-dev/JobsAdventure
+    repository: ax-dev/UniverseJobs
     
   search:
     enabled: true
@@ -32,7 +32,7 @@ integrations:
 # PDF configuration
 pdf:
   enabled: true
-  title: JobsAdventure - Complete Guide
+  title: UniverseJobs - Complete Guide
   author: Ax_Dev
   
 # Global variables

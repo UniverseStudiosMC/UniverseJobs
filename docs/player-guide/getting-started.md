@@ -1,10 +1,10 @@
 # 🎮 Player Guide - Getting Started
 
-Welcome to JobsAdventure! This guide will teach you everything you need to know to start your professional adventure in Minecraft.
+Welcome to UniverseJobs! This guide will teach you everything you need to know to start your professional adventure in Minecraft.
 
 ## 🤔 What is a Job?
 
-A **job** in JobsAdventure is a specialization that allows you to:
+A **job** in UniverseJobs is a specialization that allows you to:
 - **Gain experience (XP)** by performing certain actions
 - **Level up** and unlock new abilities
 - **Obtain unique rewards** based on your progression
@@ -52,7 +52,7 @@ To see details about your new job:
 === Miner ===
 Description: Underground resource extraction
 Max Level: 100
-Permission: jobsadventure.job.miner
+Permission: UniverseJobs.job.miner
 Lore:
   - Dig deep and find riches!
   - Level up by mining ores and stones
@@ -231,7 +231,7 @@ Some actions give more XP under special conditions:
 ### "The rewards interface won't open!"
 ✅ **Solutions:**
 1. Make sure you've joined the job
-2. Check you have permission `jobsadventure.rewards.use`
+2. Check you have permission `UniverseJobs.rewards.use`
 3. Try `/jobs rewards list` first
 
 ## 📚 Essential Commands to Remember

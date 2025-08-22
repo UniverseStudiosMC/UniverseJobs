@@ -1,4 +1,4 @@
-# English (United States) language file for JobsAdventure
+# English (United States) language file for UniverseJobs
 # This file contains all translatable messages for the plugin
 
 # XP and leveling messages
@@ -103,7 +103,7 @@ commands:
     
   # Help command
   help:
-    header: "&6=== JobsAdventure Commands ==="
+    header: "&6=== UniverseJobs Commands ==="
     join: "&e/jobs join <job> &7- Join a job"
     leave: "&e/jobs leave <job> &7- Leave a job"
     list: "&e/jobs list &7- List available jobs"
@@ -137,8 +137,8 @@ system:
   rewards-initialized: "Reward system initialized successfully"
   nexo-registered: "Nexo event listener registered for enhanced custom block support"
   itemsadder-registered: "ItemsAdder event listener registered for enhanced custom block support"
-  plugin-enabled: "JobsAdventure has been enabled successfully!"
-  plugin-disabled: "JobsAdventure has been disabled"
+  plugin-enabled: "UniverseJobs has been enabled successfully!"
+  plugin-disabled: "UniverseJobs has been disabled"
 
 # Legacy message support (backward compatibility)
 messages:

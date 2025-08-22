@@ -4,7 +4,7 @@ This page presents complete job configuration examples to inspire you and help y
 
 ## 🏗️ Basic Job Structure
 
-Each job is defined in a YAML file in the `/plugins/JobsAdventure/jobs/` folder. Here's the basic structure:
+Each job is defined in a YAML file in the `/plugins/UniverseJobs/jobs/` folder. Here's the basic structure:
 
 ```yaml
 # Basic information
@@ -12,7 +12,7 @@ name: "JobName"
 description: "Job description"
 enabled: true
 max-level: 100
-permission: "jobsadventure.job.jobname"
+permission: "UniverseJobs.job.jobname"
 icon: "MATERIAL_ICON"
 
 # Reward system
@@ -63,7 +63,7 @@ name: "Miner"
 description: "Extract valuable resources from the depths of the earth"
 enabled: true
 max-level: 100
-permission: "jobsadventure.job.miner"
+permission: "UniverseJobs.job.miner"
 icon: "DIAMOND_PICKAXE"
 
 # XP progression curve
@@ -267,7 +267,7 @@ name: "Farmer"
 description: "Cultivate the land and raise animals for sustenance"
 enabled: true
 max-level: 75
-permission: "jobsadventure.job.farmer"
+permission: "UniverseJobs.job.farmer"
 icon: "GOLDEN_HOE"
 
 # XP progression curve (gentler than miner)
@@ -547,7 +547,7 @@ name: "Hunter"
 description: "Master of the wild and expert tracker"
 enabled: true
 max-level: 80
-permission: "jobsadventure.job.hunter"
+permission: "UniverseJobs.job.hunter"
 icon: "BOW"
 
 # XP progression curve (moderate difficulty)
@@ -807,7 +807,7 @@ levelup-actions:
 
 ## 🎯 Level Up Actions System
 
-JobsAdventure now features a powerful level up actions system that allows 100% customizable rewards and effects when players level up. Here's how it works:
+UniverseJobs now features a powerful level up actions system that allows 100% customizable rewards and effects when players level up. Here's how it works:
 
 ### Basic Structure
 ```yaml
@@ -906,7 +906,7 @@ requirements:
     group1:
       logic: "OR"
       placeholder:
-        placeholder: "%jobsadventure_miner_player_level%"
+        placeholder: "%UniverseJobs_miner_player_level%"
         operator: "greater_than"
         value: "50"
       item:
@@ -923,13 +923,13 @@ message:
   color: "GREEN"
   duration: 60
   # Using placeholders
-  message: "&a+{exp} XP {job} &7| Total: %jobsadventure_{job}_player_xp%"
+  message: "&a+{exp} XP {job} &7| Total: %UniverseJobs_{job}_player_xp%"
 ```
 
 ## 📁 File Organization
 
 ```
-/plugins/JobsAdventure/
+/plugins/UniverseJobs/
 ├── jobs/
 │   ├── miner.yml
 │   ├── farmer.yml

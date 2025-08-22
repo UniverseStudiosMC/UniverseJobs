@@ -254,7 +254,7 @@ public class ActionLimitManager {
         
         try {
             LocalDateTime now = LocalDateTime.now();
-            LocalDateTime scheduled = LocalDateTime.parse(scheduleTime + ":00", DateTimeFormatter.ofPattern("HH:mm:ss"));
+            LocalDateTime scheduled = parseTime(scheduleTime);
             
             // Check if we're within 1 minute of the scheduled time
             if (Math.abs(now.getHour() - scheduled.getHour()) == 0 && 
@@ -264,8 +264,49 @@ public class ActionLimitManager {
                 executeAutoRestore();
             }
         } catch (Exception e) {
-            plugin.getLogger().warning("Invalid auto-restore time format: " + scheduleTime);
+            plugin.getLogger().warning("Invalid auto-restore time format: " + scheduleTime + 
+                ". Supported formats: HH:mm (24h), h:mm AM/PM, hh:mm AM/PM");
         }
+    }
+    
+    /**
+     * Parse time string supporting multiple formats.
+     * Supports: HH:mm (24-hour), h:mm AM/PM, hh:mm AM/PM
+     * 
+     * @param timeString The time string to parse
+     * @return LocalDateTime with the parsed time (using current date)
+     */
+    private LocalDateTime parseTime(String timeString) {
+        String normalizedTime = timeString.trim();
+        LocalDateTime baseDate = LocalDateTime.now().withSecond(0).withNano(0);
+        
+        // Try different time formats
+        DateTimeFormatter[] formatters = {
+            DateTimeFormatter.ofPattern("HH:mm"),     // 24-hour format (e.g., "14:30")
+            DateTimeFormatter.ofPattern("H:mm"),      // 24-hour format single digit (e.g., "9:30")
+            DateTimeFormatter.ofPattern("h:mm a"),    // 12-hour format with AM/PM (e.g., "2:30 PM")
+            DateTimeFormatter.ofPattern("hh:mm a"),   // 12-hour format with leading zero (e.g., "02:30 PM")
+            DateTimeFormatter.ofPattern("h:mma"),     // 12-hour format without space (e.g., "2:30PM")
+            DateTimeFormatter.ofPattern("hh:mma")     // 12-hour format without space and leading zero (e.g., "02:30PM")
+        };
+        
+        for (DateTimeFormatter formatter : formatters) {
+            try {
+                // For 24-hour formats, parse directly
+                if (formatter.toString().contains("HH") || formatter.toString().contains("H:")) {
+                    java.time.LocalTime time = java.time.LocalTime.parse(normalizedTime, formatter);
+                    return baseDate.with(time);
+                } else {
+                    // For 12-hour formats with AM/PM
+                    java.time.LocalTime time = java.time.LocalTime.parse(normalizedTime.toUpperCase(), formatter);
+                    return baseDate.with(time);
+                }
+            } catch (Exception ignored) {
+                // Try next formatter
+            }
+        }
+        
+        throw new IllegalArgumentException("Unable to parse time: " + timeString);
     }
     
     /**

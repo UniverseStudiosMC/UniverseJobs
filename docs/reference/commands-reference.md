@@ -1,11 +1,11 @@
 ﻿# 📋 Référence Complète des Commands
 
-JobsAdventure fournit un ensemble complete de Commands pour les players et les administrateurs. Toutes the commands sont regroupées sous the command principale `/jobs`.
+UniverseJobs fournit un ensemble complete de Commands pour les players et les administrateurs. Toutes the commands sont regroupées sous the command principale `/jobs`.
 
 ## 🎮 Commands players
 
 ### `/jobs` - Aide Principale
-**Permission** : `jobsadventure.command.jobs` (par défaut : `true`)  
+**Permission** : `UniverseJobs.command.jobs` (par défaut : `true`)  
 **Usage** : `/jobs`
 
 Affiche l'aide principale avec la liste de toutes the commands disponibles.
@@ -21,7 +21,7 @@ Affiche l'aide principale avec la liste de toutes the commands disponibles.
 ```
 
 ### `/jobs list` - Liste des Jobs
-**Permission** : `jobsadventure.command.list` (par défaut : `true`)  
+**Permission** : `UniverseJobs.command.list` (par défaut : `true`)  
 **Usage** : `/jobs list`
 
 Affiche tous les jobs disponibles sur the server avec leurs informations de base.
@@ -31,23 +31,23 @@ Affiche tous les jobs disponibles sur the server avec leurs informations de base
 === Jobs Disponibles ===
 🛠️ Miner - Extraction de minerais
    Level requis: Aucun
-   Permission: jobsadventure.job.miner
+   Permission: UniverseJobs.job.miner
    players actifs: 45
 
 🌾 Farmer - Agriculture et élevage  
    Level requis: Aucun
-   Permission: jobsadventure.job.farmer
+   Permission: UniverseJobs.job.farmer
    players actifs: 32
 
 🏹 Hunter - Chasse et combat
    Level requis: Level 10 en Farmer
-   Permission: jobsadventure.job.hunter  
+   Permission: UniverseJobs.job.hunter  
    players actifs: 28
 ```
 
 ### `/jobs join <job>` - Rejoindre un Job
-**Permission** : `jobsadventure.command.join` (par défaut : `true`)  
-**Permission du job** : `jobsadventure.job.<jobid>` (ex: `jobsadventure.job.miner`)  
+**Permission** : `UniverseJobs.command.join` (par défaut : `true`)  
+**Permission du job** : `UniverseJobs.job.<jobid>` (ex: `UniverseJobs.job.miner`)  
 **Usage** : `/jobs join <nom_du_job>`
 
 Permet à un Player de rejoindre a job spécifique.
@@ -67,7 +67,7 @@ Permet à un Player de rejoindre a job spécifique.
 - ✅ Les prérequis du job sont remplis
 
 ### `/jobs leave <job>` - Quitter un Job
-**Permission** : `jobsadventure.command.leave` (par défaut : `true`)  
+**Permission** : `UniverseJobs.command.leave` (par défaut : `true`)  
 **Usage** : `/jobs leave <nom_du_job>`
 
 Permet à un Player de quitter a job.
@@ -79,20 +79,20 @@ Permet à un Player de quitter a job.
 ```
 
 ### `/jobs info [job]` - Informations sur un Job
-**Permission** : `jobsadventure.command.info` (par défaut : `true`)  
+**Permission** : `UniverseJobs.command.info` (par défaut : `true`)  
 **Usage** : `/jobs info [nom_du_job]`
 
 Affiche des informations detailed sur a job spécifique ou sur tous les jobs of the player.
 
 ### `/jobs stats [Player]` - Statistics
-**Permission** : `jobsadventure.command.stats` (par défaut : `true`)  
-**Permission autres** : `jobsadventure.command.stats.others` (admins uniquement)  
+**Permission** : `UniverseJobs.command.stats` (par défaut : `true`)  
+**Permission autres** : `UniverseJobs.command.stats.others` (admins uniquement)  
 **Usage** : `/jobs stats [nom_Player]`
 
 Affiche the statistics detailed d'un Player.
 
 ### `/jobs rewards` - Système de Récompenses
-**Permission** : `jobsadventure.command.rewards` (par défaut : `true`)  
+**Permission** : `UniverseJobs.command.rewards` (par défaut : `true`)  
 **Usage** : `/jobs rewards`
 
 Ouvre l'interface graphique des récompenses ou affiche the rewards disponibles.
@@ -100,13 +100,13 @@ Ouvre l'interface graphique des récompenses ou affiche the rewards disponibles.
 ## 🛡️ Commands Admin
 
 ### `/jobs admin` - Menu Admin Principal
-**Permission** : `jobsadventure.admin` (par défaut : `op`)  
+**Permission** : `UniverseJobs.admin` (par défaut : `op`)  
 **Usage** : `/jobs admin`
 
 Affiche le menu principal d'administration avec toutes les options disponibles.
 
 ### `/jobs admin reload` - Rechargement
-**Permission** : `jobsadventure.admin.reload` (par défaut : `op`)  
+**Permission** : `UniverseJobs.admin.reload` (par défaut : `op`)  
 **Usage** : `/jobs admin reload [config|jobs|rewards|all]`
 
 Recharge les différents composants of the plugin sans redémarrage.
@@ -120,7 +120,7 @@ Recharge les différents composants of the plugin sans redémarrage.
 ```
 
 ### `/jobs admin player <Player>` - Gestion Player
-**Permission** : `jobsadventure.admin.player` (par défaut : `op`)  
+**Permission** : `UniverseJobs.admin.player` (par défaut : `op`)  
 **Usage** : `/jobs admin player <Player> <action> [paramètres]`
 
 Gestion complète des données d'un Player.
@@ -140,7 +140,7 @@ Gestion complète des données d'un Player.
 ```
 
 ### `/jobs admin bonus` - Gestion Bonus XP
-**Permission** : `jobsadventure.admin.bonus` (par défaut : `op`)  
+**Permission** : `UniverseJobs.admin.bonus` (par défaut : `op`)  
 **Usage** : `/jobs admin bonus <action> [paramètres]`
 
 Gestion des bonus d'XP temporaires et permanents.
@@ -157,7 +157,7 @@ Gestion des bonus d'XP temporaires et permanents.
 ```
 
 ### `/jobs admin debug` - Outils Debug
-**Permission** : `jobsadventure.admin.debug` (par défaut : `op`)  
+**Permission** : `UniverseJobs.admin.debug` (par défaut : `op`)  
 **Usage** : `/jobs admin debug <tool> [paramètres]`
 
 Outils avancés de débogage et diagnostic.
@@ -183,38 +183,38 @@ Outils avancés de débogage et diagnostic.
 ```yaml
 permissions:
   # Commands players
-  jobsadventure.command.jobs: true          # Command /jobs principale
-  jobsadventure.command.list: true          # Lister les jobs
-  jobsadventure.command.join: true          # Rejoindre a job
-  jobsadventure.command.leave: true         # Quitter a job
-  jobsadventure.command.info: true          # Info sur les jobs
-  jobsadventure.command.stats: true         # Ses propres stats
-  jobsadventure.command.rewards: true       # Accès aux récompenses
+  UniverseJobs.command.jobs: true          # Command /jobs principale
+  UniverseJobs.command.list: true          # Lister les jobs
+  UniverseJobs.command.join: true          # Rejoindre a job
+  UniverseJobs.command.leave: true         # Quitter a job
+  UniverseJobs.command.info: true          # Info sur les jobs
+  UniverseJobs.command.stats: true         # Ses propres stats
+  UniverseJobs.command.rewards: true       # Accès aux récompenses
   
   # Permissions par job
-  jobsadventure.job.miner: true             # Accès au job miner
-  jobsadventure.job.farmer: true            # Accès au job farmer
-  jobsadventure.job.hunter: true            # Accès au job hunter
+  UniverseJobs.job.miner: true             # Accès au job miner
+  UniverseJobs.job.farmer: true            # Accès au job farmer
+  UniverseJobs.job.hunter: true            # Accès au job hunter
   
   # Multiplicateurs XP (exclusifs)
-  jobsadventure.multiplier.2: false         # Bonus XP x2
-  jobsadventure.multiplier.3: false         # Bonus XP x3
-  jobsadventure.multiplier.5: false         # Bonus XP x5
+  UniverseJobs.multiplier.2: false         # Bonus XP x2
+  UniverseJobs.multiplier.3: false         # Bonus XP x3
+  UniverseJobs.multiplier.5: false         # Bonus XP x5
 ```
 
 ### Permissions Administrateur
 ```yaml
   # Administration de base
-  jobsadventure.admin: op                   # Accès admin général
-  jobsadventure.admin.reload: op            # Rechargement config
-  jobsadventure.admin.stats: op             # Stats Server
+  UniverseJobs.admin: op                   # Accès admin général
+  UniverseJobs.admin.reload: op            # Rechargement config
+  UniverseJobs.admin.stats: op             # Stats Server
   
   # Gestion avancée
-  jobsadventure.admin.player: op            # Gestion players
-  jobsadventure.admin.job: op               # Gestion jobs
-  jobsadventure.admin.bonus: op             # Gestion bonus XP
-  jobsadventure.admin.debug: op             # Outils debug
-  jobsadventure.admin.cleanup: op           # Nettoyage système
+  UniverseJobs.admin.player: op            # Gestion players
+  UniverseJobs.admin.job: op               # Gestion jobs
+  UniverseJobs.admin.bonus: op             # Gestion bonus XP
+  UniverseJobs.admin.debug: op             # Outils debug
+  UniverseJobs.admin.cleanup: op           # Nettoyage système
 ```
 
 ## 📝 Alias et Raccourcis
