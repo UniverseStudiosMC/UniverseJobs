@@ -156,7 +156,7 @@ public class ActionProcessor {
         
         ActionType actionType = job.getActionTypeForAction(action);
         boolean targetMatches = (actionType == ActionType.ENCHANT) 
-            ? action.matchesEnchantTarget(target)
+            ? action.matchesEnchantTarget(target, context.get("enchantment_level"))
             : action.matchesTarget(target, nexoBlockId);
         
         if (!targetMatches) {

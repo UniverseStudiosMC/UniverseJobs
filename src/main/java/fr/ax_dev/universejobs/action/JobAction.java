@@ -22,6 +22,7 @@ public class JobAction {
     private final List<String> commands;
     private final String interactType;
     private final ActionLimitManager.ActionLimit actionLimit;
+    private final String enchantLevel;
     
     /**
      * Create a new JobAction from configuration.
@@ -35,6 +36,7 @@ public class JobAction {
         this.name = config.getString("name", "");
         this.description = config.getString("description", "");
         this.interactType = config.getString("interact-type", "RIGHT_CLICK").toUpperCase();
+        this.enchantLevel = config.getString("enchant-level", null);
         
         // Load message configuration
         ConfigurationSection messageSection = config.getConfigurationSection("message");
@@ -178,6 +180,16 @@ public class JobAction {
     }
     
     /**
+     * Get the enchant level requirement for this action.
+     * Supports ranges like "3-5" or single values like "3".
+     * 
+     * @return The enchant level requirement or null if not specified
+     */
+    public String getEnchantLevel() {
+        return enchantLevel;
+    }
+    
+    /**
      * Check if the target matches the given string or Nexo block ID.
      * Supports wildcards, case-insensitive matching, and Nexo block IDs.
      * 
@@ -206,9 +218,10 @@ public class JobAction {
      * Default namespace is "minecraft" if none specified.
      * 
      * @param enchantmentKey The enchantment key to check (e.g., "minecraft:sharpness" or "tunnel")
+     * @param enchantmentLevel The current enchantment level (can be null if not specified)
      * @return true if it matches
      */
-    public boolean matchesEnchantTarget(String enchantmentKey) {
+    public boolean matchesEnchantTarget(String enchantmentKey, String enchantmentLevel) {
         if (target == null || enchantmentKey == null) {
             return false;
         }
@@ -233,31 +246,89 @@ public class JobAction {
             enchantKey = enchantParts[1];
         }
         
+        // First check if the enchantment type matches
+        boolean enchantTypeMatches = false;
+        
         // Check for exact match (case-insensitive)
         if (targetNamespace.equalsIgnoreCase(enchantNamespace) && targetKey.equalsIgnoreCase(enchantKey)) {
-            return true;
+            enchantTypeMatches = true;
         }
-        
         // Support wildcards in the key part
-        if (targetKey.equals("*")) {
-            return targetNamespace.equalsIgnoreCase(enchantNamespace);
+        else if (targetKey.equals("*")) {
+            enchantTypeMatches = targetNamespace.equalsIgnoreCase(enchantNamespace);
         }
-        
         // Prefix wildcard (e.g., "excellentenchants:tunnel_*")
-        if (targetKey.endsWith("*")) {
+        else if (targetKey.endsWith("*")) {
             String prefix = targetKey.substring(0, targetKey.length() - 1);
-            return targetNamespace.equalsIgnoreCase(enchantNamespace) && 
+            enchantTypeMatches = targetNamespace.equalsIgnoreCase(enchantNamespace) && 
                    enchantKey.toUpperCase().startsWith(prefix.toUpperCase());
         }
-        
         // Suffix wildcard (e.g., "excellentenchants:*_tunnel")
-        if (targetKey.startsWith("*")) {
+        else if (targetKey.startsWith("*")) {
             String suffix = targetKey.substring(1);
-            return targetNamespace.equalsIgnoreCase(enchantNamespace) && 
+            enchantTypeMatches = targetNamespace.equalsIgnoreCase(enchantNamespace) && 
                    enchantKey.toUpperCase().endsWith(suffix.toUpperCase());
         }
         
-        return false;
+        // If enchantment type doesn't match, return false
+        if (!enchantTypeMatches) {
+            return false;
+        }
+        
+        // If no enchant-level requirement specified, just check type match
+        if (enchantLevel == null || enchantLevel.trim().isEmpty()) {
+            return true;
+        }
+        
+        // Check enchantment level requirement
+        return matchesEnchantLevel(enchantmentLevel);
+    }
+    
+    /**
+     * Check if the current enchantment level matches the required level.
+     * Supports ranges like "3-5" or single values like "3".
+     * 
+     * @param currentLevelStr The current enchantment level as string
+     * @return true if the level matches the requirement
+     */
+    private boolean matchesEnchantLevel(String currentLevelStr) {
+        if (enchantLevel == null || currentLevelStr == null) {
+            return true; // No level requirement
+        }
+        
+        try {
+            int currentLevel = Integer.parseInt(currentLevelStr.trim());
+            String levelReq = enchantLevel.trim();
+            
+            // Check for range (e.g., "3-5")
+            if (levelReq.contains("-")) {
+                String[] parts = levelReq.split("-", 2);
+                if (parts.length == 2) {
+                    int minLevel = Integer.parseInt(parts[0].trim());
+                    int maxLevel = Integer.parseInt(parts[1].trim());
+                    return currentLevel >= minLevel && currentLevel <= maxLevel;
+                }
+            }
+            
+            // Check for exact level (e.g., "3")
+            int requiredLevel = Integer.parseInt(levelReq);
+            return currentLevel == requiredLevel;
+            
+        } catch (NumberFormatException e) {
+            // Invalid format, ignore level requirement
+            return true;
+        }
+    }
+    
+    /**
+     * Check if the target matches the given enchantment with namespace support.
+     * Compatibility method that calls the main method with null level.
+     * 
+     * @param enchantmentKey The enchantment key to check
+     * @return true if it matches
+     */
+    public boolean matchesEnchantTarget(String enchantmentKey) {
+        return matchesEnchantTarget(enchantmentKey, null);
     }
     
     /**

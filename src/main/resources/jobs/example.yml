@@ -41,10 +41,11 @@ actions:
       interact-type: "LEFT_SHIFT_CLICK" #LEFT_CLICK, LEFT_SHIFT_CLICK, RIGHT_CLICK, RIGHT_SHIFT_CLICK (default: right click)
       target: "mythicmobs:ZOMBIZZZ"
       xp: 1.0   
-  ENCHANT: # Enchantment actions with namespace support
+  ENCHANT: # Enchantment actions with namespace and level support
     # Vanilla Minecraft enchantments (minecraft namespace is default)
     vanilla_sharpness:
       target: "sharpness"                  # Equivalent to "minecraft:sharpness"
+      enchant-level: "3-5"                # Only level 3, 4, or 5 sharpness
       xp: 5.0
       money: 2.0
     vanilla_efficiency:
@@ -54,18 +55,28 @@ actions:
     # ExcellentEnchants plugin enchantments
     excellent_tunnel:
       target: "excellentenchants:tunnel"
+      enchant-level: "3"                  # Only level 3 tunnel
       xp: 15.0
       money: 10.0
       
     # AdvancedEnchantments plugin enchantments
     advanced_harvest:
       target: "advancedenchantments:harvest"
+      # No level requirement - any level works
       xp: 12.0
       money: 8.0
+      
+    # Level range examples
+    high_level_enchants:
+      target: "minecraft:*"               # Any vanilla enchantment
+      enchant-level: "4-10"              # High level enchantments only
+      xp: 20.0
+      money: 15.0
       
     # Wildcard examples - all enchantments from a specific plugin
     all_excellent_enchants:
       target: "excellentenchants:*"
+      enchant-level: "1-5"               # Level 1 to 5
       xp: 5.0
       
     # Prefix matching - all tunnel-related enchantments
