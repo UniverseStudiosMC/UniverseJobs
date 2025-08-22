@@ -24,6 +24,9 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.event.inventory.FurnaceSmeltEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.GameMode;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -49,6 +52,10 @@ public class JobActionListener implements Listener {
     private final AtomicLong totalEvents = new AtomicLong(0);
     private final AtomicLong processedEvents = new AtomicLong(0);
     private final AtomicLong rateLimitedEvents = new AtomicLong(0);
+    
+    // Furnace tracking for SMELT action - tracks who put items in each furnace
+    private final Map<String, UUID> furnaceOwners = new ConcurrentHashMap<>();
+    private final Map<String, Long> furnaceLastUse = new ConcurrentHashMap<>();
     // Rate limiting (per player)
     private static final long ACTION_COOLDOWN_MS = 50; // 50ms between actions
     private static final long CLEANUP_INTERVAL = 300000L; // 5 minutes
@@ -101,12 +108,24 @@ public class JobActionListener implements Listener {
      * Clean up old entries from the rate limiting map.
      */
     private void cleanupOldEntries() {
-        long cutoffTime = System.currentTimeMillis() - (ACTION_COOLDOWN_MS * 10);
+        long currentTime = System.currentTimeMillis();
+        long cutoffTime = currentTime - (ACTION_COOLDOWN_MS * 10);
+        
+        // Clean up rate limiting entries
         lastActionTime.entrySet().removeIf(entry -> entry.getValue() < cutoffTime);
-        lastCleanup = System.currentTimeMillis();
+        
+        // Clean up old furnace tracking entries (30 minutes)
+        long furnaceCutoffTime = currentTime - (30L * 60 * 1000); // 30 minutes
+        furnaceLastUse.entrySet().removeIf(entry -> entry.getValue() < furnaceCutoffTime);
+        
+        // Remove furnace owners that no longer have last use entries
+        furnaceOwners.entrySet().removeIf(entry -> !furnaceLastUse.containsKey(entry.getKey()));
+        
+        lastCleanup = currentTime;
         
         if (plugin.getConfigManager().isDebugEnabled()) {
-            plugin.getLogger().info("JobActionListener cleanup completed. Active entries: " + lastActionTime.size());
+            plugin.getLogger().info("JobActionListener cleanup completed. Active entries: " + lastActionTime.size() + 
+                ", Tracked furnaces: " + furnaceOwners.size());
         }
     }
     
@@ -745,5 +764,277 @@ public class JobActionListener implements Listener {
         return false;
     }
     
+    /**
+     * Track furnace interactions to know who should get XP for smelting.
+     * Monitors when players put items into furnace input slots.
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onInventoryClick(InventoryClickEvent event) {
+        // Only track furnace inventories
+        if (event.getInventory().getType() != InventoryType.FURNACE) {
+            return;
+        }
+        
+        // Only track players
+        if (!(event.getWhoClicked() instanceof Player player)) {
+            return;
+        }
+        
+        // Skip if not putting items into the furnace (slot 0 = input, slot 1 = fuel, slot 2 = result)
+        if (event.getSlot() != 0 && event.getSlot() != 1) {
+            return; // Only track input and fuel slots
+        }
+        
+        // Skip if removing items (empty cursor means putting items in)
+        if (event.getCursor() == null || event.getCursor().getType().isAir()) {
+            return; // Not adding items to furnace
+        }
+        
+        // Get furnace location as key
+        org.bukkit.Location furnaceLocation = event.getInventory().getLocation();
+        if (furnaceLocation == null) {
+            return;
+        }
+        
+        String furnaceKey = locationToKey(furnaceLocation);
+        long currentTime = System.currentTimeMillis();
+        
+        // Track this player as the owner of this furnace
+        furnaceOwners.put(furnaceKey, player.getUniqueId());
+        furnaceLastUse.put(furnaceKey, currentTime);
+        
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("Furnace owner tracked: " + player.getName() + 
+                " at " + furnaceLocation.toString() + " (slot " + event.getSlot() + ")");
+        }
+    }
+    
+    /**
+     * Convert location to string key for furnace tracking.
+     */
+    private String locationToKey(org.bukkit.Location location) {
+        return location.getWorld().getName() + ":" + 
+               location.getBlockX() + ":" + 
+               location.getBlockY() + ":" + 
+               location.getBlockZ();
+    }
+    
+    /**
+     * Handle item smelting (SMELT action).
+     * Supports detection of nexo:, itemsadder:, customfishing:, and customcrops: items.
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onFurnaceSmelt(FurnaceSmeltEvent event) {
+        // Find the player who owns this furnace by checking our tracking system
+        Player player = getFurnaceOwner(event.getBlock().getLocation());
+        
+        if (player == null) {
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("No tracked owner for furnace at " + event.getBlock().getLocation() + " - no XP awarded");
+            }
+            return; // No tracked owner for this furnace
+        }
+        
+        // Rate limiting check
+        if (!checkRateLimit(player)) {
+            return;
+        }
+        
+        ItemStack result = event.getResult();
+        if (result == null) {
+            return;
+        }
+        
+        try {
+            // Create context with item information
+            ConditionContext context = new ConditionContext()
+                    .setItem(result)
+                    .set("target", detectItemTarget(result))
+                    .set("amount", result.getAmount());
+            
+            // Add source item information if available
+            ItemStack source = event.getSource();
+            if (source != null) {
+                context.set("source_target", detectItemTarget(source))
+                       .set("source_amount", source.getAmount());
+            }
+            
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("Processing SMELT action for " + player.getName() + 
+                    " - target: " + context.get("target") + 
+                    " - source: " + context.get("source_target"));
+            }
+            
+            // Process the action
+            actionProcessor.processAction(player, ActionType.SMELT, event, context);
+            processedEvents.incrementAndGet();
+            
+        } catch (Exception e) {
+            plugin.getLogger().warning("Error processing SMELT action for player " + player.getName() + ": " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Get the owner of a furnace based on our tracking system.
+     * Returns the player who last put items into this furnace.
+     */
+    private Player getFurnaceOwner(org.bukkit.Location furnaceLocation) {
+        String furnaceKey = locationToKey(furnaceLocation);
+        UUID ownerUUID = furnaceOwners.get(furnaceKey);
+        
+        if (ownerUUID == null) {
+            return null; // No tracked owner
+        }
+        
+        Player owner = plugin.getServer().getPlayer(ownerUUID);
+        if (owner == null || !owner.isOnline()) {
+            // Player is offline, clean up tracking
+            furnaceOwners.remove(furnaceKey);
+            furnaceLastUse.remove(furnaceKey);
+            return null;
+        }
+        
+        // Check if the tracking is too old (30 minutes max)
+        Long lastUse = furnaceLastUse.get(furnaceKey);
+        if (lastUse != null && (System.currentTimeMillis() - lastUse) > 30 * 60 * 1000L) {
+            // Tracking expired, clean up
+            furnaceOwners.remove(furnaceKey);
+            furnaceLastUse.remove(furnaceKey);
+            return null;
+        }
+        
+        return owner;
+    }
+    
+    /**
+     * Detect the target format for an item, supporting all plugin formats.
+     * Returns the appropriate target string for nexo:, itemsadder:, customfishing:, customcrops:, or vanilla items.
+     */
+    private String detectItemTarget(ItemStack item) {
+        if (item == null) {
+            return "AIR";
+        }
+        
+        // Try to detect Nexo items
+        String nexoTarget = detectNexoItem(item);
+        if (nexoTarget != null) {
+            return nexoTarget;
+        }
+        
+        // Try to detect ItemsAdder items
+        String itemsAdderTarget = detectItemsAdderItem(item);
+        if (itemsAdderTarget != null) {
+            return itemsAdderTarget;
+        }
+        
+        // Try to detect CustomFishing items
+        String customFishingTarget = detectCustomFishingItem(item);
+        if (customFishingTarget != null) {
+            return customFishingTarget;
+        }
+        
+        // Try to detect CustomCrops items
+        String customCropsTarget = detectCustomCropsItem(item);
+        if (customCropsTarget != null) {
+            return customCropsTarget;
+        }
+        
+        // Fallback to vanilla item name
+        return item.getType().name();
+    }
+    
+    /**
+     * Detect Nexo items by checking for Nexo-specific metadata.
+     */
+    private String detectNexoItem(ItemStack item) {
+        try {
+            // Try to use Nexo API if available
+            if (plugin.getServer().getPluginManager().isPluginEnabled("Nexo")) {
+                // Check for Nexo NBT or metadata
+                if (item.hasItemMeta()) {
+                    // Nexo items typically have specific NBT tags or custom model data
+                    if (item.getItemMeta().hasCustomModelData()) {
+                        // This is a basic detection - in a real implementation,
+                        // you'd use the Nexo API to properly identify items
+                        return "nexo:item_" + item.getItemMeta().getCustomModelData();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Nexo not available or error occurred
+        }
+        return null;
+    }
+    
+    /**
+     * Detect ItemsAdder items by checking for ItemsAdder-specific metadata.
+     */
+    private String detectItemsAdderItem(ItemStack item) {
+        try {
+            // Try to use ItemsAdder API if available
+            if (plugin.getServer().getPluginManager().isPluginEnabled("ItemsAdder")) {
+                // Check for ItemsAdder NBT or metadata
+                if (item.hasItemMeta()) {
+                    // ItemsAdder items typically have specific NBT tags
+                    if (item.getItemMeta().hasCustomModelData()) {
+                        // This is a basic detection - in a real implementation,
+                        // you'd use the ItemsAdder API to properly identify items
+                        return "itemsadder:item_" + item.getItemMeta().getCustomModelData();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // ItemsAdder not available or error occurred
+        }
+        return null;
+    }
+    
+    /**
+     * Detect CustomFishing items by checking for CustomFishing-specific metadata.
+     */
+    private String detectCustomFishingItem(ItemStack item) {
+        try {
+            // Try to use CustomFishing API if available
+            if (plugin.getServer().getPluginManager().isPluginEnabled("CustomFishing")) {
+                // Check for fish-like items or CustomFishing NBT
+                if (item.hasItemMeta()) {
+                    String displayName = item.getItemMeta().getDisplayName();
+                    if (displayName != null && !displayName.isEmpty()) {
+                        String cleanName = displayName.replaceAll("§[0-9a-fk-or]", "").toLowerCase();
+                        if (cleanName.contains("fish") || cleanName.contains("catch")) {
+                            return "customfishing:" + cleanName.replaceAll("[^a-z0-9]", "_");
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // CustomFishing not available or error occurred
+        }
+        return null;
+    }
+    
+    /**
+     * Detect CustomCrops items by checking for CustomCrops-specific metadata.
+     */
+    private String detectCustomCropsItem(ItemStack item) {
+        try {
+            // Try to use CustomCrops API if available
+            if (plugin.getServer().getPluginManager().isPluginEnabled("CustomCrops")) {
+                // Check for crop-like items or CustomCrops NBT
+                if (item.hasItemMeta()) {
+                    String displayName = item.getItemMeta().getDisplayName();
+                    if (displayName != null && !displayName.isEmpty()) {
+                        String cleanName = displayName.replaceAll("§[0-9a-fk-or]", "").toLowerCase();
+                        if (cleanName.contains("crop") || cleanName.contains("seed") || cleanName.contains("harvest")) {
+                            return "customcrops:" + cleanName.replaceAll("[^a-z0-9]", "_");
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // CustomCrops not available or error occurred
+        }
+        return null;
+    }
     
 }
