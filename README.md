@@ -65,7 +65,6 @@
 - **⚡ Instant rewards** for immediate gratification
 - **📅 Milestone rewards** for long-term engagement
 - **🎯 Conditional rewards** with complex requirements
-- **💎 VIP bonuses** and multipliers
 
 ## 🛠️ **Quick Setup Guide**
 
