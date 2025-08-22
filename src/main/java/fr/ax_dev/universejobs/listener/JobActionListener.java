@@ -9,6 +9,7 @@ import fr.ax_dev.universejobs.protection.BlockProtectionManager;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -1035,6 +1036,81 @@ public class JobActionListener implements Listener {
             // CustomCrops not available or error occurred
         }
         return null;
+    }
+    
+    /**
+     * Handle villager trading (TRADE action).
+     * Supports profession filtering for villagers.
+     * Handles trading by monitoring merchant inventory clicks.
+     */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onMerchantTradeClick(InventoryClickEvent event) {
+        // Only handle merchant inventory (villager trading)
+        if (event.getInventory().getType() != InventoryType.MERCHANT) {
+            return;
+        }
+        
+        // Only track players
+        if (!(event.getWhoClicked() instanceof Player player)) {
+            return;
+        }
+        
+        // Only handle result slot clicks (slot 2 is result)
+        if (event.getSlot() != 2) {
+            return;
+        }
+        
+        // Make sure the click will result in taking the item
+        ItemStack result = event.getCurrentItem();
+        if (result == null || result.getType().isAir()) {
+            return;
+        }
+        
+        // Rate limiting check
+        if (!checkRateLimit(player)) {
+            return;
+        }
+        
+        try {
+            // Get merchant inventory to find the villager
+            org.bukkit.inventory.MerchantInventory merchantInv = (org.bukkit.inventory.MerchantInventory) event.getInventory();
+            org.bukkit.inventory.Merchant merchant = merchantInv.getMerchant();
+            
+            // Create context with trade information
+            ConditionContext context = new ConditionContext()
+                    .setItem(result)
+                    .set("target", result.getType().name());
+            
+            // Add villager profession if the merchant is a villager
+            if (merchant instanceof Villager) {
+                Villager villager = (Villager) merchant;
+                context.setEntity(villager)
+                       .set("profession", villager.getProfession().name());
+                
+                if (plugin.getConfigManager().isDebugEnabled()) {
+                    plugin.getLogger().info("Trade with villager profession: " + villager.getProfession().name() + 
+                        " - target: " + result.getType().name() + " by " + player.getName());
+                }
+            }
+            
+            // Add trade recipe information if available
+            org.bukkit.inventory.MerchantRecipe selectedRecipe = merchantInv.getSelectedRecipe();
+            if (selectedRecipe != null) {
+                context.set("trade_uses", selectedRecipe.getUses())
+                       .set("trade_max_uses", selectedRecipe.getMaxUses());
+            }
+            
+            // Process the action and check if we should cancel
+            boolean shouldCancel = actionProcessor.processAction(player, ActionType.TRADE, event, context);
+            if (shouldCancel) {
+                event.setCancelled(true);
+            }
+            
+            processedEvents.incrementAndGet();
+            
+        } catch (Exception e) {
+            plugin.getLogger().warning("Error processing TRADE action for player " + player.getName() + ": " + e.getMessage());
+        }
     }
     
 }

@@ -84,6 +84,22 @@ actions:
       target: "excellentenchants:tunnel_*"
       xp: 10.0
 
+  TRADE:
+    simple_trade:
+      target: "DIAMOND_SWORD"
+      profession: 
+        - "ARMORER"
+        - "CLERIC"
+      xp: 1.0
+    armorer_specific:
+      target: "IRON_CHESTPLATE"
+      profession: "ARMORER"
+      xp: 2.0
+      money: 5.0
+    any_villager_trade:
+      target: "EMERALD"
+      xp: 0.5
+
     mine_diamond_vip:
       target: "DIAMOND_ORE"
       xp: 30.0

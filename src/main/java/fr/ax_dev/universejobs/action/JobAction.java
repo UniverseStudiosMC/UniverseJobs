@@ -5,6 +5,7 @@ import fr.ax_dev.universejobs.config.MessageConfig;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Represents a specific action within a job that can award XP and money when performed.
@@ -23,6 +24,7 @@ public class JobAction {
     private final String interactType;
     private final ActionLimitManager.ActionLimit actionLimit;
     private final String enchantLevel;
+    private final List<String> professions;
     
     /**
      * Create a new JobAction from configuration.
@@ -37,6 +39,9 @@ public class JobAction {
         this.description = config.getString("description", "");
         this.interactType = config.getString("interact-type", "RIGHT_CLICK").toUpperCase();
         this.enchantLevel = config.getString("enchant-level", null);
+        
+        // Load profession requirements for TRADE actions
+        this.professions = loadProfessions(config);
         
         // Load message configuration
         ConfigurationSection messageSection = config.getConfigurationSection("message");
@@ -69,6 +74,34 @@ public class JobAction {
         } else {
             this.actionLimit = null;
         }
+    }
+    
+    /**
+     * Load profession requirements from configuration.
+     * Supports both single profession and list of professions.
+     * 
+     * @param config The configuration section
+     * @return List of required professions (uppercase), or empty list if none specified
+     */
+    private List<String> loadProfessions(ConfigurationSection config) {
+        List<String> result = new ArrayList<>();
+        
+        if (config.isList("profession")) {
+            // Handle list format: profession: ["ARMORER", "CLERIC"]
+            for (String prof : config.getStringList("profession")) {
+                if (prof != null && !prof.trim().isEmpty()) {
+                    result.add(prof.trim().toUpperCase());
+                }
+            }
+        } else if (config.isString("profession")) {
+            // Handle single string format: profession: "ARMORER"
+            String prof = config.getString("profession");
+            if (prof != null && !prof.trim().isEmpty()) {
+                result.add(prof.trim().toUpperCase());
+            }
+        }
+        
+        return result;
     }
     
     /**
@@ -393,6 +426,47 @@ public class JobAction {
      */
     public boolean hasLimits() {
         return actionLimit != null;
+    }
+    
+    /**
+     * Get the list of required professions for this action.
+     * Only applicable for TRADE actions.
+     * 
+     * @return List of profession names (uppercase), empty if no profession requirements
+     */
+    public List<String> getProfessions() {
+        return professions;
+    }
+    
+    /**
+     * Check if this action has profession requirements.
+     * 
+     * @return true if profession requirements exist
+     */
+    public boolean hasProfessionRequirements() {
+        return professions != null && !professions.isEmpty();
+    }
+    
+    /**
+     * Check if a villager profession matches the requirements for this action.
+     * If no profession requirements are specified, all professions are accepted.
+     * 
+     * @param villagerProfession The villager's profession name (case-insensitive)
+     * @return true if the profession matches or no requirements exist
+     */
+    public boolean matchesProfession(String villagerProfession) {
+        // If no profession requirements, accept any profession
+        if (!hasProfessionRequirements()) {
+            return true;
+        }
+        
+        // Check if the villager's profession matches any required profession
+        if (villagerProfession != null) {
+            String professionUpper = villagerProfession.toUpperCase();
+            return professions.contains(professionUpper);
+        }
+        
+        return false;
     }
     
     @Override

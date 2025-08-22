@@ -137,6 +137,10 @@ public class ActionProcessor {
             return false;
         }
         
+        if (!validateProfession(action, context, job)) {
+            return false;
+        }
+        
         boolean shouldCancel = processActionRequirements(player, action, event, context);
         
         processActionRewards(player, job, action, context);
@@ -194,6 +198,30 @@ public class ActionProcessor {
         }
         
         return true;
+    }
+    
+    /**
+     * Validate profession requirements for TRADE actions.
+     */
+    private boolean validateProfession(JobAction action, ConditionContext context, Job job) {
+        ActionType actionType = job.getActionTypeForAction(action);
+        if (actionType != ActionType.TRADE) {
+            return true; // Profession validation only applies to TRADE actions
+        }
+        
+        // If no profession requirements specified, allow all professions
+        if (!action.hasProfessionRequirements()) {
+            return true;
+        }
+        
+        String villagerProfession = context.get("profession");
+        boolean professionMatches = action.matchesProfession(villagerProfession);
+        
+        debugLog("Profession check - required: " + action.getProfessions() + 
+                ", villager: " + villagerProfession + 
+                ", matches: " + professionMatches);
+        
+        return professionMatches;
     }
     
     /**
