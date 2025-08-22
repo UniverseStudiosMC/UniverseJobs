@@ -268,7 +268,6 @@ public class ActionLimitManager {
                 ". Supported formats: HH:mm (24h), h:mm AM/PM, hh:mm AM/PM");
         }
     }
-    
     /**
      * Parse time string supporting multiple formats.
      * Supports: HH:mm (24-hour), h:mm AM/PM, hh:mm AM/PM
