@@ -1,0 +1,38 @@
+# Example Rewards Configuration
+# Copy and modify these examples for your own jobs.
+# To use this file, add to your job configuration:
+# rewards: "example_rewards"
+
+rewards:
+  # EXAMPLE 1: Simple starter reward - No requirements
+  starter_bonus:
+    name: "&aStarter Bonus"
+    description: "&7Your first reward!"
+    required-level: 1
+    repeatable: false
+    items:
+      pickaxe:
+        material: STONE_PICKAXE
+        amount: 1
+
+  tool_upgrade:
+    name: "&bTool Upgrade"
+    description: "&7Give 200 money when levelup 10 and your nickname is STEVE"
+    required-level: 10
+    repeatable: false
+    requirements:
+      logic: "AND"
+      multiple_condition:
+        placeholder:
+          placeholder: "%jobsadventure_level_example%"
+          operator: "greater_equal"
+          value: "10"
+        placeholder2:
+          placeholder: "%player_name%"
+          operator: "equals"
+          value: "STEVE"
+        deny:
+          message: "&c❌ NOT STEVE"
+        accept:
+          commands:
+          - "eco give 200 %player_name%"

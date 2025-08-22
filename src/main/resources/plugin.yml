@@ -1,0 +1,65 @@
+name: UniverseJobs
+version: '1.0-SNAPSHOT'
+main: fr.ax_dev.universejobs.UniverseJobs
+api-version: '1.21'
+folia-supported: true
+description: A flexible and customizable universe jobs plugin for Minecraft servers with Folia support
+author: ax_dev
+website: https://github.com/ax-dev/UniverseJobs
+
+softdepend: [PlaceholderAPI, MythicMobs, MMOItems, CustomCrops, Nexo, ItemsAdder, Vault, CustomFishing]
+
+commands:
+  jobs:
+    description: Main jobs command with rewards, XP bonus management, and action limits
+    usage: /jobs <join|leave|info|list|rewards|xpbonus|actionlimit> [args...]
+    aliases: [job]
+    permission: universejobs.use
+
+permissions:
+  universejobs.*:
+    description: Gives access to all UniverseJobs permissions
+    children:
+      universejobs.use: true
+      universejobs.admin: true
+      universejobs.admin.xpbonus: true
+      universejobs.admin.actionlimits: true
+      universejobs.rewards.*: true
+  universejobs.use:
+    description: Allows using basic job commands
+    default: true
+  universejobs.admin:
+    description: Allows access to admin commands and job management
+    default: op
+  universejobs.job.*:
+    description: Allows joining any job
+    children:
+      universejobs.job.miner: true
+      universejobs.job.farmer: true
+      universejobs.job.hunter: true
+  universejobs.job.miner:
+    description: Allows joining the miner job
+    default: true
+  universejobs.job.farmer:
+    description: Allows joining the farmer job
+    default: true
+  universejobs.job.hunter:
+    description: Allows joining the hunter job
+    default: true
+  universejobs.admin.xpbonus:
+    description: Allows managing XP bonuses for players
+    default: op
+  universejobs.rewards.*:
+    description: Gives access to all reward permissions
+    children:
+      universejobs.rewards.use: true
+      universejobs.rewards.admin: true
+  universejobs.rewards.use:
+    description: Allows using basic reward commands and opening reward GUIs
+    default: true
+  universejobs.rewards.admin:
+    description: Allows using admin reward commands (reset, give, etc.)
+    default: op
+  universejobs.admin.actionlimits:
+    description: Allows managing action limits (restore, check status)
+    default: op

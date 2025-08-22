@@ -1,0 +1,162 @@
+name: "Miner with Limits"
+description: "Mining job with action limits to prevent farming"
+enabled: true
+max-level: 100
+permission: "jobsadventure.job.miner"
+icon: 
+  material: "IRON_PICKAXE"
+  
+rewards: "example_rewards"
+
+xp: 
+  type: "CURVE"
+  xp: "example"
+  message:
+    type: "BOSSBAR"
+    text: "&e+{exp} XP &6+{money} MONEY &8| &6{job} &7Level {level}"
+    show-progress: true
+
+# Configuration for automatic restore
+action-limits:
+  auto-restore:
+    enabled: true
+    time: "00:00"  # Restore at midnight (HH:mm format)
+
+actions:
+  BREAK:
+    # Stone mining with basic limits - allows XP and money but limited actions
+    stone_basic:
+      target: "STONE"
+      xp: 1.0
+      money: 0.5
+      limits:
+        max-action-per-period: 100    # Max 100 stone breaks per period
+        cooldown-minutes: 60          # 1 hour cooldown after limit
+        block-exp: false              # Still gives XP
+        block-money: false            # Still gives money
+        
+    # Diamond ore with strict limits and XP blocking
+    diamond_ore:
+      target: "DIAMOND_ORE"
+      xp: 50.0
+      money: 200.0
+      limits:
+        max-action-per-period: 10     # Max 10 diamond ore per period
+        cooldown-minutes: 120         # 2 hours cooldown
+        block-exp: true               # Block XP after limit reached
+        block-money: false            # Still gives money (but limited by actions)
+        
+    # Coal mining - blocks money but allows XP
+    coal_ore:
+      target: "COAL_ORE"
+      xp: 3.0
+      money: 5.0
+      limits:
+        max-action-per-period: 100    # Max 100 coal per period
+        cooldown-minutes: 30          # 30 minutes cooldown
+        block-exp: false              # Still gives XP
+        block-money: true             # Blocks money after limit
+        
+  KILL:
+    # Zombie killing - blocks both XP and money after limit
+    zombie_kill:
+      target: "ZOMBIE"
+      xp: 10.0
+      money: 15.0
+      limits:
+        max-action-per-period: 20     # Max 20 zombie kills per period
+        cooldown-minutes: 45          # 45 minutes cooldown
+        block-exp: true               # No XP after limit
+        block-money: true             # No money after limit
+        
+    # Creeper with generous limits, no blocking
+    creeper_kill:
+      target: "CREEPER"
+      xp: 15.0
+      money: 25.0
+      limits:
+        max-action-per-period: 15     # Max 15 creepers per period
+        cooldown-minutes: 60          # 1 hour cooldown
+        block-exp: false              # Still gives XP even after limit
+        block-money: false            # Still gives money even after limit
+        
+  BLOCK_INTERACT:
+    # Crop harvesting - only blocks XP, keeps money
+    wheat_harvest:
+      interact-type: "RIGHT_CLICK"
+      target: "WHEAT"
+      xp: 2.0
+      money: 3.0
+      limits:
+        max-action-per-period: 50     # Max 50 wheat harvests per period
+        cooldown-minutes: 30          # 30 minutes cooldown
+        block-exp: true               # Block XP after limit
+        block-money: false            # Keep money rewards
+        
+    # Premium interaction (no limits for VIP players could be handled via conditions)
+    premium_block:
+      interact-type: "RIGHT_SHIFT_CLICK"
+      target: "EMERALD_BLOCK"
+      xp: 100.0
+      money: 500.0
+      requirements:
+        permission:
+          permission: "jobsadventure.vip"
+          deny:
+            message: "&cVIP required for premium actions!"
+        # No limits section = no limits applied
+
+levelup-actions:
+  level_sound:
+    type: "command"
+    min-level: 1    
+    level-interval: 5
+    commands:
+    - "broadcast {player} reached level {level} in {job}!"
+
+# ==================================================================================
+#
+# Action Limits Configuration Guide:
+#
+# For each action, you can add a "limits" section with:
+# - max-action-per-period: Maximum number of times this action can be performed
+# - cooldown-minutes: Minutes to wait after reaching limits before action works again
+# - block-exp: true/false - Block XP gains after reaching the limit (default: false)
+# - block-money: true/false - Block money gains after reaching the limit (default: false)
+#
+# Features:
+# - Action counting: Limits based on number of actions performed, not XP/money gained
+# - Flexible blocking: Choose to block XP, money, both, or neither after limit
+# - Per-player tracking: Each player has their own limits
+# - Per-action limits: Each action can have different limits
+# - Automatic restoration: Configure auto-restore time in action-limits section
+# - Manual restoration: Use /actionlimit restore command
+# - Status checking: Use /actionlimit status command
+#
+# Examples:
+# 1. Allow 10 actions, then block everything:
+#    limits:
+#      max-action-per-period: 10
+#      block-exp: true
+#      block-money: true
+#
+# 2. Allow 50 actions, then block only XP (money continues):
+#    limits:
+#      max-action-per-period: 50
+#      block-exp: true
+#      block-money: false
+#
+# 3. Allow 100 actions, then prevent any more actions (no rewards):
+#    limits:
+#      max-action-per-period: 100
+#      cooldown-minutes: 120
+#      # No blocking specified = action cannot be performed after limit
+#
+# Commands:
+# - /jobs actionlimit restore <player|*> [job] [target] - Restore limits
+# - /jobs actionlimit status <player> <job> <target> - Check status
+#
+# Permissions:
+# - jobsadventure.admin.actionlimits - Access to limit commands
+#
+# ==================================================================================

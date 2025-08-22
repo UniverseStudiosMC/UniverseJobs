@@ -1,0 +1,114 @@
+name: "Example"                               # The displayed job name
+description: "Extract treasures from the depths of the earth!"  # Short description
+enabled: true                               # Enable (true) or disable (false) the job
+max-level: 100                              # Maximum achievable level
+permission: "jobsadventure.job.example"       # Permission required to have this job
+icon: 
+  material: "DIAMOND_PICKAXE"          
+  
+rewards: "example_rewards"  # Link to the rewards file
+
+xp: 
+  type: "CURVE" ##CURVE OR EQUATION
+  xp: "example" ##FILE OR EQUATION
+  message:
+    type: "BOSSBAR" # Types: CHAT, ACTIONBAR, BOSSBAR, TITLE
+    text: "&e+{exp} XP &6+{money} MONEY &8| &6{job} &7Level {level}"
+    show-progress: true
+
+
+actions:
+  BREAK:
+    simple_stone:
+      target: "STONE"                       # Block to break
+      xp: 1.0                              # XP earned
+      money: 3.0                           # Money earned (optional)
+  BLOCK_INTERACT: ##
+    simple_cobble:
+      interact-type: "RIGHT_CLICK" #LEFT_CLICK, LEFT_SHIFT_CLICK, RIGHT_CLICK, RIGHT_SHIFT_CLICK (default: right click)
+      target: "COBBLESTONE"
+      xp: 1.0 
+    simple_customcrops_right:
+      interact-type: "RIGHT_CLICK" # CustomCrops only supports RIGHT_CLICK and RIGHT_SHIFT_CLICK interactions
+      target: "customcrops:pineapple_stage_1"
+      xp: 1.0                              # XP earned
+    simple_customcrops_shift_right:
+      interact-type: "RIGHT_SHIFT_CLICK" # Shift-right click with CustomCrops
+      target: "customcrops:pineapple_stage_1"
+      xp: 3.0
+  ENTITY_INTERACT:
+    zombiekiill:
+      interact-type: "LEFT_SHIFT_CLICK" #LEFT_CLICK, LEFT_SHIFT_CLICK, RIGHT_CLICK, RIGHT_SHIFT_CLICK (default: right click)
+      target: "mythicmobs:ZOMBIZZZ"
+      xp: 1.0   
+  ENCHANT: # Enchantment actions with namespace support
+    # Vanilla Minecraft enchantments (minecraft namespace is default)
+    vanilla_sharpness:
+      target: "sharpness"                  # Equivalent to "minecraft:sharpness"
+      xp: 5.0
+      money: 2.0
+    vanilla_efficiency:
+      target: "minecraft:efficiency"       # Explicit namespace
+      xp: 3.0
+      
+    # ExcellentEnchants plugin enchantments
+    excellent_tunnel:
+      target: "excellentenchants:tunnel"
+      xp: 15.0
+      money: 10.0
+      
+    # AdvancedEnchantments plugin enchantments
+    advanced_harvest:
+      target: "advancedenchantments:harvest"
+      xp: 12.0
+      money: 8.0
+      
+    # Wildcard examples - all enchantments from a specific plugin
+    all_excellent_enchants:
+      target: "excellentenchants:*"
+      xp: 5.0
+      
+    # Prefix matching - all tunnel-related enchantments
+    tunnel_enchants:
+      target: "excellentenchants:tunnel_*"
+      xp: 10.0
+
+    mine_diamond_vip:
+      target: "DIAMOND_ORE"
+      xp: 30.0
+      money: 100.0
+      name: "VIP Diamond Mining" # Optional name for messages
+      requirements:
+        logic: "AND"
+        multiple_condition:
+          level_check:
+            placeholder:
+              placeholder: "%jobsadventure_level_example%"
+              operator: "greater_equal"
+              value: "10"
+          player_name_check:
+            placeholder:
+              placeholder: "%player_name%"
+              operator: "equals"
+              value: "STEVE"
+          deny:
+            message: "&c❌ NOT STEVE or insufficient level!"
+            cancel-event: true
+          accept:
+            commands:
+            - "eco give %player_name% 200"
+ 
+#################################################################
+
+levelup-actions:
+  level_sound:
+    type: "command"
+    min-level: 1    
+    level-interval: 1 
+    commands:
+    - "broadcast {player} upgrade level {level} in {job} !"
+# ==================================================================================
+#
+# - Documentation: Check the plugin wiki
+#
+# ==================================================================================
