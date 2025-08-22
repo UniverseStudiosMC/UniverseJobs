@@ -17,6 +17,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class PlayerJobData {
     
+    private static final String LAST_MODIFIED_KEY = "lastModified";
+    
     private final UUID playerUuid;
     private final Set<String> jobs = ConcurrentHashMap.newKeySet();
     private final Map<String, Double> xpData = new ConcurrentHashMap<>();
@@ -350,7 +352,7 @@ public class PlayerJobData {
         dataLock.readLock().lock();
         try {
             config.set("uuid", playerUuid.toString());
-            config.set("lastModified", lastModified);
+            config.set(LAST_MODIFIED_KEY, lastModified);
             config.set("jobs", new ArrayList<>(jobs));
             
             ConfigurationSection xpSection = config.createSection("xp");
@@ -377,7 +379,7 @@ public class PlayerJobData {
             dataLock.writeLock().lock();
             try {
                 // Load timestamp
-                lastModified = config.getLong("lastModified", System.currentTimeMillis());
+                lastModified = config.getLong(LAST_MODIFIED_KEY, System.currentTimeMillis());
                 
                 // Load jobs
                 List<String> jobsList = config.getStringList("jobs");
@@ -452,7 +454,7 @@ public class PlayerJobData {
             snapshot.put("playerUuid", playerUuid.toString());
             snapshot.put("jobCount", jobs.size());
             snapshot.put("totalXp", xpData.values().stream().mapToDouble(Double::doubleValue).sum());
-            snapshot.put("lastModified", new Date(lastModified));
+            snapshot.put(LAST_MODIFIED_KEY, new Date(lastModified));
             snapshot.put("isLoading", isLoading.get());
             return snapshot;
         } finally {

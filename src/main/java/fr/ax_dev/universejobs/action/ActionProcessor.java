@@ -26,7 +26,7 @@ import java.util.Set;
  */
 public class ActionProcessor {
     
-    private static final String MATCHES_SUFFIX = MATCHES_SUFFIX;
+    private static final String MATCHES_SUFFIX = ", matches: ";
     
     private final UniverseJobs plugin;
     private final JobManager jobManager;

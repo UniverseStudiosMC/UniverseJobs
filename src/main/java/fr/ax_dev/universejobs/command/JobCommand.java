@@ -74,42 +74,28 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        // Basic argument validation
         if (!validateCommandStructure(args)) {
-            return true; // Silently ignore invalid command structure
+            return true;
         }
         
         if (args.length == 0) {
-            if (sender instanceof Player player) {
-                sendHelp(player);
-            } else {
-                sendConsoleHelp(sender);
-            }
+            sendHelpBasedOnSender(sender);
             return true;
         }
         
         String subCommand = sanitizeInput(args[0].toLowerCase());
         
-        // Validate subcommand
         if (!isValidSubCommand(subCommand)) {
-            if (sender instanceof Player player) {
-                sendHelp(player);
-            } else {
-                sendConsoleHelp(sender);
-            }
+            sendHelpBasedOnSender(sender);
             return true;
         }
         
-        // Check if command requires a player
-        boolean requiresPlayer = requiresPlayer(subCommand);
-        if (requiresPlayer && !(sender instanceof Player)) {
-            sender.sendMessage(languageManager.getMessage("commands.players-only"));
+        if (!validatePlayerRequirement(sender, subCommand)) {
             return true;
         }
         
-        // Rate limiting check for players only
         if (sender instanceof Player player && !checkRateLimit(player)) {
-            return true; // Silently ignore rapid commands
+            return true;
         }
         
         try {
@@ -324,5 +310,28 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage("§e/jobs exp <give|take|set> <player> <job> <amount> §7- Manage player XP");
         sender.sendMessage("§e/jobs migrate §7- Migrate data between storage types");
         sender.sendMessage("§e/jobs debug <player> §7- Show debug information");
+    }
+    
+    /**
+     * Send help message based on sender type.
+     */
+    private void sendHelpBasedOnSender(CommandSender sender) {
+        if (sender instanceof Player player) {
+            sendHelp(player);
+        } else {
+            sendConsoleHelp(sender);
+        }
+    }
+    
+    /**
+     * Validate player requirement for subcommand.
+     */
+    private boolean validatePlayerRequirement(CommandSender sender, String subCommand) {
+        boolean requiresPlayer = requiresPlayer(subCommand);
+        if (requiresPlayer && !(sender instanceof Player)) {
+            sender.sendMessage(languageManager.getMessage("commands.players-only"));
+            return false;
+        }
+        return true;
     }
 }

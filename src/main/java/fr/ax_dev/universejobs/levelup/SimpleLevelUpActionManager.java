@@ -17,9 +17,9 @@ import java.util.logging.Level;
  */
 public class SimpleLevelUpActionManager {
     
-    private static final String LEVELS_KEY = LEVELS_KEY;
-    private static final String MESSAGE_KEY = MESSAGE_KEY;
-    private static final String TITLE_KEY = TITLE_KEY;
+    private static final String LEVELS_KEY = "levels";
+    private static final String MESSAGE_KEY = "message";
+    private static final String TITLE_KEY = "title";
     
     private final UniverseJobs plugin;
     private final Map<String, List<LevelUpActionConfig>> jobActions = new ConcurrentHashMap<>();

@@ -15,7 +15,7 @@ import java.util.Map;
  */
 public class ConditionContext {
     
-    private static final String MATERIAL_KEY = MATERIAL_KEY;
+    private static final String MATERIAL_KEY = "material";
     
     private final Map<String, Object> data = new HashMap<>();
     

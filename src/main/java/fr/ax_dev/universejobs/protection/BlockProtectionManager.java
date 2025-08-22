@@ -19,6 +19,8 @@ import java.util.logging.Level;
  */
 public class BlockProtectionManager {
     
+    private static final String BLOCK_PREFIX = "block_";
+    
     private final UniverseJobs plugin;
     private boolean enabled;
     private boolean nexoEnabled;
@@ -76,7 +78,7 @@ public class BlockProtectionManager {
         
         try {
             // Add NBT tag to mark this block as player-placed
-            NamespacedKey blockKey = new NamespacedKey(plugin, "block_" + block.getX() + "_" + block.getY() + "_" + block.getZ());
+            NamespacedKey blockKey = new NamespacedKey(plugin, BLOCK_PREFIX + block.getX() + "_" + block.getY() + "_" + block.getZ());
             String playerData = player.getUniqueId().toString();
             
             // Check if this is a Nexo custom block and add that information
@@ -111,7 +113,7 @@ public class BlockProtectionManager {
         
         try {
             // Check if this block has the player-placed NBT tag
-            NamespacedKey blockKey = new NamespacedKey(plugin, "block_" + block.getX() + "_" + block.getY() + "_" + block.getZ());
+            NamespacedKey blockKey = new NamespacedKey(plugin, BLOCK_PREFIX + block.getX() + "_" + block.getY() + "_" + block.getZ());
             String placedBy = block.getChunk().getPersistentDataContainer().get(blockKey, PersistentDataType.STRING);
             
             return placedBy != null;
@@ -131,7 +133,7 @@ public class BlockProtectionManager {
         
         try {
             // Remove the NBT tag for this block
-            NamespacedKey blockKey = new NamespacedKey(plugin, "block_" + block.getX() + "_" + block.getY() + "_" + block.getZ());
+            NamespacedKey blockKey = new NamespacedKey(plugin, BLOCK_PREFIX + block.getX() + "_" + block.getY() + "_" + block.getZ());
             block.getChunk().getPersistentDataContainer().remove(blockKey);
             
             if (plugin.getConfigManager().isDebugEnabled()) {

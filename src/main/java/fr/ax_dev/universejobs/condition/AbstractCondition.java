@@ -17,6 +17,8 @@ import java.util.List;
  */
 public abstract class AbstractCondition implements Condition {
     
+    private static final String MESSAGE_KEY = "message";
+    
     protected final ConditionResult denyResult;
     protected final ConditionResult acceptResult;
     
@@ -35,12 +37,12 @@ public abstract class AbstractCondition implements Condition {
         
         if (denySection != null) {
             // Check for new message format
-            ConfigurationSection denyMessageSection = denySection.getConfigurationSection("message");
+            ConfigurationSection denyMessageSection = denySection.getConfigurationSection(MESSAGE_KEY);
             if (denyMessageSection != null) {
                 denyMessage = new MessageConfig(denyMessageSection);
             } else {
                 // Legacy format support
-                String legacyMessage = denySection.getString("message");
+                String legacyMessage = denySection.getString(MESSAGE_KEY);
                 if (legacyMessage != null) {
                     denyMessage = new MessageConfig(legacyMessage);
                 }
@@ -75,12 +77,12 @@ public abstract class AbstractCondition implements Condition {
         
         if (acceptSection != null) {
             // Check for new message format
-            ConfigurationSection acceptMessageSection = acceptSection.getConfigurationSection("message");
+            ConfigurationSection acceptMessageSection = acceptSection.getConfigurationSection(MESSAGE_KEY);
             if (acceptMessageSection != null) {
                 acceptMessage = new MessageConfig(acceptMessageSection);
             } else {
                 // Legacy format support
-                String legacyMessage = acceptSection.getString("message");
+                String legacyMessage = acceptSection.getString(MESSAGE_KEY);
                 if (legacyMessage != null) {
                     acceptMessage = new MessageConfig(legacyMessage);
                 }

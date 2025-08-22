@@ -13,6 +13,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
 
+    private static final String TOTAL_LEVELS_KEY = "totallevels";
+    private static final String TOTAL_JOBS_KEY = "totaljobs";
+    private static final String TOTAL_XP_KEY = "totalxp";
+    private static final String PLAYER_KEY = "player";
+    private static final String FORMATTED_KEY = "formatted";
+    private static final String INVALID_POSITION_MSG = "Invalid Position";
+
     private final UniverseJobs plugin;
     private final JobManager jobManager;
     private final Map<String, List<GlobalLeaderboardEntry>> cachedGlobalLeaderboards = new ConcurrentHashMap<>();
@@ -54,13 +61,13 @@ public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
         String type = args[0];
         
         switch (type.toLowerCase()) {
-            case "totallevels":
+            case TOTAL_LEVELS_KEY:
                 return handleTotalLevelsLeaderboard(args);
-            case "totaljobs":
+            case TOTAL_JOBS_KEY:
                 return handleTotalJobsLeaderboard(args);
-            case "totalxp":
+            case TOTAL_XP_KEY:
                 return handleTotalXpLeaderboard(args);
-            case "player":
+            case PLAYER_KEY:
                 return handleGlobalPlayerStats(player, args);
             default:
                 return null;
@@ -73,9 +80,9 @@ public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
 
         try {
             int position = Integer.parseInt(args[1]);
-            String info = args.length > 2 ? args[2] : "formatted";
+            String info = args.length > 2 ? args[2] : FORMATTED_KEY;
 
-            List<GlobalLeaderboardEntry> leaderboard = getGlobalLeaderboard("totallevels");
+            List<GlobalLeaderboardEntry> leaderboard = getGlobalLeaderboard(TOTAL_LEVELS_KEY);
             if (position < 1 || position > leaderboard.size()) {
                 return getEmptyGlobalValue(info);
             }
@@ -84,7 +91,7 @@ public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
             return formatGlobalLeaderboardInfo(entry, info, position, "levels");
 
         } catch (NumberFormatException e) {
-            return "Invalid Position";
+            return INVALID_POSITION_MSG;
         }
     }
 
@@ -94,9 +101,9 @@ public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
 
         try {
             int position = Integer.parseInt(args[1]);
-            String info = args.length > 2 ? args[2] : "formatted";
+            String info = args.length > 2 ? args[2] : FORMATTED_KEY;
 
-            List<GlobalLeaderboardEntry> leaderboard = getGlobalLeaderboard("totaljobs");
+            List<GlobalLeaderboardEntry> leaderboard = getGlobalLeaderboard(TOTAL_JOBS_KEY);
             if (position < 1 || position > leaderboard.size()) {
                 return getEmptyGlobalValue(info);
             }
@@ -105,7 +112,7 @@ public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
             return formatGlobalLeaderboardInfo(entry, info, position, "jobs");
 
         } catch (NumberFormatException e) {
-            return "Invalid Position";
+            return INVALID_POSITION_MSG;
         }
     }
 
@@ -115,9 +122,9 @@ public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
 
         try {
             int position = Integer.parseInt(args[1]);
-            String info = args.length > 2 ? args[2] : "formatted";
+            String info = args.length > 2 ? args[2] : FORMATTED_KEY;
 
-            List<GlobalLeaderboardEntry> leaderboard = getGlobalLeaderboard("totalxp");
+            List<GlobalLeaderboardEntry> leaderboard = getGlobalLeaderboard(TOTAL_XP_KEY);
             if (position < 1 || position > leaderboard.size()) {
                 return getEmptyGlobalValue(info);
             }
@@ -126,7 +133,7 @@ public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
             return formatGlobalLeaderboardInfo(entry, info, position, "XP");
 
         } catch (NumberFormatException e) {
-            return "Invalid Position";
+            return INVALID_POSITION_MSG;
         }
     }
 
@@ -137,11 +144,11 @@ public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
         PlayerJobData playerData = jobManager.getPlayerData(player.getUniqueId());
 
         switch (stat.toLowerCase()) {
-            case "totallevels":
+            case TOTAL_LEVELS_KEY:
                 return String.valueOf(calculateTotalLevels(playerData));
-            case "totaljobs":
+            case TOTAL_JOBS_KEY:
                 return String.valueOf(playerData.getJobs().size());
-            case "totalxp":
+            case TOTAL_XP_KEY:
                 return String.format("%.1f", calculateTotalXp(playerData));
             case "rank":
                 if (args.length < 3) return null;
@@ -203,14 +210,17 @@ public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
 
                 double value = 0;
                 switch (type) {
-                    case "totallevels":
+                    case TOTAL_LEVELS_KEY:
                         value = calculateTotalLevels(playerData);
                         break;
-                    case "totaljobs":
+                    case TOTAL_JOBS_KEY:
                         value = playerData.getJobs().size();
                         break;
-                    case "totalxp":
+                    case TOTAL_XP_KEY:
                         value = calculateTotalXp(playerData);
+                        break;
+                    default:
+                        value = 0; // Unknown type
                         break;
                 }
 
@@ -255,7 +265,7 @@ public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
 
     private String formatGlobalLeaderboardInfo(GlobalLeaderboardEntry entry, String info, int position, String unit) {
         switch (info.toLowerCase()) {
-            case "player":
+            case PLAYER_KEY:
             case "name":
                 return entry.playerName;
             case "value":
@@ -267,7 +277,7 @@ public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
             case "position":
             case "rank":
                 return String.valueOf(position);
-            case "formatted":
+            case FORMATTED_KEY:
                 if ("XP".equals(unit)) {
                     return String.format("#%d %s - %.1f %s", 
                         position, entry.playerName, entry.value, unit);
@@ -282,7 +292,7 @@ public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
 
     private String getEmptyGlobalValue(String info) {
         switch (info.toLowerCase()) {
-            case "player":
+            case PLAYER_KEY:
             case "name":
                 return "No Player";
             case "value":
@@ -290,7 +300,7 @@ public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
             case "position":
             case "rank":
                 return "0";
-            case "formatted":
+            case FORMATTED_KEY:
                 return "No player in ranking";
             default:
                 return "N/A";

@@ -181,7 +181,7 @@ public class ActionLimitCommandHandler extends JobCommandHandler {
             String input = args[2].toLowerCase();
             
             switch (actionLimitSubCommand) {
-                case "restore" -> {
+                case CMD_RESTORE -> {
                     // Player names + asterisk
                     completions.add("*");
                     completions.addAll(Bukkit.getOnlinePlayers().stream()
@@ -189,7 +189,7 @@ public class ActionLimitCommandHandler extends JobCommandHandler {
                             .filter(name -> name.toLowerCase().startsWith(input))
                             .collect(Collectors.toList()));
                 }
-                case "status" -> {
+                case CMD_STATUS -> {
                     // Player names only
                     completions.addAll(Bukkit.getOnlinePlayers().stream()
                             .map(Player::getName)
