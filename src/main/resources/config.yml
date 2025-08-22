@@ -4,7 +4,7 @@
 # General Settings
 debug: false
 language:
-  locale: "en"
+  locale: "en_US"
 
 # Auto-save settings  
 settings:
@@ -47,3 +47,4 @@ jobs:
   # Only works when 'all-jobs-by-default' is false
   # Example: ["miner", "farmer", "hunter"]
   jobs-by-default: []
+
