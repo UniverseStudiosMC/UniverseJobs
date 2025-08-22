@@ -573,7 +573,7 @@ public class JobActionListener implements Listener {
             case PLACE_SOME:
                 return false;
             default:
-                break;
+                // Continue with validation for other action types
         }
         
         // Must be result slot
