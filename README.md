@@ -77,7 +77,6 @@
 1. **Download** the latest release
 2. **Drop** into your plugins folder  
 3. **Restart** your server
-4. **Configure** via `/jobs admin` GUI
 
 ### 🔧 **Configuration**
 ```yaml
