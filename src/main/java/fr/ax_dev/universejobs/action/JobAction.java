@@ -13,6 +13,10 @@ import java.util.ArrayList;
  */
 public class JobAction {
     
+    private static final String PROFESSION_KEY = "profession";
+    private static final String COLOR_KEY = "color";
+    private static final String POTION_TYPE_KEY = "potion-type";
+    
     private final String target;
     private final double xp;
     private final double money;
@@ -98,16 +102,16 @@ public class JobAction {
     private List<String> loadProfessions(ConfigurationSection config) {
         List<String> result = new ArrayList<>();
         
-        if (config.isList("profession")) {
+        if (config.isList(PROFESSION_KEY)) {
             // Handle list format: profession: ["ARMORER", "CLERIC"]
-            for (String prof : config.getStringList("profession")) {
+            for (String prof : config.getStringList(PROFESSION_KEY)) {
                 if (prof != null && !prof.trim().isEmpty()) {
                     result.add(prof.trim().toUpperCase());
                 }
             }
-        } else if (config.isString("profession")) {
+        } else if (config.isString(PROFESSION_KEY)) {
             // Handle single string format: profession: "ARMORER"
-            String prof = config.getString("profession");
+            String prof = config.getString(PROFESSION_KEY);
             if (prof != null && !prof.trim().isEmpty()) {
                 result.add(prof.trim().toUpperCase());
             }
@@ -126,16 +130,16 @@ public class JobAction {
     private List<String> loadColors(ConfigurationSection config) {
         List<String> result = new ArrayList<>();
         
-        if (config.isList("color")) {
+        if (config.isList(COLOR_KEY)) {
             // Handle list format: color: ["RED", "BLUE"]
-            for (String color : config.getStringList("color")) {
+            for (String color : config.getStringList(COLOR_KEY)) {
                 if (color != null && !color.trim().isEmpty()) {
                     result.add(color.trim().toUpperCase());
                 }
             }
-        } else if (config.isString("color")) {
+        } else if (config.isString(COLOR_KEY)) {
             // Handle single string format: color: "RED"
-            String color = config.getString("color");
+            String color = config.getString(COLOR_KEY);
             if (color != null && !color.trim().isEmpty()) {
                 result.add(color.trim().toUpperCase());
             }
@@ -182,16 +186,16 @@ public class JobAction {
     private List<String> loadPotionTypes(ConfigurationSection config) {
         List<String> result = new ArrayList<>();
         
-        if (config.isList("potion-type")) {
+        if (config.isList(POTION_TYPE_KEY)) {
             // Handle list format: potion-type: ["STRENGTH:2", "SPEED:1"]
-            for (String potionType : config.getStringList("potion-type")) {
+            for (String potionType : config.getStringList(POTION_TYPE_KEY)) {
                 if (potionType != null && !potionType.trim().isEmpty()) {
                     result.add(potionType.trim().toUpperCase());
                 }
             }
-        } else if (config.isString("potion-type")) {
+        } else if (config.isString(POTION_TYPE_KEY)) {
             // Handle single string format: potion-type: "STRENGTH:2"
-            String potionType = config.getString("potion-type");
+            String potionType = config.getString(POTION_TYPE_KEY);
             if (potionType != null && !potionType.trim().isEmpty()) {
                 result.add(potionType.trim().toUpperCase());
             }

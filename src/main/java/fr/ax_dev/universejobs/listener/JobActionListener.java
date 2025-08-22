@@ -47,6 +47,9 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class JobActionListener implements Listener {
     
+    private static final String TARGET_SUFFIX = " - target: ";
+    private static final String COLOR_CODE_PATTERN = "§[0-9a-fk-or]";
+    
     private final UniverseJobs plugin;
     private final ActionProcessor actionProcessor;
     private final BlockProtectionManager protectionManager;
@@ -233,7 +236,7 @@ public class JobActionListener implements Listener {
                     .set("target", event.getBlock().getType().name());
             
             if (plugin.getConfigManager().isDebugEnabled()) {
-                plugin.getLogger().info("Processing BREAK action for " + player.getName() + " - target: " + event.getBlock().getType().name());
+                plugin.getLogger().info("Processing BREAK action for " + player.getName() + TARGET_SUFFIX + event.getBlock().getType().name());
             }
             
             // Process the action and check if we should cancel
@@ -898,7 +901,7 @@ public class JobActionListener implements Listener {
             
             if (plugin.getConfigManager().isDebugEnabled()) {
                 plugin.getLogger().info("Processing SMELT action for " + player.getName() + 
-                    " - target: " + context.get("target") + 
+                    TARGET_SUFFIX + context.get("target") + 
                     " - source: " + context.get("source_target"));
             }
             
@@ -986,16 +989,11 @@ public class JobActionListener implements Listener {
     private String detectNexoItem(ItemStack item) {
         try {
             // Try to use Nexo API if available
-            if (plugin.getServer().getPluginManager().isPluginEnabled("Nexo")) {
-                // Check for Nexo NBT or metadata
-                if (item.hasItemMeta()) {
-                    // Nexo items typically have specific NBT tags or custom model data
-                    if (item.getItemMeta().hasCustomModelData()) {
-                        // This is a basic detection - in a real implementation,
-                        // you'd use the Nexo API to properly identify items
-                        return "nexo:item_" + item.getItemMeta().getCustomModelData();
-                    }
-                }
+            if (plugin.getServer().getPluginManager().isPluginEnabled("Nexo") && item.hasItemMeta() && item.getItemMeta().hasCustomModelData()) {
+                // Nexo items typically have specific NBT tags or custom model data
+                // This is a basic detection - in a real implementation,
+                // you'd use the Nexo API to properly identify items
+                return "nexo:item_" + item.getItemMeta().getCustomModelData();
             }
         } catch (Exception e) {
             // Nexo not available or error occurred
@@ -1009,16 +1007,11 @@ public class JobActionListener implements Listener {
     private String detectItemsAdderItem(ItemStack item) {
         try {
             // Try to use ItemsAdder API if available
-            if (plugin.getServer().getPluginManager().isPluginEnabled("ItemsAdder")) {
-                // Check for ItemsAdder NBT or metadata
-                if (item.hasItemMeta()) {
-                    // ItemsAdder items typically have specific NBT tags
-                    if (item.getItemMeta().hasCustomModelData()) {
-                        // This is a basic detection - in a real implementation,
-                        // you'd use the ItemsAdder API to properly identify items
-                        return "itemsadder:item_" + item.getItemMeta().getCustomModelData();
-                    }
-                }
+            if (plugin.getServer().getPluginManager().isPluginEnabled("ItemsAdder") && item.hasItemMeta() && item.getItemMeta().hasCustomModelData()) {
+                // ItemsAdder items typically have specific NBT tags
+                // This is a basic detection - in a real implementation,
+                // you'd use the ItemsAdder API to properly identify items
+                return "itemsadder:item_" + item.getItemMeta().getCustomModelData();
             }
         } catch (Exception e) {
             // ItemsAdder not available or error occurred
@@ -1032,15 +1025,13 @@ public class JobActionListener implements Listener {
     private String detectCustomFishingItem(ItemStack item) {
         try {
             // Try to use CustomFishing API if available
-            if (plugin.getServer().getPluginManager().isPluginEnabled("CustomFishing")) {
+            if (plugin.getServer().getPluginManager().isPluginEnabled("CustomFishing") && item.hasItemMeta()) {
                 // Check for fish-like items or CustomFishing NBT
-                if (item.hasItemMeta()) {
-                    String displayName = item.getItemMeta().getDisplayName();
-                    if (displayName != null && !displayName.isEmpty()) {
-                        String cleanName = displayName.replaceAll("§[0-9a-fk-or]", "").toLowerCase();
-                        if (cleanName.contains("fish") || cleanName.contains("catch")) {
-                            return "customfishing:" + cleanName.replaceAll("[^a-z0-9]", "_");
-                        }
+                String displayName = item.getItemMeta().getDisplayName();
+                if (displayName != null && !displayName.isEmpty()) {
+                    String cleanName = displayName.replaceAll(COLOR_CODE_PATTERN, "").toLowerCase();
+                    if (cleanName.contains("fish") || cleanName.contains("catch")) {
+                        return "customfishing:" + cleanName.replaceAll("[^a-z0-9]", "_");
                     }
                 }
             }
@@ -1056,15 +1047,13 @@ public class JobActionListener implements Listener {
     private String detectCustomCropsItem(ItemStack item) {
         try {
             // Try to use CustomCrops API if available
-            if (plugin.getServer().getPluginManager().isPluginEnabled("CustomCrops")) {
+            if (plugin.getServer().getPluginManager().isPluginEnabled("CustomCrops") && item.hasItemMeta()) {
                 // Check for crop-like items or CustomCrops NBT
-                if (item.hasItemMeta()) {
-                    String displayName = item.getItemMeta().getDisplayName();
-                    if (displayName != null && !displayName.isEmpty()) {
-                        String cleanName = displayName.replaceAll("§[0-9a-fk-or]", "").toLowerCase();
-                        if (cleanName.contains("crop") || cleanName.contains("seed") || cleanName.contains("harvest")) {
-                            return "customcrops:" + cleanName.replaceAll("[^a-z0-9]", "_");
-                        }
+                String displayName = item.getItemMeta().getDisplayName();
+                if (displayName != null && !displayName.isEmpty()) {
+                    String cleanName = displayName.replaceAll(COLOR_CODE_PATTERN, "").toLowerCase();
+                    if (cleanName.contains("crop") || cleanName.contains("seed") || cleanName.contains("harvest")) {
+                        return "customcrops:" + cleanName.replaceAll("[^a-z0-9]", "_");
                     }
                 }
             }
@@ -1125,7 +1114,7 @@ public class JobActionListener implements Listener {
                 
                 if (plugin.getConfigManager().isDebugEnabled()) {
                     plugin.getLogger().info("Trade with villager profession: " + villager.getProfession().name() + 
-                        " - target: " + result.getType().name() + " by " + player.getName());
+                        TARGET_SUFFIX + result.getType().name() + " by " + player.getName());
                 }
             }
             
@@ -1193,7 +1182,7 @@ public class JobActionListener implements Listener {
                     if (displayName.contains("§") && item.getItemMeta().hasLore()) {
                         // This is a simplified detection - MMOItems usually have specific NBT
                         // You would need MMOItems API for proper detection
-                        return "MMOITEMS:CONSUMABLE:" + displayName.replaceAll("§[0-9a-fk-or]", "").replaceAll("[^A-Z0-9]", "_").toUpperCase();
+                        return "MMOITEMS:CONSUMABLE:" + displayName.replaceAll(COLOR_CODE_PATTERN, "").replaceAll("[^A-Z0-9]", "_").toUpperCase();
                     }
                 }
             }
