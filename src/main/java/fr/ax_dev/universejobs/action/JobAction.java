@@ -26,6 +26,7 @@ public class JobAction {
     private final String enchantLevel;
     private final List<String> professions;
     private final List<String> colors;
+    private final List<String> nbtTags;
     
     /**
      * Create a new JobAction from configuration.
@@ -46,6 +47,9 @@ public class JobAction {
         
         // Load color requirements for SHEAR actions
         this.colors = loadColors(config);
+        
+        // Load NBT requirements for EAT and other actions
+        this.nbtTags = loadNbtTags(config);
         
         // Load message configuration
         ConfigurationSection messageSection = config.getConfigurationSection("message");
@@ -130,6 +134,34 @@ public class JobAction {
             String color = config.getString("color");
             if (color != null && !color.trim().isEmpty()) {
                 result.add(color.trim().toUpperCase());
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Load NBT requirements from configuration.
+     * Supports both single NBT tag and list of NBT tags.
+     * 
+     * @param config The configuration section
+     * @return List of required NBT tags, or empty list if none specified
+     */
+    private List<String> loadNbtTags(ConfigurationSection config) {
+        List<String> result = new ArrayList<>();
+        
+        if (config.isList("nbt")) {
+            // Handle list format: nbt: ["MMOITEMS:CONSUMABLE:APPLE", "customcrops:apple"]
+            for (String nbt : config.getStringList("nbt")) {
+                if (nbt != null && !nbt.trim().isEmpty()) {
+                    result.add(nbt.trim());
+                }
+            }
+        } else if (config.isString("nbt")) {
+            // Handle single string format: nbt: "MMOITEMS:CONSUMABLE:APPLE"
+            String nbt = config.getString("nbt");
+            if (nbt != null && !nbt.trim().isEmpty()) {
+                result.add(nbt.trim());
             }
         }
         
@@ -537,6 +569,46 @@ public class JobAction {
         if (sheepColor != null) {
             String colorUpper = sheepColor.toUpperCase();
             return colors.contains(colorUpper);
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Get the list of required NBT tags for this action.
+     * Applicable for EAT and other actions that check item NBT.
+     * 
+     * @return List of NBT tags, empty if no NBT requirements
+     */
+    public List<String> getNbtTags() {
+        return nbtTags;
+    }
+    
+    /**
+     * Check if this action has NBT requirements.
+     * 
+     * @return true if NBT requirements exist
+     */
+    public boolean hasNbtRequirements() {
+        return nbtTags != null && !nbtTags.isEmpty();
+    }
+    
+    /**
+     * Check if an item's NBT matches the requirements for this action.
+     * If no NBT requirements are specified, all items are accepted.
+     * 
+     * @param itemNbt The item's NBT/custom identifier
+     * @return true if the NBT matches or no requirements exist
+     */
+    public boolean matchesNbt(String itemNbt) {
+        // If no NBT requirements, accept any item
+        if (!hasNbtRequirements()) {
+            return true;
+        }
+        
+        // Check if the item's NBT matches any required NBT
+        if (itemNbt != null) {
+            return nbtTags.contains(itemNbt);
         }
         
         return false;

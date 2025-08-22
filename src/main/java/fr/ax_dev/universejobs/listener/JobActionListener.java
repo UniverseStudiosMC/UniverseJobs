@@ -393,19 +393,36 @@ public class JobActionListener implements Listener {
     
     /**
      * Handle food and potion consumption (EAT and POTION actions).
+     * Supports custom items (CustomCrops, CustomFishing, Nexo, ItemsAdder) and NBT detection.
      */
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPlayerItemConsume(PlayerItemConsumeEvent event) {
         Player player = event.getPlayer();
+        ItemStack item = event.getItem();
         
-        // Create context
+        if (item == null) return;
+        
+        // Detect the target format for the item, supporting all plugin formats
+        String target = detectItemTarget(item);
+        
+        // Create context with enhanced item information
         ConditionContext context = new ConditionContext()
-                .setItem(event.getItem())
-                .set("target", event.getItem().getType().name());
+                .setItem(item)
+                .set("target", target);
+        
+        // Add NBT information if available
+        if (item.hasItemMeta()) {
+            // Add custom item information to context
+            addCustomItemContext(item, context);
+            
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("Player " + player.getName() + " consumed item with target: " + target);
+            }
+        }
         
         // Determine if it's a potion or food
         ActionType actionType;
-        if (event.getItem().getType().name().contains("POTION")) {
+        if (item.getType().name().contains("POTION")) {
             actionType = ActionType.POTION;
         } else {
             actionType = ActionType.EAT;
@@ -1123,6 +1140,101 @@ public class JobActionListener implements Listener {
             
         } catch (Exception e) {
             plugin.getLogger().warning("Error processing TRADE action for player " + player.getName() + ": " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Add custom item context information including NBT data.
+     * Supports MMOItems, CustomCrops, CustomFishing, Nexo, and ItemsAdder.
+     */
+    private void addCustomItemContext(ItemStack item, ConditionContext context) {
+        if (!item.hasItemMeta()) {
+            return;
+        }
+        
+        try {
+            // Check for MMOItems NBT
+            String mmoItemsNBT = detectMMOItemsNBT(item);
+            if (mmoItemsNBT != null) {
+                context.set("nbt", mmoItemsNBT);
+                context.set("mmoitems_type", mmoItemsNBT);
+                
+                if (plugin.getConfigManager().isDebugEnabled()) {
+                    plugin.getLogger().info("Detected MMOItems NBT: " + mmoItemsNBT);
+                }
+            }
+            
+            // Check for other plugin NBTs/metadata
+            addPluginSpecificContext(item, context);
+            
+        } catch (Exception e) {
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().warning("Error detecting custom item context: " + e.getMessage());
+            }
+        }
+    }
+    
+    /**
+     * Detect MMOItems NBT format (MMOITEMS:TYPE:ID).
+     */
+    private String detectMMOItemsNBT(ItemStack item) {
+        try {
+            if (plugin.getServer().getPluginManager().isPluginEnabled("MMOItems")) {
+                // Try to detect MMOItems using display name and lore patterns
+                if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
+                    // Basic detection - in a real implementation, you'd use MMOItems API
+                    String displayName = item.getItemMeta().getDisplayName();
+                    if (displayName.contains("§") && item.getItemMeta().hasLore()) {
+                        // This is a simplified detection - MMOItems usually have specific NBT
+                        // You would need MMOItems API for proper detection
+                        return "MMOITEMS:CONSUMABLE:" + displayName.replaceAll("§[0-9a-fk-or]", "").replaceAll("[^A-Z0-9]", "_").toUpperCase();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // MMOItems not available or error occurred
+        }
+        return null;
+    }
+    
+    /**
+     * Add plugin-specific context for CustomCrops, CustomFishing, Nexo, and ItemsAdder.
+     */
+    private void addPluginSpecificContext(ItemStack item, ConditionContext context) {
+        // Check for CustomCrops items
+        if (plugin.getServer().getPluginManager().isPluginEnabled("CustomCrops")) {
+            String customCropsId = detectCustomCropsItem(item);
+            if (customCropsId != null) {
+                context.set("customcrops_id", customCropsId);
+                context.set("nbt", customCropsId);
+            }
+        }
+        
+        // Check for CustomFishing items
+        if (plugin.getServer().getPluginManager().isPluginEnabled("CustomFishing")) {
+            String customFishingId = detectCustomFishingItem(item);
+            if (customFishingId != null) {
+                context.set("customfishing_id", customFishingId);
+                context.set("nbt", customFishingId);
+            }
+        }
+        
+        // Check for Nexo items
+        if (plugin.getServer().getPluginManager().isPluginEnabled("Nexo")) {
+            String nexoId = detectNexoItem(item);
+            if (nexoId != null) {
+                context.set("nexo_id", nexoId);
+                context.set("nbt", nexoId);
+            }
+        }
+        
+        // Check for ItemsAdder items
+        if (plugin.getServer().getPluginManager().isPluginEnabled("ItemsAdder")) {
+            String itemsAdderId = detectItemsAdderItem(item);
+            if (itemsAdderId != null) {
+                context.set("itemsadder_id", itemsAdderId);
+                context.set("nbt", itemsAdderId);
+            }
         }
     }
     

@@ -145,6 +145,10 @@ public class ActionProcessor {
             return false;
         }
         
+        if (!validateNbt(action, context, job)) {
+            return false;
+        }
+        
         boolean shouldCancel = processActionRequirements(player, action, event, context);
         
         processActionRewards(player, job, action, context);
@@ -250,6 +254,30 @@ public class ActionProcessor {
                 ", matches: " + colorMatches);
         
         return colorMatches;
+    }
+    
+    /**
+     * Validate NBT requirements for EAT and other item-based actions.
+     */
+    private boolean validateNbt(JobAction action, ConditionContext context, Job job) {
+        ActionType actionType = job.getActionTypeForAction(action);
+        if (actionType != ActionType.EAT && actionType != ActionType.POTION) {
+            return true; // NBT validation mainly applies to EAT and POTION actions
+        }
+        
+        // If no NBT requirements specified, allow all items
+        if (!action.hasNbtRequirements()) {
+            return true;
+        }
+        
+        String itemNbt = context.get("nbt");
+        boolean nbtMatches = action.matchesNbt(itemNbt);
+        
+        debugLog("NBT check - required: " + action.getNbtTags() + 
+                ", item: " + itemNbt + 
+                ", matches: " + nbtMatches);
+        
+        return nbtMatches;
     }
     
     /**
