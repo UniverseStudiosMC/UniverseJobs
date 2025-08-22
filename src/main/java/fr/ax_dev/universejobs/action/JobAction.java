@@ -27,6 +27,7 @@ public class JobAction {
     private final List<String> professions;
     private final List<String> colors;
     private final List<String> nbtTags;
+    private final List<String> potionTypes;
     
     /**
      * Create a new JobAction from configuration.
@@ -50,6 +51,9 @@ public class JobAction {
         
         // Load NBT requirements for EAT and other actions
         this.nbtTags = loadNbtTags(config);
+        
+        // Load potion-type requirements for POTION actions
+        this.potionTypes = loadPotionTypes(config);
         
         // Load message configuration
         ConfigurationSection messageSection = config.getConfigurationSection("message");
@@ -162,6 +166,34 @@ public class JobAction {
             String nbt = config.getString("nbt");
             if (nbt != null && !nbt.trim().isEmpty()) {
                 result.add(nbt.trim());
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Load potion-type requirements from configuration.
+     * Supports both single potion-type and list of potion-types.
+     * 
+     * @param config The configuration section
+     * @return List of required potion types (format: TYPE:LEVEL), or empty list if none specified
+     */
+    private List<String> loadPotionTypes(ConfigurationSection config) {
+        List<String> result = new ArrayList<>();
+        
+        if (config.isList("potion-type")) {
+            // Handle list format: potion-type: ["STRENGTH:2", "SPEED:1"]
+            for (String potionType : config.getStringList("potion-type")) {
+                if (potionType != null && !potionType.trim().isEmpty()) {
+                    result.add(potionType.trim().toUpperCase());
+                }
+            }
+        } else if (config.isString("potion-type")) {
+            // Handle single string format: potion-type: "STRENGTH:2"
+            String potionType = config.getString("potion-type");
+            if (potionType != null && !potionType.trim().isEmpty()) {
+                result.add(potionType.trim().toUpperCase());
             }
         }
         
@@ -609,6 +641,47 @@ public class JobAction {
         // Check if the item's NBT matches any required NBT
         if (itemNbt != null) {
             return nbtTags.contains(itemNbt);
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Get the list of required potion types for this action.
+     * Only applicable for POTION actions.
+     * 
+     * @return List of potion types (format: TYPE:LEVEL), empty if no potion-type requirements
+     */
+    public List<String> getPotionTypes() {
+        return potionTypes;
+    }
+    
+    /**
+     * Check if this action has potion-type requirements.
+     * 
+     * @return true if potion-type requirements exist
+     */
+    public boolean hasPotionTypeRequirements() {
+        return potionTypes != null && !potionTypes.isEmpty();
+    }
+    
+    /**
+     * Check if a potion type matches the requirements for this action.
+     * If no potion-type requirements are specified, all potions are accepted.
+     * 
+     * @param potionType The potion's type and level (format: "TYPE:LEVEL", case-insensitive)
+     * @return true if the potion type matches or no requirements exist
+     */
+    public boolean matchesPotionType(String potionType) {
+        // If no potion-type requirements, accept any potion
+        if (!hasPotionTypeRequirements()) {
+            return true;
+        }
+        
+        // Check if the potion's type matches any required potion type
+        if (potionType != null) {
+            String potionTypeUpper = potionType.toUpperCase();
+            return potionTypes.contains(potionTypeUpper);
         }
         
         return false;

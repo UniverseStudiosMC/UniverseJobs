@@ -149,6 +149,10 @@ public class ActionProcessor {
             return false;
         }
         
+        if (!validatePotionType(action, context, job)) {
+            return false;
+        }
+        
         boolean shouldCancel = processActionRequirements(player, action, event, context);
         
         processActionRewards(player, job, action, context);
@@ -278,6 +282,30 @@ public class ActionProcessor {
                 ", matches: " + nbtMatches);
         
         return nbtMatches;
+    }
+    
+    /**
+     * Validate potion-type requirements for POTION actions.
+     */
+    private boolean validatePotionType(JobAction action, ConditionContext context, Job job) {
+        ActionType actionType = job.getActionTypeForAction(action);
+        if (actionType != ActionType.POTION) {
+            return true; // Potion-type validation only applies to POTION actions
+        }
+        
+        // If no potion-type requirements specified, allow all potions
+        if (!action.hasPotionTypeRequirements()) {
+            return true;
+        }
+        
+        String potionType = context.get("potion-type");
+        boolean potionTypeMatches = action.matchesPotionType(potionType);
+        
+        debugLog("Potion-type check - required: " + action.getPotionTypes() + 
+                ", potion: " + potionType + 
+                ", matches: " + potionTypeMatches);
+        
+        return potionTypeMatches;
     }
     
     /**

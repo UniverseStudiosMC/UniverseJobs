@@ -11,6 +11,9 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.Sheep;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionType;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -424,6 +427,9 @@ public class JobActionListener implements Listener {
         ActionType actionType;
         if (item.getType().name().contains("POTION")) {
             actionType = ActionType.POTION;
+            
+            // Add potion-specific information
+            addPotionContext(item, context);
         } else {
             actionType = ActionType.EAT;
         }
@@ -1234,6 +1240,66 @@ public class JobActionListener implements Listener {
             if (itemsAdderId != null) {
                 context.set("itemsadder_id", itemsAdderId);
                 context.set("nbt", itemsAdderId);
+            }
+        }
+    }
+    
+    /**
+     * Add potion-specific context information including potion type and level.
+     */
+    private void addPotionContext(ItemStack item, ConditionContext context) {
+        if (!item.hasItemMeta() || !(item.getItemMeta() instanceof PotionMeta)) {
+            return;
+        }
+        
+        try {
+            PotionMeta potionMeta = (PotionMeta) item.getItemMeta();
+            
+            // Get base potion type
+            if (potionMeta.getBasePotionType() != null) {
+                PotionType baseType = potionMeta.getBasePotionType();
+                String potionTypeName = baseType.name();
+                
+                // Check if it's an extended or upgraded potion
+                // Note: In newer versions, this information might be part of the PotionType itself
+                boolean isExtended = potionTypeName.contains("LONG");
+                boolean isUpgraded = potionTypeName.contains("STRONG");
+                
+                // Extract the base effect name and level
+                String effectName = potionTypeName.replace("LONG_", "").replace("STRONG_", "");
+                int level = isUpgraded ? 2 : 1;
+                
+                // Create potion-type string (e.g., "STRENGTH:2")
+                String potionTypeString = effectName + ":" + level;
+                context.set("potion-type", potionTypeString);
+                
+                if (plugin.getConfigManager().isDebugEnabled()) {
+                    plugin.getLogger().info("Detected potion type: " + potionTypeString + 
+                        " (base: " + potionTypeName + ", extended: " + isExtended + ", upgraded: " + isUpgraded + ")");
+                }
+            }
+            
+            // Check for custom potion effects (for custom potions)
+            if (potionMeta.hasCustomEffects()) {
+                for (PotionEffect effect : potionMeta.getCustomEffects()) {
+                    String effectType = effect.getType().getName().toUpperCase();
+                    int amplifier = effect.getAmplifier() + 1; // Amplifier is 0-based, but we want 1-based
+                    
+                    String customPotionType = effectType + ":" + amplifier;
+                    context.set("potion-type", customPotionType);
+                    
+                    if (plugin.getConfigManager().isDebugEnabled()) {
+                        plugin.getLogger().info("Detected custom potion effect: " + customPotionType);
+                    }
+                    
+                    // Use the first effect for the potion-type
+                    break;
+                }
+            }
+            
+        } catch (Exception e) {
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().warning("Error detecting potion context: " + e.getMessage());
             }
         }
     }

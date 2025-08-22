@@ -140,6 +140,31 @@ actions:
       target: "BREAD"  # No NBT = any bread
       xp: 1.0
 
+  POTION:
+    simple_potion:
+      target: "POTION"
+      potion-type: "STRENGTH:2"  # Need Strength 2 potion
+      xp: 10.0
+    speed_potions:
+      target: "POTION"
+      potion-type:
+        - "SPEED:1"
+        - "SPEED:2"
+      xp: 5.0
+      money: 2.0
+    healing_potion:
+      target: "POTION"
+      potion-type: "HEALING:1"  # Instant Health potion
+      xp: 3.0
+    regeneration_advanced:
+      target: "POTION"
+      potion-type: "REGENERATION:2"
+      xp: 15.0
+      money: 5.0
+    any_potion:
+      target: "POTION"  # No potion-type = any potion
+      xp: 1.0
+
     mine_diamond_vip:
       target: "DIAMOND_ORE"
       xp: 30.0
