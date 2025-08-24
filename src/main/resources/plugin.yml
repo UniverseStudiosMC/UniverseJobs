@@ -1,7 +1,7 @@
 name: UniverseJobs
 version: '1.0-SNAPSHOT'
 main: fr.ax_dev.universejobs.UniverseJobs
-api-version: '1.21'
+api-version: '1.20'
 folia-supported: true
 description: A flexible and customizable universe jobs plugin for Minecraft servers with Folia support
 author: ax_dev

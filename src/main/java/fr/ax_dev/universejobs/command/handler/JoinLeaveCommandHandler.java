@@ -112,9 +112,9 @@ public class JoinLeaveCommandHandler extends JobCommandHandler {
             return;
         }
         
-        // Check max jobs limit
+        // Check max jobs limit based on permissions
         Set<String> playerJobs = jobManager.getPlayerJobs(player);
-        int maxJobs = plugin.getConfigManager().getMaxJobsPerPlayer();
+        int maxJobs = getMaxJobsForPlayer(player);
         if (playerJobs.size() >= maxJobs) {
             player.sendMessage(languageManager.getMessage("commands.join.max-jobs-reached", "max", String.valueOf(maxJobs)));
             return;
@@ -175,5 +175,40 @@ public class JoinLeaveCommandHandler extends JobCommandHandler {
         } else {
             player.sendMessage(languageManager.getMessage("commands.leave.failed", "job", job.getName()));
         }
+    }
+    
+    /**
+     * Get the maximum number of jobs a player can have based on their permissions.
+     * Checks for universejobs.max_join.X permissions dynamically, where X can be any number.
+     * The highest number found will be used.
+     * 
+     * @param player The player to check
+     * @return The maximum number of jobs the player can join
+     */
+    private int getMaxJobsForPlayer(Player player) {
+        int maxJobs = 1; // Default value
+        
+        // Get all permissions for the player
+        for (org.bukkit.permissions.PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
+            String permission = permInfo.getPermission();
+            
+            // Check if this is a max_join permission
+            if (permission.startsWith("universejobs.max_join.") && permInfo.getValue()) {
+                try {
+                    // Extract the number from the permission
+                    String numberPart = permission.substring("universejobs.max_join.".length());
+                    int permissionValue = Integer.parseInt(numberPart);
+                    
+                    // Use the highest value found
+                    if (permissionValue > maxJobs) {
+                        maxJobs = permissionValue;
+                    }
+                } catch (NumberFormatException e) {
+                    // Invalid number in permission, ignore it
+                }
+            }
+        }
+        
+        return maxJobs;
     }
 }
