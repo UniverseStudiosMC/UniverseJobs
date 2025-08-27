@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 
 import java.util.Map;
@@ -101,9 +102,44 @@ public class MenuManager implements Listener {
         if (!(event.getWhoClicked() instanceof Player player)) return;
         
         BaseMenu menu = openMenus.get(player.getUniqueId());
-        if (menu != null && menu.isInventory(event.getInventory())) {
-            event.setCancelled(true);
-            menu.handleClick(event.getSlot(), event);
+        if (menu != null) {
+            // Check if player has our menu open
+            if (menu.isInventory(event.getInventory())) {
+                // This is a click in our menu (top inventory)
+                event.setCancelled(true);
+                
+                // Only handle clicks in the top inventory (our menu)
+                if (event.getClickedInventory() != null && event.getClickedInventory().equals(event.getView().getTopInventory())) {
+                    menu.handleClick(event.getSlot(), event);
+                }
+                // Clicks in bottom inventory (player inventory) are ignored but still cancelled
+                
+            } else if (event.getView().getTopInventory().equals(menu.getInventory())) {
+                // Player has our menu open but clicked elsewhere - cancel to prevent item movement
+                event.setCancelled(true);
+            }
+        }
+    }
+    
+    /**
+     * Handle inventory drag events to prevent item dragging in menus.
+     */
+    @EventHandler
+    public void onInventoryDrag(InventoryDragEvent event) {
+        if (!(event.getWhoClicked() instanceof Player player)) return;
+        
+        BaseMenu menu = openMenus.get(player.getUniqueId());
+        if (menu != null) {
+            // Check if dragging involves our menu inventory
+            if (event.getView().getTopInventory().equals(menu.getInventory())) {
+                // Cancel any drag that involves the menu inventory
+                for (int slot : event.getRawSlots()) {
+                    if (slot < event.getView().getTopInventory().getSize()) {
+                        event.setCancelled(true);
+                        break;
+                    }
+                }
+            }
         }
     }
     
@@ -166,5 +202,14 @@ public class MenuManager implements Listener {
      */
     public BaseMenu getCurrentMenu(Player player) {
         return openMenus.get(player.getUniqueId());
+    }
+    
+    /**
+     * Check if a click is in the top inventory (menu) vs bottom inventory (player).
+     */
+    private boolean isClickInMenuInventory(InventoryClickEvent event, BaseMenu menu) {
+        return event.getClickedInventory() != null && 
+               event.getClickedInventory().equals(event.getView().getTopInventory()) &&
+               event.getClickedInventory().equals(menu.getInventory());
     }
 }
