@@ -1,7 +1,7 @@
 package fr.ax_dev.universejobs.menu.config;
 
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.MemorySection;
+import org.bukkit.configuration.MemoryConfiguration;
 
 import java.util.List;
 import java.util.Map;
@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Simple implementation of ConfigurationSection for creating menu items programmatically.
  */
-public class SimpleConfigurationSection extends MemorySection {
+public class SimpleConfigurationSection extends MemoryConfiguration {
     
     public SimpleConfigurationSection() {
         super();
