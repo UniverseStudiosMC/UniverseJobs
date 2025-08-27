@@ -20,6 +20,7 @@ import fr.ax_dev.universejobs.listener.EnchantEventListener;
 import fr.ax_dev.universejobs.protection.BlockProtectionManager;
 import fr.ax_dev.universejobs.reward.RewardManager;
 import fr.ax_dev.universejobs.reward.gui.RewardGuiManager;
+import fr.ax_dev.universejobs.menu.MenuManager;
 import fr.ax_dev.universejobs.utils.XpMessageSender;
 import fr.ax_dev.universejobs.placeholder.PlaceholderManager;
 import org.bukkit.entity.Player;
@@ -48,6 +49,7 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
     private BlockProtectionManager protectionManager;
     private RewardManager rewardManager;
     private RewardGuiManager rewardGuiManager;
+    private MenuManager menuManager;
     private PlaceholderManager placeholderManager;
     private MythicMobsHandler mythicMobsHandler;
     private BukkitTask saveTask;
@@ -70,6 +72,7 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         this.protectionManager = new BlockProtectionManager(this);
         this.rewardManager = new RewardManager(this);
         this.rewardGuiManager = new RewardGuiManager(this, rewardManager);
+        this.menuManager = new MenuManager(this);
         this.placeholderManager = new PlaceholderManager(this);
         this.mythicMobsHandler = new MythicMobsHandler(this);
         this.actionProcessor = new ActionProcessor(this, jobManager, bonusManager, moneyBonusManager, messageSender, limitManager);
@@ -237,6 +240,7 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         getLogger().info("Shutting down managers...");
         
         shutdownRewardGuiManager();
+        shutdownManagerSafely("menu manager", menuManager, () -> menuManager.closeAllMenus());
         shutdownManagerSafely("reward manager", rewardManager, () -> rewardManager.shutdown());
         shutdownManagerSafely("message sender", messageSender, () -> messageSender.cleanup());
         shutdownManagerSafely("bonus manager", bonusManager, () -> bonusManager.shutdown());
@@ -484,6 +488,15 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
      */
     public RewardGuiManager getRewardGuiManager() {
         return rewardGuiManager;
+    }
+    
+    /**
+     * Get the menu manager.
+     * 
+     * @return The menu manager
+     */
+    public MenuManager getMenuManager() {
+        return menuManager;
     }
     
     /**

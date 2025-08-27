@@ -1,0 +1,124 @@
+# Main Jobs Menu Configuration
+# This file controls the appearance and behavior of the main jobs menu
+
+# Menu title (supports MiniMessage and PlaceholderAPI)
+title: "&6&lJobs Menu"
+
+# Menu size (must be multiple of 9, max 54)
+size: 54
+
+# Pagination settings
+pagination:
+  enabled: true
+  items-per-page: 28
+
+# Fill item configuration
+fill-item:
+  enabled: true
+  material: GRAY_STAINED_GLASS_PANE
+  display-name: " "
+  lore: []
+  amount: 1
+  custom-model-data: 0
+  glow: false
+  hide-attributes: true
+  hide-enchants: true
+
+# Slots to fill (empty = all empty slots)
+fill-slots: []
+
+# Content slots where job items will be placed
+content-slots: [10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43]
+
+# Navigation slot configuration
+navigation-slots:
+  previous: [45]
+  next: [53]
+  close: [49]
+  info: [50]
+
+# Static items (always shown in the menu)
+static-items:
+  info-item:
+    enabled: true
+    material: BOOK
+    display-name: "&6&lJobs Information"
+    lore:
+      - "&7Welcome to the Jobs system!"
+      - ""
+      - "&7Choose a job to start earning"
+      - "&7money and experience points."
+      - ""
+      - "&7Total Jobs: &e%universejobs_total_jobs%"
+      - "&7Your Active Jobs: &a%universejobs_player_jobs_count%"
+    amount: 1
+    slots: [4]
+    custom-model-data: 0
+    glow: true
+    hide-attributes: false
+    hide-enchants: true
+    action: none
+
+# Navigation items
+navigation-items:
+  previous:
+    enabled: true
+    material: ARROW
+    display-name: "&e← Previous Page"
+    lore:
+      - "&7Click to go to the previous page"
+      - ""
+      - "&7Page: &e{current_page}&7/&e{total_pages}"
+    amount: 1
+    slots: [45]
+    custom-model-data: 0
+    glow: false
+    hide-attributes: true
+    hide-enchants: false
+    action: previous_page
+    
+  next:
+    enabled: true
+    material: ARROW
+    display-name: "&eNext Page →"
+    lore:
+      - "&7Click to go to the next page"
+      - ""
+      - "&7Page: &e{current_page}&7/&e{total_pages}"
+    amount: 1
+    slots: [53]
+    custom-model-data: 0
+    glow: false
+    hide-attributes: true
+    hide-enchants: false
+    action: next_page
+    
+  close:
+    enabled: true
+    material: BARRIER
+    display-name: "&cClose Menu"
+    lore:
+      - "&7Click to close this menu"
+    amount: 1
+    slots: [49]
+    custom-model-data: 0
+    glow: false
+    hide-attributes: true
+    hide-enchants: false
+    action: close
+    
+  info:
+    enabled: true
+    material: COMPASS
+    display-name: "&6Menu Information"
+    lore:
+      - "&7Total Jobs: &e{total_jobs}"
+      - "&7Your Jobs: &a{player_jobs}"
+      - "&7Page: &e{current_page}&7/&e{total_pages}"
+    amount: 1
+    slots: [50]
+    custom-model-data: 0
+    glow: false
+    hide-attributes: true
+    hide-enchants: false
+    action: none

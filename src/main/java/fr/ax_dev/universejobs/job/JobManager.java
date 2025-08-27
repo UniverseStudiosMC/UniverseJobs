@@ -236,24 +236,17 @@ public class JobManager {
      * @return true if successful
      */
     public boolean joinJob(Player player, String jobId) {
-        if (isShutdown.get()) {
-            return false;
-        }
-        
         Job job = getJob(jobId);
         if (job == null || !job.isEnabled()) {
             return false;
         }
         
         // Check permission
-        if (!player.hasPermission(job.getPermission())) {
+        if (job.getPermission() != null && !player.hasPermission(job.getPermission())) {
             return false;
         }
         
-        PlayerJobData data = getPlayerData(player);
-        synchronized (data) {
-            return data.joinJob(jobId);
-        }
+        return joinJob(player.getUniqueId(), jobId);
     }
     
     /**
@@ -264,6 +257,40 @@ public class JobManager {
      * @return true if successful
      */
     public boolean leaveJob(Player player, String jobId) {
+        return leaveJob(player.getUniqueId(), jobId);
+    }
+    
+    /**
+     * Make a player join a job by UUID.
+     * 
+     * @param playerUuid The player UUID
+     * @param jobId The job ID
+     * @return true if successful
+     */
+    public boolean joinJob(UUID playerUuid, String jobId) {
+        if (isShutdown.get()) {
+            return false;
+        }
+        
+        Job job = getJob(jobId);
+        if (job == null || !job.isEnabled()) {
+            return false;
+        }
+        
+        PlayerJobData data = getPlayerData(playerUuid);
+        synchronized (data) {
+            return data.joinJob(jobId);
+        }
+    }
+    
+    /**
+     * Make a player leave a job by UUID.
+     * 
+     * @param playerUuid The player UUID
+     * @param jobId The job ID
+     * @return true if successful
+     */
+    public boolean leaveJob(UUID playerUuid, String jobId) {
         if (isShutdown.get()) {
             return false;
         }
@@ -273,7 +300,7 @@ public class JobManager {
             return false; // Cannot leave default jobs
         }
         
-        PlayerJobData data = getPlayerData(player);
+        PlayerJobData data = getPlayerData(playerUuid);
         synchronized (data) {
             return data.leaveJob(jobId);
         }
@@ -300,6 +327,29 @@ public class JobManager {
     public Set<String> getPlayerJobs(Player player) {
         PlayerJobData data = getPlayerData(player);
         return data.getJobs();
+    }
+    
+    /**
+     * Get all jobs as a map.
+     * 
+     * @return Map of all jobs (jobId -> Job)
+     */
+    public Map<String, Job> getJobs() {
+        return new HashMap<>(jobs);
+    }
+    
+    /**
+     * Get all player data.
+     * 
+     * @return Map of all player data (UUID -> PlayerJobData)
+     */
+    public Map<UUID, PlayerJobData> getAllPlayerData() {
+        dataLock.readLock().lock();
+        try {
+            return new HashMap<>(playerData);
+        } finally {
+            dataLock.readLock().unlock();
+        }
     }
     
     /**

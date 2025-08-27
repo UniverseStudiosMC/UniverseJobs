@@ -1,0 +1,182 @@
+# Global Rankings Menu Configuration
+# This file controls the appearance and behavior of the global rankings menu
+
+# Menu title (supports MiniMessage and PlaceholderAPI)
+title: "&6&lGlobal Job Rankings"
+
+# Menu size (must be multiple of 9, max 54)
+size: 54
+
+# Pagination settings
+pagination:
+  enabled: true
+  items-per-page: 35
+
+# Fill item configuration
+fill-item:
+  enabled: true
+  material: PURPLE_STAINED_GLASS_PANE
+  display-name: " "
+  lore: []
+  amount: 1
+  custom-model-data: 0
+  glow: false
+  hide-attributes: true
+  hide-enchants: true
+
+# Slots to fill (empty = all empty slots)
+fill-slots: []
+
+# Content slots where ranking items will be placed
+content-slots: [19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43]
+
+# Navigation slot configuration
+navigation-slots:
+  previous: [45]
+  next: [53]
+  back: [48]
+  close: [49]
+  info: [50]
+
+# Static items
+static-items:
+  trophy:
+    enabled: true
+    material: GOLDEN_APPLE
+    display-name: "&6&lTop Players"
+    lore:
+      - "&7View the best players"
+      - "&7in each job category"
+      - ""
+      - "&7Select a job below to"
+      - "&7view its rankings"
+    amount: 1
+    slots: [4]
+    custom-model-data: 0
+    glow: true
+    hide-attributes: true
+    hide-enchants: true
+    action: none
+    
+  ranking-info:
+    enabled: true
+    material: LECTERN
+    display-name: "&e&lRankings Information"
+    lore:
+      - "&7Rankings are updated in real-time"
+      - "&7based on player levels and XP"
+      - ""
+      - "&7Ranking factors:"
+      - "&8- Level (primary)"
+      - "&8- Total XP (secondary)"
+    amount: 1
+    slots: [8]
+    custom-model-data: 0
+    glow: false
+    hide-attributes: true
+    hide-enchants: false
+    action: none
+
+# Job selection slots (row 2: slots 10-16)
+job-selection-slots: [10, 11, 12, 13, 14, 15, 16]
+
+# Navigation items
+navigation-items:
+  previous:
+    enabled: true
+    material: ARROW
+    display-name: "&e← Previous Page"
+    lore:
+      - "&7Click to go to the previous page"
+      - ""
+      - "&7Page: &e{current_page}&7/&e{total_pages}"
+      - "&7Players: &e{total_players}"
+    amount: 1
+    slots: [45]
+    custom-model-data: 0
+    glow: false
+    hide-attributes: true
+    hide-enchants: false
+    action: previous_page
+    
+  next:
+    enabled: true
+    material: ARROW
+    display-name: "&eNext Page →"
+    lore:
+      - "&7Click to go to the next page"
+      - ""
+      - "&7Page: &e{current_page}&7/&e{total_pages}"
+      - "&7Players: &e{total_players}"
+    amount: 1
+    slots: [53]
+    custom-model-data: 0
+    glow: false
+    hide-attributes: true
+    hide-enchants: false
+    action: next_page
+    
+  back:
+    enabled: true
+    material: ARROW
+    display-name: "&7← Back to Jobs Menu"
+    lore:
+      - "&7Click to go back to the main jobs menu"
+    amount: 1
+    slots: [48]
+    custom-model-data: 0
+    glow: false
+    hide-attributes: true
+    hide-enchants: false
+    action: back
+    
+  close:
+    enabled: true
+    material: BARRIER
+    display-name: "&cClose Menu"
+    lore:
+      - "&7Click to close this menu"
+    amount: 1
+    slots: [49]
+    custom-model-data: 0
+    glow: false
+    hide-attributes: true
+    hide-enchants: false
+    action: close
+    
+  info:
+    enabled: true
+    material: BOOK
+    display-name: "&6Ranking Statistics"
+    lore:
+      - "&7Selected Job: &e{selected_job}"
+      - "&7Total Players: &e{total_players}"
+      - "&7Page: &e{current_page}&7/&e{total_pages}"
+      - ""
+      - "&7Your ranking will be highlighted"
+      - "&7if you have joined this job"
+    amount: 1
+    slots: [50]
+    custom-model-data: 0
+    glow: false
+    hide-attributes: true
+    hide-enchants: false
+    action: none
+
+# Ranking display settings
+ranking-display:
+  # Materials for different ranking positions
+  rank-materials:
+    1: GOLD_INGOT      # 1st place
+    2: IRON_INGOT      # 2nd place
+    3: COPPER_INGOT    # 3rd place
+    top-10: EMERALD    # 4th-10th place
+    default: PLAYER_HEAD # 11th+ place
+  
+  # Colors for different ranking positions
+  rank-colors:
+    1: "&6&l"          # Gold
+    2: "&7&l"          # Silver
+    3: "&c&l"          # Bronze/Copper
+    top-10: "&a"       # Green
+    default: "&f"      # White

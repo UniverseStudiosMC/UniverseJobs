@@ -1,0 +1,101 @@
+# Individual Job Menu Configuration
+# This file controls the appearance and behavior of individual job menus
+
+# Menu title (supports MiniMessage and PlaceholderAPI)
+title: "&6&l{job_name} Menu"
+
+# Menu size (must be multiple of 9, max 54)
+size: 45
+
+# Pagination settings (not used for job menu)
+pagination:
+  enabled: false
+  items-per-page: 21
+
+# Fill item configuration
+fill-item:
+  enabled: true
+  material: GRAY_STAINED_GLASS_PANE
+  display-name: " "
+  lore: []
+  amount: 1
+  custom-model-data: 0
+  glow: false
+  hide-attributes: true
+  hide-enchants: true
+
+# Slots to fill (empty = all empty slots)
+fill-slots: []
+
+# Content slots (not used for job menu as items have fixed positions)
+content-slots: []
+
+# Navigation slot configuration
+navigation-slots:
+  back: [39]
+  close: [41]
+
+# Static items (decorative items)
+static-items:
+  border-left:
+    enabled: true
+    material: BLUE_STAINED_GLASS_PANE
+    display-name: " "
+    lore: []
+    amount: 1
+    slots: [0, 9, 18, 27, 36]
+    custom-model-data: 0
+    glow: false
+    hide-attributes: true
+    hide-enchants: true
+    action: none
+    
+  border-right:
+    enabled: true
+    material: BLUE_STAINED_GLASS_PANE
+    display-name: " "
+    lore: []
+    amount: 1
+    slots: [8, 17, 26, 35, 44]
+    custom-model-data: 0
+    glow: false
+    hide-attributes: true
+    hide-enchants: true
+    action: none
+
+# Navigation items
+navigation-items:
+  back:
+    enabled: true
+    material: ARROW
+    display-name: "&7← Back to Jobs Menu"
+    lore:
+      - "&7Click to go back to the main jobs menu"
+    amount: 1
+    slots: [39]
+    custom-model-data: 0
+    glow: false
+    hide-attributes: true
+    hide-enchants: false
+    action: back
+    
+  close:
+    enabled: true
+    material: BARRIER
+    display-name: "&cClose Menu"
+    lore:
+      - "&7Click to close this menu"
+    amount: 1
+    slots: [41]
+    custom-model-data: 0
+    glow: false
+    hide-attributes: true
+    hide-enchants: false
+    action: close
+
+# Fixed button positions (these are hardcoded in the menu but can be customized here)
+# Slot 13: Job information display
+# Slot 22: Player stats display
+# Slot 29: Join/Leave button
+# Slot 31: Actions & Rewards button  
+# Slot 33: Rankings button

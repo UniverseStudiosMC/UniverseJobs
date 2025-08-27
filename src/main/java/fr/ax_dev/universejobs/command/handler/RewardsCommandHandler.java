@@ -47,6 +47,7 @@ public class RewardsCommandHandler extends JobCommandHandler {
         String rewardSubCommand = args[1].toLowerCase();
         
         switch (rewardSubCommand) {
+            case "browse", "menu", "gui" -> handleBrowseCommand(player);
             case "open" -> handleOpenCommand(player, args);
             case "list" -> handleListCommand(player, args);
             case CMD_CLAIM -> handleClaimCommand(player, args);
@@ -75,7 +76,7 @@ public class RewardsCommandHandler extends JobCommandHandler {
             String input = args[1].toLowerCase();
             
             // Rewards subcommands
-            List<String> rewardSubCommands = new ArrayList<>(Arrays.asList("open", "list", CMD_CLAIM, "info"));
+            List<String> rewardSubCommands = new ArrayList<>(Arrays.asList("browse", "menu", "gui", "open", "list", CMD_CLAIM, "info"));
             if (player.hasPermission(PERM_REWARDS_ADMIN)) {
                 rewardSubCommands.addAll(Arrays.asList(CMD_ADMIN, "reload", CMD_DEBUG));
             }
@@ -113,6 +114,20 @@ public class RewardsCommandHandler extends JobCommandHandler {
         }
         
         rewardGuiManager.openRewardsGui(player, jobId);
+    }
+    
+    /**
+     * Handle browse/menu command to open main jobs menu.
+     */
+    private void handleBrowseCommand(Player player) {
+        try {
+            // Use the new menu system only for the main browse menu
+            plugin.getMenuManager().openJobsMainMenu(player);
+            MessageUtils.sendMessage(player, "&aOpening jobs menu...");
+        } catch (Exception e) {
+            MessageUtils.sendMessage(player, "&cFailed to open jobs menu.");
+            plugin.getLogger().warning("Failed to open jobs menu for " + player.getName() + ": " + e.getMessage());
+        }
     }
     
     private void handleListCommand(Player player, String[] args) {
