@@ -29,6 +29,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     private final MoneyBonusCommandHandler moneyBonusHandler;
     private final ActionLimitCommandHandler actionLimitHandler;
     private final AdminCommandHandler adminHandler;
+    private final MenuCommandHandler menuHandler;
     
     // Command constants
     private static final String CMD_JOIN = "join";
@@ -44,6 +45,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     private static final String CMD_MIGRATE = "migrate";
     private static final String CMD_RELOAD = "reload";
     private static final String CMD_DEBUG = "debug";
+    private static final String CMD_MENU = "menu";
     
     // Security patterns for input validation
     private static final Pattern COMMAND_INJECTION_PATTERN = Pattern.compile("[;&|`$(){}\\[\\]<>\"'\\\\]");
@@ -70,6 +72,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         this.moneyBonusHandler = new MoneyBonusCommandHandler(plugin);
         this.actionLimitHandler = new ActionLimitCommandHandler(plugin);
         this.adminHandler = new AdminCommandHandler(plugin);
+        this.menuHandler = new MenuCommandHandler(plugin);
     }
     
     @Override
@@ -79,8 +82,13 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         }
         
         if (args.length == 0) {
-            sendHelpBasedOnSender(sender);
-            return true;
+            // If sender is a player, open main menu; otherwise show help
+            if (sender instanceof Player player) {
+                return menuHandler.handleCommand(sender, new String[0]);
+            } else {
+                sendConsoleHelp(sender);
+                return true;
+            }
         }
         
         String subCommand = sanitizeInput(args[0].toLowerCase());
@@ -109,6 +117,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 case CMD_MONEY_BONUS -> handled = moneyBonusHandler.handleCommand(sender, args);
                 case CMD_ACTION_LIMIT -> handled = actionLimitHandler.handleCommand(sender, args);
                 case CMD_EXP, CMD_MIGRATE, CMD_RELOAD, CMD_DEBUG -> handled = adminHandler.handleCommand(sender, args);
+                case CMD_MENU -> handled = menuHandler.handleCommand(sender, Arrays.copyOfRange(args, 1, args.length));
                 default -> handled = false;
             }
             
@@ -137,7 +146,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             
             // Commands available to players
             if (sender instanceof Player) {
-                subCommands.addAll(Arrays.asList(CMD_JOIN, CMD_LEAVE, CMD_INFO, CMD_LIST, CMD_STATS));
+                subCommands.addAll(Arrays.asList(CMD_JOIN, CMD_LEAVE, CMD_INFO, CMD_LIST, CMD_STATS, CMD_MENU));
                 if (sender.hasPermission("universejobs.rewards.use")) {
                     subCommands.add(CMD_REWARDS);
                 }
@@ -182,6 +191,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 case CMD_MONEY_BONUS -> completions.addAll(moneyBonusHandler.getTabCompletions(sender, args));
                 case CMD_ACTION_LIMIT -> completions.addAll(actionLimitHandler.getTabCompletions(sender, args));
                 case CMD_EXP, CMD_MIGRATE, CMD_RELOAD, CMD_DEBUG -> completions.addAll(adminHandler.getTabCompletions(sender, args));
+                case CMD_MENU -> completions.addAll(menuHandler.getTabCompletions(sender, Arrays.copyOfRange(args, 1, args.length)));
                 default -> {
                     // Unknown subcommand - no additional completions
                 }
@@ -256,7 +266,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      * @return true if valid
      */
     private boolean isValidSubCommand(String subCommand) {
-        Set<String> validCommands = Set.of(CMD_JOIN, CMD_LEAVE, CMD_INFO, CMD_LIST, CMD_STATS, CMD_REWARDS, CMD_XP_BONUS, CMD_MONEY_BONUS, CMD_ACTION_LIMIT, CMD_EXP, CMD_MIGRATE, CMD_RELOAD, CMD_DEBUG);
+        Set<String> validCommands = Set.of(CMD_JOIN, CMD_LEAVE, CMD_INFO, CMD_LIST, CMD_STATS, CMD_REWARDS, CMD_XP_BONUS, CMD_MONEY_BONUS, CMD_ACTION_LIMIT, CMD_EXP, CMD_MIGRATE, CMD_RELOAD, CMD_DEBUG, CMD_MENU);
         return validCommands.contains(subCommand);
     }
     
@@ -267,7 +277,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      * @return true if the command requires a player
      */
     private boolean requiresPlayer(String subCommand) {
-        Set<String> playerOnlyCommands = Set.of(CMD_JOIN, CMD_LEAVE, CMD_INFO, CMD_LIST, CMD_STATS, CMD_REWARDS);
+        Set<String> playerOnlyCommands = Set.of(CMD_JOIN, CMD_LEAVE, CMD_INFO, CMD_LIST, CMD_STATS, CMD_REWARDS, CMD_MENU);
         return playerOnlyCommands.contains(subCommand);
     }
     
@@ -278,6 +288,8 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      */
     private void sendHelp(Player player) {
         player.sendMessage("§6=== UniverseJobs Commands ===");
+        player.sendMessage("§e/jobs §7- Open jobs menu");
+        player.sendMessage("§e/jobs menu open <job> §7- Open specific job menu");
         player.sendMessage("§e/jobs join <job> §7- Join a job");
         player.sendMessage("§e/jobs leave <job> §7- Leave a job");
         player.sendMessage("§e/jobs list §7- List all available jobs");

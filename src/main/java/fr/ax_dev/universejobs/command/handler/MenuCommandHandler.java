@@ -47,9 +47,10 @@ public class MenuCommandHandler extends JobCommandHandler {
                 openMainMenu(player);
                 return true;
                 
+            case "open":
             case "job":
                 if (args.length < 2) {
-                    MessageUtils.sendMessage(player, "&cUsage: /jobs menu job <jobId>");
+                    MessageUtils.sendMessage(player, "&cUsage: /jobs menu open <jobId>");
                     return false;
                 }
                 return openJobMenu(player, args[1]);
@@ -74,7 +75,7 @@ public class MenuCommandHandler extends JobCommandHandler {
                 return reloadMenus(player);
                 
             default:
-                MessageUtils.sendMessage(player, "&cUnknown menu command. Available: main, job, actions, rankings");
+                MessageUtils.sendMessage(player, "&cUnknown menu command. Available: main, open, job, actions, rankings");
                 return false;
         }
     }
@@ -158,11 +159,11 @@ public class MenuCommandHandler extends JobCommandHandler {
         
         if (args.length == 1) {
             // Main subcommands
-            List<String> completions = Arrays.asList("main", "browse", "job", "actions", "rewards", "rankings", "leaderboard");
+            List<String> completions = Arrays.asList("main", "browse", "open", "job", "actions", "rewards", "rankings", "leaderboard");
             
             // Add admin commands if player has permission
             if (sender.hasPermission("universejobs.admin.menu.reload")) {
-                completions = Arrays.asList("main", "browse", "job", "actions", "rewards", "rankings", "leaderboard", "reload");
+                completions = Arrays.asList("main", "browse", "open", "job", "actions", "rewards", "rankings", "leaderboard", "reload");
             }
             
             return completions.stream()
@@ -172,7 +173,7 @@ public class MenuCommandHandler extends JobCommandHandler {
         } else if (args.length == 2) {
             String subCommand = args[0].toLowerCase();
             
-            if (subCommand.equals("job") || subCommand.equals("actions") || subCommand.equals("rewards")) {
+            if (subCommand.equals("open") || subCommand.equals("job") || subCommand.equals("actions") || subCommand.equals("rewards")) {
                 // Return available job IDs
                 return jobManager.getJobs().values().stream()
                     .filter(Job::isEnabled)
