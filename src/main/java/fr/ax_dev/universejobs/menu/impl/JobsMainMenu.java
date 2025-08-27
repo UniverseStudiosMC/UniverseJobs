@@ -34,6 +34,9 @@ public class JobsMainMenu extends BaseMenu {
             .filter(job -> job.getPermission() == null || player.hasPermission(job.getPermission()))
             .sorted(Comparator.comparing(Job::getName))
             .collect(Collectors.toList());
+        
+        // Now populate the inventory after all fields are initialized
+        populateInventory();
     }
     
     @Override
@@ -145,6 +148,11 @@ public class JobsMainMenu extends BaseMenu {
         
         lore.add("");
         lore.add("&e▶ Click to open job menu");
+        if (hasJob) {
+            lore.add("&c▶ Shift+Click to leave job");
+        } else {
+            lore.add("&a▶ Shift+Click to join job");
+        }
         
         // Create menu item config for this job
         Map<String, Object> jobConfigMap = MenuItemUtils.createItemConfigMap(
@@ -207,10 +215,92 @@ public class JobsMainMenu extends BaseMenu {
             if (jobIndex < availableJobs.size()) {
                 Job clickedJob = availableJobs.get(jobIndex);
                 
-                // Open the individual job menu
-                plugin.getMenuManager().openJobMenu(player, clickedJob.getId());
+                // Check click type for different actions
+                if (event.getClick().isShiftClick()) {
+                    // Shift+Click for quick join/leave
+                    handleQuickJoinLeave(clickedJob);
+                } else {
+                    // Regular click opens the job menu
+                    plugin.getMenuManager().openJobMenu(player, clickedJob.getId());
+                }
             }
         }
+    }
+    
+    /**
+     * Handle quick join/leave action from main menu.
+     */
+    private void handleQuickJoinLeave(Job job) {
+        boolean currentlyHasJob = playerData.hasJob(job.getId());
+        
+        if (currentlyHasJob) {
+            // Quick leave
+            if (plugin.getJobManager().leaveJob(player, job.getId())) {
+                MessageUtils.sendMessage(player, "&cYou have left the job: &e" + job.getName());
+                refresh(); // Refresh to update status
+            } else {
+                MessageUtils.sendMessage(player, "&cFailed to leave the job.");
+            }
+        } else {
+            // Quick join - check limitations first
+            if (!canJoinJob(job)) {
+                return; // Error message already sent
+            }
+            
+            if (plugin.getJobManager().joinJob(player, job.getId())) {
+                MessageUtils.sendMessage(player, "&aYou have joined the job: &e" + job.getName());
+                refresh(); // Refresh to update status
+            } else {
+                MessageUtils.sendMessage(player, "&cFailed to join the job.");
+            }
+        }
+    }
+    
+    /**
+     * Check if player can join a job.
+     */
+    private boolean canJoinJob(Job job) {
+        // Check permission
+        if (job.getPermission() != null && !player.hasPermission(job.getPermission())) {
+            MessageUtils.sendMessage(player, "&cYou don't have permission to join this job.");
+            return false;
+        }
+        
+        // Check max jobs limit
+        int maxJobs = getMaxJobsForPlayer(player);
+        int currentJobs = playerData.getJobs().size();
+        if (currentJobs >= maxJobs) {
+            MessageUtils.sendMessage(player, "&cYou have reached the maximum number of jobs (" + maxJobs + ").");
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Get the maximum number of jobs a player can have.
+     */
+    private int getMaxJobsForPlayer(org.bukkit.entity.Player player) {
+        int maxJobs = 1;
+        
+        for (org.bukkit.permissions.PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
+            String permission = permInfo.getPermission();
+            
+            if (permission.startsWith("universejobs.max_join.") && permInfo.getValue()) {
+                try {
+                    String numberPart = permission.substring("universejobs.max_join.".length());
+                    int permissionValue = Integer.parseInt(numberPart);
+                    
+                    if (permissionValue > maxJobs) {
+                        maxJobs = permissionValue;
+                    }
+                } catch (NumberFormatException e) {
+                    // Invalid number in permission, ignore it
+                }
+            }
+        }
+        
+        return maxJobs;
     }
     
     @Override

@@ -129,6 +129,9 @@ public class JoinLeaveCommandHandler extends JobCommandHandler {
         // Join the job
         if (jobManager.joinJob(player, jobId)) {
             player.sendMessage(languageManager.getMessage("commands.join.success", "job", job.getName()));
+            
+            // Refresh any open menu to update button states
+            plugin.getMenuManager().refreshPlayerMenu(player);
         } else {
             player.sendMessage(languageManager.getMessage("commands.join.failed", "job", job.getName()));
         }
@@ -172,6 +175,9 @@ public class JoinLeaveCommandHandler extends JobCommandHandler {
         // Leave the job
         if (jobManager.leaveJob(player, jobId)) {
             player.sendMessage(languageManager.getMessage("commands.leave.success", "job", job.getName()));
+            
+            // Refresh any open menu to update button states
+            plugin.getMenuManager().refreshPlayerMenu(player);
         } else {
             player.sendMessage(languageManager.getMessage("commands.leave.failed", "job", job.getName()));
         }

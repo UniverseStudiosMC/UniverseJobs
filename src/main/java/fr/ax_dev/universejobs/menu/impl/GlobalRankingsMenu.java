@@ -38,6 +38,9 @@ public class GlobalRankingsMenu extends BaseMenu {
         this.selectedJob = availableJobs.isEmpty() ? null : availableJobs.get(0);
         
         loadRankings();
+        
+        // Populate inventory after all fields are initialized
+        populateInventory();
     }
     
     /**

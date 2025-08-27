@@ -39,7 +39,7 @@ public abstract class BaseMenu implements InventoryHolder {
         this.config = config;
         
         createInventory();
-        populateInventory();
+        // Don't call populateInventory() here - let subclass call it after initialization
     }
     
     /**

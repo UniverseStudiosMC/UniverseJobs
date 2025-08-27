@@ -142,4 +142,29 @@ public class MenuManager implements Listener {
     public MenuConfig getMenuConfig() {
         return menuConfig;
     }
+    
+    /**
+     * Refresh the current menu for a player (if any is open).
+     * This is useful after job join/leave operations to update button states.
+     */
+    public void refreshPlayerMenu(Player player) {
+        BaseMenu menu = openMenus.get(player.getUniqueId());
+        if (menu != null) {
+            menu.refresh();
+        }
+    }
+    
+    /**
+     * Check if a player has a menu open.
+     */
+    public boolean hasMenuOpen(Player player) {
+        return openMenus.containsKey(player.getUniqueId());
+    }
+    
+    /**
+     * Get the currently open menu for a player.
+     */
+    public BaseMenu getCurrentMenu(Player player) {
+        return openMenus.get(player.getUniqueId());
+    }
 }

@@ -41,6 +41,9 @@ public class JobActionsMenu extends BaseMenu {
         
         loadJobActions();
         loadJobRewards();
+        
+        // Populate inventory after all fields are initialized
+        populateInventory();
     }
     
     /**

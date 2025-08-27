@@ -22,7 +22,7 @@ public class SingleJobMenu extends BaseMenu {
     
     private final Job job;
     private final PlayerJobData playerData;
-    private final boolean hasJob;
+    private boolean hasJob; // Not final so we can update it
     
     public SingleJobMenu(UniverseJobs plugin, org.bukkit.entity.Player player, String jobId, SingleMenuConfig config) {
         super(plugin, player, config);
@@ -34,7 +34,11 @@ public class SingleJobMenu extends BaseMenu {
         if (this.job == null) {
             MessageUtils.sendMessage(player, "&cJob not found: " + jobId);
             close();
+            return;
         }
+        
+        // Populate inventory after all fields are initialized
+        populateInventory();
     }
     
     @Override
@@ -337,21 +341,74 @@ public class SingleJobMenu extends BaseMenu {
     private void handleJoinLeave() {
         if (hasJob) {
             // Leave job
-            if (plugin.getJobManager().leaveJob(player.getUniqueId(), job.getId())) {
+            if (plugin.getJobManager().leaveJob(player, job.getId())) {
                 MessageUtils.sendMessage(player, "&cYou have left the job: &e" + job.getName());
+                hasJob = false; // Update local status
                 refresh(); // Refresh menu to update status
             } else {
                 MessageUtils.sendMessage(player, "&cFailed to leave the job.");
             }
         } else {
-            // Join job
-            if (plugin.getJobManager().joinJob(player.getUniqueId(), job.getId())) {
+            // Join job - first check limitations
+            if (!canJoinJob()) {
+                return; // Error message already sent by canJoinJob()
+            }
+            
+            if (plugin.getJobManager().joinJob(player, job.getId())) {
                 MessageUtils.sendMessage(player, "&aYou have joined the job: &e" + job.getName());
+                hasJob = true; // Update local status
                 refresh(); // Refresh menu to update status
             } else {
                 MessageUtils.sendMessage(player, "&cFailed to join the job.");
             }
         }
+    }
+    
+    /**
+     * Check if player can join the job.
+     */
+    private boolean canJoinJob() {
+        // Check permission
+        if (job.getPermission() != null && !player.hasPermission(job.getPermission())) {
+            MessageUtils.sendMessage(player, "&cYou don't have permission to join this job.");
+            return false;
+        }
+        
+        // Check max jobs limit
+        int maxJobs = getMaxJobsForPlayer(player);
+        int currentJobs = plugin.getJobManager().getPlayerData(player.getUniqueId()).getJobs().size();
+        if (currentJobs >= maxJobs) {
+            MessageUtils.sendMessage(player, "&cYou have reached the maximum number of jobs (" + maxJobs + ").");
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Get the maximum number of jobs a player can have based on their permissions.
+     */
+    private int getMaxJobsForPlayer(org.bukkit.entity.Player player) {
+        int maxJobs = 1; // Default value
+        
+        for (org.bukkit.permissions.PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
+            String permission = permInfo.getPermission();
+            
+            if (permission.startsWith("universejobs.max_join.") && permInfo.getValue()) {
+                try {
+                    String numberPart = permission.substring("universejobs.max_join.".length());
+                    int permissionValue = Integer.parseInt(numberPart);
+                    
+                    if (permissionValue > maxJobs) {
+                        maxJobs = permissionValue;
+                    }
+                } catch (NumberFormatException e) {
+                    // Invalid number in permission, ignore it
+                }
+            }
+        }
+        
+        return maxJobs;
     }
     
     @Override
