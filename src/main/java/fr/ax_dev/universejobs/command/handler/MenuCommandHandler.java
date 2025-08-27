@@ -42,40 +42,43 @@ public class MenuCommandHandler extends JobCommandHandler {
         String subCommand = args[0].toLowerCase();
         
         switch (subCommand) {
+            // Main menu commands - more intuitive names
             case "main":
             case "browse":
+            case "list":
+            case "all":
                 openMainMenu(player);
                 return true;
-                
-            case "open":
-            case "job":
-                if (args.length < 2) {
-                    MessageUtils.sendMessage(player, "&cUsage: /jobs menu open <jobId>");
-                    return false;
-                }
-                return openJobMenu(player, args[1]);
-                
-            case "actions":
-            case "rewards":
-                if (args.length < 2) {
-                    MessageUtils.sendMessage(player, "&cUsage: /jobs menu actions <jobId>");
-                    return false;
-                }
-                return openActionsMenu(player, args[1]);
-                
+            
+            // Rankings - multiple intuitive aliases
             case "rankings":
             case "leaderboard":
+            case "top":
+            case "rank":
                 openRankingsMenu(player);
                 return true;
                 
+            // Admin commands
             case "reload":
                 if (!validatePermission(player, "universejobs.admin.menu.reload")) {
                     return false;
                 }
                 return reloadMenus(player);
                 
+            // Help command
+            case "help":
+            case "?":
+                showMenuHelp(player);
+                return true;
+                
             default:
-                MessageUtils.sendMessage(player, "&cUnknown menu command. Available: main, open, job, actions, rankings");
+                // Try to interpret as direct job name - most intuitive approach
+                if (isValidJobName(subCommand)) {
+                    return openJobMenu(player, subCommand);
+                }
+                
+                MessageUtils.sendMessage(player, "&cUnknown command. Type '&e/jobs menu help&c' for help.");
+                showQuickHelp(player);
                 return false;
         }
     }
@@ -158,30 +161,35 @@ public class MenuCommandHandler extends JobCommandHandler {
         }
         
         if (args.length == 1) {
-            // Main subcommands
-            List<String> completions = Arrays.asList("main", "browse", "open", "job", "actions", "rewards", "rankings", "leaderboard");
+            // Base commands + all job names for direct access
+            List<String> completions = Arrays.asList(
+                "main", "browse", "list", "all", // Main menu
+                "rankings", "leaderboard", "top", "rank", // Rankings
+                "help" // Help
+            );
             
             // Add admin commands if player has permission
             if (sender.hasPermission("universejobs.admin.menu.reload")) {
-                completions = Arrays.asList("main", "browse", "open", "job", "actions", "rewards", "rankings", "leaderboard", "reload");
+                completions = Arrays.asList(
+                    "main", "browse", "list", "all",
+                    "rankings", "leaderboard", "top", "rank",
+                    "help", "reload"
+                );
             }
+            
+            // Add all job names for direct access
+            List<String> jobNames = jobManager.getJobs().values().stream()
+                .filter(Job::isEnabled)
+                .filter(job -> job.getPermission() == null || sender.hasPermission(job.getPermission()))
+                .map(Job::getId)
+                .collect(Collectors.toList());
+            
+            completions.addAll(jobNames);
             
             return completions.stream()
                 .filter(cmd -> cmd.toLowerCase().startsWith(args[0].toLowerCase()))
+                .sorted()
                 .collect(Collectors.toList());
-                
-        } else if (args.length == 2) {
-            String subCommand = args[0].toLowerCase();
-            
-            if (subCommand.equals("open") || subCommand.equals("job") || subCommand.equals("actions") || subCommand.equals("rewards")) {
-                // Return available job IDs
-                return jobManager.getJobs().values().stream()
-                    .filter(Job::isEnabled)
-                    .filter(job -> job.getPermission() == null || sender.hasPermission(job.getPermission()))
-                    .map(Job::getId)
-                    .filter(jobId -> jobId.toLowerCase().startsWith(args[1].toLowerCase()))
-                    .collect(Collectors.toList());
-            }
         }
         
         return Arrays.asList();
@@ -223,5 +231,61 @@ public class MenuCommandHandler extends JobCommandHandler {
         MessageUtils.sendMessage(player, "&cFailed to open " + menuType + ".");
         plugin.getLogger().warning("Failed to open " + menuType + " for " + player.getName() + ": " + e.getMessage());
         return false;
+    }
+    
+    /**
+     * Check if a string is a valid job name.
+     */
+    private boolean isValidJobName(String jobName) {
+        if (!isValidJobId(jobName)) {
+            return false;
+        }
+        
+        Job job = jobManager.getJob(jobName);
+        return job != null && job.isEnabled();
+    }
+    
+    /**
+     * Show comprehensive menu help to the player.
+     */
+    private void showMenuHelp(Player player) {
+        MessageUtils.sendMessage(player, "&6&l=== Jobs Menu Help ===");
+        MessageUtils.sendMessage(player, "&e/jobs menu &7- Open main jobs menu");
+        MessageUtils.sendMessage(player, "&e/jobs menu <jobname> &7- Open specific job menu directly");
+        MessageUtils.sendMessage(player, "&e/jobs menu main &7- Open main jobs menu");
+        MessageUtils.sendMessage(player, "&e/jobs menu rankings &7- View job rankings");
+        MessageUtils.sendMessage(player, "");
+        MessageUtils.sendMessage(player, "&6Examples:");
+        MessageUtils.sendMessage(player, "&7- &e/jobs menu miner &7→ Open miner job menu");
+        MessageUtils.sendMessage(player, "&7- &e/jobs menu farmer &7→ Open farmer job menu");
+        MessageUtils.sendMessage(player, "&7- &e/jobs menu top &7→ View leaderboards");
+        
+        if (player.hasPermission("universejobs.admin.menu.reload")) {
+            MessageUtils.sendMessage(player, "");
+            MessageUtils.sendMessage(player, "&cAdmin:");
+            MessageUtils.sendMessage(player, "&e/jobs menu reload &7- Reload menu configurations");
+        }
+    }
+    
+    /**
+     * Show quick help for invalid commands.
+     */
+    private void showQuickHelp(Player player) {
+        MessageUtils.sendMessage(player, "&6Quick Examples:");
+        MessageUtils.sendMessage(player, "&e/jobs menu main &7→ Browse all jobs");
+        
+        // Show first 3 available jobs as examples
+        List<String> jobExamples = jobManager.getJobs().values().stream()
+            .filter(Job::isEnabled)
+            .filter(job -> job.getPermission() == null || player.hasPermission(job.getPermission()))
+            .map(Job::getId)
+            .limit(3)
+            .collect(Collectors.toList());
+            
+        for (String jobId : jobExamples) {
+            MessageUtils.sendMessage(player, "&e/jobs menu " + jobId + " &7→ Open " + jobId + " menu");
+        }
+        
+        MessageUtils.sendMessage(player, "&e/jobs menu rankings &7→ View top players");
     }
 }

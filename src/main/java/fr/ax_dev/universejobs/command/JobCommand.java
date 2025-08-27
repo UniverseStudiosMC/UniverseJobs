@@ -288,8 +288,14 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      */
     private void sendHelp(Player player) {
         player.sendMessage("§6=== UniverseJobs Commands ===");
-        player.sendMessage("§e/jobs §7- Open jobs menu");
-        player.sendMessage("§e/jobs menu open <job> §7- Open specific job menu");
+        player.sendMessage("§e/jobs §7- Open main jobs menu");
+        player.sendMessage("");
+        player.sendMessage("§6Menu Commands:");
+        player.sendMessage("§e/jobs menu <jobname> §7- Open job menu directly");
+        player.sendMessage("§e/jobs menu rankings §7- View job leaderboards");
+        player.sendMessage("§e/jobs menu help §7- Show menu help");
+        player.sendMessage("");
+        player.sendMessage("§6Job Management:");
         player.sendMessage("§e/jobs join <job> §7- Join a job");
         player.sendMessage("§e/jobs leave <job> §7- Leave a job");
         player.sendMessage("§e/jobs list §7- List all available jobs");
