@@ -96,28 +96,32 @@ public class MenuManager implements Listener {
     
     /**
      * Handle inventory click events.
+     * SECURITY: Only allow actions in the top inventory (menu), not in player inventory.
      */
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
         
         BaseMenu menu = openMenus.get(player.getUniqueId());
-        if (menu != null) {
-            // Check if player has our menu open
-            if (menu.isInventory(event.getInventory())) {
-                // This is a click in our menu (top inventory)
-                event.setCancelled(true);
-                
-                // Only handle clicks in the top inventory (our menu)
-                if (event.getClickedInventory() != null && event.getClickedInventory().equals(event.getView().getTopInventory())) {
+        if (menu != null && event.getView().getTopInventory().equals(menu.getInventory())) {
+            // Player has our menu open - always cancel to prevent item theft/movement
+            event.setCancelled(true);
+            
+            // Only process menu actions if click is in the TOP inventory (our menu)
+            if (isClickInMenuInventory(event, menu)) {
+                // Additional security: Block potentially dangerous click types
+                if (isSecureClickType(event)) {
                     menu.handleClick(event.getSlot(), event);
                 }
-                // Clicks in bottom inventory (player inventory) are ignored but still cancelled
-                
-            } else if (event.getView().getTopInventory().equals(menu.getInventory())) {
-                // Player has our menu open but clicked elsewhere - cancel to prevent item movement
-                event.setCancelled(true);
+                // Dangerous click types (like number keys, middle click, etc.) are blocked
             }
+            // Clicks in bottom inventory (player inventory) are cancelled but ignored
+            // This prevents players from:
+            // - Stealing items from the menu
+            // - Moving items between menu and their inventory  
+            // - Shift-clicking items into the menu
+            // - Using hotbar keys to swap items
+            // - Double-clicking to gather items
         }
     }
     
@@ -211,5 +215,33 @@ public class MenuManager implements Listener {
         return event.getClickedInventory() != null && 
                event.getClickedInventory().equals(event.getView().getTopInventory()) &&
                event.getClickedInventory().equals(menu.getInventory());
+    }
+    
+    /**
+     * Check if a click type is secure for menu interactions.
+     * Blocks potentially exploitable click types.
+     */
+    private boolean isSecureClickType(InventoryClickEvent event) {
+        switch (event.getClick()) {
+            // Allow basic clicks
+            case LEFT:
+            case RIGHT:
+            case SHIFT_LEFT:
+            case SHIFT_RIGHT:
+                return true;
+                
+            // Block potentially dangerous click types
+            case DOUBLE_CLICK:          // Could gather items
+            case NUMBER_KEY:            // Hotbar key swapping
+            case DROP:                  // Drop items
+            case CONTROL_DROP:          // Drop stack
+            case CREATIVE:              // Creative mode middle-click
+            case UNKNOWN:               // Unknown behavior
+                return false;
+                
+            // Block other edge cases
+            default:
+                return false;
+        }
     }
 }
