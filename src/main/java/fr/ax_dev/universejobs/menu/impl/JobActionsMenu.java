@@ -8,6 +8,7 @@ import fr.ax_dev.universejobs.menu.BaseMenu;
 import fr.ax_dev.universejobs.menu.config.MenuItemConfig;
 import fr.ax_dev.universejobs.menu.config.SingleMenuConfig;
 import fr.ax_dev.universejobs.menu.config.SimpleConfigurationSection;
+import fr.ax_dev.universejobs.menu.utils.MenuItemUtils;
 import fr.ax_dev.universejobs.reward.Reward;
 import fr.ax_dev.universejobs.utils.MessageUtils;
 import org.bukkit.Material;
@@ -111,12 +112,12 @@ public class JobActionsMenu extends BaseMenu {
         lore.add("&7Total Actions: &e" + actionInfos.size());
         lore.add("&7Total Rewards: &e" + jobRewards.size());
         
-        Map<String, Object> configMap = createItemConfigMap(
+        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
             job.getIcon(), "&6&l" + job.getName() + " - Actions & Rewards", lore, true
         );
         
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig, getJobPlaceholders());
+        return createMenuItem(itemConfig, MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription()));
     }
     
     /**
@@ -169,7 +170,7 @@ public class JobActionsMenu extends BaseMenu {
         JobAction action = actionInfo.action;
         
         // Get appropriate material based on action type
-        String material = getActionMaterial(actionType);
+        String material = MenuItemUtils.getActionMaterial(actionType);
         
         List<String> lore = new ArrayList<>();
         lore.add("&7Type: &e" + actionType.name().toLowerCase().replace("_", " "));
@@ -199,12 +200,12 @@ public class JobActionsMenu extends BaseMenu {
         lore.add("");
         lore.add("&8Action from job: &7" + job.getName());
         
-        Map<String, Object> configMap = createItemConfigMap(
-            material, "&e&l" + formatActionName(actionType), lore, false
+        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
+            material, "&e&l" + MenuItemUtils.formatActionName(actionType), lore, false
         );
         
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig, getJobPlaceholders());
+        return createMenuItem(itemConfig, MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription()));
     }
     
     /**
@@ -254,13 +255,13 @@ public class JobActionsMenu extends BaseMenu {
         lore.add("");
         lore.add("&e▶ Click to view reward details");
         
-        Map<String, Object> configMap = createItemConfigMap(
+        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
             "CHEST", "&6&l" + reward.getName(), lore, false
         );
         configMap.put("action", "view_reward");
         
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig, getJobPlaceholders());
+        return createMenuItem(itemConfig, MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription()));
     }
     
     /**
@@ -268,72 +269,17 @@ public class JobActionsMenu extends BaseMenu {
      */
     private void addNavigationItems() {
         Map<String, MenuItemConfig> navItems = config.getNavigationItems();
-        
-        // Previous page
-        if (navItems.containsKey("previous") && currentPage > 0) {
-            MenuItemConfig prevConfig = navItems.get("previous");
-            ItemStack prevItem = createMenuItem(prevConfig, getNavigationPlaceholders());
-            
-            for (int slot : prevConfig.getSlots()) {
-                if (slot >= 0 && slot < inventory.getSize()) {
-                    inventory.setItem(slot, prevItem);
-                }
-            }
-        }
-        
-        // Next page
-        if (navItems.containsKey("next") && hasNextPage()) {
-            MenuItemConfig nextConfig = navItems.get("next");
-            ItemStack nextItem = createMenuItem(nextConfig, getNavigationPlaceholders());
-            
-            for (int slot : nextConfig.getSlots()) {
-                if (slot >= 0 && slot < inventory.getSize()) {
-                    inventory.setItem(slot, nextItem);
-                }
-            }
-        }
-        
-        // Back button
-        if (navItems.containsKey("back")) {
-            MenuItemConfig backConfig = navItems.get("back");
-            ItemStack backItem = createMenuItem(backConfig, getNavigationPlaceholders());
-            
-            for (int slot : backConfig.getSlots()) {
-                if (slot >= 0 && slot < inventory.getSize()) {
-                    inventory.setItem(slot, backItem);
-                }
-            }
-        }
-        
-        // Close button
-        if (navItems.containsKey("close")) {
-            MenuItemConfig closeConfig = navItems.get("close");
-            ItemStack closeItem = createMenuItem(closeConfig, getNavigationPlaceholders());
-            
-            for (int slot : closeConfig.getSlots()) {
-                if (slot >= 0 && slot < inventory.getSize()) {
-                    inventory.setItem(slot, closeItem);
-                }
-            }
-        }
+        MenuItemUtils.addNavigationItems(inventory, navItems, currentPage, hasNextPage(),
+            getNavigationPlaceholders(), config -> createMenuItem(config, getNavigationPlaceholders()));
     }
     
     /**
      * Add static items from configuration.
      */
     private void addStaticItems() {
-        for (Map.Entry<String, MenuItemConfig> entry : config.getStaticItems().entrySet()) {
-            MenuItemConfig itemConfig = entry.getValue();
-            if (!itemConfig.isEnabled()) continue;
-            
-            ItemStack item = createMenuItem(itemConfig, getJobPlaceholders());
-            
-            for (int slot : itemConfig.getSlots()) {
-                if (slot >= 0 && slot < inventory.getSize() && inventory.getItem(slot) == null) {
-                    inventory.setItem(slot, item);
-                }
-            }
-        }
+        Map<String, String> placeholders = MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription());
+        MenuItemUtils.addStaticItems(inventory, config.getStaticItems(), placeholders,
+            config -> createMenuItem(config, placeholders));
     }
     
     @Override
@@ -396,82 +342,17 @@ public class JobActionsMenu extends BaseMenu {
      */
     private Map<String, String> getNavigationPlaceholders() {
         List<DisplayItem> displayItems = getAllDisplayItems();
-        int totalPages = (int) Math.ceil((double) displayItems.size() / config.getItemsPerPage());
-        
-        Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("current_page", String.valueOf(currentPage + 1));
-        placeholders.put("total_pages", String.valueOf(totalPages));
-        placeholders.put("total_items", String.valueOf(displayItems.size()));
+        Map<String, String> placeholders = MenuItemUtils.createNavigationPlaceholders(
+            currentPage, displayItems.size(), config.getItemsPerPage());
         placeholders.put("total_actions", String.valueOf(actionInfos.size()));
         placeholders.put("total_rewards", String.valueOf(jobRewards.size()));
         return placeholders;
     }
     
-    /**
-     * Get job-specific placeholders.
-     */
-    private Map<String, String> getJobPlaceholders() {
-        Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("job_id", job.getId());
-        placeholders.put("job_name", job.getName());
-        placeholders.put("job_description", job.getDescription());
-        return placeholders;
-    }
     
     
-    /**
-     * Format action name for display.
-     */
-    private String formatActionName(ActionType actionType) {
-        return actionType.name().toLowerCase().replace("_", " ");
-    }
     
-    /**
-     * Get appropriate material for action type display.
-     */
-    private String getActionMaterial(ActionType actionType) {
-        return switch (actionType) {
-            case KILL -> "DIAMOND_SWORD";
-            case PLACE -> "GRASS_BLOCK";
-            case BREAK -> "IRON_PICKAXE";
-            case HARVEST -> "WHEAT";
-            case BLOCK_INTERACT -> "OAK_BUTTON";
-            case ENTITY_INTERACT -> "LEAD";
-            case BREED -> "WHEAT_SEEDS";
-            case FISH -> "FISHING_ROD";
-            case CRAFT -> "CRAFTING_TABLE";
-            case SMELT -> "FURNACE";
-            case ENCHANT -> "ENCHANTING_TABLE";
-            case TRADE -> "EMERALD";
-            case TAME -> "BONE";
-            case SHEAR -> "SHEARS";
-            case MILK -> "MILK_BUCKET";
-            case EAT -> "COOKED_BEEF";
-            case POTION -> "POTION";
-            case CUSTOM -> "COMMAND_BLOCK";
-            default -> "STONE";
-        };
-    }
     
-    /**
-     * Helper method to create item config map.
-     */
-    private Map<String, Object> createItemConfigMap(String material, String displayName, List<String> lore, boolean glow) {
-        Map<String, Object> configMap = new HashMap<>();
-        configMap.put("enabled", true);
-        configMap.put("material", material);
-        configMap.put("amount", 1);
-        configMap.put("display-name", displayName);
-        configMap.put("lore", lore);
-        configMap.put("custom-model-data", 0);
-        configMap.put("glow", glow);
-        configMap.put("hide-attributes", false);
-        configMap.put("hide-enchants", glow);
-        configMap.put("slots", new ArrayList<Integer>());
-        configMap.put("action", "none");
-        configMap.put("action-value", "");
-        return configMap;
-    }
     
     /**
      * Container for action information.

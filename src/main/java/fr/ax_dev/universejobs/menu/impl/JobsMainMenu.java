@@ -7,6 +7,7 @@ import fr.ax_dev.universejobs.menu.BaseMenu;
 import fr.ax_dev.universejobs.menu.config.MenuItemConfig;
 import fr.ax_dev.universejobs.menu.config.SingleMenuConfig;
 import fr.ax_dev.universejobs.menu.config.SimpleConfigurationSection;
+import fr.ax_dev.universejobs.menu.utils.MenuItemUtils;
 import fr.ax_dev.universejobs.utils.MessageUtils;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -57,18 +58,9 @@ public class JobsMainMenu extends BaseMenu {
      * Add static items defined in configuration.
      */
     private void addStaticItems() {
-        for (Map.Entry<String, MenuItemConfig> entry : config.getStaticItems().entrySet()) {
-            MenuItemConfig itemConfig = entry.getValue();
-            if (!itemConfig.isEnabled()) continue;
-            
-            ItemStack item = createMenuItem(itemConfig);
-            
-            for (int slot : itemConfig.getSlots()) {
-                if (slot >= 0 && slot < inventory.getSize()) {
-                    inventory.setItem(slot, item);
-                }
-            }
-        }
+        Map<String, String> placeholders = getGeneralPlaceholders();
+        MenuItemUtils.addStaticItems(inventory, config.getStaticItems(), placeholders,
+            config -> createMenuItem(config, placeholders));
     }
     
     /**
@@ -111,10 +103,7 @@ public class JobsMainMenu extends BaseMenu {
         long playerXp = hasJob ? (long) playerData.getXp(job.getId()) : 0;
         
         // Create custom placeholders for this job
-        Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("job_id", job.getId());
-        placeholders.put("job_name", job.getName());
-        placeholders.put("job_description", job.getDescription());
+        Map<String, String> placeholders = MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription());
         placeholders.put("job_max_level", String.valueOf(job.getMaxLevel()));
         placeholders.put("player_level", String.valueOf(playerLevel));
         placeholders.put("player_xp", String.valueOf(playerXp));
@@ -158,17 +147,9 @@ public class JobsMainMenu extends BaseMenu {
         lore.add("&e▶ Click to open job menu");
         
         // Create menu item config for this job
-        Map<String, Object> jobConfigMap = new HashMap<>();
-        jobConfigMap.put("enabled", true);
-        jobConfigMap.put("material", job.getIcon());
-        jobConfigMap.put("amount", 1);
-        jobConfigMap.put("display-name", "&e&l" + job.getName());
-        jobConfigMap.put("lore", lore);
-        jobConfigMap.put("custom-model-data", 0);
-        jobConfigMap.put("glow", hasJob);
-        jobConfigMap.put("hide-attributes", false);
-        jobConfigMap.put("hide-enchants", hasJob);
-        jobConfigMap.put("slots", new ArrayList<Integer>());
+        Map<String, Object> jobConfigMap = MenuItemUtils.createItemConfigMap(
+            job.getIcon(), "&e&l" + job.getName(), lore, hasJob
+        );
         jobConfigMap.put("action", "open_job");
         jobConfigMap.put("action-value", job.getId());
         
@@ -181,63 +162,26 @@ public class JobsMainMenu extends BaseMenu {
      */
     private void addNavigationItems() {
         Map<String, MenuItemConfig> navItems = config.getNavigationItems();
-        
-        // Previous page
-        if (navItems.containsKey("previous") && currentPage > 0) {
-            MenuItemConfig prevConfig = navItems.get("previous");
-            ItemStack prevItem = createMenuItem(prevConfig, getNavigationPlaceholders());
-            
-            for (int slot : prevConfig.getSlots()) {
-                if (slot >= 0 && slot < inventory.getSize()) {
-                    inventory.setItem(slot, prevItem);
-                }
-            }
-        }
-        
-        // Next page
-        if (navItems.containsKey("next") && hasNextPage()) {
-            MenuItemConfig nextConfig = navItems.get("next");
-            ItemStack nextItem = createMenuItem(nextConfig, getNavigationPlaceholders());
-            
-            for (int slot : nextConfig.getSlots()) {
-                if (slot >= 0 && slot < inventory.getSize()) {
-                    inventory.setItem(slot, nextItem);
-                }
-            }
-        }
-        
-        // Close button
-        if (navItems.containsKey("close")) {
-            MenuItemConfig closeConfig = navItems.get("close");
-            ItemStack closeItem = createMenuItem(closeConfig, getNavigationPlaceholders());
-            
-            for (int slot : closeConfig.getSlots()) {
-                if (slot >= 0 && slot < inventory.getSize()) {
-                    inventory.setItem(slot, closeItem);
-                }
-            }
-        }
-        
-        // Info button
-        if (navItems.containsKey("info")) {
-            MenuItemConfig infoConfig = navItems.get("info");
-            ItemStack infoItem = createMenuItem(infoConfig, getNavigationPlaceholders());
-            
-            for (int slot : infoConfig.getSlots()) {
-                if (slot >= 0 && slot < inventory.getSize()) {
-                    inventory.setItem(slot, infoItem);
-                }
-            }
-        }
+        MenuItemUtils.addNavigationItems(inventory, navItems, currentPage, hasNextPage(),
+            getNavigationPlaceholders(), config -> createMenuItem(config, getNavigationPlaceholders()));
     }
     
     /**
      * Get placeholders for navigation items.
      */
     private Map<String, String> getNavigationPlaceholders() {
+        Map<String, String> placeholders = MenuItemUtils.createNavigationPlaceholders(
+            currentPage, availableJobs.size(), config.getItemsPerPage());
+        placeholders.put("total_jobs", String.valueOf(availableJobs.size()));
+        placeholders.put("player_jobs", String.valueOf(playerData.getJobs().size()));
+        return placeholders;
+    }
+    
+    /**
+     * Get general placeholders for static items.
+     */
+    private Map<String, String> getGeneralPlaceholders() {
         Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("current_page", String.valueOf(currentPage + 1));
-        placeholders.put("total_pages", String.valueOf(getTotalPages()));
         placeholders.put("total_jobs", String.valueOf(availableJobs.size()));
         placeholders.put("player_jobs", String.valueOf(playerData.getJobs().size()));
         return placeholders;

@@ -64,8 +64,7 @@ public class MenuConfig {
                 plugin.getLogger().info("Created default menu configuration: " + resourceName);
             }
         } catch (IOException e) {
-            plugin.getLogger().severe("Failed to copy default menu configuration: " + resourceName);
-            e.printStackTrace();
+            plugin.getLogger().severe("Failed to copy default menu configuration '" + resourceName + "': " + e.getMessage());
         }
     }
     
@@ -117,8 +116,7 @@ public class MenuConfig {
             plugin.getLogger().info("Menu configurations loaded successfully");
             
         } catch (Exception e) {
-            plugin.getLogger().severe("Failed to load menu configurations");
-            e.printStackTrace();
+            plugin.getLogger().severe("Failed to load menu configurations: " + e.getMessage());
             
             // Use defaults if loading failed
             this.mainMenuConfig = SingleMenuConfig.getDefaultMainMenu();
@@ -137,8 +135,7 @@ public class MenuConfig {
             config.save(configFile);
             plugin.getLogger().info("Saved menu configuration: " + fileName);
         } catch (IOException e) {
-            plugin.getLogger().severe("Failed to save menu configuration: " + fileName);
-            e.printStackTrace();
+            plugin.getLogger().severe("Failed to save menu configuration '" + fileName + "': " + e.getMessage());
         }
     }
     

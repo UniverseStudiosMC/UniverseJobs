@@ -87,8 +87,7 @@ public class MenuCommandHandler extends JobCommandHandler {
             menuManager.openJobsMainMenu(player);
             MessageUtils.sendMessage(player, "&aOpening jobs menu...");
         } catch (Exception e) {
-            MessageUtils.sendMessage(player, "&cFailed to open jobs menu.");
-            plugin.getLogger().warning("Failed to open main menu for " + player.getName() + ": " + e.getMessage());
+            handleMenuError(player, "jobs menu", e);
         }
     }
     
@@ -96,36 +95,15 @@ public class MenuCommandHandler extends JobCommandHandler {
      * Open a specific job menu.
      */
     private boolean openJobMenu(Player player, String jobId) {
-        if (!isValidJobId(jobId)) {
-            MessageUtils.sendMessage(player, "&cInvalid job ID format.");
-            return false;
-        }
-        
-        Job job = jobManager.getJob(jobId);
-        if (job == null) {
-            MessageUtils.sendMessage(player, "&cJob not found: " + jobId);
-            return false;
-        }
-        
-        if (!job.isEnabled()) {
-            MessageUtils.sendMessage(player, "&cThis job is currently disabled.");
-            return false;
-        }
-        
-        // Check permission if job requires one
-        if (job.getPermission() != null && !player.hasPermission(job.getPermission())) {
-            MessageUtils.sendMessage(player, "&cYou don't have permission to view this job.");
-            return false;
-        }
+        Job job = validateJobAccess(player, jobId);
+        if (job == null) return false;
         
         try {
             menuManager.openJobMenu(player, jobId);
             MessageUtils.sendMessage(player, "&aOpening " + job.getName() + " menu...");
             return true;
         } catch (Exception e) {
-            MessageUtils.sendMessage(player, "&cFailed to open job menu.");
-            plugin.getLogger().warning("Failed to open job menu for " + player.getName() + ": " + e.getMessage());
-            return false;
+            return handleMenuError(player, "job menu", e);
         }
     }
     
@@ -133,21 +111,8 @@ public class MenuCommandHandler extends JobCommandHandler {
      * Open a job's actions menu (redirect to existing rewards GUI).
      */
     private boolean openActionsMenu(Player player, String jobId) {
-        if (!isValidJobId(jobId)) {
-            MessageUtils.sendMessage(player, "&cInvalid job ID format.");
-            return false;
-        }
-        
-        Job job = jobManager.getJob(jobId);
-        if (job == null) {
-            MessageUtils.sendMessage(player, "&cJob not found: " + jobId);
-            return false;
-        }
-        
-        if (!job.isEnabled()) {
-            MessageUtils.sendMessage(player, "&cThis job is currently disabled.");
-            return false;
-        }
+        Job job = validateJobAccess(player, jobId);
+        if (job == null) return false;
         
         // Use the existing reward GUI system instead of duplicating
         try {
@@ -155,9 +120,7 @@ public class MenuCommandHandler extends JobCommandHandler {
             MessageUtils.sendMessage(player, "&aOpening " + job.getName() + " rewards...");
             return true;
         } catch (Exception e) {
-            MessageUtils.sendMessage(player, "&cFailed to open rewards menu.");
-            plugin.getLogger().warning("Failed to open rewards menu for " + player.getName() + ": " + e.getMessage());
-            return false;
+            return handleMenuError(player, "rewards menu", e);
         }
     }
     
@@ -169,8 +132,7 @@ public class MenuCommandHandler extends JobCommandHandler {
             menuManager.openGlobalRankingsMenu(player);
             MessageUtils.sendMessage(player, "&aOpening global rankings...");
         } catch (Exception e) {
-            MessageUtils.sendMessage(player, "&cFailed to open rankings menu.");
-            plugin.getLogger().warning("Failed to open rankings menu for " + player.getName() + ": " + e.getMessage());
+            handleMenuError(player, "rankings menu", e);
         }
     }
     
@@ -184,9 +146,7 @@ public class MenuCommandHandler extends JobCommandHandler {
             plugin.getLogger().info("Menu configurations reloaded by " + player.getName());
             return true;
         } catch (Exception e) {
-            MessageUtils.sendMessage(player, "&cFailed to reload menu configurations.");
-            plugin.getLogger().warning("Failed to reload menu configurations: " + e.getMessage());
-            return false;
+            return handleMenuError(player, "reload menu configurations", e);
         }
     }
     
@@ -224,5 +184,43 @@ public class MenuCommandHandler extends JobCommandHandler {
         }
         
         return Arrays.asList();
+    }
+    
+    /**
+     * Validate job access for a player.
+     */
+    private Job validateJobAccess(Player player, String jobId) {
+        if (!isValidJobId(jobId)) {
+            MessageUtils.sendMessage(player, "&cInvalid job ID format.");
+            return null;
+        }
+        
+        Job job = jobManager.getJob(jobId);
+        if (job == null) {
+            MessageUtils.sendMessage(player, "&cJob not found: " + jobId);
+            return null;
+        }
+        
+        if (!job.isEnabled()) {
+            MessageUtils.sendMessage(player, "&cThis job is currently disabled.");
+            return null;
+        }
+        
+        // Check permission if job requires one
+        if (job.getPermission() != null && !player.hasPermission(job.getPermission())) {
+            MessageUtils.sendMessage(player, "&cYou don't have permission to view this job.");
+            return null;
+        }
+        
+        return job;
+    }
+    
+    /**
+     * Handle menu opening errors consistently.
+     */
+    private boolean handleMenuError(Player player, String menuType, Exception e) {
+        MessageUtils.sendMessage(player, "&cFailed to open " + menuType + ".");
+        plugin.getLogger().warning("Failed to open " + menuType + " for " + player.getName() + ": " + e.getMessage());
+        return false;
     }
 }

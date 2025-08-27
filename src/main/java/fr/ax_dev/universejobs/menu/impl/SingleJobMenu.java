@@ -7,6 +7,7 @@ import fr.ax_dev.universejobs.menu.BaseMenu;
 import fr.ax_dev.universejobs.menu.config.MenuItemConfig;
 import fr.ax_dev.universejobs.menu.config.SingleMenuConfig;
 import fr.ax_dev.universejobs.menu.config.SimpleConfigurationSection;
+import fr.ax_dev.universejobs.menu.utils.MenuItemUtils;
 import fr.ax_dev.universejobs.utils.MessageUtils;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -104,12 +105,12 @@ public class SingleJobMenu extends BaseMenu {
             );
         }
         
-        Map<String, Object> configMap = createItemConfigMap(
+        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
             job.getIcon(), "&e&l" + job.getName(), lore, true
         );
         
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig, getJobPlaceholders());
+        return createMenuItem(itemConfig, MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription()));
     }
     
     /**
@@ -145,12 +146,12 @@ public class SingleJobMenu extends BaseMenu {
             lore.add("&7Status: &cNot Joined");
         }
         
-        Map<String, Object> configMap = createItemConfigMap(
+        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
             "PLAYER_HEAD", "&6Your Progress", lore, hasJob
         );
         
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig, getJobPlaceholders());
+        return createMenuItem(itemConfig, MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription()));
     }
     
     /**
@@ -193,11 +194,11 @@ public class SingleJobMenu extends BaseMenu {
             }
         }
         
-        Map<String, Object> configMap = createItemConfigMap(material, name, lore, false);
+        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(material, name, lore, false);
         configMap.put("action", hasJob ? "leave_job" : "join_job");
         
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig, getJobPlaceholders());
+        return createMenuItem(itemConfig, MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription()));
     }
     
     /**
@@ -211,13 +212,13 @@ public class SingleJobMenu extends BaseMenu {
             "&e▶ Click to open actions menu"
         );
         
-        Map<String, Object> configMap = createItemConfigMap(
+        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
             "DIAMOND_PICKAXE", "&6&lActions & Rewards", lore, false
         );
         configMap.put("action", "open_actions");
         
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig, getJobPlaceholders());
+        return createMenuItem(itemConfig, MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription()));
     }
     
     /**
@@ -231,13 +232,13 @@ public class SingleJobMenu extends BaseMenu {
             "&e▶ Click to open rankings"
         );
         
-        Map<String, Object> configMap = createItemConfigMap(
+        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
             "GOLD_INGOT", "&6&lGlobal Rankings", lore, false
         );
         configMap.put("action", "open_rankings");
         
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig, getJobPlaceholders());
+        return createMenuItem(itemConfig, MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription()));
     }
     
     /**
@@ -261,7 +262,7 @@ public class SingleJobMenu extends BaseMenu {
             "&7Go back to the main jobs menu"
         );
         
-        Map<String, Object> configMap = createItemConfigMap(
+        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
             "ARROW", "&7&l← Back to Jobs Menu", lore, false
         );
         configMap.put("action", "back_to_main");
@@ -278,7 +279,7 @@ public class SingleJobMenu extends BaseMenu {
             "&7Close this menu"
         );
         
-        Map<String, Object> configMap = createItemConfigMap(
+        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
             "BARRIER", "&c&lClose", lore, false
         );
         configMap.put("action", "close");
@@ -291,18 +292,9 @@ public class SingleJobMenu extends BaseMenu {
      * Add static items from configuration.
      */
     private void addStaticItems() {
-        for (Map.Entry<String, MenuItemConfig> entry : config.getStaticItems().entrySet()) {
-            MenuItemConfig itemConfig = entry.getValue();
-            if (!itemConfig.isEnabled()) continue;
-            
-            ItemStack item = createMenuItem(itemConfig, getJobPlaceholders());
-            
-            for (int slot : itemConfig.getSlots()) {
-                if (slot >= 0 && slot < inventory.getSize() && inventory.getItem(slot) == null) {
-                    inventory.setItem(slot, item);
-                }
-            }
-        }
+        Map<String, String> placeholders = MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription());
+        MenuItemUtils.addStaticItems(inventory, config.getStaticItems(), placeholders,
+            config -> createMenuItem(config, placeholders));
     }
     
     @Override
@@ -372,37 +364,6 @@ public class SingleJobMenu extends BaseMenu {
         plugin.getMenuManager().openJobsMainMenu(player);
     }
     
-    /**
-     * Get job-specific placeholders.
-     */
-    private Map<String, String> getJobPlaceholders() {
-        Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("job_id", job.getId());
-        placeholders.put("job_name", job.getName());
-        placeholders.put("job_description", job.getDescription());
-        placeholders.put("job_max_level", String.valueOf(job.getMaxLevel()));
-        
-        if (hasJob) {
-            int playerLevel = playerData.getLevel(job.getId());
-            long playerXp = (long) playerData.getXp(job.getId());
-            placeholders.put("player_level", String.valueOf(playerLevel));
-            placeholders.put("player_xp", String.valueOf(playerXp));
-            placeholders.put("has_job", "true");
-            
-            if (playerLevel < job.getMaxLevel() && job.getXpCurve() != null) {
-                long nextLevelXp = (long) job.getXpCurve().getXpForLevel(playerLevel + 1);
-                long xpToNext = nextLevelXp - playerXp;
-                placeholders.put("xp_to_next", String.valueOf(Math.max(0, xpToNext)));
-            }
-        } else {
-            placeholders.put("player_level", "0");
-            placeholders.put("player_xp", "0");
-            placeholders.put("has_job", "false");
-            placeholders.put("xp_to_next", "0");
-        }
-        
-        return placeholders;
-    }
     
     /**
      * Create a progress bar string.
@@ -424,24 +385,5 @@ public class SingleJobMenu extends BaseMenu {
         return progressBar.toString();
     }
     
-    /**
-     * Helper method to create item config map.
-     */
-    private Map<String, Object> createItemConfigMap(String material, String displayName, List<String> lore, boolean glow) {
-        Map<String, Object> configMap = new HashMap<>();
-        configMap.put("enabled", true);
-        configMap.put("material", material);
-        configMap.put("amount", 1);
-        configMap.put("display-name", displayName);
-        configMap.put("lore", lore);
-        configMap.put("custom-model-data", 0);
-        configMap.put("glow", glow);
-        configMap.put("hide-attributes", false);
-        configMap.put("hide-enchants", glow);
-        configMap.put("slots", new ArrayList<Integer>());
-        configMap.put("action", "none");
-        configMap.put("action-value", "");
-        return configMap;
-    }
     
 }

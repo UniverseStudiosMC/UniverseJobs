@@ -7,6 +7,7 @@ import fr.ax_dev.universejobs.menu.BaseMenu;
 import fr.ax_dev.universejobs.menu.config.MenuItemConfig;
 import fr.ax_dev.universejobs.menu.config.SingleMenuConfig;
 import fr.ax_dev.universejobs.menu.config.SimpleConfigurationSection;
+import fr.ax_dev.universejobs.menu.utils.MenuItemUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -167,12 +168,12 @@ public class GlobalRankingsMenu extends BaseMenu {
             lore.add("&7You don't have this job");
         }
         
-        Map<String, Object> configMap = createItemConfigMap(
+        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
             job.getIcon(), "&6&l" + job.getName() + " Rankings", lore, true
         );
         
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig, getJobPlaceholders(job));
+        return createMenuItem(itemConfig, MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription()));
     }
     
     /**
@@ -183,7 +184,7 @@ public class GlobalRankingsMenu extends BaseMenu {
             "&7No jobs available to show rankings for"
         );
         
-        Map<String, Object> configMap = createItemConfigMap(
+        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
             "BARRIER", "&c&lNo Jobs Available", lore, false
         );
         
@@ -227,13 +228,13 @@ public class GlobalRankingsMenu extends BaseMenu {
             lore.add("&a▶ Currently Selected");
         }
         
-        Map<String, Object> configMap = createItemConfigMap(
+        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
             job.getIcon(), "&e" + job.getName(), lore, selected
         );
         configMap.put("action", "select_job");
         
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig, getJobPlaceholders(job));
+        return createMenuItem(itemConfig, MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription()));
     }
     
     /**
@@ -286,7 +287,7 @@ public class GlobalRankingsMenu extends BaseMenu {
         placeholders.put("level", String.valueOf(entry.level));
         placeholders.put("xp", String.valueOf(entry.xp));
         
-        Map<String, Object> configMap = createItemConfigMap(
+        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
             material, rankColor + "#" + entry.rank + " - " + entry.playerName, lore, 
             entry.playerId.equals(player.getUniqueId())
         );
@@ -300,75 +301,23 @@ public class GlobalRankingsMenu extends BaseMenu {
      */
     private void addNavigationItems() {
         Map<String, MenuItemConfig> navItems = config.getNavigationItems();
-        
-        // Previous page
-        if (navItems.containsKey("previous") && currentPage > 0) {
-            MenuItemConfig prevConfig = navItems.get("previous");
-            ItemStack prevItem = createMenuItem(prevConfig, getNavigationPlaceholders());
-            
-            for (int slot : prevConfig.getSlots()) {
-                if (slot >= 0 && slot < inventory.getSize()) {
-                    inventory.setItem(slot, prevItem);
-                }
-            }
-        }
-        
-        // Next page
-        if (navItems.containsKey("next") && hasNextPage()) {
-            MenuItemConfig nextConfig = navItems.get("next");
-            ItemStack nextItem = createMenuItem(nextConfig, getNavigationPlaceholders());
-            
-            for (int slot : nextConfig.getSlots()) {
-                if (slot >= 0 && slot < inventory.getSize()) {
-                    inventory.setItem(slot, nextItem);
-                }
-            }
-        }
-        
-        // Back button
-        if (navItems.containsKey("back")) {
-            MenuItemConfig backConfig = navItems.get("back");
-            ItemStack backItem = createMenuItem(backConfig, getNavigationPlaceholders());
-            
-            for (int slot : backConfig.getSlots()) {
-                if (slot >= 0 && slot < inventory.getSize()) {
-                    inventory.setItem(slot, backItem);
-                }
-            }
-        }
-        
-        // Close button
-        if (navItems.containsKey("close")) {
-            MenuItemConfig closeConfig = navItems.get("close");
-            ItemStack closeItem = createMenuItem(closeConfig, getNavigationPlaceholders());
-            
-            for (int slot : closeConfig.getSlots()) {
-                if (slot >= 0 && slot < inventory.getSize()) {
-                    inventory.setItem(slot, closeItem);
-                }
-            }
-        }
+        MenuItemUtils.addNavigationItems(inventory, navItems, currentPage, hasNextPage(),
+            getNavigationPlaceholders(), config -> createMenuItem(config, getNavigationPlaceholders()));
     }
     
     /**
      * Add static items from configuration.
      */
     private void addStaticItems() {
-        for (Map.Entry<String, MenuItemConfig> entry : config.getStaticItems().entrySet()) {
-            MenuItemConfig itemConfig = entry.getValue();
-            if (!itemConfig.isEnabled()) continue;
-            
-            Map<String, String> placeholders = selectedJob != null ? 
-                getJobPlaceholders(plugin.getJobManager().getJob(selectedJob)) : new HashMap<>();
-            
-            ItemStack item = createMenuItem(itemConfig, placeholders);
-            
-            for (int slot : itemConfig.getSlots()) {
-                if (slot >= 0 && slot < inventory.getSize() && inventory.getItem(slot) == null) {
-                    inventory.setItem(slot, item);
-                }
-            }
-        }
+        Map<String, String> placeholders = selectedJob != null ? 
+            MenuItemUtils.createJobPlaceholders(
+                selectedJob, 
+                plugin.getJobManager().getJob(selectedJob).getName(),
+                plugin.getJobManager().getJob(selectedJob).getDescription()
+            ) : new HashMap<>();
+        
+        MenuItemUtils.addStaticItems(inventory, config.getStaticItems(), placeholders,
+            config -> createMenuItem(config, placeholders));
     }
     
     @Override
@@ -419,28 +368,13 @@ public class GlobalRankingsMenu extends BaseMenu {
         List<RankingEntry> rankings = selectedJob != null ? 
             jobRankings.getOrDefault(selectedJob, new ArrayList<>()) : new ArrayList<>();
         
-        int totalPages = (int) Math.ceil((double) rankings.size() / config.getItemsPerPage());
-        
-        Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("current_page", String.valueOf(currentPage + 1));
-        placeholders.put("total_pages", String.valueOf(totalPages));
+        Map<String, String> placeholders = MenuItemUtils.createNavigationPlaceholders(
+            currentPage, rankings.size(), config.getItemsPerPage());
         placeholders.put("total_players", String.valueOf(rankings.size()));
         placeholders.put("selected_job", selectedJob != null ? selectedJob : "None");
         return placeholders;
     }
     
-    /**
-     * Get job-specific placeholders.
-     */
-    private Map<String, String> getJobPlaceholders(Job job) {
-        Map<String, String> placeholders = new HashMap<>();
-        if (job != null) {
-            placeholders.put("job_id", job.getId());
-            placeholders.put("job_name", job.getName());
-            placeholders.put("job_description", job.getDescription());
-        }
-        return placeholders;
-    }
     
     /**
      * Get material for ranking position.
@@ -466,25 +400,6 @@ public class GlobalRankingsMenu extends BaseMenu {
         };
     }
     
-    /**
-     * Helper method to create item config map.
-     */
-    private Map<String, Object> createItemConfigMap(String material, String displayName, List<String> lore, boolean glow) {
-        Map<String, Object> configMap = new HashMap<>();
-        configMap.put("enabled", true);
-        configMap.put("material", material);
-        configMap.put("amount", 1);
-        configMap.put("display-name", displayName);
-        configMap.put("lore", lore);
-        configMap.put("custom-model-data", 0);
-        configMap.put("glow", glow);
-        configMap.put("hide-attributes", false);
-        configMap.put("hide-enchants", glow);
-        configMap.put("slots", new ArrayList<Integer>());
-        configMap.put("action", "none");
-        configMap.put("action-value", "");
-        return configMap;
-    }
     
     /**
      * Container for ranking entry.
