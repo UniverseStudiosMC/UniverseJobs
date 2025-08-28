@@ -4,6 +4,8 @@ import fr.ax_dev.universejobs.action.ActionProcessor;
 import fr.ax_dev.universejobs.action.ActionLimitManager;
 import fr.ax_dev.universejobs.bonus.XpBonusManager;
 import fr.ax_dev.universejobs.bonus.MoneyBonusManager;
+import fr.ax_dev.universejobs.cache.ConfigurationCache;
+import fr.ax_dev.universejobs.cache.PlayerJobCache;
 import fr.ax_dev.universejobs.command.JobCommand;
 import fr.ax_dev.universejobs.compatibility.FoliaCompatibilityManager;
 import fr.ax_dev.universejobs.config.ConfigManager;
@@ -54,6 +56,10 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
     private MythicMobsHandler mythicMobsHandler;
     private BukkitTask saveTask;
     private long startTime;
+    
+    // ========== ULTRA-FAST CACHE SYSTEM ==========
+    private ConfigurationCache configCache;
+    private PlayerJobCache playerCache;
 
     @Override
     public void onEnable() {
@@ -75,7 +81,14 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         this.menuManager = new MenuManager(this);
         this.placeholderManager = new PlaceholderManager(this);
         this.mythicMobsHandler = new MythicMobsHandler(this);
-        this.actionProcessor = new ActionProcessor(this, jobManager, bonusManager, moneyBonusManager, messageSender, limitManager);
+        
+        // ========== ULTRA-FAST CACHE INITIALIZATION ==========
+        getLogger().info("Initializing ultra-fast cache system...");
+        this.configCache = new ConfigurationCache(this);
+        this.playerCache = new PlayerJobCache(this);
+        
+        this.actionProcessor = new ActionProcessor(this, jobManager, bonusManager, moneyBonusManager, 
+                                                 messageSender, limitManager, configCache, playerCache);
         
         // Load configuration
         try {
@@ -93,6 +106,17 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
             // Jobs loaded successfully
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Failed to load jobs", e);
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        
+        // ========== LOAD ULTRA-FAST CACHE ==========
+        try {
+            configCache.loadAllConfigurations();
+            playerCache.preloadOnlinePlayers();
+            getLogger().info("Ultra-fast cache system loaded!");
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Failed to initialize cache system", e);
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -122,8 +146,9 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         getCommand("jobs").setExecutor(jobCommand);
         getCommand("jobs").setTabCompleter(jobCommand);
         
-        // Register event listeners
-        getServer().getPluginManager().registerEvents(new JobActionListener(this, actionProcessor, protectionManager, mythicMobsHandler), this);
+        // Register event listeners avec cache ultra-rapide
+        getServer().getPluginManager().registerEvents(
+            new JobActionListener(this, actionProcessor, protectionManager, mythicMobsHandler, configCache, playerCache), this);
         getServer().getPluginManager().registerEvents(new EnchantEventListener(this, actionProcessor), this);
         getServer().getPluginManager().registerEvents(this, this);
         
@@ -171,11 +196,13 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
             getLogger().info("CustomFishing plugin not found - skipping CustomFishing integration");
         }
         
-        // Load player data for online players
+        // Load player data for online players et précharge dans le cache
         for (org.bukkit.entity.Player player : getServer().getOnlinePlayers()) {
             foliaManager.runAsync(() -> {
                 jobManager.loadPlayerData(player);
                 rewardManager.loadPlayerData(player);
+                // Précharge dans le cache ultra-rapide
+                playerCache.preloadPlayer(player.getUniqueId());
             });
         }
         
@@ -357,22 +384,25 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
     }
     
     /**
-     * Handle player join events.
+     * Handle player join events avec cache préloading.
      */
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        // Load player data asynchronously
+        // Load player data asynchronously et précharge dans le cache
         foliaManager.runAsync(() -> {
             jobManager.loadPlayerData(event.getPlayer());
             rewardManager.loadPlayerData(event.getPlayer());
-            if (configManager.isDebugEnabled()) {
-                getLogger().info("Loaded data for player: " + event.getPlayer().getName());
+            // Précharge immédiatement dans le cache
+            playerCache.preloadPlayer(event.getPlayer().getUniqueId());
+            
+            if (configCache.isDebugEnabled()) {
+                getLogger().info("Loaded data and preloaded cache for player: " + event.getPlayer().getName());
             }
         });
     }
     
     /**
-     * Handle player quit events.
+     * Handle player quit events avec cleanup cache.
      */
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
@@ -381,11 +411,14 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
             messageSender.cleanupPlayer(event.getPlayer());
         }
         
+        // Cleanup cache immédiatement
+        playerCache.cleanupPlayer(event.getPlayer().getUniqueId());
+        
         // Save player data asynchronously
         foliaManager.runAsync(() -> {
             jobManager.savePlayerData(event.getPlayer());
             rewardManager.unloadPlayerData(event.getPlayer());
-            if (configManager.isDebugEnabled()) {
+            if (configCache.isDebugEnabled()) {
                 getLogger().info("Saved data for player: " + event.getPlayer().getName());
             }
         });
@@ -506,6 +539,24 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
      */
     public MenuManager getMenuManager() {
         return menuManager;
+    }
+    
+    /**
+     * Get the configuration cache (ultra-fast).
+     * 
+     * @return The configuration cache
+     */
+    public ConfigurationCache getConfigCache() {
+        return configCache;
+    }
+    
+    /**
+     * Get the player job cache (ultra-fast).
+     * 
+     * @return The player job cache
+     */
+    public PlayerJobCache getPlayerCache() {
+        return playerCache;
     }
     
     /**

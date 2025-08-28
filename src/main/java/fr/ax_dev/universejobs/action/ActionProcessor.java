@@ -10,6 +10,8 @@ import fr.ax_dev.universejobs.job.Job;
 import fr.ax_dev.universejobs.job.JobManager;
 import fr.ax_dev.universejobs.utils.MessageUtils;
 import fr.ax_dev.universejobs.utils.AsyncXpMessageSender;
+import fr.ax_dev.universejobs.cache.ConfigurationCache;
+import fr.ax_dev.universejobs.cache.PlayerJobCache;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.NamespacedKey;
@@ -20,6 +22,7 @@ import org.bukkit.event.Event;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Processes actions and awards XP when requirements are met.
@@ -34,9 +37,11 @@ public class ActionProcessor {
     private final MoneyBonusManager moneyBonusManager;
     private final AsyncXpMessageSender messageSender;
     private final ActionLimitManager limitManager;
+    private final ConfigurationCache configCache;
+    private final PlayerJobCache playerCache;
     
     /**
-     * Create a new ActionProcessor.
+     * Create a new ActionProcessor with ultra-fast caching.
      * 
      * @param plugin The plugin instance
      * @param jobManager The job manager
@@ -44,18 +49,25 @@ public class ActionProcessor {
      * @param moneyBonusManager The money bonus manager
      * @param messageSender The XP message sender
      * @param limitManager The action limit manager
+     * @param configCache The configuration cache
+     * @param playerCache The player cache
      */
-    public ActionProcessor(UniverseJobs plugin, JobManager jobManager, XpBonusManager bonusManager, MoneyBonusManager moneyBonusManager, AsyncXpMessageSender messageSender, ActionLimitManager limitManager) {
+    public ActionProcessor(UniverseJobs plugin, JobManager jobManager, XpBonusManager bonusManager, 
+                          MoneyBonusManager moneyBonusManager, AsyncXpMessageSender messageSender, 
+                          ActionLimitManager limitManager, ConfigurationCache configCache, 
+                          PlayerJobCache playerCache) {
         this.plugin = plugin;
         this.jobManager = jobManager;
         this.bonusManager = bonusManager;
         this.moneyBonusManager = moneyBonusManager;
         this.messageSender = messageSender;
         this.limitManager = limitManager;
+        this.configCache = configCache;
+        this.playerCache = playerCache;
     }
     
     /**
-     * Process an action for a player.
+     * Process an action for a player with ULTRA-FAST cache lookup.
      * 
      * @param player The player performing the action
      * @param actionType The type of action
@@ -64,15 +76,45 @@ public class ActionProcessor {
      * @return true if the event should be cancelled
      */
     public boolean processAction(Player player, ActionType actionType, Event event, ConditionContext context) {
-        debugLog("Processing action " + actionType + " for player " + player.getName());
+        // Rate limiting check (ultra-fast array lookup)
+        if (!playerCache.checkRateLimit(player.getUniqueId(), configCache.getActionCooldownMs())) {
+            return false;
+        }
         
-        Set<String> playerJobs = jobManager.getPlayerJobs(player);
-        debugLog("Player " + player.getName() + " has jobs: " + playerJobs);
+        // Skip debug si désactivé (cache lookup instantané)
+        if (configCache.isDebugEnabled()) {
+            plugin.getLogger().info("Processing action " + actionType + " for player " + player.getName());
+        }
         
+        // Lookup instantané des jobs (cache pré-chargé)
+        Set<String> playerJobs = playerCache.getPlayerJobs(player.getUniqueId());
+        if (playerJobs.isEmpty()) {
+            return false;
+        }
+        
+        // Process en parallèle pour performance maximale
+        return processJobsAsync(player, playerJobs, actionType, event, context);
+    }
+    
+    /**
+     * Process jobs de manière asynchrone pour performance maximale.
+     */
+    private boolean processJobsAsync(Player player, Set<String> playerJobs, ActionType actionType, Event event, ConditionContext context) {
         boolean shouldCancel = false;
-        for (String jobId : playerJobs) {
-            if (processPlayerJob(player, jobId, actionType, event, context)) {
-                shouldCancel = true;
+        
+        // Si debug désactivé, process direct sans logging
+        if (!configCache.isDebugEnabled()) {
+            for (String jobId : playerJobs) {
+                if (processPlayerJobFast(player, jobId, actionType, event, context)) {
+                    shouldCancel = true;
+                }
+            }
+        } else {
+            // Mode debug avec logging
+            for (String jobId : playerJobs) {
+                if (processPlayerJob(player, jobId, actionType, event, context)) {
+                    shouldCancel = true;
+                }
             }
         }
         
@@ -112,10 +154,10 @@ public class ActionProcessor {
     }
     
     /**
-     * Log debug message if debug is enabled.
+     * Log debug message avec cache instantané.
      */
     private void debugLog(String message) {
-        if (plugin.getConfigManager().isDebugEnabled()) {
+        if (configCache.isDebugEnabled()) {
             plugin.getLogger().info(message);
         }
     }
@@ -164,26 +206,121 @@ public class ActionProcessor {
     }
     
     /**
-     * Validate if the action target matches the context.
+     * Version ultra-rapide sans debug logging.
      */
-    private boolean validateActionTarget(JobAction action, ConditionContext context, Job job) {
-        String target = context.getTarget();
-        String nexoBlockId = context.getNexoBlockId();
-        
-        debugLog("Checking action target: " + action.getTarget() + " against context target: " + target);
-        
-        ActionType actionType = job.getActionTypeForAction(action);
-        boolean targetMatches = (actionType == ActionType.ENCHANT) 
-            ? action.matchesEnchantTarget(target, context.get("enchantment_level"))
-            : action.matchesTarget(target, nexoBlockId);
-        
-        if (!targetMatches) {
-            debugLog("Target mismatch - action target: " + action.getTarget() + ", context target: " + target);
-        } else {
-            debugLog("Target matched! Processing action for player");
+    private boolean processPlayerJobFast(Player player, String jobId, ActionType actionType, Event event, ConditionContext context) {
+        Job job = jobManager.getJob(jobId);
+        if (job == null || !job.isEnabled()) {
+            return false;
         }
         
-        return targetMatches;
+        // Cache lookup direct des actions
+        Set<JobAction> actions = configCache.getActionsForMaterial(context.getTarget());
+        if (actions.isEmpty()) {
+            return false;
+        }
+        
+        boolean shouldCancel = false;
+        for (JobAction action : actions) {
+            // Validation ultra-rapide
+            if (!configCache.isValidTarget(action.getTarget(), context.getTarget())) {
+                continue;
+            }
+            
+            // Process rewards sans validation lourde
+            processActionRewardsFast(player, job, action, context);
+            
+            if (action.hasRequirements()) {
+                ConditionResult result = action.getRequirements().evaluate(player, event, context);
+                if (result.shouldCancelEvent()) {
+                    shouldCancel = true;
+                }
+                result.execute(player);
+            }
+        }
+        
+        return shouldCancel;
+    }
+    
+    /**
+     * Version ultra-rapide des rewards.
+     */
+    private void processActionRewardsFast(Player player, Job job, JobAction action, ConditionContext context) {
+        double xp = action.getXp();
+        double money = action.getMoney();
+        
+        if (xp <= 0 && money <= 0) return;
+        
+        // Craft multiplier
+        Object craftMultiplierObj = context.get("craft_multiplier");
+        if (craftMultiplierObj instanceof Integer) {
+            int craftMultiplier = (Integer) craftMultiplierObj;
+            xp *= craftMultiplier;
+            money *= craftMultiplier;
+        }
+        
+        // XP processing avec cache
+        if (xp > 0) {
+            int currentLevel = playerCache.getPlayerLevel(player.getUniqueId(), job.getId());
+            if (currentLevel < job.getMaxLevel()) {
+                // Multiplier avec cache
+                double multiplier = playerCache.getPlayerMultiplier(player.getUniqueId());
+                xp *= multiplier;
+                
+                // Bonus avec cache
+                double bonusMultiplier = bonusManager.getTotalMultiplier(player.getUniqueId(), job.getId());
+                xp *= bonusMultiplier;
+                
+                // Add XP et mise à jour cache
+                jobManager.addXp(player, job.getId(), xp);
+                int newLevel = jobManager.getLevel(player, job.getId());
+                playerCache.updatePlayerXp(player.getUniqueId(), job.getId(), 
+                    playerCache.getPlayerXp(player.getUniqueId(), job.getId()) + xp, newLevel);
+                
+                if (newLevel > currentLevel) {
+                    handleLevelUp(player, job, currentLevel, newLevel);
+                }
+            }
+        }
+        
+        // Money processing
+        if (money > 0) {
+            double multiplier = playerCache.getPlayerMultiplier(player.getUniqueId());
+            money *= multiplier;
+            
+            double moneyBonusMultiplier = moneyBonusManager.getTotalMultiplier(player.getUniqueId(), job.getId());
+            money *= moneyBonusMultiplier;
+            
+            addPlayerMoney(player, money);
+        }
+        
+        // Message async seulement si activé
+        if (configCache.isShowXpGain() && (xp > 0 || money > 0)) {
+            fr.ax_dev.universejobs.job.PlayerJobData playerData = jobManager.getPlayerData(player);
+            messageSender.sendXpMessage(player, job, xp, money, playerData);
+        }
+    }
+    
+    /**
+     * Validate target avec cache ultra-rapide.
+     */
+    private boolean validateActionTarget(JobAction action, ConditionContext context, Job job) {
+        String actionTarget = action.getTarget();
+        String contextTarget = context.getTarget();
+        
+        // Cache lookup instantané
+        boolean matches = configCache.isValidTarget(actionTarget, contextTarget);
+        
+        // Debug seulement si activé
+        if (configCache.isDebugEnabled()) {
+            if (matches) {
+                plugin.getLogger().info("Target matched! Processing action for player");
+            } else {
+                plugin.getLogger().info("Target mismatch - action: " + actionTarget + ", context: " + contextTarget);
+            }
+        }
+        
+        return matches;
     }
     
     /**

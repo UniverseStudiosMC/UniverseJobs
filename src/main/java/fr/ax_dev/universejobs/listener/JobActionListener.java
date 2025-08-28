@@ -6,6 +6,8 @@ import fr.ax_dev.universejobs.action.ActionType;
 import fr.ax_dev.universejobs.condition.ConditionContext;
 import fr.ax_dev.universejobs.integration.MythicMobsHandler;
 import fr.ax_dev.universejobs.protection.BlockProtectionManager;
+import fr.ax_dev.universejobs.cache.ConfigurationCache;
+import fr.ax_dev.universejobs.cache.PlayerJobCache;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -20,7 +22,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityBreedEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.player.PlayerFishEvent;
@@ -32,7 +33,6 @@ import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.GameMode;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.event.block.Action;
@@ -55,9 +55,10 @@ public class JobActionListener implements Listener {
     private final ActionProcessor actionProcessor;
     private final BlockProtectionManager protectionManager;
     private final MythicMobsHandler mythicMobsHandler;
+    private final ConfigurationCache configCache;
+    private final PlayerJobCache playerCache;
     
-    // Performance optimization
-    private final Map<UUID, Long> lastActionTime = new ConcurrentHashMap<>();
+    // Statistiques ultra-légères
     private final AtomicLong totalEvents = new AtomicLong(0);
     private final AtomicLong processedEvents = new AtomicLong(0);
     private final AtomicLong rateLimitedEvents = new AtomicLong(0);
@@ -65,82 +66,48 @@ public class JobActionListener implements Listener {
     // Furnace tracking for SMELT action - tracks who put items in each furnace
     private final Map<String, UUID> furnaceOwners = new ConcurrentHashMap<>();
     private final Map<String, Long> furnaceLastUse = new ConcurrentHashMap<>();
-    // Rate limiting (per player)
-    private static final long ACTION_COOLDOWN_MS = 50; // 50ms between actions
-    private static final long CLEANUP_INTERVAL = 300000L; // 5 minutes
-    private volatile long lastCleanup = System.currentTimeMillis();
-    
     /**
-     * Create a new JobActionListener.
+     * Create a new ultra-fast JobActionListener with caching.
      * 
      * @param plugin The plugin instance
      * @param actionProcessor The action processor
      * @param protectionManager The block protection manager
      * @param mythicMobsHandler The MythicMobs integration handler
+     * @param configCache The configuration cache
+     * @param playerCache The player cache
      */
-    public JobActionListener(UniverseJobs plugin, ActionProcessor actionProcessor, BlockProtectionManager protectionManager, MythicMobsHandler mythicMobsHandler) {
+    public JobActionListener(UniverseJobs plugin, ActionProcessor actionProcessor, BlockProtectionManager protectionManager, 
+                           MythicMobsHandler mythicMobsHandler, ConfigurationCache configCache, PlayerJobCache playerCache) {
         this.plugin = plugin;
         this.actionProcessor = actionProcessor;
         this.protectionManager = protectionManager;
         this.mythicMobsHandler = mythicMobsHandler;
+        this.configCache = configCache;
+        this.playerCache = playerCache;
     }
     
     /**
-     * Check if action should be rate limited.
-     * 
-     * @param player The player performing the action
-     * @return true if action should be processed, false if rate limited
+     * Ultra-fast rate limiting avec cache circulaire.
      */
     private boolean checkRateLimit(Player player) {
         totalEvents.incrementAndGet();
         
-        long currentTime = System.currentTimeMillis();
-        UUID playerId = player.getUniqueId();
-        
-        Long lastTime = lastActionTime.get(playerId);
-        if (lastTime != null && (currentTime - lastTime) < ACTION_COOLDOWN_MS) {
-            rateLimitedEvents.incrementAndGet();
-            return false;
+        // Skip rate limiting si désactivé dans config
+        if (!configCache.isRateLimitingEnabled()) {
+            return true;
         }
         
-        lastActionTime.put(playerId, currentTime);
-        
-        // Periodic cleanup
-        if (currentTime - lastCleanup > CLEANUP_INTERVAL) {
-            cleanupOldEntries();
+        // Utilise le cache ultra-rapide
+        if (!playerCache.checkRateLimit(player.getUniqueId(), configCache.getActionCooldownMs())) {
+            rateLimitedEvents.incrementAndGet();
+            return false;
         }
         
         return true;
     }
     
     /**
-     * Clean up old entries from the rate limiting map.
-     */
-    private void cleanupOldEntries() {
-        long currentTime = System.currentTimeMillis();
-        long cutoffTime = currentTime - (ACTION_COOLDOWN_MS * 10);
-        
-        // Clean up rate limiting entries
-        lastActionTime.entrySet().removeIf(entry -> entry.getValue() < cutoffTime);
-        
-        // Clean up old furnace tracking entries (30 minutes)
-        long furnaceCutoffTime = currentTime - (30L * 60 * 1000); // 30 minutes
-        furnaceLastUse.entrySet().removeIf(entry -> entry.getValue() < furnaceCutoffTime);
-        
-        // Remove furnace owners that no longer have last use entries
-        furnaceOwners.entrySet().removeIf(entry -> !furnaceLastUse.containsKey(entry.getKey()));
-        
-        lastCleanup = currentTime;
-        
-        if (plugin.getConfigManager().isDebugEnabled()) {
-            plugin.getLogger().info("JobActionListener cleanup completed. Active entries: " + lastActionTime.size() + 
-                ", Tracked furnaces: " + furnaceOwners.size());
-        }
-    }
-    
-    
-    /**
-     * Get performance statistics.
+     * Get performance statistics avec cache ultra-rapide.
      * 
      * @return Map containing performance data
      */
@@ -149,8 +116,10 @@ public class JobActionListener implements Listener {
         stats.put("total_events", totalEvents.get());
         stats.put("processed_events", processedEvents.get());
         stats.put("rate_limited_events", rateLimitedEvents.get());
-        stats.put("active_players", lastActionTime.size());
         stats.put("mythicmobs_available", mythicMobsHandler.isAvailable());
+        
+        // Intègre les stats du cache
+        stats.putAll(playerCache.getStats());
         
         long processed = processedEvents.get();
         long total = totalEvents.get();
@@ -207,13 +176,14 @@ public class JobActionListener implements Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         
-        if (plugin.getConfigManager().isDebugEnabled()) {
+        // Debug avec cache instantané
+        if (configCache.isDebugEnabled()) {
             plugin.getLogger().info("Block break event: " + event.getBlock().getType() + " by " + player.getName());
         }
         
-        // Rate limiting check
+        // Rate limiting ultra-rapide
         if (!checkRateLimit(player)) {
-            if (plugin.getConfigManager().isDebugEnabled()) {
+            if (configCache.isDebugEnabled()) {
                 plugin.getLogger().info("Rate limited for player " + player.getName());
             }
             return;
@@ -225,7 +195,7 @@ public class JobActionListener implements Listener {
                 // Remove from tracking but don't give XP
                 protectionManager.removeTrackedBlock(event.getBlock());
                 
-                if (plugin.getConfigManager().isDebugEnabled()) {
+                if (configCache.isDebugEnabled()) {
                     plugin.getLogger().info("Player " + player.getName() + " mined a player-placed block - no XP awarded");
                 }
                 return;
@@ -236,7 +206,7 @@ public class JobActionListener implements Listener {
                     .setBlock(event.getBlock())
                     .set(TARGET_KEY, event.getBlock().getType().name());
             
-            if (plugin.getConfigManager().isDebugEnabled()) {
+            if (configCache.isDebugEnabled()) {
                 plugin.getLogger().info("Processing BREAK action for " + player.getName() + TARGET_SUFFIX + event.getBlock().getType().name());
             }
             
