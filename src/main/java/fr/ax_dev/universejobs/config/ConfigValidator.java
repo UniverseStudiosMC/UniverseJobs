@@ -85,6 +85,29 @@ public class ConfigValidator {
         menuConfig.addRequired("navigation-slots.info", Arrays.asList(50), "Info button slots");
         
         configTemplates.put("menus/main-menu.yml", menuConfig);
+        
+        // Job XP message template (example for jobs/*.yml files)
+        ConfigTemplate jobConfig = new ConfigTemplate("jobs/example-job.yml");
+        jobConfig.addRequired("name", "&6Example Job", "Display name of the job");
+        jobConfig.addRequired("description", "An example job for demonstration", "Job description");
+        jobConfig.addRequired("icon.material", "WOODEN_PICKAXE", "Job icon material");
+        jobConfig.addRequired("permission", "universejobs.job.example", "Permission required to join job");
+        jobConfig.addRequired("max-level", 100, "Maximum level for this job");
+        jobConfig.addRequired("xp.type", "CURVE", "XP calculation type (CURVE or EQUATION)");
+        jobConfig.addRequired("xp.xp", "example", "XP curve file name or equation");
+        jobConfig.addRequired("xp.message.type", "ACTIONBAR", "Message type (CHAT, ACTIONBAR, BOSSBAR, TITLE)");
+        jobConfig.addRequired("xp.message.text", "{message_xp} {message_money} &8| &6{job} &7Level {level}", "Message text format");
+        jobConfig.addRequired("xp.message.xp", "+{xp} XP", "XP message format");
+        jobConfig.addRequired("xp.message.money", "+{money} money", "Money message format");
+        jobConfig.addRequired("xp.message.options.duration", "40", "Message duration in ticks");
+        jobConfig.addRequired("xp.message.options.tick", 20, "Update interval in ticks (1-1200)");
+        jobConfig.addRequired("xp.message.options.color", "GREEN", "Bossbar color");
+        jobConfig.addRequired("xp.message.options.style", "SOLID", "Bossbar style");
+        jobConfig.addRequired("xp.message.options.show-progress", false, "Show XP progress in bossbar");
+        jobConfig.addRequired("xp.message.options.fade-in", 10, "Title fade-in duration");
+        jobConfig.addRequired("xp.message.options.fade-out", 20, "Title fade-out duration");
+        
+        configTemplates.put("jobs/example-job.yml", jobConfig);
     }
     
     /**

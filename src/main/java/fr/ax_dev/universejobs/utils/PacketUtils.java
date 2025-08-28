@@ -49,20 +49,60 @@ public class PacketUtils {
      * No scheduler tasks, immediate packet sending.
      */
     public static void sendActionBarAsync(Player player, String message, int durationTicks) {
+        sendActionBarAsync(player, message, durationTicks, 20); // Default tick interval
+    }
+    
+    /**
+     * Send actionbar message with custom tick update interval.
+     * Allows control over how often the actionbar updates.
+     */
+    public static void sendActionBarAsync(Player player, String message, int durationTicks, int tickUpdateInterval) {
         if (!player.isOnline()) return;
         
-        // Send immediately using Bukkit API (no reflection needed for actionbar)
+        // Send immediately using Bukkit API
         player.sendActionBar(MessageUtils.parseMessage(message));
         
-        // Schedule cleanup using async executor instead of Bukkit scheduler
+        // Schedule cleanup/updates using async executor
         if (durationTicks > 0) {
             long delayMs = durationTicks * 50L; // Convert ticks to milliseconds
+            long tickIntervalMs = tickUpdateInterval * 50L;
             
-            ASYNC_EXECUTOR.schedule(() -> {
-                if (player.isOnline()) {
-                    player.sendActionBar(MessageUtils.parseMessage(""));
-                }
-            }, delayMs, TimeUnit.MILLISECONDS);
+            if (tickUpdateInterval != 20 && tickIntervalMs < delayMs) {
+                // Create a task that updates the actionbar at specified intervals
+                ASYNC_EXECUTOR.schedule(() -> {
+                    try {
+                        long endTime = System.currentTimeMillis() + delayMs;
+                        
+                        while (System.currentTimeMillis() < endTime && player.isOnline()) {
+                            Thread.sleep(tickIntervalMs);
+                            
+                            if (player.isOnline()) {
+                                // Refresh the actionbar message
+                                player.sendActionBar(MessageUtils.parseMessage(message));
+                            } else {
+                                break;
+                            }
+                        }
+                        
+                        // Final cleanup - clear actionbar
+                        if (player.isOnline()) {
+                            player.sendActionBar(MessageUtils.parseMessage(""));
+                        }
+                        
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    } catch (Exception e) {
+                        // Ignore cleanup errors
+                    }
+                }, 0, TimeUnit.MILLISECONDS);
+            } else {
+                // Standard cleanup without intervals
+                ASYNC_EXECUTOR.schedule(() -> {
+                    if (player.isOnline()) {
+                        player.sendActionBar(MessageUtils.parseMessage(""));
+                    }
+                }, delayMs, TimeUnit.MILLISECONDS);
+            }
         }
     }
     
@@ -72,6 +112,15 @@ public class PacketUtils {
      */
     public static void sendBossBarAsync(Player player, String message, BarColor color, 
                                       BarStyle style, double progress, int durationTicks) {
+        sendBossBarAsync(player, message, color, style, progress, durationTicks, 20); // Default tick interval
+    }
+    
+    /**
+     * Send bossbar message with custom tick update interval.
+     * Allows control over how often the bossbar updates.
+     */
+    public static void sendBossBarAsync(Player player, String message, BarColor color, 
+                                      BarStyle style, double progress, int durationTicks, int tickUpdateInterval) {
         if (!player.isOnline()) return;
         
         UUID playerId = player.getUniqueId();
@@ -102,31 +151,142 @@ public class PacketUtils {
             ACTIVE_BOSSBARS.put(playerId, bossBar);
         }
         
-        // Schedule cleanup using async executor
+        // Schedule cleanup using async executor with custom tick interval
         if (durationTicks > 0) {
             long delayMs = durationTicks * 50L;
+            long tickIntervalMs = tickUpdateInterval * 50L; // Convert ticks to milliseconds
             final BossBar finalBossBar = bossBar;
             
-            CompletableFuture<Void> cleanup = CompletableFuture.runAsync(() -> {
-                try {
-                    Thread.sleep(delayMs);
-                    
-                    // Remove bossbar if it's still the same instance
-                    BossBar currentBar = ACTIVE_BOSSBARS.get(playerId);
-                    if (currentBar == finalBossBar) {
-                        currentBar.removePlayer(player);
-                        ACTIVE_BOSSBARS.remove(playerId);
+            // If tick interval is different from default, set up periodic updates
+            CompletableFuture<Void> cleanup;
+            if (tickUpdateInterval != 20 && tickIntervalMs < delayMs) {
+                // Create a task that updates the bossbar at specified intervals
+                cleanup = CompletableFuture.runAsync(() -> {
+                    try {
+                        long endTime = System.currentTimeMillis() + delayMs;
+                        
+                        while (System.currentTimeMillis() < endTime && player.isOnline()) {
+                            Thread.sleep(tickIntervalMs);
+                            
+                            // Update bossbar if still active
+                            BossBar currentBar = ACTIVE_BOSSBARS.get(playerId);
+                            if (currentBar == finalBossBar && player.isOnline()) {
+                                // Refresh the bossbar (this allows dynamic progress updates)
+                                currentBar.setTitle(MessageUtils.stripFormatting(message));
+                                currentBar.setColor(color);
+                                currentBar.setStyle(style);
+                                currentBar.setProgress(Math.max(0.0, Math.min(1.0, progress)));
+                            } else {
+                                break; // Bossbar was replaced or player disconnected
+                            }
+                        }
+                        
+                        // Final cleanup
+                        BossBar currentBar = ACTIVE_BOSSBARS.get(playerId);
+                        if (currentBar == finalBossBar) {
+                            currentBar.removePlayer(player);
+                            ACTIVE_BOSSBARS.remove(playerId);
+                        }
+                        BOSSBAR_CLEANUPS.remove(playerId);
+                        
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    } catch (Exception e) {
+                        // Ignore cleanup errors
                     }
-                    BOSSBAR_CLEANUPS.remove(playerId);
-                    
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } catch (Exception e) {
-                    // Ignore cleanup errors
-                }
-            }, ASYNC_EXECUTOR);
+                }, ASYNC_EXECUTOR);
+            } else {
+                // Standard cleanup without intervals (same as before)
+                cleanup = CompletableFuture.runAsync(() -> {
+                    try {
+                        Thread.sleep(delayMs);
+                        
+                        // Remove bossbar if it's still the same instance
+                        BossBar currentBar = ACTIVE_BOSSBARS.get(playerId);
+                        if (currentBar == finalBossBar) {
+                            currentBar.removePlayer(player);
+                            ACTIVE_BOSSBARS.remove(playerId);
+                        }
+                        BOSSBAR_CLEANUPS.remove(playerId);
+                        
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    } catch (Exception e) {
+                        // Ignore cleanup errors
+                    }
+                }, ASYNC_EXECUTOR);
+            }
             
             BOSSBAR_CLEANUPS.put(playerId, cleanup);
+        }
+    }
+    
+    /**
+     * Send title message asynchronously.
+     */
+    public static void sendTitleAsync(Player player, String message, int fadeIn, int stay, int fadeOut) {
+        sendTitleAsync(player, message, fadeIn, stay, fadeOut, 20); // Default tick interval
+    }
+    
+    /**
+     * Send title message with custom tick update interval.
+     */
+    public static void sendTitleAsync(Player player, String message, int fadeIn, int stay, int fadeOut, int tickUpdateInterval) {
+        if (!player.isOnline()) return;
+        
+        // Send immediately using Bukkit API with proper Component types
+        net.kyori.adventure.text.Component titleComponent = MessageUtils.parseMessage(message);
+        net.kyori.adventure.text.Component subtitleComponent = net.kyori.adventure.text.Component.empty();
+        
+        player.showTitle(net.kyori.adventure.title.Title.title(
+            titleComponent, 
+            subtitleComponent,
+            net.kyori.adventure.title.Title.Times.times(
+                java.time.Duration.ofMillis(fadeIn * 50L),
+                java.time.Duration.ofMillis(stay * 50L),
+                java.time.Duration.ofMillis(fadeOut * 50L)
+            )
+        ));
+        
+        // If tick interval is different from default, set up periodic updates
+        if (tickUpdateInterval != 20 && stay > 0) {
+            long tickIntervalMs = tickUpdateInterval * 50L;
+            long stayMs = stay * 50L;
+            
+            if (tickIntervalMs < stayMs) {
+                ASYNC_EXECUTOR.schedule(() -> {
+                    try {
+                        long endTime = System.currentTimeMillis() + stayMs;
+                        
+                        while (System.currentTimeMillis() < endTime && player.isOnline()) {
+                            Thread.sleep(tickIntervalMs);
+                            
+                            if (player.isOnline()) {
+                                // Refresh the title message
+                                net.kyori.adventure.text.Component refreshedTitle = MessageUtils.parseMessage(message);
+                                int remainingStay = Math.min(stay, (int)(tickIntervalMs / 50));
+                                
+                                player.showTitle(net.kyori.adventure.title.Title.title(
+                                    refreshedTitle,
+                                    net.kyori.adventure.text.Component.empty(),
+                                    net.kyori.adventure.title.Title.Times.times(
+                                        java.time.Duration.ofMillis(0),
+                                        java.time.Duration.ofMillis(remainingStay * 50L),
+                                        java.time.Duration.ofMillis(0)
+                                    )
+                                ));
+                            } else {
+                                break;
+                            }
+                        }
+                        
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    } catch (Exception e) {
+                        // Ignore cleanup errors
+                    }
+                }, 0, TimeUnit.MILLISECONDS);
+            }
         }
     }
     

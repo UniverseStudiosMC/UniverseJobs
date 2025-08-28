@@ -20,12 +20,12 @@ xp:
     type: "BOSSBAR" # Types: CHAT, ACTIONBAR, BOSSBAR, TITLE
     text: "&e+{exp} XP &6+{money} MONEY &8| &6{job} &7Level {level}"
     show-progress: true
-
+    tick: 20 #update bossbar, actionbar in tick
 
 actions:
   BREAK:
     simple_stone:
-      target: "STONE"                       # Block to break
+      target: "stone"                       # Block to break
       display-name: "Break a stone" ## for actions menu
       lore:
       - "Break a stone for gain reward" ## for actions menu

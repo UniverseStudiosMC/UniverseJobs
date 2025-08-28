@@ -12,7 +12,8 @@ public class XpMessageSettings {
     public enum MessageType {
         CHAT,
         ACTIONBAR,
-        BOSSBAR
+        BOSSBAR,
+        TITLE
     }
     
     public enum BossBarColor {
@@ -43,6 +44,9 @@ public class XpMessageSettings {
     private final int titleFadeOut;
     private final int titleStay;
     
+    // TICK update interval settings
+    private final int tickUpdateInterval;
+    
     /**
      * Create XP message settings from configuration.
      * 
@@ -64,6 +68,7 @@ public class XpMessageSettings {
             this.titleFadeIn = 10;
             this.titleFadeOut = 20;
             this.titleStay = 70;
+            this.tickUpdateInterval = 20; // Default: update every second
         } else {
             // Parse configuration
             this.messageType = parseMessageType(config);
@@ -87,6 +92,9 @@ public class XpMessageSettings {
             // Custom message formats
             this.xpMessageFormat = config.getString("xp", "+{xp} XP");
             this.moneyMessageFormat = config.getString("money", "+{money} money");
+            
+            // Tick update interval
+            this.tickUpdateInterval = parseTickUpdateInterval(config, optionsSection);
         }
     }
     
@@ -191,6 +199,38 @@ public class XpMessageSettings {
             // Default values
             return new int[] { 10, 20, 70 };
         }
+    }
+    
+    /**
+     * Parse tick update interval from config.
+     * Supports both string and int values.
+     * 
+     * @param config The main config section
+     * @param optionsSection The options config section
+     * @return The tick update interval (minimum 1, maximum 1200 = 1 minute)
+     */
+    private int parseTickUpdateInterval(ConfigurationSection config, ConfigurationSection optionsSection) {
+        int tickInterval = 20; // Default: 1 second
+        
+        // Try to get from options section first
+        if (optionsSection != null) {
+            Object tickObj = optionsSection.get("tick");
+            if (tickObj instanceof String) {
+                try {
+                    tickInterval = Integer.parseInt((String) tickObj);
+                } catch (NumberFormatException e) {
+                    tickInterval = 20; // Default fallback
+                }
+            } else {
+                tickInterval = optionsSection.getInt("tick", 20);
+            }
+        } else {
+            // Fallback to main config
+            tickInterval = config.getInt("tick", config.getInt("options.tick", 20));
+        }
+        
+        // Validate bounds: minimum 1 tick, maximum 60 seconds (1200 ticks)
+        return Math.max(1, Math.min(1200, tickInterval));
     }
     
     /**
@@ -320,6 +360,16 @@ public class XpMessageSettings {
      */
     public int getTitleStay() {
         return titleStay;
+    }
+    
+    /**
+     * Get the tick update interval for messages.
+     * This defines how often the message should be updated/refreshed.
+     * 
+     * @return Update interval in ticks (1-1200, default 20)
+     */
+    public int getTickUpdateInterval() {
+        return tickUpdateInterval;
     }
     
     /**

@@ -73,10 +73,10 @@ public class AsyncXpMessageSender {
         // Process PlaceholderAPI if available (async safe)
         message = processPlaceholderAPI(player, message);
         
-        // Send message using pure async/packet approach
+        // Send message using pure async/packet approach with custom tick interval
         switch (settings.getMessageType()) {
             case CHAT -> PacketUtils.sendChatAsync(player, message);
-            case ACTIONBAR -> PacketUtils.sendActionBarAsync(player, message, settings.getActionbarDuration());
+            case ACTIONBAR -> PacketUtils.sendActionBarAsync(player, message, settings.getActionbarDuration(), settings.getTickUpdateInterval());
             case BOSSBAR -> {
                 double finalProgress = settings.shouldShowProgress() ? bossbarProgress : 1.0;
                 PacketUtils.sendBossBarAsync(
@@ -85,10 +85,12 @@ public class AsyncXpMessageSender {
                     settings.toBukkitBarColor(),
                     settings.toBukkitBarStyle(),
                     finalProgress,
-                    settings.getBossbarDuration()
+                    settings.getBossbarDuration(),
+                    settings.getTickUpdateInterval()
                 );
             }
-            default -> PacketUtils.sendActionBarAsync(player, message, settings.getActionbarDuration());
+            case TITLE -> PacketUtils.sendTitleAsync(player, message, settings.getTitleFadeIn(), settings.getTitleStay(), settings.getTitleFadeOut(), settings.getTickUpdateInterval());
+            default -> PacketUtils.sendActionBarAsync(player, message, settings.getActionbarDuration(), settings.getTickUpdateInterval());
         }
     }
     
