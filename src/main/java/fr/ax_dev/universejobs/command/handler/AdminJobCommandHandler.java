@@ -69,6 +69,8 @@ public class AdminJobCommandHandler {
                 return handleCacheCommand(sender, args);
             case "reload":
                 return handleReload(sender, args);
+            case "cleanup":
+                return handleCleanup(sender, args);
             default:
                 sendAdminHelp(sender);
                 return true;
@@ -992,6 +994,35 @@ public class AdminJobCommandHandler {
         return true;
     }
     
+    /**
+     * Nettoie manuellement les métiers inexistants.
+     */
+    private boolean handleCleanup(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("universejobs.admin.cleanup")) {
+            MessageUtils.sendMessage(sender, "&cVous n'avez pas la permission d'utiliser cette commande.");
+            return true;
+        }
+        
+        MessageUtils.sendMessage(sender, "&eNettoyage des métiers inexistants en cours...");
+        
+        plugin.getFoliaManager().runAsync(() -> {
+            try {
+                // Trigger the cleanup manually
+                plugin.getJobManager().cleanupInvalidJobs();
+                
+                plugin.getFoliaManager().runNextTick(() -> {
+                    MessageUtils.sendMessage(sender, "&aNettoyage terminé! Vérifiez les logs pour les détails.");
+                });
+            } catch (Exception e) {
+                plugin.getLogger().warning("Erreur lors du nettoyage: " + e.getMessage());
+                plugin.getFoliaManager().runNextTick(() -> {
+                    MessageUtils.sendMessage(sender, "&cErreur lors du nettoyage: " + e.getMessage());
+                });
+            }
+        });
+        
+        return true;
+    }
     
     /**
      * Affiche l'aide des commandes admin.
@@ -1005,6 +1036,7 @@ public class AdminJobCommandHandler {
         MessageUtils.sendMessage(sender, "&e/jobs admin reset <joueur> [métier|ALL] &7- Reset les données d'un joueur");
         MessageUtils.sendMessage(sender, "&e/jobs admin info <joueur> &7- Affiche les infos d'un joueur");
         MessageUtils.sendMessage(sender, "&e/jobs admin cache <reload|stats|clear> &7- Gère le cache");
+        MessageUtils.sendMessage(sender, "&e/jobs admin cleanup &7- Nettoie les métiers inexistants des données joueurs");
         MessageUtils.sendMessage(sender, "&e/jobs admin reload &7- Recharge la configuration et les métiers");
     }
     
@@ -1013,7 +1045,7 @@ public class AdminJobCommandHandler {
      */
     public List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 2) {
-            return Arrays.asList("xp", "level", "forcejoin", "forceleave", "reset", "info", "cache", "reload");
+            return Arrays.asList("xp", "level", "forcejoin", "forceleave", "reset", "info", "cache", "cleanup", "reload");
         }
         
         if (args.length == 3) {

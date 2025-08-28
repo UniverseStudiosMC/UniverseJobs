@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -608,6 +609,123 @@ public class JobManager {
         // Reload XP curves first
         xpCurveManager.reload();
         loadJobs();
+        
+        // Clean up invalid jobs after reload
+        cleanupInvalidJobs();
+    }
+    
+    /**
+     * Clean up invalid jobs from player data after reload.
+     * Removes jobs that no longer exist from all player data and clears cache.
+     */
+    public void cleanupInvalidJobs() {
+        plugin.getFoliaManager().runAsync(() -> {
+            final AtomicInteger cleanedPlayers = new AtomicInteger(0);
+            final AtomicInteger removedJobs = new AtomicInteger(0);
+            
+            try {
+                // Get all valid job IDs
+                Set<String> validJobIds = jobs.keySet();
+                
+                // Check cached player data first
+                dataLock.readLock().lock();
+                List<UUID> playersToCheck = new ArrayList<>(playerData.keySet());
+                dataLock.readLock().unlock();
+                
+                for (UUID playerUuid : playersToCheck) {
+                    PlayerJobData data = playerData.get(playerUuid);
+                    if (data != null) {
+                        Set<String> playerJobs = new HashSet<>(data.getJobs());
+                        boolean hasInvalidJobs = false;
+                        
+                        for (String jobId : playerJobs) {
+                            if (!validJobIds.contains(jobId)) {
+                                // Remove invalid job
+                                data.leaveJob(jobId);
+                                hasInvalidJobs = true;
+                                removedJobs.incrementAndGet();
+                                
+                                plugin.getLogger().info("Removed invalid job '" + jobId + "' from player " + playerUuid + 
+                                    " (job no longer exists after reload)");
+                            }
+                        }
+                        
+                        if (hasInvalidJobs) {
+                            cleanedPlayers.incrementAndGet();
+                            // Save the cleaned data
+                            savePlayerData(playerUuid);
+                        }
+                    }
+                }
+                
+                // Also check offline player data files
+                File[] playerFiles = dataFolder.listFiles((dir, name) -> name.endsWith(".yml"));
+                if (playerFiles != null) {
+                    for (File file : playerFiles) {
+                        try {
+                            String fileName = file.getName();
+                            String uuidString = fileName.substring(0, fileName.length() - 4); // Remove .yml
+                            UUID playerUuid = UUID.fromString(uuidString);
+                            
+                            // Skip if already checked in memory
+                            if (playerData.containsKey(playerUuid)) {
+                                continue;
+                            }
+                            
+                            FileConfiguration config = YamlConfiguration.loadConfiguration(file);
+                            List<String> jobsList = config.getStringList("jobs");
+                            List<String> validJobs = new ArrayList<>();
+                            boolean hasInvalidJobs = false;
+                            
+                            for (String jobId : jobsList) {
+                                if (validJobIds.contains(jobId)) {
+                                    validJobs.add(jobId);
+                                } else {
+                                    hasInvalidJobs = true;
+                                    removedJobs.incrementAndGet();
+                                    
+                                    // Also clean XP and level data for this job
+                                    config.set("xp." + jobId, null);
+                                    config.set("levels." + jobId, null);
+                                    
+                                    plugin.getLogger().info("Removed invalid job '" + jobId + "' from offline player " + playerUuid + 
+                                        " (job no longer exists after reload)");
+                                }
+                            }
+                            
+                            if (hasInvalidJobs) {
+                                cleanedPlayers.incrementAndGet();
+                                config.set("jobs", validJobs);
+                                config.save(file);
+                            }
+                            
+                        } catch (Exception e) {
+                            plugin.getLogger().warning("Error cleaning player data file " + file.getName() + ": " + e.getMessage());
+                        }
+                    }
+                }
+                
+                // Clear and reload player cache to ensure consistency
+                if (cleanedPlayers.get() > 0 && plugin.getPlayerCache() != null) {
+                    plugin.getFoliaManager().runNextTick(() -> {
+                        // Clear cache for online players to force reload of cleaned data
+                        for (org.bukkit.entity.Player onlinePlayer : org.bukkit.Bukkit.getOnlinePlayers()) {
+                            plugin.getPlayerCache().cleanupPlayer(onlinePlayer.getUniqueId());
+                            plugin.getPlayerCache().preloadPlayer(onlinePlayer.getUniqueId());
+                        }
+                        
+                        plugin.getLogger().info("Cleanup completed: " + cleanedPlayers.get() + " players cleaned, " + 
+                            removedJobs.get() + " invalid jobs removed, cache refreshed");
+                    });
+                } else if (removedJobs.get() == 0) {
+                    plugin.getLogger().info("Job cleanup completed: no invalid jobs found");
+                }
+                
+            } catch (Exception e) {
+                plugin.getLogger().warning("Error during job cleanup: " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
     }
     
     /**
