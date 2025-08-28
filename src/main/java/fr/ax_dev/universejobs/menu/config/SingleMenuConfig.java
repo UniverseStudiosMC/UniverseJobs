@@ -19,6 +19,7 @@ public class SingleMenuConfig {
     private final Map<String, MenuItemConfig> navigationItems;
     private final boolean enablePagination;
     private final int itemsPerPage;
+    private final JobItemFormat jobItemFormat;
     
     public SingleMenuConfig(ConfigurationSection config) {
         this.title = config.getString("title", "&6Jobs Menu");
@@ -86,6 +87,14 @@ public class SingleMenuConfig {
             }
         } else {
             generateDefaultNavigationItems();
+        }
+        
+        // Load job item format configuration
+        ConfigurationSection jobFormatSection = config.getConfigurationSection("job-item-format");
+        if (jobFormatSection != null) {
+            this.jobItemFormat = new JobItemFormat(jobFormatSection);
+        } else {
+            this.jobItemFormat = JobItemFormat.getDefault();
         }
     }
     
@@ -237,5 +246,6 @@ public class SingleMenuConfig {
     public Map<String, MenuItemConfig> getNavigationItems() { return new HashMap<>(navigationItems); }
     public boolean isEnablePagination() { return enablePagination; }
     public int getItemsPerPage() { return itemsPerPage; }
+    public JobItemFormat getJobItemFormat() { return jobItemFormat; }
     
 }

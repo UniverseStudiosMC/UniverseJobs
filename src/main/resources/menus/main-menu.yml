@@ -59,6 +59,69 @@ static-items:
     hide-enchants: true
     action: none
 
+# Job item format configuration
+# This defines how job items appear in the menu
+# Available placeholders:
+# - {job_id} - The job's internal ID
+# - {job_name} - The job's display name
+# - {job_description} - The job's description
+# - {job_max_level} - Maximum level for the job
+# - {player_level} - Player's current level in the job
+# - {player_xp} - Player's current XP in the job
+# - {xp_to_next} - XP needed for next level
+# - {next_level_xp} - Total XP for next level
+# - {has_job} - Yes/No if player has the job
+# - {job_status} - Current status (Joined/Not Joined)
+# - {job_permission} - Permission required for the job
+# - {progress_bar} - Visual XP progress bar
+# - {progress_percent} - XP progress percentage
+job-item-format:
+  # Use job's configured material and custom-model-data
+  use-job-icon: true
+  
+  # Display name format for job items
+  display-name: "&e&l{job_name}"
+  
+  # Lore format for job items
+  lore:
+    - "&7{job_description}"
+    - ""
+    - "&7Max Level: &e{job_max_level}"
+    - ""
+    - "&7Your Status:"
+    - "&8├ &7Level: &a{player_level}&7/&e{job_max_level}"
+    - "&8├ &7XP: &b{player_xp}"
+    - "&8├ &7Progress: &e{progress_percent}%"
+    - "&8└ &7Status: {job_status}"
+    - ""
+    - "&7Progress to Next Level:"
+    - "&8└ {progress_bar}"
+    - ""
+    - "&e▶ Left-Click to open job menu"
+    - "&a▶ Shift-Left-Click to join/leave"
+  
+  # Lore when player doesn't have the job
+  lore-without-job:
+    - "&7{job_description}"
+    - ""
+    - "&7Max Level: &e{job_max_level}"
+    - ""
+    - "&cYou don't have this job"
+    - ""
+    - "&e▶ Left-Click to open job menu"
+    - "&a▶ Shift-Left-Click to join"
+  
+  # Item glow settings
+  glow-when-joined: true
+  glow-when-not-joined: false
+  
+  # Item amount (can use placeholders)
+  amount: 1
+  
+  # Hide attributes and enchants
+  hide-attributes: true
+  hide-enchants: true
+
 # Navigation items
 navigation-items:
   previous:

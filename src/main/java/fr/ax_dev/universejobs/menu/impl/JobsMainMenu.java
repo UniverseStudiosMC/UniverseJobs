@@ -4,6 +4,7 @@ import fr.ax_dev.universejobs.UniverseJobs;
 import fr.ax_dev.universejobs.job.Job;
 import fr.ax_dev.universejobs.job.PlayerJobData;
 import fr.ax_dev.universejobs.menu.BaseMenu;
+import fr.ax_dev.universejobs.menu.config.JobItemFormat;
 import fr.ax_dev.universejobs.menu.config.MenuItemConfig;
 import fr.ax_dev.universejobs.menu.config.SingleMenuConfig;
 import fr.ax_dev.universejobs.menu.config.SimpleConfigurationSection;
@@ -87,21 +88,26 @@ public class JobsMainMenu extends BaseMenu {
     }
     
     /**
-     * Create an ItemStack representing a job.
+     * Create an ItemStack representing a job using the configured format.
      */
     private ItemStack createJobItem(Job job) {
-        // Get job icon material
-        Material iconMaterial;
-        try {
-            iconMaterial = Material.valueOf(job.getIconMaterial().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            iconMaterial = Material.STONE;
+        JobItemFormat format = config.getJobItemFormat();
+        // Get job icon material if configured to use job icon
+        Material iconMaterial = Material.STONE;
+        int customModelData = 0;
+        
+        if (format.isUseJobIcon()) {
+            try {
+                iconMaterial = Material.valueOf(job.getIconMaterial().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                iconMaterial = Material.STONE;
+            }
+            customModelData = job.getCustomModelData();
         }
         
-        ItemStack item = new ItemStack(iconMaterial);
+        ItemStack item = new ItemStack(iconMaterial, format.getAmount());
         
         // Apply custom model data if set
-        int customModelData = job.getCustomModelData();
         if (customModelData > 0) {
             org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
             if (meta != null) {
@@ -115,63 +121,27 @@ public class JobsMainMenu extends BaseMenu {
         int playerLevel = hasJob ? playerData.getLevel(job.getId()) : 0;
         long playerXp = hasJob ? (long) playerData.getXp(job.getId()) : 0;
         
-        // Create custom placeholders for this job
-        Map<String, String> placeholders = MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription());
-        placeholders.put("job_max_level", String.valueOf(job.getMaxLevel()));
-        placeholders.put("player_level", String.valueOf(playerLevel));
-        placeholders.put("player_xp", String.valueOf(playerXp));
-        placeholders.put("has_job", hasJob ? "Yes" : "No");
-        placeholders.put("job_status", hasJob ? "&aJoined" : "&7Not Joined");
+        // Create comprehensive placeholders for this job
+        Map<String, String> placeholders = createJobPlaceholders(job, hasJob, playerLevel, playerXp);
         
-        // Calculate next level XP if available
-        if (hasJob && job.getXpCurve() != null && playerLevel < job.getMaxLevel()) {
-            long nextLevelXp = (long) job.getXpCurve().getXpForLevel(playerLevel + 1);
-            long xpToNext = nextLevelXp - playerXp;
-            placeholders.put("xp_to_next", String.valueOf(Math.max(0, xpToNext)));
-            placeholders.put("next_level_xp", String.valueOf(nextLevelXp));
-        } else {
-            placeholders.put("xp_to_next", "0");
-            placeholders.put("next_level_xp", "0");
-        }
+        // Use formatted display name and lore from config
+        String displayName = format.getDisplayName();
+        List<String> lore = hasJob ? format.getLore() : format.getLoreWithoutJob();
+        boolean shouldGlow = hasJob ? format.isGlowWhenJoined() : format.isGlowWhenNotJoined();
         
-        // Create default job item configuration
-        List<String> lore = new ArrayList<>();
-        lore.add("&7" + job.getDescription());
-        lore.add("");
-        lore.add("&7Max Level: &e{job_max_level}");
-        
-        if (hasJob) {
-            lore.add("&7Your Level: &a{player_level}");
-            lore.add("&7Your XP: &b{player_xp}");
-            if (playerLevel < job.getMaxLevel()) {
-                lore.add("&7XP to Next: &e{xp_to_next}");
-            }
-            lore.add("");
-            lore.add("&7Status: {job_status}");
-        } else {
-            lore.add("&7Your Level: &c0");
-            lore.add("&7Status: {job_status}");
-        }
-        
-        // Add job lore from configuration
-        lore.addAll(job.getLore());
-        
-        lore.add("");
-        lore.add("&e▶ Click to open job menu");
-        if (hasJob) {
-            lore.add("&c▶ Shift+Click to leave job");
-        } else {
-            lore.add("&a▶ Shift+Click to join job");
-        }
-        
-        // Create menu item config for this job
-        Map<String, Object> jobConfigMap = MenuItemUtils.createItemConfigMap(
-            job.getIconMaterial(), "&e&l" + job.getName(), lore, hasJob
-        );
+        // Create menu item config with format settings
+        Map<String, Object> jobConfigMap = new HashMap<>();
+        jobConfigMap.put("material", iconMaterial.name());
+        jobConfigMap.put("display-name", displayName);
+        jobConfigMap.put("lore", lore);
+        jobConfigMap.put("amount", format.getAmount());
+        jobConfigMap.put("glow", shouldGlow);
+        jobConfigMap.put("hide-attributes", format.isHideAttributes());
+        jobConfigMap.put("hide-enchants", format.isHideEnchants());
         
         // Apply custom model data if set
-        if (job.getCustomModelData() > 0) {
-            jobConfigMap.put("custom-model-data", job.getCustomModelData());
+        if (customModelData > 0) {
+            jobConfigMap.put("custom-model-data", customModelData);
         }
         
         jobConfigMap.put("action", "open_job");
@@ -291,6 +261,76 @@ public class JobsMainMenu extends BaseMenu {
         }
         
         return true;
+    }
+    
+    /**
+     * Create comprehensive placeholders for a job.
+     */
+    private Map<String, String> createJobPlaceholders(Job job, boolean hasJob, int playerLevel, long playerXp) {
+        Map<String, String> placeholders = new HashMap<>();
+        
+        // Basic job information
+        placeholders.put("job_id", job.getId());
+        placeholders.put("job_name", job.getName());
+        placeholders.put("job_description", job.getDescription());
+        placeholders.put("job_max_level", String.valueOf(job.getMaxLevel()));
+        placeholders.put("job_permission", job.getPermission() != null ? job.getPermission() : "none");
+        
+        // Player status
+        placeholders.put("player_level", String.valueOf(playerLevel));
+        placeholders.put("player_xp", String.valueOf(playerXp));
+        placeholders.put("has_job", hasJob ? "Yes" : "No");
+        placeholders.put("job_status", hasJob ? "&aJoined" : "&7Not Joined");
+        
+        // XP and progress calculations
+        if (hasJob && job.getXpCurve() != null && playerLevel < job.getMaxLevel()) {
+            long currentLevelXp = (long) job.getXpCurve().getXpForLevel(playerLevel);
+            long nextLevelXp = (long) job.getXpCurve().getXpForLevel(playerLevel + 1);
+            long xpToNext = nextLevelXp - playerXp;
+            long xpProgress = playerXp - currentLevelXp;
+            long xpRequired = nextLevelXp - currentLevelXp;
+            
+            placeholders.put("xp_to_next", String.valueOf(Math.max(0, xpToNext)));
+            placeholders.put("next_level_xp", String.valueOf(nextLevelXp));
+            placeholders.put("current_level_xp", String.valueOf(currentLevelXp));
+            
+            // Calculate progress percentage
+            double progressPercent = xpRequired > 0 ? (double) xpProgress / xpRequired * 100 : 0;
+            placeholders.put("progress_percent", String.format("%.1f", progressPercent));
+            
+            // Create progress bar
+            placeholders.put("progress_bar", createProgressBar(progressPercent));
+        } else {
+            placeholders.put("xp_to_next", "0");
+            placeholders.put("next_level_xp", "0");
+            placeholders.put("current_level_xp", "0");
+            placeholders.put("progress_percent", playerLevel >= job.getMaxLevel() ? "100.0" : "0.0");
+            placeholders.put("progress_bar", playerLevel >= job.getMaxLevel() ? 
+                createProgressBar(100) : createProgressBar(0));
+        }
+        
+        return placeholders;
+    }
+    
+    /**
+     * Create a visual progress bar.
+     */
+    private String createProgressBar(double percent) {
+        int totalBars = 20;
+        int filledBars = (int) (percent / 100.0 * totalBars);
+        StringBuilder bar = new StringBuilder();
+        
+        bar.append("&a");
+        for (int i = 0; i < filledBars; i++) {
+            bar.append("▰");
+        }
+        
+        bar.append("&7");
+        for (int i = filledBars; i < totalBars; i++) {
+            bar.append("▱");
+        }
+        
+        return bar.toString();
     }
     
     /**
