@@ -232,6 +232,11 @@ public class AdminCommandHandler extends JobCommandHandler {
             jobManager.reloadJobs();
             rewardManager.reloadRewards();
             
+            // Reload menu configurations
+            if (plugin.getMenuManager() != null) {
+                plugin.getMenuManager().reloadConfigurations();
+            }
+            
             MessageUtils.sendMessage(sender, "&aUniverseJobs reloaded successfully!");
         } catch (Exception e) {
             MessageUtils.sendMessage(sender, "&cFailed to reload: " + e.getMessage());
