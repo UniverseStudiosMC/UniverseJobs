@@ -4,7 +4,8 @@ enabled: true                               # Enable (true) or disable (false) t
 max-level: 100                              # Maximum achievable level
 permission: "UniverseJobs.job.example"       # Permission required to have this job
 icon: 
-  material: "DIAMOND_PICKAXE"          
+  material: "DIAMOND_PICKAXE" 
+  custom-model-data: ""         
   
 rewards: "example_rewards"  # Link to the rewards file
 

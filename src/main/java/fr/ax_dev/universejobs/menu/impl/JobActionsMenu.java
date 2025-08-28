@@ -104,7 +104,7 @@ public class JobActionsMenu extends BaseMenu {
     private ItemStack createJobHeaderItem() {
         Material iconMaterial;
         try {
-            iconMaterial = Material.valueOf(job.getIcon().toUpperCase());
+            iconMaterial = Material.valueOf(job.getIconMaterial().toUpperCase());
         } catch (IllegalArgumentException e) {
             iconMaterial = Material.STONE;
         }
@@ -116,8 +116,13 @@ public class JobActionsMenu extends BaseMenu {
         lore.add("&7Total Rewards: &e" + jobRewards.size());
         
         Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
-            job.getIcon(), "&6&l" + job.getName() + " - Actions & Rewards", lore, true
+            job.getIconMaterial(), "&6&l" + job.getName() + " - Actions & Rewards", lore, true
         );
+        
+        // Apply custom model data if set
+        if (job.getCustomModelData() > 0) {
+            configMap.put("custom-model-data", job.getCustomModelData());
+        }
         
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
         return createMenuItem(itemConfig, MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription()));

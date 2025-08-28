@@ -93,12 +93,22 @@ public class JobsMainMenu extends BaseMenu {
         // Get job icon material
         Material iconMaterial;
         try {
-            iconMaterial = Material.valueOf(job.getIcon().toUpperCase());
+            iconMaterial = Material.valueOf(job.getIconMaterial().toUpperCase());
         } catch (IllegalArgumentException e) {
             iconMaterial = Material.STONE;
         }
         
         ItemStack item = new ItemStack(iconMaterial);
+        
+        // Apply custom model data if set
+        int customModelData = job.getCustomModelData();
+        if (customModelData > 0) {
+            org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
+            if (meta != null) {
+                meta.setCustomModelData(customModelData);
+                item.setItemMeta(meta);
+            }
+        }
         
         // Get player's job data for this job
         boolean hasJob = playerData.hasJob(job.getId());
@@ -156,8 +166,14 @@ public class JobsMainMenu extends BaseMenu {
         
         // Create menu item config for this job
         Map<String, Object> jobConfigMap = MenuItemUtils.createItemConfigMap(
-            job.getIcon(), "&e&l" + job.getName(), lore, hasJob
+            job.getIconMaterial(), "&e&l" + job.getName(), lore, hasJob
         );
+        
+        // Apply custom model data if set
+        if (job.getCustomModelData() > 0) {
+            jobConfigMap.put("custom-model-data", job.getCustomModelData());
+        }
+        
         jobConfigMap.put("action", "open_job");
         jobConfigMap.put("action-value", job.getId());
         

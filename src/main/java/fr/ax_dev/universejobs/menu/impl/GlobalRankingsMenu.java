@@ -172,8 +172,13 @@ public class GlobalRankingsMenu extends BaseMenu {
         }
         
         Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
-            job.getIcon(), "&6&l" + job.getName() + " Rankings", lore, true
+            job.getIconMaterial(), "&6&l" + job.getName() + " Rankings", lore, true
         );
+        
+        // Apply custom model data if set
+        if (job.getCustomModelData() > 0) {
+            configMap.put("custom-model-data", job.getCustomModelData());
+        }
         
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
         return createMenuItem(itemConfig, MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription()));
@@ -232,8 +237,14 @@ public class GlobalRankingsMenu extends BaseMenu {
         }
         
         Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
-            job.getIcon(), "&e" + job.getName(), lore, selected
+            job.getIconMaterial(), "&e" + job.getName(), lore, selected
         );
+        
+        // Apply custom model data if set
+        if (job.getCustomModelData() > 0) {
+            configMap.put("custom-model-data", job.getCustomModelData());
+        }
+        
         configMap.put("action", "select_job");
         
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));

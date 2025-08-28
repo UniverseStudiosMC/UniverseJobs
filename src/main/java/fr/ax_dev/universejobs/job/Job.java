@@ -22,7 +22,8 @@ public class Job {
     private final String permission;
     private final int maxLevel;
     private final Map<ActionType, List<JobAction>> actions;
-    private final String icon;
+    private final String iconMaterial;
+    private final int customModelData;
     private final boolean enabled;
     private final String xpType; // CURVE or EQUATION
     private final String xpValue; // curve name or equation
@@ -48,7 +49,20 @@ public class Job {
         this.lore = config.getStringList("lore");
         this.permission = config.getString("permission", "universejobs.job." + id.toLowerCase());
         this.maxLevel = config.getInt("max-level", 100);
-        this.icon = config.getString("icon", "STONE");
+        
+        // Load icon configuration
+        ConfigurationSection iconSection = config.getConfigurationSection("icon");
+        if (iconSection != null) {
+            this.iconMaterial = iconSection.getString("material", "STONE");
+            String customModelStr = iconSection.getString("custom-model-data", "");
+            this.customModelData = customModelStr.isEmpty() ? 0 : 
+                Integer.parseInt(customModelStr.replaceAll("[^0-9]", "0"));
+        } else {
+            // Fallback for old format
+            this.iconMaterial = config.getString("icon", "STONE");
+            this.customModelData = 0;
+        }
+        
         this.enabled = config.getBoolean("enabled", true);
         // Load new XP format
         ConfigurationSection xpSection = config.getConfigurationSection("xp");
@@ -169,8 +183,28 @@ public class Job {
      * 
      * @return The icon material name
      */
+    public String getIconMaterial() {
+        return iconMaterial;
+    }
+    
+    /**
+     * Get the custom model data for this job's icon.
+     * 
+     * @return The custom model data value, or 0 if not set
+     */
+    public int getCustomModelData() {
+        return customModelData;
+    }
+    
+    /**
+     * Get the icon material for this job (backward compatibility).
+     * 
+     * @deprecated Use {@link #getIconMaterial()} instead
+     * @return The icon material name
+     */
+    @Deprecated
     public String getIcon() {
-        return icon;
+        return iconMaterial;
     }
     
     /**
