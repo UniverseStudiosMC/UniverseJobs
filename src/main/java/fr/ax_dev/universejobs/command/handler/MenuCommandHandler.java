@@ -89,7 +89,6 @@ public class MenuCommandHandler extends JobCommandHandler {
     private void openMainMenu(Player player) {
         try {
             menuManager.openJobsMainMenu(player);
-            MessageUtils.sendMessage(player, "&aOpening jobs menu...");
         } catch (Exception e) {
             handleMenuError(player, "jobs menu", e);
         }
@@ -104,7 +103,6 @@ public class MenuCommandHandler extends JobCommandHandler {
         
         try {
             menuManager.openJobMenu(player, jobId);
-            MessageUtils.sendMessage(player, "&aOpening " + job.getName() + " menu...");
             return true;
         } catch (Exception e) {
             return handleMenuError(player, "job menu", e);
@@ -117,7 +115,6 @@ public class MenuCommandHandler extends JobCommandHandler {
     private void openRankingsMenu(Player player) {
         try {
             menuManager.openGlobalRankingsMenu(player);
-            MessageUtils.sendMessage(player, "&aOpening global rankings...");
         } catch (Exception e) {
             handleMenuError(player, "rankings menu", e);
         }

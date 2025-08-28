@@ -17,32 +17,41 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Handler pour les commandes administratives des jobs.
- * Permet de gérer les métiers des joueurs de force.
+ * Handler for administrative job commands.
+ * Allows managing player jobs and data.
  */
-public class AdminJobCommandHandler {
+public class AdminJobCommandHandler extends JobCommandHandler {
     
-    private final UniverseJobs plugin;
     private final JobManager jobManager;
     
     public AdminJobCommandHandler(UniverseJobs plugin, JobManager jobManager) {
-        this.plugin = plugin;
+        super(plugin);
         this.jobManager = jobManager;
     }
     
     /**
-     * Helper pour envoyer un message de manière simple.
+     * Helper to send a message to sender using language manager.
      */
-    private void sendMessageToSender(CommandSender sender, String message) {
+    private void sendMessage(CommandSender sender, String messageKey, String... replacements) {
+        String message = languageManager.getMessage("commands.admin." + messageKey);
+        
+        // Replace placeholders
+        for (int i = 0; i < replacements.length; i += 2) {
+            if (i + 1 < replacements.length) {
+                String placeholder = "{" + replacements[i] + "}";
+                message = message.replace(placeholder, replacements[i + 1]);
+            }
+        }
+        
         MessageUtils.sendMessage(sender, message);
     }
     
     /**
-     * Traite les commandes admin.
+     * Handles admin commands.
      * 
-     * @param sender L'expéditeur de la commande
-     * @param args Les arguments de la commande
-     * @return true si la commande a été traitée
+     * @param sender The command sender
+     * @param args The command arguments
+     * @return true if the command was handled
      */
     public boolean handleAdminCommand(CommandSender sender, String[] args) {
         if (args.length < 2) {
@@ -55,6 +64,8 @@ public class AdminJobCommandHandler {
         switch (subCommand) {
             case "xp":
                 return handleXpCommand(sender, args);
+            case "exp":
+                return handleExpCommand(sender, args);
             case "level":
                 return handleLevelCommand(sender, args);
             case "forcejoin":
@@ -69,6 +80,8 @@ public class AdminJobCommandHandler {
                 return handleCacheCommand(sender, args);
             case "reload":
                 return handleReload(sender, args);
+            case "migrate":
+                return handleMigrate(sender, args);
             case "cleanup":
                 return handleCleanup(sender, args);
             case "debug":
@@ -917,34 +930,188 @@ public class AdminJobCommandHandler {
     }
     
     /**
-     * Affiche l'aide des commandes admin.
+     * Handle the exp admin command (legacy from AdminCommandHandler).
+     * Usage: /jobs admin exp <give|take|set> <player> <job> <amount>
      */
-    private void sendAdminHelp(CommandSender sender) {
-        MessageUtils.sendMessage(sender, "&6=== Commandes Admin UniverseJobs ===");
-        MessageUtils.sendMessage(sender, "&e/jobs admin xp <give|set|remove> <joueur> <métier> <montant> &7- Gère l'XP d'un joueur");
-        MessageUtils.sendMessage(sender, "&e/jobs admin level <give|set|remove> <joueur> <métier> <montant> &7- Gère le niveau d'un joueur");
-        MessageUtils.sendMessage(sender, "&e/jobs admin forcejoin <joueur> <métier> &7- Force un joueur à rejoindre un métier");
-        MessageUtils.sendMessage(sender, "&e/jobs admin forceleave <joueur> <métier> &7- Force un joueur à quitter un métier");
-        MessageUtils.sendMessage(sender, "&e/jobs admin reset <joueur> [métier|ALL] &7- Reset les données d'un joueur");
-        MessageUtils.sendMessage(sender, "&e/jobs admin info <joueur> &7- Affiche les infos d'un joueur");
-        MessageUtils.sendMessage(sender, "&e/jobs admin cache <reload|stats|clear> &7- Gère le cache");
-        MessageUtils.sendMessage(sender, "&e/jobs admin debug <xp|cache|config> &7- Debug système XP/cache/config");
-        MessageUtils.sendMessage(sender, "&e/jobs admin cleanup &7- Nettoie les métiers inexistants des données joueurs");
-        MessageUtils.sendMessage(sender, "&e/jobs admin reload &7- Recharge la configuration et les métiers");
+    private boolean handleExpCommand(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("universejobs.admin.exp")) {
+            sendMessage(sender, "no-permission");
+            return true;
+        }
+        
+        // /jobs admin exp <give|take|set> <player> <job> <amount>
+        if (args.length < 6) {
+            sendMessage(sender, "usage.exp");
+            return true;
+        }
+        
+        String expAction = args[2].toLowerCase();
+        String playerName = args[3];
+        String jobId = args[4];
+        String amountStr = args[5];
+        
+        // Validate inputs
+        if (!Arrays.asList("give", "take", "set").contains(expAction)) {
+            sendMessage(sender, "invalid-action", "actions", "give, take, set");
+            return true;
+        }
+        
+        // Validate amount with strict bounds
+        double amount;
+        try {
+            if (amountStr.isEmpty() || amountStr.length() > 15) {
+                throw new NumberFormatException("Invalid amount format");
+            }
+            amount = Double.parseDouble(amountStr);
+        } catch (NumberFormatException e) {
+            sendMessage(sender, "invalid-amount", "amount", amountStr);
+            return true;
+        }
+        
+        // Strict amount bounds checking (prevent abuse)
+        if (amount <= 0 || amount > 1000000 || Double.isNaN(amount) || Double.isInfinite(amount)) {
+            sendMessage(sender, "amount-bounds");
+            return true;
+        }
+        
+        OfflinePlayer target = Bukkit.getOfflinePlayer(playerName);
+        if (target == null || target.getName() == null) {
+            sendMessage(sender, "player-not-found", "player", playerName);
+            return true;
+        }
+        
+        Job job = jobManager.getJob(jobId);
+        if (job == null) {
+            sendMessage(sender, "job-not-found", "job", jobId);
+            return true;
+        }
+        
+        // Execute async
+        plugin.getFoliaManager().runAsync(() -> {
+            try {
+                // Check if player has the job
+                PlayerJobData data = jobManager.getPlayerData(target.getUniqueId());
+                if (!data.hasJob(jobId)) {
+                    plugin.getFoliaManager().runNextTick(() -> {
+                        sendMessage(sender, "player-no-job", "player", target.getName(), "job", job.getName());
+                    });
+                    return;
+                }
+                
+                String senderName = sender instanceof Player ? sender.getName() : "Console";
+                
+                // Need to check if player is online for JobManager API
+                if (!target.isOnline()) {
+                    plugin.getFoliaManager().runNextTick(() -> {
+                        sendMessage(sender, "player-offline", "player", target.getName());
+                    });
+                    return;
+                }
+                
+                Player onlinePlayer = target.getPlayer();
+                
+                switch (expAction) {
+                    case "give" -> {
+                        jobManager.addXp(onlinePlayer, jobId, amount);
+                        plugin.getFoliaManager().runNextTick(() -> {
+                            sendMessage(sender, "xp-given", "amount", String.valueOf(amount), "player", target.getName(), "job", job.getName());
+                            MessageUtils.sendMessage(onlinePlayer, languageManager.getMessage("commands.admin.xp-received", 
+                                "amount", String.valueOf(amount), "job", job.getName(), "sender", senderName));
+                        });
+                    }
+                    case "take" -> {
+                        // Get current XP and subtract the amount (minimum 0)
+                        double currentXp = data.getXp(jobId);
+                        double newXp = Math.max(0, currentXp - amount);
+                        double difference = newXp - currentXp;
+                        jobManager.addXp(onlinePlayer, jobId, difference);
+                        plugin.getFoliaManager().runNextTick(() -> {
+                            sendMessage(sender, "xp-taken", "amount", String.valueOf(amount), "player", target.getName(), "job", job.getName());
+                            MessageUtils.sendMessage(onlinePlayer, languageManager.getMessage("commands.admin.xp-lost", 
+                                "amount", String.valueOf(amount), "job", job.getName()));
+                        });
+                    }
+                    case "set" -> {
+                        // Get current XP and calculate difference to set
+                        double currentXp = data.getXp(jobId);
+                        double difference = amount - currentXp;
+                        jobManager.addXp(onlinePlayer, jobId, difference);
+                        plugin.getFoliaManager().runNextTick(() -> {
+                            sendMessage(sender, "xp-set", "amount", String.valueOf(amount), "player", target.getName(), "job", job.getName());
+                            MessageUtils.sendMessage(onlinePlayer, languageManager.getMessage("commands.admin.xp-set-notify", 
+                                "amount", String.valueOf(amount), "job", job.getName(), "sender", senderName));
+                        });
+                    }
+                }
+                
+            } catch (Exception e) {
+                plugin.getLogger().warning("Error during exp command: " + e.getMessage());
+                plugin.getFoliaManager().runNextTick(() -> {
+                    MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.xp-error", "error", e.getMessage()));
+                });
+            }
+        });
+        
+        return true;
     }
     
     /**
-     * Auto-complétion pour les commandes admin.
+     * Handle the migrate admin command.
+     */
+    private boolean handleMigrate(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("universejobs.admin.migrate")) {
+            sendMessage(sender, "no-permission");
+            return true;
+        }
+        
+        // /jobs admin migrate [from_version] [to_version]
+        String fromVersion = args.length > 2 ? args[2] : "auto";
+        String toVersion = args.length > 3 ? args[3] : plugin.getDescription().getVersion();
+        
+        sendMessage(sender, "migrate-start", "from", fromVersion, "to", toVersion);
+        
+        // Perform migration (placeholder for now)
+        sendMessage(sender, "migrate-not-implemented");
+        plugin.getLogger().info("Migration requested from " + fromVersion + " to " + toVersion + " by " + sender.getName());
+        
+        return true;
+    }
+    
+    /**
+     * Shows admin command help.
+     */
+    private void sendAdminHelp(CommandSender sender) {
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.header"));
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.xp"));
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.exp"));
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.level"));
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.forcejoin"));
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.forceleave"));
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.reset"));
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.info"));
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.cache"));
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.reload"));
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.migrate"));
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.debug"));
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.cleanup"));
+    }
+    
+    /**
+     * Tab completion for admin commands.
      */
     public List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 2) {
-            return Arrays.asList("xp", "level", "forcejoin", "forceleave", "reset", "info", "cache", "debug", "cleanup", "reload");
+            return Arrays.asList("xp", "exp", "level", "forcejoin", "forceleave", "reset", "info", "cache", "debug", "cleanup", "reload", "migrate");
         }
         
         if (args.length == 3) {
             String subCommand = args[1].toLowerCase();
             if ("xp".equals(subCommand) || "level".equals(subCommand)) {
                 return Arrays.asList("give", "set", "remove");
+            }
+            
+            if ("exp".equals(subCommand)) {
+                return Arrays.asList("give", "take", "set");
             }
             
             if (Arrays.asList("forcejoin", "forceleave", "reset", "info").contains(subCommand)) {
@@ -969,6 +1136,13 @@ public class AdminJobCommandHandler {
             
             if ("xp".equals(subCommand) || "level".equals(subCommand)) {
                 // Pour xp/level, args[3] devrait être le joueur
+                return Bukkit.getOnlinePlayers().stream()
+                    .map(Player::getName)
+                    .collect(Collectors.toList());
+            }
+            
+            if ("exp".equals(subCommand)) {
+                // Pour exp, args[3] est le joueur
                 return Bukkit.getOnlinePlayers().stream()
                     .map(Player::getName)
                     .collect(Collectors.toList());
@@ -999,6 +1173,22 @@ public class AdminJobCommandHandler {
                 return jobManager.getAllJobs().stream()
                     .map(Job::getId)
                     .collect(Collectors.toList());
+            }
+            
+            if ("exp".equals(subCommand)) {
+                // Pour exp, args[4] est le métier
+                return jobManager.getAllJobs().stream()
+                    .map(Job::getId)
+                    .collect(Collectors.toList());
+            }
+        }
+        
+        if (args.length == 6) {
+            String subCommand = args[1].toLowerCase();
+            
+            if ("xp".equals(subCommand) || "level".equals(subCommand) || "exp".equals(subCommand)) {
+                // Suggestions pour le montant
+                return Arrays.asList("100", "500", "1000", "5000", "10000");
             }
         }
         

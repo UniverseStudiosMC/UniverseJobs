@@ -123,7 +123,6 @@ public class RewardsCommandHandler extends JobCommandHandler {
         try {
             // Use the new menu system only for the main browse menu
             plugin.getMenuManager().openJobsMainMenu(player);
-            MessageUtils.sendMessage(player, "&aOpening jobs menu...");
         } catch (Exception e) {
             MessageUtils.sendMessage(player, "&cFailed to open jobs menu.");
             plugin.getLogger().warning("Failed to open jobs menu for " + player.getName() + ": " + e.getMessage());

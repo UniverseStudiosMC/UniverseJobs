@@ -112,6 +112,104 @@ commands:
     rewards: "&e/jobs rewards <sous-commande> &7- Gérer les récompenses des métiers"
     xpbonus: "&e/jobs xpbonus &7- Gérer les bonus XP"
     reload: "&e/jobs reload &7- Recharger la configuration"
+    
+  # Commandes admin
+  admin:
+    header: "&6=== Commandes Admin UniverseJobs ==="
+    xp: "&e/jobs admin xp <give|set|remove> <joueur> <métier> <montant> &7- Gérer l'XP d'un joueur"
+    exp: "&e/jobs admin exp <give|take|set> <joueur> <métier> <montant> &7- Gérer l'XP (format legacy)"
+    level: "&e/jobs admin level <give|set|remove> <joueur> <métier> <montant> &7- Gérer le niveau d'un joueur"
+    forcejoin: "&e/jobs admin forcejoin <joueur> <métier> &7- Forcer un joueur à rejoindre un métier"
+    forceleave: "&e/jobs admin forceleave <joueur> <métier> &7- Forcer un joueur à quitter un métier"
+    reset: "&e/jobs admin reset <joueur> [métier|ALL] &7- Reset les données d'un joueur"
+    info: "&e/jobs admin info <joueur> &7- Afficher les infos d'un joueur"
+    cache: "&e/jobs admin cache <reload|stats|clear> &7- Gérer le cache"
+    reload: "&e/jobs admin reload &7- Recharger la configuration et les métiers"
+    migrate: "&e/jobs admin migrate [version] &7- Migration des données"
+    debug: "&e/jobs admin debug <xp|cache|config> &7- Debug système XP/cache/config"
+    cleanup: "&e/jobs admin cleanup &7- Nettoyer les métiers invalides des données joueurs"
+    
+    # Réponses des commandes admin
+    no-permission: "&cVous n'avez pas la permission d'utiliser cette commande."
+    player-not-found: "&cJoueur {player} introuvable."
+    player-offline: "&cLe joueur {player} n'est pas en ligne."
+    job-not-found: "&cMétier {job} introuvable."
+    player-no-job: "&cLe joueur {player} n'a pas le métier {job}"
+    invalid-action: "&cAction invalide. Utilisez: {actions}"
+    invalid-amount: "&cMontant invalide: {amount}"
+    amount-bounds: "&cLe montant doit être entre 1 et 1,000,000"
+    
+    # Réponses commandes XP/Exp
+    xp-given: "&a{amount} XP ajoutés à {player} pour le métier {job}"
+    xp-taken: "&a{amount} XP retirés à {player} pour le métier {job}"
+    xp-set: "&aXP de {player} défini à {amount} pour le métier {job}"
+    xp-received: "&a{amount} XP reçus pour {job} de {sender}"
+    xp-lost: "&c{amount} XP perdus pour {job} (Action admin)"
+    xp-set-notify: "&aVotre XP pour {job} a été défini à {amount} par {sender}"
+    xp-error: "&cErreur lors de la modification de l'XP: {error}"
+    
+    # Réponses force join/leave
+    forcejoin-success: "&aLe joueur &e{player}&a a été forcé à rejoindre le métier &e{job}&a."
+    forcejoin-failed: "&cÉchec de l'ajout du joueur au métier. Le joueur a peut-être déjà ce métier."
+    forcejoin-notify: "&aVous avez été ajouté au métier &e{job}&a par un administrateur."
+    forceleave-success: "&aLe joueur &e{player}&a a été forcé à quitter le métier &e{job}&a."
+    forceleave-failed: "&cÉchec du retrait du joueur du métier. Le joueur n'a peut-être pas ce métier."
+    forceleave-notify: "&cVous avez été retiré du métier &e{job}&c par un administrateur."
+    
+    # Réponses commande reset
+    reset-success: "&aReset terminé pour {player}: {cleanedJobs} métiers, {totalJobs} métiers au total"
+    reset-job-success: "&aReset du métier {job} pour le joueur {player}"
+    reset-notify: "&cVos données de métier ont été remises à zéro par un administrateur."
+    reset-job-notify: "&cVotre progression dans le métier {job} a été remise à zéro par un administrateur."
+    reset-error: "&cErreur lors du reset."
+    
+    # Réponses commande cache
+    cache-reloaded: "&aCache rechargé avec succès."
+    cache-cleared: "&aCache vidé avec succès."
+    cache-stats-header: "&6=== Statistiques du Cache ==="
+    cache-stats-hits: "&eSuccès Cache: &a{hits}"
+    cache-stats-misses: "&eÉchecs Cache: &c{misses}"
+    cache-stats-hitrate: "&eTaux de réussite: &a{rate}%"
+    cache-stats-players: "&eJoueurs en cache: &a{players}"
+    
+    # Réponses commande reload
+    reload-start: "&6Rechargement de UniverseJobs..."
+    reload-success: "&aUniverseJobs rechargé avec succès!"
+    reload-failed: "&cÉchec du rechargement: {error}"
+    
+    # Réponses commande migrate
+    migrate-start: "&6Démarrage de la migration de {from} vers {to}..."
+    migrate-not-implemented: "&cFonctionnalité de migration pas encore implémentée."
+    
+    # Réponses commande debug
+    debug-header: "&6=== Infos Debug pour {player} ==="
+    debug-jobs: "&eMétiers: {count}"
+    debug-job-line: "&7  {job} - Niveau {level} ({xp} XP)"
+    debug-bonuses: "&aBonus Actifs: {count}"
+    debug-bonus-line: "&7  {multiplier}x - {reason}"
+    debug-memory: "&eUtilisation Mémoire: {used}/{total} MB"
+    debug-xp-header: "&6=== Debug Système XP ==="
+    debug-cache-header: "&6=== Debug Cache ==="
+    debug-config-header: "&6=== Debug Configuration ==="
+    debug-show-xp: "&eAfficher XP: &a{enabled}"
+    debug-enabled: "&eDebug: &a{enabled}"
+    
+    # Réponses commande cleanup
+    cleanup-start: "&6Démarrage du nettoyage des métiers invalides..."
+    cleanup-complete: "&aNettoyage terminé: &e{players}&a joueurs nettoyés, &e{jobs}&a métiers invalides supprimés"
+    cleanup-error: "&cErreur lors du nettoyage: {error}"
+    
+    # Messages d'utilisation
+    usage:
+      exp: "&cUtilisation: /jobs admin exp <give|take|set> <joueur> <métier> <montant>"
+      xp: "&cUtilisation: /jobs admin xp <give|set|remove> <joueur> <métier> <montant>"
+      level: "&cUtilisation: /jobs admin level <give|set|remove> <joueur> <métier> <montant>"
+      forcejoin: "&cUtilisation: /jobs admin forcejoin <joueur> <métier>"
+      forceleave: "&cUtilisation: /jobs admin forceleave <joueur> <métier>"
+      reset: "&cUtilisation: /jobs admin reset <joueur> [métier|ALL]"
+      info: "&cUtilisation: /jobs admin info <joueur>"
+      cache: "&cUtilisation: /jobs admin cache <reload|stats|clear>"
+      debug: "&cUtilisation: /jobs admin debug <xp|cache|config>"
 
 # Messages du système d'interface graphique
 gui:

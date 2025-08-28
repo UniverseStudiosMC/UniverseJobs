@@ -112,6 +112,104 @@ commands:
     rewards: "&e/jobs rewards <subcommand> &7- Manage job rewards"
     xpbonus: "&e/jobs xpbonus &7- Manage XP bonuses"
     reload: "&e/jobs reload &7- Reload configuration"
+    
+  # Admin commands
+  admin:
+    header: "&6=== UniverseJobs Admin Commands ==="
+    xp: "&e/jobs admin xp <give|set|remove> <player> <job> <amount> &7- Manage player XP"
+    exp: "&e/jobs admin exp <give|take|set> <player> <job> <amount> &7- Manage XP (legacy format)"
+    level: "&e/jobs admin level <give|set|remove> <player> <job> <amount> &7- Manage player level"
+    forcejoin: "&e/jobs admin forcejoin <player> <job> &7- Force a player to join a job"
+    forceleave: "&e/jobs admin forceleave <player> <job> &7- Force a player to leave a job"
+    reset: "&e/jobs admin reset <player> [job|ALL] &7- Reset player data"
+    info: "&e/jobs admin info <player> &7- Show player information"
+    cache: "&e/jobs admin cache <reload|stats|clear> &7- Manage cache"
+    reload: "&e/jobs admin reload &7- Reload configuration and jobs"
+    migrate: "&e/jobs admin migrate [version] &7- Data migration"
+    debug: "&e/jobs admin debug <xp|cache|config> &7- Debug XP/cache/config system"
+    cleanup: "&e/jobs admin cleanup &7- Clean up invalid jobs from player data"
+    
+    # Admin command responses
+    no-permission: "&cYou don't have permission to use this command."
+    player-not-found: "&cPlayer {player} not found."
+    player-offline: "&cPlayer {player} is not online."
+    job-not-found: "&cJob {job} not found."
+    player-no-job: "&cPlayer {player} doesn't have the job {job}"
+    invalid-action: "&cInvalid action. Use: {actions}"
+    invalid-amount: "&cInvalid amount: {amount}"
+    amount-bounds: "&cAmount must be between 1 and 1,000,000"
+    
+    # XP/Exp command responses
+    xp-given: "&a{amount} XP added to {player} for job {job}"
+    xp-taken: "&a{amount} XP removed from {player} for job {job}"
+    xp-set: "&a{player}'s XP set to {amount} for job {job}"
+    xp-received: "&a{amount} XP received for {job} from {sender}"
+    xp-lost: "&c{amount} XP lost for {job} (Admin action)"
+    xp-set-notify: "&aYour XP for {job} has been set to {amount} by {sender}"
+    xp-error: "&cError modifying XP: {error}"
+    
+    # Force join/leave responses
+    forcejoin-success: "&aPlayer &e{player}&a has been forced to join job &e{job}&a."
+    forcejoin-failed: "&cFailed to add player to job. Player may already have this job."
+    forcejoin-notify: "&aYou have been added to job &e{job}&a by an administrator."
+    forceleave-success: "&aPlayer &e{player}&a has been forced to leave job &e{job}&a."
+    forceleave-failed: "&cFailed to remove player from job. Player may not have this job."
+    forceleave-notify: "&cYou have been removed from job &e{job}&c by an administrator."
+    
+    # Reset command responses
+    reset-success: "&aReset completed for {player}: {cleanedJobs} jobs, {totalJobs} total jobs"
+    reset-job-success: "&aReset job {job} for player {player}"
+    reset-notify: "&cYour job data has been reset by an administrator."
+    reset-job-notify: "&cYour progress in job {job} has been reset by an administrator."
+    reset-error: "&cError during reset."
+    
+    # Cache command responses
+    cache-reloaded: "&aCache reloaded successfully."
+    cache-cleared: "&aCache cleared successfully."
+    cache-stats-header: "&6=== Cache Statistics ==="
+    cache-stats-hits: "&eCache Hits: &a{hits}"
+    cache-stats-misses: "&eCache Misses: &c{misses}"
+    cache-stats-hitrate: "&eHit Rate: &a{rate}%"
+    cache-stats-players: "&eCached Players: &a{players}"
+    
+    # Reload command responses
+    reload-start: "&6Reloading UniverseJobs..."
+    reload-success: "&aUniverseJobs reloaded successfully!"
+    reload-failed: "&cFailed to reload: {error}"
+    
+    # Migrate command responses
+    migrate-start: "&6Starting migration from {from} to {to}..."
+    migrate-not-implemented: "&cMigration feature not yet implemented."
+    
+    # Debug command responses
+    debug-header: "&6=== Debug Info for {player} ==="
+    debug-jobs: "&eJobs: {count}"
+    debug-job-line: "&7  {job} - Level {level} ({xp} XP)"
+    debug-bonuses: "&eActive Bonuses: {count}"
+    debug-bonus-line: "&7  {multiplier}x - {reason}"
+    debug-memory: "&eMemory Usage: {used}/{total} MB"
+    debug-xp-header: "&6=== XP System Debug ==="
+    debug-cache-header: "&6=== Cache Debug ==="
+    debug-config-header: "&6=== Configuration Debug ==="
+    debug-show-xp: "&eShow XP: &a{enabled}"
+    debug-enabled: "&eDebug: &a{enabled}"
+    
+    # Cleanup command responses
+    cleanup-start: "&6Starting cleanup of invalid jobs..."
+    cleanup-complete: "&aCleanup completed: &e{players}&a players cleaned, &e{jobs}&a invalid jobs removed"
+    cleanup-error: "&cError during cleanup: {error}"
+    
+    # Usage messages
+    usage:
+      exp: "&cUsage: /jobs admin exp <give|take|set> <player> <job> <amount>"
+      xp: "&cUsage: /jobs admin xp <give|set|remove> <player> <job> <amount>"
+      level: "&cUsage: /jobs admin level <give|set|remove> <player> <job> <amount>"
+      forcejoin: "&cUsage: /jobs admin forcejoin <player> <job>"
+      forceleave: "&cUsage: /jobs admin forceleave <player> <job>"
+      reset: "&cUsage: /jobs admin reset <player> [job|ALL]"
+      info: "&cUsage: /jobs admin info <player>"
+      cache: "&cUsage: /jobs admin cache <reload|stats|clear>"
+      debug: "&cUsage: /jobs admin debug <xp|cache|config>"
 
 # GUI system messages
 gui:

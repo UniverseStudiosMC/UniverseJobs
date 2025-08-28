@@ -28,7 +28,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     private final XpBonusCommandHandler xpBonusHandler;
     private final MoneyBonusCommandHandler moneyBonusHandler;
     private final ActionLimitCommandHandler actionLimitHandler;
-    private final AdminCommandHandler adminHandler;
     private final AdminJobCommandHandler adminJobHandler;
     private final MenuCommandHandler menuHandler;
     
@@ -42,10 +41,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     private static final String CMD_XP_BONUS = "xpbonus";
     private static final String CMD_MONEY_BONUS = "moneybonus";
     private static final String CMD_ACTION_LIMIT = "actionlimit";
-    private static final String CMD_EXP = "exp";
-    private static final String CMD_MIGRATE = "migrate";
-    private static final String CMD_RELOAD = "reload";
-    private static final String CMD_DEBUG = "debug";
     private static final String CMD_MENU = "menu";
     private static final String CMD_ADMIN = "admin";
     
@@ -73,7 +68,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         this.xpBonusHandler = new XpBonusCommandHandler(plugin);
         this.moneyBonusHandler = new MoneyBonusCommandHandler(plugin);
         this.actionLimitHandler = new ActionLimitCommandHandler(plugin);
-        this.adminHandler = new AdminCommandHandler(plugin);
         this.adminJobHandler = new AdminJobCommandHandler(plugin, jobManager);
         this.menuHandler = new MenuCommandHandler(plugin);
     }
@@ -119,7 +113,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 case CMD_XP_BONUS -> handled = xpBonusHandler.handleCommand(sender, args);
                 case CMD_MONEY_BONUS -> handled = moneyBonusHandler.handleCommand(sender, args);
                 case CMD_ACTION_LIMIT -> handled = actionLimitHandler.handleCommand(sender, args);
-                case CMD_EXP, CMD_MIGRATE, CMD_RELOAD, CMD_DEBUG -> handled = adminHandler.handleCommand(sender, args);
                 case CMD_ADMIN -> handled = adminJobHandler.handleAdminCommand(sender, args);
                 case CMD_MENU -> handled = menuHandler.handleCommand(sender, Arrays.copyOfRange(args, 1, args.length));
                 default -> handled = false;
@@ -158,21 +151,13 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             
             // Admin commands available to both console and players
             if (sender.hasPermission("universejobs.admin")) {
-                subCommands.add(CMD_RELOAD);
-                subCommands.add(CMD_DEBUG);
-                subCommands.add(CMD_ADMIN); // Nouvelle commande admin
-            }
-            if (sender.hasPermission("universejobs.admin.migrate")) {
-                subCommands.add(CMD_MIGRATE);
+                subCommands.add(CMD_ADMIN); // All admin commands under /jobs admin
             }
             if (sender.hasPermission("universejobs.admin.xpbonus")) {
                 subCommands.add(CMD_XP_BONUS);
             }
             if (sender.hasPermission("universejobs.admin.moneybonus")) {
                 subCommands.add(CMD_MONEY_BONUS);
-            }
-            if (sender.hasPermission("universejobs.admin.exp")) {
-                subCommands.add(CMD_EXP);
             }
             if (sender.hasPermission("universejobs.admin.actionlimits")) {
                 subCommands.add(CMD_ACTION_LIMIT);
@@ -195,7 +180,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 case CMD_XP_BONUS -> completions.addAll(xpBonusHandler.getTabCompletions(sender, args));
                 case CMD_MONEY_BONUS -> completions.addAll(moneyBonusHandler.getTabCompletions(sender, args));
                 case CMD_ACTION_LIMIT -> completions.addAll(actionLimitHandler.getTabCompletions(sender, args));
-                case CMD_EXP, CMD_MIGRATE, CMD_RELOAD, CMD_DEBUG -> completions.addAll(adminHandler.getTabCompletions(sender, args));
                 case CMD_ADMIN -> completions.addAll(adminJobHandler.getTabCompletions(sender, args));
                 case CMD_MENU -> completions.addAll(menuHandler.getTabCompletions(sender, Arrays.copyOfRange(args, 1, args.length)));
                 default -> {
@@ -272,7 +256,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      * @return true if valid
      */
     private boolean isValidSubCommand(String subCommand) {
-        Set<String> validCommands = Set.of(CMD_JOIN, CMD_LEAVE, CMD_INFO, CMD_LIST, CMD_STATS, CMD_REWARDS, CMD_XP_BONUS, CMD_MONEY_BONUS, CMD_ACTION_LIMIT, CMD_EXP, CMD_MIGRATE, CMD_RELOAD, CMD_DEBUG, CMD_MENU, CMD_ADMIN);
+        Set<String> validCommands = Set.of(CMD_JOIN, CMD_LEAVE, CMD_INFO, CMD_LIST, CMD_STATS, CMD_REWARDS, CMD_XP_BONUS, CMD_MONEY_BONUS, CMD_ACTION_LIMIT, CMD_MENU, CMD_ADMIN);
         return validCommands.contains(subCommand);
     }
     
@@ -323,8 +307,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         if (player.hasPermission("universejobs.admin")) {
             player.sendMessage("");
             player.sendMessage("§6Admin Commands:");
-            player.sendMessage("§e/jobs admin §7- Show admin help");
-            player.sendMessage("§e/jobs reload §7- Reload configuration");
+            player.sendMessage("§e/jobs admin §7- Show all admin commands");
         }
     }
     
@@ -335,13 +318,9 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      */
     private void sendConsoleHelp(CommandSender sender) {
         sender.sendMessage("§6UniverseJobs Console Commands:");
-        sender.sendMessage("§e/jobs admin §7- Show advanced admin commands");
-        sender.sendMessage("§e/jobs reload §7- Reload the plugin configuration");
+        sender.sendMessage("§e/jobs admin §7- Show all admin commands");
         sender.sendMessage("§e/jobs xpbonus <give|remove|list> §7- Manage XP bonuses");
         sender.sendMessage("§e/jobs actionlimit <restore|status> §7- Manage action limits");
-        sender.sendMessage("§e/jobs exp <give|take|set> <player> <job> <amount> §7- Manage player XP");
-        sender.sendMessage("§e/jobs migrate §7- Migrate data between storage types");
-        sender.sendMessage("§e/jobs debug <player> §7- Show debug information");
     }
     
     /**
