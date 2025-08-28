@@ -22,7 +22,6 @@ import org.bukkit.event.Event;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Processes actions and awards XP when requirements are met.

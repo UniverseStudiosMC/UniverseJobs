@@ -29,6 +29,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     private final MoneyBonusCommandHandler moneyBonusHandler;
     private final ActionLimitCommandHandler actionLimitHandler;
     private final AdminCommandHandler adminHandler;
+    private final AdminJobCommandHandler adminJobHandler;
     private final MenuCommandHandler menuHandler;
     
     // Command constants
@@ -46,6 +47,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     private static final String CMD_RELOAD = "reload";
     private static final String CMD_DEBUG = "debug";
     private static final String CMD_MENU = "menu";
+    private static final String CMD_ADMIN = "admin";
     
     // Security patterns for input validation
     private static final Pattern COMMAND_INJECTION_PATTERN = Pattern.compile("[;&|`$(){}\\[\\]<>\"'\\\\]");
@@ -72,6 +74,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         this.moneyBonusHandler = new MoneyBonusCommandHandler(plugin);
         this.actionLimitHandler = new ActionLimitCommandHandler(plugin);
         this.adminHandler = new AdminCommandHandler(plugin);
+        this.adminJobHandler = new AdminJobCommandHandler(plugin, jobManager);
         this.menuHandler = new MenuCommandHandler(plugin);
     }
     
@@ -117,6 +120,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 case CMD_MONEY_BONUS -> handled = moneyBonusHandler.handleCommand(sender, args);
                 case CMD_ACTION_LIMIT -> handled = actionLimitHandler.handleCommand(sender, args);
                 case CMD_EXP, CMD_MIGRATE, CMD_RELOAD, CMD_DEBUG -> handled = adminHandler.handleCommand(sender, args);
+                case CMD_ADMIN -> handled = adminJobHandler.handleAdminCommand(sender, args);
                 case CMD_MENU -> handled = menuHandler.handleCommand(sender, Arrays.copyOfRange(args, 1, args.length));
                 default -> handled = false;
             }
@@ -156,6 +160,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             if (sender.hasPermission("universejobs.admin")) {
                 subCommands.add(CMD_RELOAD);
                 subCommands.add(CMD_DEBUG);
+                subCommands.add(CMD_ADMIN); // Nouvelle commande admin
             }
             if (sender.hasPermission("universejobs.admin.migrate")) {
                 subCommands.add(CMD_MIGRATE);
@@ -191,6 +196,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 case CMD_MONEY_BONUS -> completions.addAll(moneyBonusHandler.getTabCompletions(sender, args));
                 case CMD_ACTION_LIMIT -> completions.addAll(actionLimitHandler.getTabCompletions(sender, args));
                 case CMD_EXP, CMD_MIGRATE, CMD_RELOAD, CMD_DEBUG -> completions.addAll(adminHandler.getTabCompletions(sender, args));
+                case CMD_ADMIN -> completions.addAll(adminJobHandler.getTabCompletions(sender, args));
                 case CMD_MENU -> completions.addAll(menuHandler.getTabCompletions(sender, Arrays.copyOfRange(args, 1, args.length)));
                 default -> {
                     // Unknown subcommand - no additional completions
@@ -266,7 +272,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      * @return true if valid
      */
     private boolean isValidSubCommand(String subCommand) {
-        Set<String> validCommands = Set.of(CMD_JOIN, CMD_LEAVE, CMD_INFO, CMD_LIST, CMD_STATS, CMD_REWARDS, CMD_XP_BONUS, CMD_MONEY_BONUS, CMD_ACTION_LIMIT, CMD_EXP, CMD_MIGRATE, CMD_RELOAD, CMD_DEBUG, CMD_MENU);
+        Set<String> validCommands = Set.of(CMD_JOIN, CMD_LEAVE, CMD_INFO, CMD_LIST, CMD_STATS, CMD_REWARDS, CMD_XP_BONUS, CMD_MONEY_BONUS, CMD_ACTION_LIMIT, CMD_EXP, CMD_MIGRATE, CMD_RELOAD, CMD_DEBUG, CMD_MENU, CMD_ADMIN);
         return validCommands.contains(subCommand);
     }
     
@@ -313,6 +319,13 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         if (player.hasPermission("universejobs.admin.actionlimits")) {
             player.sendMessage("§e/jobs actionlimit §7- Manage action limits");
         }
+        
+        if (player.hasPermission("universejobs.admin")) {
+            player.sendMessage("");
+            player.sendMessage("§6Admin Commands:");
+            player.sendMessage("§e/jobs admin §7- Show admin help");
+            player.sendMessage("§e/jobs reload §7- Reload configuration");
+        }
     }
     
     /**
@@ -322,6 +335,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      */
     private void sendConsoleHelp(CommandSender sender) {
         sender.sendMessage("§6UniverseJobs Console Commands:");
+        sender.sendMessage("§e/jobs admin §7- Show advanced admin commands");
         sender.sendMessage("§e/jobs reload §7- Reload the plugin configuration");
         sender.sendMessage("§e/jobs xpbonus <give|remove|list> §7- Manage XP bonuses");
         sender.sendMessage("§e/jobs actionlimit <restore|status> §7- Manage action limits");

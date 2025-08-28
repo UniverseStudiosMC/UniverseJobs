@@ -1,0 +1,785 @@
+package fr.ax_dev.universejobs.command.handler;
+
+import fr.ax_dev.universejobs.UniverseJobs;
+import fr.ax_dev.universejobs.job.Job;
+import fr.ax_dev.universejobs.job.JobManager;
+import fr.ax_dev.universejobs.job.PlayerJobData;
+import fr.ax_dev.universejobs.utils.MessageUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+/**
+ * Handler pour les commandes administratives des jobs.
+ * Permet de gérer les métiers des joueurs de force.
+ */
+public class AdminJobCommandHandler {
+    
+    private final UniverseJobs plugin;
+    private final JobManager jobManager;
+    
+    public AdminJobCommandHandler(UniverseJobs plugin, JobManager jobManager) {
+        this.plugin = plugin;
+        this.jobManager = jobManager;
+    }
+    
+    /**
+     * Helper pour envoyer un message de manière simple.
+     */
+    private void sendMessageToSender(CommandSender sender, String message) {
+        MessageUtils.sendMessage(sender, message);
+    }
+    
+    /**
+     * Traite les commandes admin.
+     * 
+     * @param sender L'expéditeur de la commande
+     * @param args Les arguments de la commande
+     * @return true si la commande a été traitée
+     */
+    public boolean handleAdminCommand(CommandSender sender, String[] args) {
+        if (args.length < 2) {
+            sendAdminHelp(sender);
+            return true;
+        }
+        
+        String subCommand = args[1].toLowerCase();
+        
+        switch (subCommand) {
+            case "forcejoin":
+                return handleForceJoin(sender, args);
+            case "forceleave":
+                return handleForceLeave(sender, args);
+            case "reset":
+                return handleReset(sender, args);
+            case "setlevel":
+                return handleSetLevel(sender, args);
+            case "setxp":
+                return handleSetXp(sender, args);
+            case "addxp":
+                return handleAddXp(sender, args);
+            case "info":
+                return handlePlayerInfo(sender, args);
+            case "cache":
+                return handleCacheCommand(sender, args);
+            case "reload":
+                return handleReload(sender, args);
+            default:
+                sendAdminHelp(sender);
+                return true;
+        }
+    }
+    
+    /**
+     * Force un joueur à rejoindre un métier.
+     */
+    private boolean handleForceJoin(CommandSender sender, String[] args) {
+        if (args.length < 4) {
+            MessageUtils.sendMessage(sender, "&cUsage: /jobs admin forcejoin <joueur> <métier>");
+            return true;
+        }
+        
+        if (!sender.hasPermission("universejobs.admin.forcejoin")) {
+            MessageUtils.sendMessage(sender, "&cVous n'avez pas la permission d'utiliser cette commande.");
+            return true;
+        }
+        
+        String playerName = args[2];
+        String jobId = args[3];
+        
+        OfflinePlayer target = Bukkit.getOfflinePlayer(playerName);
+        if (target == null) {
+            MessageUtils.sendMessage(sender, "&cJoueur introuvable: " + playerName);
+            return true;
+        }
+        
+        Job job = jobManager.getJob(jobId);
+        if (job == null) {
+            MessageUtils.sendMessage(sender, "&cMétier introuvable: " + jobId);
+            return true;
+        }
+        
+        // Force join asynchrone
+        plugin.getFoliaManager().runAsync(() -> {
+            try {
+                if (target.isOnline()) {
+                    // Précharge le cache si le joueur est en ligne
+                    plugin.getPlayerCache().preloadPlayer(target.getUniqueId());
+                }
+                
+                boolean success = jobManager.joinJob(target.getUniqueId(), jobId);
+                
+                plugin.getFoliaManager().runNextTick(() -> {
+                    if (success) {
+                        // Met à jour le cache
+                        if (target.isOnline()) {
+                            plugin.getPlayerCache().addPlayerJob(target.getUniqueId(), jobId);
+                        }
+                        
+                        MessageUtils.sendMessage(sender, "&aLe joueur &e" + target.getName() + 
+                            "&a a été forcé à rejoindre le métier &e" + job.getName() + "&a.");
+                        
+                        if (target.isOnline()) {
+                            MessageUtils.sendMessage(target.getPlayer(), 
+                                "&aVous avez été ajouté au métier &e" + job.getName() + "&a par un administrateur.");
+                        }
+                    } else {
+                        MessageUtils.sendMessage(sender, "&cEchec de l'ajout du joueur au métier. " +
+                            "Le joueur a peut-être déjà ce métier.");
+                    }
+                });
+            } catch (Exception e) {
+                plugin.getLogger().warning("Erreur lors du force join: " + e.getMessage());
+                plugin.getFoliaManager().runNextTick(() -> {
+                    MessageUtils.sendMessage(sender, "&cErreur lors de l'ajout du métier.");
+                });
+            }
+        });
+        
+        return true;
+    }
+    
+    /**
+     * Force un joueur à quitter un métier.
+     */
+    private boolean handleForceLeave(CommandSender sender, String[] args) {
+        if (args.length < 4) {
+            MessageUtils.sendMessage(sender, "&cUsage: /jobs admin forceleave <joueur> <métier>");
+            return true;
+        }
+        
+        if (!sender.hasPermission("universejobs.admin.forceleave")) {
+            MessageUtils.sendMessage(sender, "&cVous n'avez pas la permission d'utiliser cette commande.");
+            return true;
+        }
+        
+        String playerName = args[2];
+        String jobId = args[3];
+        
+        OfflinePlayer target = Bukkit.getOfflinePlayer(playerName);
+        if (target == null) {
+            MessageUtils.sendMessage(sender, "&cJoueur introuvable: " + playerName);
+            return true;
+        }
+        
+        Job job = jobManager.getJob(jobId);
+        if (job == null) {
+            MessageUtils.sendMessage(sender, "&cMétier introuvable: " + jobId);
+            return true;
+        }
+        
+        // Force leave asynchrone
+        plugin.getFoliaManager().runAsync(() -> {
+            try {
+                boolean success = jobManager.leaveJob(target.getUniqueId(), jobId);
+                
+                plugin.getFoliaManager().runNextTick(() -> {
+                    if (success) {
+                        // Met à jour le cache
+                        if (target.isOnline()) {
+                            plugin.getPlayerCache().removePlayerJob(target.getUniqueId(), jobId);
+                        }
+                        
+                        MessageUtils.sendMessage(sender, "&aLe joueur &e" + target.getName() + 
+                            "&a a été forcé à quitter le métier &e" + job.getName() + "&a.");
+                        
+                        if (target.isOnline()) {
+                            MessageUtils.sendMessage(target.getPlayer(), 
+                                "&cVous avez été retiré du métier &e" + job.getName() + "&c par un administrateur.");
+                        }
+                    } else {
+                        MessageUtils.sendMessage(sender, "&cEchec de la suppression du métier. " +
+                            "Le joueur n'a peut-être pas ce métier.");
+                    }
+                });
+            } catch (Exception e) {
+                plugin.getLogger().warning("Erreur lors du force leave: " + e.getMessage());
+                plugin.getFoliaManager().runAsync(() -> {
+                    MessageUtils.sendMessage(sender, "&cErreur lors de la suppression du métier.");
+                });
+            }
+        });
+        
+        return true;
+    }
+    
+    /**
+     * Reset complètement les données d'un joueur.
+     */
+    private boolean handleReset(CommandSender sender, String[] args) {
+        if (args.length < 3) {
+            MessageUtils.sendMessage(sender, "&cUsage: /jobs admin reset <joueur> [métier]");
+            return true;
+        }
+        
+        if (!sender.hasPermission("universejobs.admin.reset")) {
+            MessageUtils.sendMessage(sender, "&cVous n'avez pas la permission d'utiliser cette commande.");
+            return true;
+        }
+        
+        String playerName = args[2];
+        String jobId = args.length > 3 ? args[3] : null;
+        
+        OfflinePlayer target = Bukkit.getOfflinePlayer(playerName);
+        if (target == null) {
+            MessageUtils.sendMessage(sender, "&cJoueur introuvable: " + playerName);
+            return true;
+        }
+        
+        // Confirmation pour reset complet
+        if (jobId == null) {
+            MessageUtils.sendMessage(sender, "&c⚠️ ATTENTION: Ceci va supprimer TOUTES les données de métier de " + target.getName());
+            MessageUtils.sendMessage(sender, "&cPour confirmer, utilisez: /jobs admin reset " + playerName + " ALL");
+            return true;
+        }
+        
+        if ("ALL".equalsIgnoreCase(jobId)) {
+            // Reset complet
+            plugin.getFoliaManager().runAsync(() -> {
+                try {
+                    PlayerJobData playerData = jobManager.getPlayerData(target.getUniqueId());
+                    Set<String> jobs = playerData.getJobs();
+                    
+                    // Supprime tous les métiers et reset XP/niveaux
+                    for (String jobToReset : jobs) {
+                        playerData.setXp(jobToReset, 0.0);
+                        playerData.setLevel(jobToReset, 0);
+                        playerData.leaveJob(jobToReset);
+                    }
+                    
+                    // Sauvegarde
+                    jobManager.savePlayerData(target.getUniqueId());
+                    
+                    // Nettoie le cache
+                    if (target.isOnline()) {
+                        plugin.getPlayerCache().cleanupPlayer(target.getUniqueId());
+                        plugin.getPlayerCache().preloadPlayer(target.getUniqueId());
+                    }
+                    
+                    plugin.getFoliaManager().runNextTick(() -> {
+                        MessageUtils.sendMessage(sender, "&aToutes les données de métier de &e" + target.getName() + 
+                            "&a ont été supprimées.");
+                        
+                        if (target.isOnline()) {
+                            MessageUtils.sendMessage(target.getPlayer(), 
+                                "&cToutes vos données de métier ont été supprimées par un administrateur.");
+                        }
+                    });
+                } catch (Exception e) {
+                    plugin.getLogger().warning("Erreur lors du reset: " + e.getMessage());
+                    plugin.getFoliaManager().runAsync(() -> {
+                        MessageUtils.sendMessage(sender, "&cErreur lors du reset des données.");
+                    });
+                }
+            });
+        } else {
+            // Reset d'un métier spécifique
+            Job job = jobManager.getJob(jobId);
+            if (job == null) {
+                MessageUtils.sendMessage(sender, "&cMétier introuvable: " + jobId);
+                return true;
+            }
+            
+            plugin.getFoliaManager().runAsync(() -> {
+                try {
+                    PlayerJobData playerData = jobManager.getPlayerData(target.getUniqueId());
+                    
+                    // Reset XP et niveau du métier
+                    playerData.setXp(jobId, 0);
+                    playerData.setLevel(jobId, 0);
+                    
+                    // Sauvegarde
+                    jobManager.savePlayerData(target.getUniqueId());
+                    
+                    // Met à jour le cache
+                    if (target.isOnline()) {
+                        plugin.getPlayerCache().updatePlayerXp(target.getUniqueId(), jobId, 0, 0);
+                    }
+                    
+                    plugin.getFoliaManager().runAsync(() -> {
+                        MessageUtils.sendMessage(sender, "&aLe métier &e" + job.getName() + 
+                            "&a de &e" + target.getName() + "&a a été reset.");
+                        
+                        if (target.isOnline()) {
+                            MessageUtils.sendMessage(target.getPlayer(), 
+                                "&cVotre métier &e" + job.getName() + "&c a été reset par un administrateur.");
+                        }
+                    });
+                } catch (Exception e) {
+                    plugin.getLogger().warning("Erreur lors du reset du métier: " + e.getMessage());
+                    plugin.getFoliaManager().runAsync(() -> {
+                        MessageUtils.sendMessage(sender, "&cErreur lors du reset du métier.");
+                    });
+                }
+            });
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Définit le niveau d'un joueur dans un métier.
+     */
+    private boolean handleSetLevel(CommandSender sender, String[] args) {
+        if (args.length < 5) {
+            MessageUtils.sendMessage(sender, "&cUsage: /jobs admin setlevel <joueur> <métier> <niveau>");
+            return true;
+        }
+        
+        if (!sender.hasPermission("universejobs.admin.setlevel")) {
+            MessageUtils.sendMessage(sender, "&cVous n'avez pas la permission d'utiliser cette commande.");
+            return true;
+        }
+        
+        String playerName = args[2];
+        String jobId = args[3];
+        
+        OfflinePlayer target = Bukkit.getOfflinePlayer(playerName);
+        if (target == null) {
+            MessageUtils.sendMessage(sender, "&cJoueur introuvable: " + playerName);
+            return true;
+        }
+        
+        Job job = jobManager.getJob(jobId);
+        if (job == null) {
+            MessageUtils.sendMessage(sender, "&cMétier introuvable: " + jobId);
+            return true;
+        }
+        
+        int level;
+        try {
+            level = Integer.parseInt(args[4]);
+            if (level < 0 || level > job.getMaxLevel()) {
+                MessageUtils.sendMessage(sender, "&cNiveau invalide. Doit être entre 0 et " + job.getMaxLevel());
+                return true;
+            }
+        } catch (NumberFormatException e) {
+            MessageUtils.sendMessage(sender, "&cNiveau invalide: " + args[4]);
+            return true;
+        }
+        
+        plugin.getFoliaManager().runAsync(() -> {
+            try {
+                PlayerJobData playerData = jobManager.getPlayerData(target.getUniqueId());
+                
+                // Calcule l'XP nécessaire pour ce niveau
+                double requiredXp = jobManager.getXpRequiredForLevel(jobId, level);
+                
+                // Force join si nécessaire
+                if (!playerData.hasJob(jobId)) {
+                    playerData.joinJob(jobId);
+                    if (target.isOnline()) {
+                        plugin.getPlayerCache().addPlayerJob(target.getUniqueId(), jobId);
+                    }
+                }
+                
+                // Set XP et level
+                playerData.setXp(jobId, requiredXp);
+                playerData.setLevel(jobId, level);
+                
+                // Sauvegarde
+                jobManager.savePlayerData(target.getUniqueId());
+                
+                // Met à jour le cache
+                if (target.isOnline()) {
+                    plugin.getPlayerCache().updatePlayerXp(target.getUniqueId(), jobId, requiredXp, level);
+                }
+                
+                plugin.getFoliaManager().runAsync(() -> {
+                    MessageUtils.sendMessage(sender, "&aLe joueur &e" + target.getName() + 
+                        "&a est maintenant niveau &e" + level + "&a dans le métier &e" + job.getName() + "&a.");
+                    
+                    if (target.isOnline()) {
+                        MessageUtils.sendMessage(target.getPlayer(), 
+                            "&aVotre niveau dans le métier &e" + job.getName() + "&a a été défini à &e" + level + "&a.");
+                    }
+                });
+            } catch (Exception e) {
+                plugin.getLogger().warning("Erreur lors du set level: " + e.getMessage());
+                plugin.getFoliaManager().runAsync(() -> {
+                    MessageUtils.sendMessage(sender, "&cErreur lors de la définition du niveau.");
+                });
+            }
+        });
+        
+        return true;
+    }
+    
+    /**
+     * Définit l'XP d'un joueur dans un métier.
+     */
+    private boolean handleSetXp(CommandSender sender, String[] args) {
+        if (args.length < 5) {
+            MessageUtils.sendMessage(sender, "&cUsage: /jobs admin setxp <joueur> <métier> <xp>");
+            return true;
+        }
+        
+        if (!sender.hasPermission("universejobs.admin.setxp")) {
+            MessageUtils.sendMessage(sender, "&cVous n'avez pas la permission d'utiliser cette commande.");
+            return true;
+        }
+        
+        String playerName = args[2];
+        String jobId = args[3];
+        
+        OfflinePlayer target = Bukkit.getOfflinePlayer(playerName);
+        if (target == null) {
+            MessageUtils.sendMessage(sender, "&cJoueur introuvable: " + playerName);
+            return true;
+        }
+        
+        Job job = jobManager.getJob(jobId);
+        if (job == null) {
+            MessageUtils.sendMessage(sender, "&cMétier introuvable: " + jobId);
+            return true;
+        }
+        
+        double xp;
+        try {
+            xp = Double.parseDouble(args[4]);
+            if (xp < 0) {
+                MessageUtils.sendMessage(sender, "&cL'XP ne peut pas être négative.");
+                return true;
+            }
+        } catch (NumberFormatException e) {
+            MessageUtils.sendMessage(sender, "&cXP invalide: " + args[4]);
+            return true;
+        }
+        
+        plugin.getFoliaManager().runAsync(() -> {
+            try {
+                PlayerJobData playerData = jobManager.getPlayerData(target.getUniqueId());
+                
+                // Force join si nécessaire
+                if (!playerData.hasJob(jobId)) {
+                    playerData.joinJob(jobId);
+                    if (target.isOnline()) {
+                        plugin.getPlayerCache().addPlayerJob(target.getUniqueId(), jobId);
+                    }
+                }
+                
+                // Set XP et calcule le niveau
+                playerData.setXp(jobId, xp);
+                int newLevel = jobManager.getLevel(target.getPlayer(), jobId);
+                
+                // Sauvegarde
+                jobManager.savePlayerData(target.getUniqueId());
+                
+                // Met à jour le cache
+                if (target.isOnline()) {
+                    plugin.getPlayerCache().updatePlayerXp(target.getUniqueId(), jobId, xp, newLevel);
+                }
+                
+                plugin.getFoliaManager().runAsync(() -> {
+                    MessageUtils.sendMessage(sender, "&aLe joueur &e" + target.getName() + 
+                        "&a a maintenant &e" + String.format("%.1f", xp) + " XP&a dans le métier &e" + job.getName() + 
+                        "&a (niveau &e" + newLevel + "&a).");
+                    
+                    if (target.isOnline()) {
+                        MessageUtils.sendMessage(target.getPlayer(), 
+                            "&aVotre XP dans le métier &e" + job.getName() + "&a a été définie à &e" + 
+                            String.format("%.1f", xp) + " XP&a.");
+                    }
+                });
+            } catch (Exception e) {
+                plugin.getLogger().warning("Erreur lors du set XP: " + e.getMessage());
+                plugin.getFoliaManager().runAsync(() -> {
+                    MessageUtils.sendMessage(sender, "&cErreur lors de la définition de l'XP.");
+                });
+            }
+        });
+        
+        return true;
+    }
+    
+    /**
+     * Ajoute de l'XP à un joueur dans un métier.
+     */
+    private boolean handleAddXp(CommandSender sender, String[] args) {
+        if (args.length < 5) {
+            MessageUtils.sendMessage(sender, "&cUsage: /jobs admin addxp <joueur> <métier> <xp>");
+            return true;
+        }
+        
+        if (!sender.hasPermission("universejobs.admin.addxp")) {
+            MessageUtils.sendMessage(sender, "&cVous n'avez pas la permission d'utiliser cette commande.");
+            return true;
+        }
+        
+        String playerName = args[2];
+        String jobId = args[3];
+        
+        OfflinePlayer target = Bukkit.getOfflinePlayer(playerName);
+        if (target == null || !target.isOnline()) {
+            MessageUtils.sendMessage(sender, "&cLe joueur doit être en ligne pour cette commande.");
+            return true;
+        }
+        
+        Job job = jobManager.getJob(jobId);
+        if (job == null) {
+            MessageUtils.sendMessage(sender, "&cMétier introuvable: " + jobId);
+            return true;
+        }
+        
+        double xp;
+        try {
+            xp = Double.parseDouble(args[4]);
+        } catch (NumberFormatException e) {
+            MessageUtils.sendMessage(sender, "&cXP invalide: " + args[4]);
+            return true;
+        }
+        
+        Player player = target.getPlayer();
+        
+        // Force join si nécessaire
+        if (!jobManager.hasJob(player, jobId)) {
+            jobManager.joinJob(player, jobId);
+            plugin.getPlayerCache().addPlayerJob(player.getUniqueId(), jobId);
+        }
+        
+        // Utilise le système normal pour ajouter l'XP (avec messages, level up, etc.)
+        jobManager.addXp(player, jobId, xp);
+        
+        MessageUtils.sendMessage(sender, "&a" + String.format("%.1f", xp) + " XP&a ajoutée au métier &e" + 
+            job.getName() + "&a pour le joueur &e" + player.getName() + "&a.");
+        
+        return true;
+    }
+    
+    /**
+     * Affiche les informations d'un joueur.
+     */
+    private boolean handlePlayerInfo(CommandSender sender, String[] args) {
+        if (args.length < 3) {
+            MessageUtils.sendMessage(sender, "&cUsage: /jobs admin info <joueur>");
+            return true;
+        }
+        
+        if (!sender.hasPermission("universejobs.admin.info")) {
+            MessageUtils.sendMessage(sender, "&cVous n'avez pas la permission d'utiliser cette commande.");
+            return true;
+        }
+        
+        String playerName = args[2];
+        OfflinePlayer target = Bukkit.getOfflinePlayer(playerName);
+        if (target == null) {
+            MessageUtils.sendMessage(sender, "&cJoueur introuvable: " + playerName);
+            return true;
+        }
+        
+        plugin.getFoliaManager().runAsync(() -> {
+            try {
+                PlayerJobData playerData = jobManager.getPlayerData(target.getUniqueId());
+                Set<String> jobs = playerData.getJobs();
+                
+                plugin.getFoliaManager().runAsync(() -> {
+                    MessageUtils.sendMessage(sender, "&6=== Informations de " + target.getName() + " ===");
+                    MessageUtils.sendMessage(sender, "&eEn ligne: " + (target.isOnline() ? "&aOui" : "&cNon"));
+                    MessageUtils.sendMessage(sender, "&eNombre de métiers: &a" + jobs.size());
+                    
+                    if (jobs.isEmpty()) {
+                        MessageUtils.sendMessage(sender, "&cAucun métier.");
+                    } else {
+                        MessageUtils.sendMessage(sender, "&eMétiers:");
+                        for (String jobId : jobs) {
+                            Job job = jobManager.getJob(jobId);
+                            if (job != null) {
+                                double xp = playerData.getXp(jobId);
+                                int level = playerData.getLevel(jobId);
+                                MessageUtils.sendMessage(sender, "&f  - &e" + job.getName() + 
+                                    " &7(niveau &a" + level + "&7, XP: &a" + String.format("%.1f", xp) + "&7)");
+                            }
+                        }
+                    }
+                    
+                    // Stats du cache si le joueur est en ligne
+                    if (target.isOnline()) {
+                        MessageUtils.sendMessage(sender, "&e=== Cache Stats ===");
+                        var cacheStats = plugin.getPlayerCache().getStats();
+                        MessageUtils.sendMessage(sender, "&eCache Hit Rate: &a" + 
+                            cacheStats.getOrDefault("hit_rate", "N/A") + "%");
+                    }
+                });
+            } catch (Exception e) {
+                plugin.getLogger().warning("Erreur lors de la récupération des infos: " + e.getMessage());
+                plugin.getFoliaManager().runAsync(() -> {
+                    MessageUtils.sendMessage(sender, "&cErreur lors de la récupération des informations.");
+                });
+            }
+        });
+        
+        return true;
+    }
+    
+    /**
+     * Gère les commandes de cache.
+     */
+    private boolean handleCacheCommand(CommandSender sender, String[] args) {
+        if (args.length < 3) {
+            MessageUtils.sendMessage(sender, "&cUsage: /jobs admin cache <reload|stats|clear>");
+            return true;
+        }
+        
+        if (!sender.hasPermission("universejobs.admin.cache")) {
+            MessageUtils.sendMessage(sender, "&cVous n'avez pas la permission d'utiliser cette commande.");
+            return true;
+        }
+        
+        String cacheAction = args[2].toLowerCase();
+        
+        switch (cacheAction) {
+            case "reload":
+                plugin.getFoliaManager().runAsync(() -> {
+                    try {
+                        plugin.getConfigCache().reload();
+                        plugin.getPlayerCache().preloadOnlinePlayers();
+                        
+                        plugin.getFoliaManager().runAsync(() -> {
+                            MessageUtils.sendMessage(sender, "&aCache rechargé avec succès!");
+                        });
+                    } catch (Exception e) {
+                        plugin.getLogger().warning("Erreur lors du rechargement du cache: " + e.getMessage());
+                        plugin.getFoliaManager().runAsync(() -> {
+                            MessageUtils.sendMessage(sender, "&cErreur lors du rechargement du cache.");
+                        });
+                    }
+                });
+                break;
+                
+            case "stats":
+                MessageUtils.sendMessage(sender, "&6=== Statistiques du Cache ===");
+                var configStats = plugin.getConfigCache().getCacheStats();
+                MessageUtils.sendMessage(sender, "&eConfiguration Cache: &a" + configStats);
+                
+                var playerStats = plugin.getPlayerCache().getStats();
+                playerStats.forEach((key, value) -> {
+                    MessageUtils.sendMessage(sender, "&e" + key + ": &a" + value);
+                });
+                break;
+                
+            case "clear":
+                MessageUtils.sendMessage(sender, "&cCette action va vider tout le cache des joueurs.");
+                MessageUtils.sendMessage(sender, "&cPour confirmer: /jobs admin cache clear CONFIRM");
+                
+                if (args.length > 3 && "CONFIRM".equals(args[3])) {
+                    // Clear cache pour tous les joueurs offline
+                    for (Player player : Bukkit.getOnlinePlayers()) {
+                        plugin.getPlayerCache().cleanupPlayer(player.getUniqueId());
+                        plugin.getPlayerCache().preloadPlayer(player.getUniqueId());
+                    }
+                    MessageUtils.sendMessage(sender, "&aCache des joueurs vidé et rechargé.");
+                }
+                break;
+                
+            default:
+                MessageUtils.sendMessage(sender, "&cAction inconnue: " + cacheAction);
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Recharge les configurations et jobs.
+     */
+    private boolean handleReload(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("universejobs.admin.reload")) {
+            MessageUtils.sendMessage(sender, "&cVous n'avez pas la permission d'utiliser cette commande.");
+            return true;
+        }
+        
+        MessageUtils.sendMessage(sender, "&eRechargement d'UniverseJobs...");
+        
+        plugin.getFoliaManager().runAsync(() -> {
+            try {
+                // Reload config
+                plugin.getConfigManager().loadConfig();
+                
+                // Reload jobs
+                plugin.getJobManager().reloadJobs();
+                
+                // Reload cache
+                plugin.getConfigCache().reload();
+                plugin.getPlayerCache().preloadOnlinePlayers();
+                
+                plugin.getFoliaManager().runAsync(() -> {
+                    MessageUtils.sendMessage(sender, "&aUniverseJobs rechargé avec succès!");
+                });
+            } catch (Exception e) {
+                plugin.getLogger().warning("Erreur lors du rechargement: " + e.getMessage());
+                plugin.getFoliaManager().runAsync(() -> {
+                    MessageUtils.sendMessage(sender, "&cErreur lors du rechargement: " + e.getMessage());
+                });
+            }
+        });
+        
+        return true;
+    }
+    
+    /**
+     * Affiche l'aide des commandes admin.
+     */
+    private void sendAdminHelp(CommandSender sender) {
+        MessageUtils.sendMessage(sender, "&6=== Commandes Admin UniverseJobs ===");
+        MessageUtils.sendMessage(sender, "&e/jobs admin forcejoin <joueur> <métier> &7- Force un joueur à rejoindre un métier");
+        MessageUtils.sendMessage(sender, "&e/jobs admin forceleave <joueur> <métier> &7- Force un joueur à quitter un métier");
+        MessageUtils.sendMessage(sender, "&e/jobs admin reset <joueur> [métier|ALL] &7- Reset les données d'un joueur");
+        MessageUtils.sendMessage(sender, "&e/jobs admin setlevel <joueur> <métier> <niveau> &7- Définit le niveau d'un joueur");
+        MessageUtils.sendMessage(sender, "&e/jobs admin setxp <joueur> <métier> <xp> &7- Définit l'XP d'un joueur");
+        MessageUtils.sendMessage(sender, "&e/jobs admin addxp <joueur> <métier> <xp> &7- Ajoute de l'XP à un joueur");
+        MessageUtils.sendMessage(sender, "&e/jobs admin info <joueur> &7- Affiche les infos d'un joueur");
+        MessageUtils.sendMessage(sender, "&e/jobs admin cache <reload|stats|clear> &7- Gère le cache");
+        MessageUtils.sendMessage(sender, "&e/jobs admin reload &7- Recharge la configuration et les métiers");
+    }
+    
+    /**
+     * Auto-complétion pour les commandes admin.
+     */
+    public List<String> getTabCompletions(CommandSender sender, String[] args) {
+        if (args.length == 2) {
+            return Arrays.asList("forcejoin", "forceleave", "reset", "setlevel", "setxp", 
+                               "addxp", "info", "cache", "reload");
+        }
+        
+        if (args.length == 3) {
+            String subCommand = args[1].toLowerCase();
+            if (Arrays.asList("forcejoin", "forceleave", "reset", "setlevel", "setxp", "addxp", "info")
+                     .contains(subCommand)) {
+                // Liste des joueurs en ligne
+                return Bukkit.getOnlinePlayers().stream()
+                    .map(Player::getName)
+                    .collect(Collectors.toList());
+            }
+            
+            if ("cache".equals(subCommand)) {
+                return Arrays.asList("reload", "stats", "clear");
+            }
+        }
+        
+        if (args.length == 4) {
+            String subCommand = args[1].toLowerCase();
+            if (Arrays.asList("forcejoin", "forceleave", "setlevel", "setxp", "addxp").contains(subCommand)) {
+                // Liste des métiers
+                return jobManager.getAllJobs().stream()
+                    .map(Job::getId)
+                    .collect(Collectors.toList());
+            }
+            
+            if ("reset".equals(subCommand)) {
+                List<String> options = jobManager.getAllJobs().stream()
+                    .map(Job::getId)
+                    .collect(Collectors.toList());
+                options.add("ALL");
+                return options;
+            }
+        }
+        
+        return new ArrayList<>();
+    }
+}

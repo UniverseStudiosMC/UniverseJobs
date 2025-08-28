@@ -112,23 +112,6 @@ public class MenuCommandHandler extends JobCommandHandler {
     }
     
     /**
-     * Open a job's actions menu (redirect to existing rewards GUI).
-     */
-    private boolean openActionsMenu(Player player, String jobId) {
-        Job job = validateJobAccess(player, jobId);
-        if (job == null) return false;
-        
-        // Use the existing reward GUI system instead of duplicating
-        try {
-            rewardGuiManager.openRewardsGui(player, jobId);
-            MessageUtils.sendMessage(player, "&aOpening " + job.getName() + " rewards...");
-            return true;
-        } catch (Exception e) {
-            return handleMenuError(player, "rewards menu", e);
-        }
-    }
-    
-    /**
      * Open the global rankings menu.
      */
     private void openRankingsMenu(Player player) {
