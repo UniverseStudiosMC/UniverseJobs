@@ -75,11 +75,6 @@ public class ActionProcessor {
      * @return true if the event should be cancelled
      */
     public boolean processAction(Player player, ActionType actionType, Event event, ConditionContext context) {
-        // Rate limiting check (ultra-fast array lookup)
-        if (!playerCache.checkRateLimit(player.getUniqueId(), configCache.getActionCooldownMs())) {
-            return false;
-        }
-        
         // Skip debug si désactivé (cache lookup instantané)
         if (configCache.isDebugEnabled()) {
             plugin.getLogger().info("Processing action " + actionType + " for player " + player.getName());

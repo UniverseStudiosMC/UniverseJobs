@@ -887,8 +887,6 @@ public class AdminJobCommandHandler {
         if (plugin.getConfigCache() != null) {
             MessageUtils.sendMessage(sender, "&eCache configuré: &aOui");
             MessageUtils.sendMessage(sender, "&eDebug activé: &a" + plugin.getConfigCache().isDebugEnabled());
-            MessageUtils.sendMessage(sender, "&eRate limiting: &a" + plugin.getConfigCache().isRateLimitingEnabled());
-            MessageUtils.sendMessage(sender, "&eCooldown: &a" + plugin.getConfigCache().getActionCooldownMs() + "ms");
         } else {
             MessageUtils.sendMessage(sender, "&cCache non configuré!");
         }
@@ -916,8 +914,6 @@ public class AdminJobCommandHandler {
         
         MessageUtils.sendMessage(sender, "&eDebug: &a" + plugin.getConfig().getBoolean("debug", false));
         MessageUtils.sendMessage(sender, "&eShow XP: &a" + plugin.getConfig().getBoolean("messages.show-xp-gain", true));
-        MessageUtils.sendMessage(sender, "&eRate limiting: &a" + plugin.getConfig().getBoolean("performance.rate-limiting", true));
-        MessageUtils.sendMessage(sender, "&eCooldown: &a" + plugin.getConfig().getLong("performance.action-cooldown-ms", 50) + "ms");
     }
     
     /**

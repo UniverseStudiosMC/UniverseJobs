@@ -61,7 +61,6 @@ public class JobActionListener implements Listener {
     // Statistiques ultra-légères
     private final AtomicLong totalEvents = new AtomicLong(0);
     private final AtomicLong processedEvents = new AtomicLong(0);
-    private final AtomicLong rateLimitedEvents = new AtomicLong(0);
     
     // Furnace tracking for SMELT action - tracks who put items in each furnace
     private final Map<String, UUID> furnaceOwners = new ConcurrentHashMap<>();
@@ -86,25 +85,6 @@ public class JobActionListener implements Listener {
         this.playerCache = playerCache;
     }
     
-    /**
-     * Ultra-fast rate limiting avec cache circulaire.
-     */
-    private boolean checkRateLimit(Player player) {
-        totalEvents.incrementAndGet();
-        
-        // Skip rate limiting si désactivé dans config
-        if (!configCache.isRateLimitingEnabled()) {
-            return true;
-        }
-        
-        // Utilise le cache ultra-rapide
-        if (!playerCache.checkRateLimit(player.getUniqueId(), configCache.getActionCooldownMs())) {
-            rateLimitedEvents.incrementAndGet();
-            return false;
-        }
-        
-        return true;
-    }
     
     /**
      * Get performance statistics avec cache ultra-rapide.
@@ -115,7 +95,6 @@ public class JobActionListener implements Listener {
         Map<String, Object> stats = new ConcurrentHashMap<>();
         stats.put("total_events", totalEvents.get());
         stats.put("processed_events", processedEvents.get());
-        stats.put("rate_limited_events", rateLimitedEvents.get());
         stats.put("mythicmobs_available", mythicMobsHandler.isAvailable());
         
         // Intègre les stats du cache
@@ -145,9 +124,7 @@ public class JobActionListener implements Listener {
         if (killer == null) return;
         
         // Rate limiting check
-        if (!checkRateLimit(killer)) {
-            return;
-        }
+        totalEvents.incrementAndGet();
         
         try {
             // Create context
@@ -181,13 +158,7 @@ public class JobActionListener implements Listener {
             plugin.getLogger().info("Block break event: " + event.getBlock().getType() + " by " + player.getName());
         }
         
-        // Rate limiting ultra-rapide
-        if (!checkRateLimit(player)) {
-            if (configCache.isDebugEnabled()) {
-                plugin.getLogger().info("Rate limited for player " + player.getName());
-            }
-            return;
-        }
+        totalEvents.incrementAndGet();
         
         try {
             // Check if this block was placed by a player (anti-exploit for both vanilla and Nexo blocks)
@@ -439,9 +410,7 @@ public class JobActionListener implements Listener {
         }
         
         // Rate limiting check
-        if (!checkRateLimit(player)) {
-            return;
-        }
+        totalEvents.incrementAndGet();
         
         // Determine interact type (only right clicks)
         String interactType = player.isSneaking() ? "RIGHT_SHIFT_CLICK" : "RIGHT_CLICK";
@@ -481,9 +450,7 @@ public class JobActionListener implements Listener {
         }
         
         // Rate limiting check
-        if (!checkRateLimit(player)) {
-            return;
-        }
+        totalEvents.incrementAndGet();
         
         // Determine interact type (right-click interaction)
         String interactType = player.isSneaking() ? "RIGHT_SHIFT_CLICK" : "RIGHT_CLICK";
@@ -518,9 +485,7 @@ public class JobActionListener implements Listener {
         
         if (!(event.getWhoClicked() instanceof Player player)) return;
         
-        if (!checkRateLimit(player)) {
-            return;
-        }
+        totalEvents.incrementAndGet();
         
         ItemStack resultStack = event.getRecipe().getResult();
         ItemStack toCraft = event.getCurrentItem();
@@ -847,9 +812,7 @@ public class JobActionListener implements Listener {
         }
         
         // Rate limiting check
-        if (!checkRateLimit(player)) {
-            return;
-        }
+        totalEvents.incrementAndGet();
         
         ItemStack result = event.getResult();
         if (result == null) {
@@ -1063,9 +1026,7 @@ public class JobActionListener implements Listener {
         }
         
         // Rate limiting check
-        if (!checkRateLimit(player)) {
-            return;
-        }
+        totalEvents.incrementAndGet();
         
         try {
             // Get merchant inventory to find the villager
