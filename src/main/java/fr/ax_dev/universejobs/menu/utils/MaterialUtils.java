@@ -13,8 +13,9 @@ public class MaterialUtils {
      * For blocks, returns the block material.
      * For mobs, returns the spawn egg or special materials.
      * For MythicMobs, returns WITHER_SKELETON_SKULL.
+     * Target names are case-insensitive.
      * 
-     * @param target The action target
+     * @param target The action target (case-insensitive)
      * @return The material to use for the item
      */
     public static Material getMaterialForTarget(String target) {
@@ -22,9 +23,12 @@ public class MaterialUtils {
             return Material.STONE;
         }
         
+        // Normalize target to handle case-insensitivity
+        String normalizedTarget = target.trim();
+        
         // Handle MythicMobs (contains colon)
-        if (target.contains(":")) {
-            String[] parts = target.split(":");
+        if (normalizedTarget.contains(":")) {
+            String[] parts = normalizedTarget.split(":", 2); // Limit to 2 parts for safety
             String namespace = parts[0].toLowerCase();
             
             // MythicMobs detection
@@ -34,24 +38,33 @@ public class MaterialUtils {
             
             // CustomCrops or other plugins - try to get material from the second part
             if (parts.length > 1) {
+                String itemName = parts[1];
+                
+                // First try direct material lookup
                 try {
-                    return Material.valueOf(parts[1].toUpperCase());
+                    return Material.valueOf(itemName.toUpperCase());
                 } catch (IllegalArgumentException e) {
+                    // Try entity lookup for namespaced entities
+                    Material spawnEgg = getSpawnEggForEntity(itemName);
+                    if (spawnEgg != null) {
+                        return spawnEgg;
+                    }
+                    
                     // Fallback for custom items
                     return getGenericMaterialForNamespace(namespace);
                 }
             }
         }
         
-        // Try to get material directly (for blocks)
+        // Try to get material directly (for blocks) - case insensitive
         try {
-            return Material.valueOf(target.toUpperCase());
+            return Material.valueOf(normalizedTarget.toUpperCase());
         } catch (IllegalArgumentException e) {
             // Not a valid material, might be an entity
         }
         
-        // Try to get spawn egg for entities
-        Material spawnEgg = getSpawnEggForEntity(target);
+        // Try to get spawn egg for entities - case insensitive
+        Material spawnEgg = getSpawnEggForEntity(normalizedTarget);
         if (spawnEgg != null) {
             return spawnEgg;
         }
@@ -62,13 +75,18 @@ public class MaterialUtils {
     
     /**
      * Get spawn egg material for an entity type.
+     * Entity names are case-insensitive.
      * 
-     * @param entityName The entity name
+     * @param entityName The entity name (case-insensitive)
      * @return The spawn egg material or null if not found
      */
     private static Material getSpawnEggForEntity(String entityName) {
+        if (entityName == null || entityName.trim().isEmpty()) {
+            return null;
+        }
+        
         try {
-            EntityType entityType = EntityType.valueOf(entityName.toUpperCase());
+            EntityType entityType = EntityType.valueOf(entityName.trim().toUpperCase());
             
             // Map entity types to their spawn eggs
             return switch (entityType) {
