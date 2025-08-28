@@ -5,9 +5,11 @@ import fr.ax_dev.universejobs.action.ActionType;
 import fr.ax_dev.universejobs.action.JobAction;
 import fr.ax_dev.universejobs.job.Job;
 import fr.ax_dev.universejobs.menu.BaseMenu;
+import fr.ax_dev.universejobs.menu.config.ActionItemFormat;
 import fr.ax_dev.universejobs.menu.config.MenuItemConfig;
 import fr.ax_dev.universejobs.menu.config.SingleMenuConfig;
 import fr.ax_dev.universejobs.menu.config.SimpleConfigurationSection;
+import fr.ax_dev.universejobs.menu.utils.MaterialUtils;
 import fr.ax_dev.universejobs.menu.utils.MenuItemUtils;
 import fr.ax_dev.universejobs.reward.Reward;
 import fr.ax_dev.universejobs.utils.MessageUtils;
@@ -171,49 +173,46 @@ public class JobActionsMenu extends BaseMenu {
     }
     
     /**
-     * Create an action item.
+     * Create an action item using the configured format.
      */
     private ItemStack createActionItem(ActionInfo actionInfo) {
         ActionType actionType = actionInfo.actionType;
         JobAction action = actionInfo.action;
+        ActionItemFormat format = config.getActionItemFormat();
         
-        // Get appropriate material based on action type
-        String material = MenuItemUtils.getActionMaterial(actionType);
+        // Get material based on the target
+        Material material = MaterialUtils.getMaterialForTarget(action.getTarget());
         
+        // Use custom display name if available, otherwise use target name
+        String displayName = action.hasDisplayName() ? 
+            action.getDisplayName() : 
+            "&e" + (action.getTarget() != null ? action.getTarget() : actionType.name());
+        
+        // Start with custom lore if available
         List<String> lore = new ArrayList<>();
-        lore.add("&7Type: &e" + actionType.name().toLowerCase().replace("_", " "));
-        
-        // Add target information
-        if (action.getTarget() != null && !action.getTarget().isEmpty()) {
-            lore.add("&7Target: &e" + action.getTarget());
+        if (action.hasLore()) {
+            lore.addAll(action.getLore());
         }
         
-        // Add XP reward
-        if (action.getXp() > 0) {
-            lore.add("&7XP Reward: &b+" + action.getXp());
+        // Add bonus lore from format configuration
+        if (!format.getLoreBonus().isEmpty()) {
+            lore.addAll(format.getLoreBonus());
         }
         
-        // Add money reward
-        if (action.getMoney() > 0) {
-            lore.add("&7Money Reward: &a$" + action.getMoney());
-        }
+        // Create placeholders for action
+        Map<String, String> placeholders = createActionPlaceholders(actionType, action);
         
-        // Add conditions if any
-        if (action.hasRequirements()) {
-            lore.add("");
-            lore.add("&6Conditions:");
-            lore.add("&8- Various conditions apply");
-        }
-        
-        lore.add("");
-        lore.add("&8Action from job: &7" + job.getName());
-        
-        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
-            material, "&e&l" + MenuItemUtils.formatActionName(actionType), lore, false
-        );
+        Map<String, Object> configMap = new HashMap<>();
+        configMap.put("material", material.name());
+        configMap.put("display-name", displayName);
+        configMap.put("lore", lore);
+        configMap.put("amount", format.getAmount());
+        configMap.put("glow", format.isGlow());
+        configMap.put("hide-attributes", format.isHideAttributes());
+        configMap.put("hide-enchants", format.isHideEnchants());
         
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig, MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription()));
+        return createMenuItem(itemConfig, placeholders);
     }
     
     /**
@@ -279,6 +278,39 @@ public class JobActionsMenu extends BaseMenu {
         Map<String, MenuItemConfig> navItems = config.getNavigationItems();
         MenuItemUtils.addNavigationItems(inventory, navItems, currentPage, hasNextPage(),
             getNavigationPlaceholders(), config -> createMenuItem(config, getNavigationPlaceholders()));
+    }
+    
+    /**
+     * Create comprehensive placeholders for an action.
+     */
+    private Map<String, String> createActionPlaceholders(ActionType actionType, JobAction action) {
+        Map<String, String> placeholders = new HashMap<>();
+        
+        // Basic action information
+        placeholders.put("action_type", actionType.name());
+        placeholders.put("action_target", action.getTarget() != null ? action.getTarget() : "");
+        placeholders.put("action_name", action.getName() != null ? action.getName() : "");
+        placeholders.put("action_display_name", action.getDisplayName() != null ? action.getDisplayName() : "");
+        placeholders.put("action_xp", String.valueOf(action.getXp()));
+        placeholders.put("action_money", String.valueOf(action.getMoney()));
+        
+        // Interaction type for BLOCK_INTERACT actions
+        placeholders.put("action_interact_type", action.getInteractType() != null ? action.getInteractType() : "");
+        
+        // Requirements summary
+        String requirementsSummary = action.hasRequirements() ? "Various conditions apply" : "None";
+        placeholders.put("action_requirements", requirementsSummary);
+        
+        // Cooldown information  
+        String cooldownInfo = action.getActionLimit() != null ? "Limited uses" : "No cooldown";
+        placeholders.put("action_cooldown", cooldownInfo);
+        
+        // Job information
+        placeholders.put("job_id", job.getId());
+        placeholders.put("job_name", job.getName());
+        placeholders.put("job_description", job.getDescription());
+        
+        return placeholders;
     }
     
     /**

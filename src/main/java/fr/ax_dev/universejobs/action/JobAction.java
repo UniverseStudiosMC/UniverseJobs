@@ -23,6 +23,8 @@ public class JobAction {
     private final ConditionGroup requirements;
     private final String name;
     private final String description;
+    private final String displayName;
+    private final List<String> lore;
     private final MessageConfig message;
     private final List<String> commands;
     private final String interactType;
@@ -44,6 +46,8 @@ public class JobAction {
         this.money = config.getDouble("money", 0.0);
         this.name = config.getString("name", "");
         this.description = config.getString("description", "");
+        this.displayName = config.getString("display-name", "");
+        this.lore = config.getStringList("lore");
         this.interactType = config.getString("interact-type", "RIGHT_CLICK").toUpperCase();
         this.enchantLevel = config.getString("enchant-level", null);
         
@@ -256,6 +260,42 @@ public class JobAction {
      */
     public String getDescription() {
         return description;
+    }
+    
+    /**
+     * Get the custom display name for this action.
+     * 
+     * @return The display name, or empty string if not set
+     */
+    public String getDisplayName() {
+        return displayName;
+    }
+    
+    /**
+     * Check if this action has a custom display name.
+     * 
+     * @return true if display name is set and not empty
+     */
+    public boolean hasDisplayName() {
+        return displayName != null && !displayName.trim().isEmpty();
+    }
+    
+    /**
+     * Get the custom lore for this action.
+     * 
+     * @return List of lore lines, or empty list if not set
+     */
+    public List<String> getLore() {
+        return new ArrayList<>(lore);
+    }
+    
+    /**
+     * Check if this action has custom lore.
+     * 
+     * @return true if lore is set and not empty
+     */
+    public boolean hasLore() {
+        return lore != null && !lore.isEmpty();
     }
     
     /**

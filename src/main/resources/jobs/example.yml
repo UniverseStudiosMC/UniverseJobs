@@ -26,6 +26,9 @@ actions:
   BREAK:
     simple_stone:
       target: "STONE"                       # Block to break
+      display-name: "Break a stone" ## for actions menu
+      lore:
+      - "Break a stone for gain reward" ## for actions menu
       xp: 1.0                              # XP earned
       money: 3.0                           # Money earned (optional)
   BLOCK_INTERACT: ##

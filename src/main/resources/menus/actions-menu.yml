@@ -150,3 +150,30 @@ navigation-items:
     hide-attributes: true
     hide-enchants: false
     action: none
+
+# Action item format configuration
+# This defines how action items appear in the menu
+# Available placeholders:
+# - {action_type} - The action type (BREAK, KILL, etc.)
+# - {action_target} - The target (STONE, ZOMBIE, etc.)
+# - {action_name} - Internal action name
+# - {action_display_name} - Custom display name from config
+# - {action_lore} - Custom lore lines from config
+# - {action_xp} - XP reward for this action
+# - {action_money} - Money reward for this action
+# - {action_interact_type} - Interaction type (for BLOCK_INTERACT)
+# - {action_requirements} - Requirements summary
+# - {action_cooldown} - Cooldown information
+action-item-format:
+  lore_bonus:
+    - ""
+    - "&7Rewards:"
+    - "&8├ &7XP: &a+{action_xp}"
+    - "&8└ &7Money: &6${action_money}"
+    - ""
+    - "&7Requirements: {action_requirements}"
+  # Item settings
+  amount: 1
+  glow: false
+  hide-attributes: true
+  hide-enchants: true
