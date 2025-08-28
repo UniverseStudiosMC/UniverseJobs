@@ -21,7 +21,7 @@ import fr.ax_dev.universejobs.protection.BlockProtectionManager;
 import fr.ax_dev.universejobs.reward.RewardManager;
 import fr.ax_dev.universejobs.reward.gui.RewardGuiManager;
 import fr.ax_dev.universejobs.menu.MenuManager;
-import fr.ax_dev.universejobs.utils.XpMessageSender;
+import fr.ax_dev.universejobs.utils.AsyncXpMessageSender;
 import fr.ax_dev.universejobs.placeholder.PlaceholderManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -45,7 +45,7 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
     private ActionLimitManager limitManager;
     private XpBonusManager bonusManager;
     private MoneyBonusManager moneyBonusManager;
-    private XpMessageSender messageSender;
+    private AsyncXpMessageSender messageSender;
     private BlockProtectionManager protectionManager;
     private RewardManager rewardManager;
     private RewardGuiManager rewardGuiManager;
@@ -68,7 +68,7 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         this.limitManager = new ActionLimitManager(this);
         this.bonusManager = new XpBonusManager(this);
         this.moneyBonusManager = new MoneyBonusManager(this);
-        this.messageSender = new XpMessageSender(this);
+        this.messageSender = new AsyncXpMessageSender(this);
         this.protectionManager = new BlockProtectionManager(this);
         this.rewardManager = new RewardManager(this);
         this.rewardGuiManager = new RewardGuiManager(this, rewardManager);
@@ -242,7 +242,7 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         shutdownRewardGuiManager();
         shutdownManagerSafely("menu manager", menuManager, () -> menuManager.closeAllMenus());
         shutdownManagerSafely("reward manager", rewardManager, () -> rewardManager.shutdown());
-        shutdownManagerSafely("message sender", messageSender, () -> messageSender.cleanup());
+        shutdownManagerSafely("message sender", messageSender, () -> messageSender.shutdown());
         shutdownManagerSafely("bonus manager", bonusManager, () -> bonusManager.shutdown());
         shutdownManagerSafely("money bonus manager", moneyBonusManager, () -> moneyBonusManager.shutdown());
         shutdownManagerSafely("placeholder manager", placeholderManager, () -> placeholderManager.shutdown());
@@ -459,7 +459,16 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
      * 
      * @return The XP message sender
      */
-    public XpMessageSender getMessageSender() {
+    public AsyncXpMessageSender getMessageSender() {
+        return messageSender;
+    }
+    
+    /**
+     * Get the XP message sender (legacy method name for compatibility).
+     * 
+     * @return The XP message sender
+     */
+    public AsyncXpMessageSender getXpMessageSender() {
         return messageSender;
     }
     

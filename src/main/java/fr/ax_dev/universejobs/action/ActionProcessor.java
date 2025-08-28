@@ -9,7 +9,7 @@ import fr.ax_dev.universejobs.config.MessageConfig;
 import fr.ax_dev.universejobs.job.Job;
 import fr.ax_dev.universejobs.job.JobManager;
 import fr.ax_dev.universejobs.utils.MessageUtils;
-import fr.ax_dev.universejobs.utils.XpMessageSender;
+import fr.ax_dev.universejobs.utils.AsyncXpMessageSender;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.NamespacedKey;
@@ -32,7 +32,7 @@ public class ActionProcessor {
     private final JobManager jobManager;
     private final XpBonusManager bonusManager;
     private final MoneyBonusManager moneyBonusManager;
-    private final XpMessageSender messageSender;
+    private final AsyncXpMessageSender messageSender;
     private final ActionLimitManager limitManager;
     
     /**
@@ -45,7 +45,7 @@ public class ActionProcessor {
      * @param messageSender The XP message sender
      * @param limitManager The action limit manager
      */
-    public ActionProcessor(UniverseJobs plugin, JobManager jobManager, XpBonusManager bonusManager, MoneyBonusManager moneyBonusManager, XpMessageSender messageSender, ActionLimitManager limitManager) {
+    public ActionProcessor(UniverseJobs plugin, JobManager jobManager, XpBonusManager bonusManager, MoneyBonusManager moneyBonusManager, AsyncXpMessageSender messageSender, ActionLimitManager limitManager) {
         this.plugin = plugin;
         this.jobManager = jobManager;
         this.bonusManager = bonusManager;
