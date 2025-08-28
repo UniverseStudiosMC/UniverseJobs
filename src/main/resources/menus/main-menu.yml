@@ -29,7 +29,13 @@ fill-slots: []
 
 # Content slots where job items will be placed
 content-slots: [10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43]
-
+# If a job is not listed here, it will be placed automatically in available content slots
+job-slots:
+  # miner: 10    # Place miner job in slot 10
+  # farmer: 11   # Place farmer job in slot 11
+  # builder: 12  # Place builder job in slot 12
+  # hunter: 13   # Place hunter job in slot 13
+  
 # Navigation slot configuration
 navigation-slots:
   previous: [45]

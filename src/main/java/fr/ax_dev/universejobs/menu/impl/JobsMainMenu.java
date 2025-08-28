@@ -8,6 +8,7 @@ import fr.ax_dev.universejobs.menu.config.JobItemFormat;
 import fr.ax_dev.universejobs.menu.config.MenuItemConfig;
 import fr.ax_dev.universejobs.menu.config.SingleMenuConfig;
 import fr.ax_dev.universejobs.menu.config.SimpleConfigurationSection;
+import fr.ax_dev.universejobs.menu.config.JobSlotManager;
 import fr.ax_dev.universejobs.menu.utils.MenuItemUtils;
 import fr.ax_dev.universejobs.utils.MessageUtils;
 import org.bukkit.Material;
@@ -25,11 +26,13 @@ public class JobsMainMenu extends BaseMenu {
     
     private final List<Job> availableJobs;
     private final PlayerJobData playerData;
+    private final JobSlotManager jobSlotManager;
     
-    public JobsMainMenu(UniverseJobs plugin, org.bukkit.entity.Player player, SingleMenuConfig config) {
+    public JobsMainMenu(UniverseJobs plugin, org.bukkit.entity.Player player, SingleMenuConfig config, JobSlotManager jobSlotManager) {
         super(plugin, player, config);
         
         this.playerData = plugin.getJobManager().getPlayerData(player.getUniqueId());
+        this.jobSlotManager = jobSlotManager;
         this.availableJobs = plugin.getJobManager().getJobs().values().stream()
             .filter(job -> job.isEnabled())
             .filter(job -> job.getPermission() == null || player.hasPermission(job.getPermission()))
@@ -68,22 +71,24 @@ public class JobsMainMenu extends BaseMenu {
     }
     
     /**
-     * Add job items to the menu.
+     * Add job items to the menu using configured slots.
      */
     private void addJobItems() {
-        List<Integer> contentSlots = config.getContentSlots();
-        int startIndex = currentPage * config.getItemsPerPage();
-        int endIndex = Math.min(startIndex + config.getItemsPerPage(), availableJobs.size());
+        // Calculate slots for all available jobs using the slot manager
+        Map<String, Integer> jobSlots = jobSlotManager.calculateJobSlots(availableJobs);
         
-        for (int i = startIndex; i < endIndex; i++) {
-            Job job = availableJobs.get(i);
-            int slotIndex = i - startIndex;
-            
-            if (slotIndex >= contentSlots.size()) break;
-            
-            int slot = contentSlots.get(slotIndex);
-            ItemStack jobItem = createJobItem(job);
-            inventory.setItem(slot, jobItem);
+        // Place each job in its calculated slot
+        for (Job job : availableJobs) {
+            Integer slot = jobSlots.get(job.getId());
+            if (slot != null) {
+                ItemStack jobItem = createJobItem(job);
+                inventory.setItem(slot, jobItem);
+                
+                // Debug log si activé
+                if (plugin.getConfigCache() != null && plugin.getConfigCache().isDebugEnabled()) {
+                    plugin.getLogger().info("Placed job '" + job.getId() + "' in slot " + slot);
+                }
+            }
         }
     }
     

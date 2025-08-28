@@ -722,6 +722,7 @@ public class AdminJobCommandHandler {
         return true;
     }
     
+    
     /**
      * Affiche l'aide des commandes admin.
      */
@@ -760,6 +761,7 @@ public class AdminJobCommandHandler {
             if ("cache".equals(subCommand)) {
                 return Arrays.asList("reload", "stats", "clear");
             }
+            
         }
         
         if (args.length == 4) {
@@ -778,6 +780,7 @@ public class AdminJobCommandHandler {
                 options.add("ALL");
                 return options;
             }
+            
         }
         
         return new ArrayList<>();

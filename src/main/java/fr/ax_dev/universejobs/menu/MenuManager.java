@@ -5,6 +5,7 @@ import fr.ax_dev.universejobs.menu.impl.JobActionsMenu;
 import fr.ax_dev.universejobs.menu.impl.JobsMainMenu;
 import fr.ax_dev.universejobs.menu.impl.SingleJobMenu;
 import fr.ax_dev.universejobs.menu.impl.GlobalRankingsMenu;
+import fr.ax_dev.universejobs.menu.config.JobSlotManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -27,11 +28,13 @@ public class MenuManager implements Listener {
     private final UniverseJobs plugin;
     private final Map<UUID, BaseMenu> openMenus;
     private final MenuConfig menuConfig;
+    private final JobSlotManager jobSlotManager;
     
     public MenuManager(UniverseJobs plugin) {
         this.plugin = plugin;
         this.openMenus = new ConcurrentHashMap<>();
         this.menuConfig = new MenuConfig(plugin);
+        this.jobSlotManager = new JobSlotManager(plugin);
         
         // Register event listener
         Bukkit.getPluginManager().registerEvents(this, plugin);
@@ -46,7 +49,7 @@ public class MenuManager implements Listener {
     public void openJobsMainMenu(Player player) {
         closeCurrentMenu(player);
         
-        JobsMainMenu menu = new JobsMainMenu(plugin, player, menuConfig.getMainMenuConfig());
+        JobsMainMenu menu = new JobsMainMenu(plugin, player, menuConfig.getMainMenuConfig(), jobSlotManager);
         openMenus.put(player.getUniqueId(), menu);
         menu.open();
     }
@@ -174,6 +177,7 @@ public class MenuManager implements Listener {
      */
     public void reloadConfigurations() {
         menuConfig.loadConfigurations();
+        jobSlotManager.reload();
     }
     
     /**
@@ -181,6 +185,13 @@ public class MenuManager implements Listener {
      */
     public MenuConfig getMenuConfig() {
         return menuConfig;
+    }
+    
+    /**
+     * Get the job slot manager.
+     */
+    public JobSlotManager getJobSlotManager() {
+        return jobSlotManager;
     }
     
     /**

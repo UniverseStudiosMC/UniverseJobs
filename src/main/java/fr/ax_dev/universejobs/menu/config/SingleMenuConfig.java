@@ -21,6 +21,7 @@ public class SingleMenuConfig {
     private final int itemsPerPage;
     private final JobItemFormat jobItemFormat;
     private final ActionItemFormat actionItemFormat;
+    private final Map<String, Integer> jobSlots;
     
     public SingleMenuConfig(ConfigurationSection config) {
         this.title = config.getString("title", "&6Jobs Menu");
@@ -104,6 +105,18 @@ public class SingleMenuConfig {
             this.actionItemFormat = new ActionItemFormat(actionFormatSection);
         } else {
             this.actionItemFormat = ActionItemFormat.getDefault();
+        }
+        
+        // Load job slots configuration
+        this.jobSlots = new HashMap<>();
+        ConfigurationSection jobSlotsSection = config.getConfigurationSection("job-slots");
+        if (jobSlotsSection != null) {
+            for (String jobId : jobSlotsSection.getKeys(false)) {
+                int slot = jobSlotsSection.getInt(jobId);
+                if (slot >= 0 && slot < size) {
+                    this.jobSlots.put(jobId, slot);
+                }
+            }
         }
     }
     
@@ -257,5 +270,6 @@ public class SingleMenuConfig {
     public int getItemsPerPage() { return itemsPerPage; }
     public JobItemFormat getJobItemFormat() { return jobItemFormat; }
     public ActionItemFormat getActionItemFormat() { return actionItemFormat; }
+    public Map<String, Integer> getJobSlots() { return new HashMap<>(jobSlots); }
     
 }
