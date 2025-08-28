@@ -130,7 +130,14 @@ public class JobManager {
             }
         }
         
-        // Jobs loaded successfully
+        plugin.getLogger().info("Loaded " + jobs.size() + " jobs successfully");
+        
+        // Clean up invalid jobs after initial load to ensure data consistency
+        if (!jobs.isEmpty()) {
+            plugin.getFoliaManager().runLater(() -> {
+                cleanupInvalidJobs();
+            }, 20L); // Wait 1 second after load to ensure everything is initialized
+        }
     }
     
     /**
@@ -714,8 +721,12 @@ public class JobManager {
                             plugin.getPlayerCache().preloadPlayer(onlinePlayer.getUniqueId());
                         }
                         
-                        plugin.getLogger().info("Cleanup completed: " + cleanedPlayers.get() + " players cleaned, " + 
-                            removedJobs.get() + " invalid jobs removed, cache refreshed");
+                        if (removedJobs.get() > 0) {
+                            plugin.getLogger().info("Startup cleanup completed: " + cleanedPlayers.get() + " players cleaned, " + 
+                                removedJobs.get() + " invalid jobs removed, cache refreshed");
+                        } else {
+                            plugin.getLogger().info("Startup cleanup completed: all player data is clean");
+                        }
                     });
                 } else if (removedJobs.get() == 0) {
                     plugin.getLogger().info("Job cleanup completed: no invalid jobs found");
