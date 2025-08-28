@@ -210,20 +210,38 @@ public class ActionProcessor {
     private boolean processPlayerJobFast(Player player, String jobId, ActionType actionType, Event event, ConditionContext context) {
         Job job = jobManager.getJob(jobId);
         if (job == null || !job.isEnabled()) {
+            if (configCache.isDebugEnabled()) {
+                plugin.getLogger().info("DEBUG: Job " + jobId + " is null or disabled");
+            }
             return false;
         }
         
         // Cache lookup direct des actions
         Set<JobAction> actions = configCache.getActionsForMaterial(context.getTarget());
         if (actions.isEmpty()) {
+            if (configCache.isDebugEnabled()) {
+                plugin.getLogger().info("DEBUG: No actions found for material " + context.getTarget());
+                plugin.getLogger().info("DEBUG: Available cached materials: " + configCache.getCachedMaterials());
+            }
             return false;
+        }
+        
+        if (configCache.isDebugEnabled()) {
+            plugin.getLogger().info("DEBUG: Found " + actions.size() + " actions for material " + context.getTarget());
         }
         
         boolean shouldCancel = false;
         for (JobAction action : actions) {
             // Validation ultra-rapide
             if (!configCache.isValidTarget(action.getTarget(), context.getTarget())) {
+                if (configCache.isDebugEnabled()) {
+                    plugin.getLogger().info("DEBUG: Action target " + action.getTarget() + " doesn't match " + context.getTarget());
+                }
                 continue;
+            }
+            
+            if (configCache.isDebugEnabled()) {
+                plugin.getLogger().info("DEBUG: Processing action for " + action.getTarget() + " with " + action.getXp() + " XP");
             }
             
             // Process rewards sans validation lourde
