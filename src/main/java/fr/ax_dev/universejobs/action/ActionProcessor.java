@@ -88,7 +88,15 @@ public class ActionProcessor {
         // Lookup instantané des jobs (cache pré-chargé)
         Set<String> playerJobs = playerCache.getPlayerJobs(player.getUniqueId());
         if (playerJobs.isEmpty()) {
+            if (configCache.isDebugEnabled()) {
+                plugin.getLogger().info("DEBUG: Player " + player.getName() + " has no jobs! Available jobs in cache: " + 
+                    playerCache.getStats().getOrDefault("cached_players", "0"));
+            }
             return false;
+        }
+        
+        if (configCache.isDebugEnabled()) {
+            plugin.getLogger().info("DEBUG: Player " + player.getName() + " has jobs: " + playerJobs);
         }
         
         // Process en parallèle pour performance maximale
