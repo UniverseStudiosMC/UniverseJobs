@@ -47,6 +47,15 @@ public class AdminJobCommandHandler extends JobCommandHandler {
     }
     
     /**
+     * Implementation of abstract method from JobCommandHandler.
+     */
+    @Override
+    public boolean handleCommand(CommandSender sender, String[] args) {
+        // This is not used for admin commands - they use handleAdminCommand instead
+        return false;
+    }
+    
+    /**
      * Handles admin commands.
      * 
      * @param sender The command sender
@@ -86,6 +95,8 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                 return handleCleanup(sender, args);
             case "debug":
                 return handleDebug(sender, args);
+            case "validateconfig":
+                return handleValidateConfig(sender, args);
             default:
                 sendAdminHelp(sender);
                 return true;
@@ -1078,6 +1089,28 @@ public class AdminJobCommandHandler extends JobCommandHandler {
     }
     
     /**
+     * Handle the validateconfig admin command.
+     */
+    private boolean handleValidateConfig(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("universejobs.admin.validateconfig")) {
+            sendMessage(sender, "no-permission");
+            return true;
+        }
+        
+        MessageUtils.sendMessage(sender, "&6Validating and auto-generating missing configurations...");
+        
+        try {
+            plugin.getConfigManager().validateAllConfigurations();
+            MessageUtils.sendMessage(sender, "&aConfiguration validation complete! Check console for details.");
+        } catch (Exception e) {
+            MessageUtils.sendMessage(sender, "&cConfiguration validation failed: " + e.getMessage());
+            plugin.getLogger().warning("Configuration validation failed: " + e.getMessage());
+        }
+        
+        return true;
+    }
+    
+    /**
      * Shows admin command help.
      */
     private void sendAdminHelp(CommandSender sender) {
@@ -1094,6 +1127,7 @@ public class AdminJobCommandHandler extends JobCommandHandler {
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.migrate"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.debug"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.cleanup"));
+        MessageUtils.sendMessage(sender, "&e/jobs admin validateconfig &7- Validate and auto-generate missing config values");
     }
     
     /**
@@ -1101,7 +1135,7 @@ public class AdminJobCommandHandler extends JobCommandHandler {
      */
     public List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 2) {
-            return Arrays.asList("xp", "exp", "level", "forcejoin", "forceleave", "reset", "info", "cache", "debug", "cleanup", "reload", "migrate");
+            return Arrays.asList("xp", "exp", "level", "forcejoin", "forceleave", "reset", "info", "cache", "debug", "cleanup", "reload", "migrate", "validateconfig");
         }
         
         if (args.length == 3) {

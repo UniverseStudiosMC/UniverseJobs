@@ -13,6 +13,7 @@ import java.util.Map;
 public class ConfigManager {
     
     private final UniverseJobs plugin;
+    private final ConfigValidator validator;
     
     /**
      * Create a new ConfigManager.
@@ -21,12 +22,16 @@ public class ConfigManager {
      */
     public ConfigManager(UniverseJobs plugin) {
         this.plugin = plugin;
+        this.validator = new ConfigValidator(plugin);
     }
     
     /**
      * Load the main configuration file.
      */
     public void loadConfig() {
+        // First, validate and auto-generate missing configurations
+        validator.validateAndUpdate("config.yml");
+        
         plugin.saveDefaultConfig();
         plugin.reloadConfig();
         
@@ -53,8 +58,25 @@ public class ConfigManager {
      * Reload the configuration.
      */
     public void reloadConfig() {
+        // Validate and auto-generate missing configurations before reload
+        validator.validateAndUpdate("config.yml");
+        
         plugin.reloadConfig();
         validateConfig(plugin.getConfig());
+    }
+    
+    /**
+     * Validate all known configuration files and auto-generate missing values.
+     */
+    public void validateAllConfigurations() {
+        validator.validateAllConfigurations();
+    }
+    
+    /**
+     * Get the configuration validator instance.
+     */
+    public ConfigValidator getValidator() {
+        return validator;
     }
     
     /**

@@ -100,6 +100,15 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
             return;
         }
         
+        // Validate and auto-generate missing configurations
+        try {
+            configManager.validateAllConfigurations();
+            getLogger().info("Configuration validation and auto-generation complete");
+        } catch (Exception e) {
+            getLogger().log(Level.WARNING, "Configuration validation encountered issues", e);
+            // Don't disable plugin, just log warning - missing configs have defaults
+        }
+        
         // Load jobs
         try {
             jobManager.loadJobs();
