@@ -41,7 +41,8 @@ public class RewardsCommandHandler extends JobCommandHandler {
         }
         
         if (args.length < 2) {
-            return false;
+            sendRewardsHelp(player);
+            return true;
         }
         
         String rewardSubCommand = args[1].toLowerCase();
@@ -56,7 +57,8 @@ public class RewardsCommandHandler extends JobCommandHandler {
             case "reload" -> handleReloadCommand(player);
             case CMD_DEBUG -> handleDebugCommand(player, args);
             default -> {
-                return false;
+                sendRewardsHelp(player);
+                return true;
             }
         }
         
@@ -423,5 +425,25 @@ public class RewardsCommandHandler extends JobCommandHandler {
                 .map(Player::getName)
                 .filter(name -> name.toLowerCase().startsWith(input))
                 .collect(Collectors.toList());
+    }
+    
+    /**
+     * Send rewards help message to a player.
+     */
+    private void sendRewardsHelp(Player player) {
+        MessageUtils.sendMessage(player, "&6=== Job Rewards Commands ===");
+        MessageUtils.sendMessage(player, "&e/jobs rewards browse &7- Browse all available rewards");
+        MessageUtils.sendMessage(player, "&e/jobs rewards menu &7- Open rewards GUI menu");
+        MessageUtils.sendMessage(player, "&e/jobs rewards list [job] &7- List rewards for a job");
+        MessageUtils.sendMessage(player, "&e/jobs rewards claim <job> <reward> &7- Claim a specific reward");
+        MessageUtils.sendMessage(player, "&e/jobs rewards info <job> <reward> &7- View reward details");
+        
+        if (player.hasPermission(PERM_REWARDS_ADMIN)) {
+            MessageUtils.sendMessage(player, "&6Admin Commands:");
+            MessageUtils.sendMessage(player, "&e/jobs rewards admin give <player> <job> <reward> &7- Give reward to player");
+            MessageUtils.sendMessage(player, "&e/jobs rewards admin reset <player> <job> [reward] &7- Reset player rewards");
+            MessageUtils.sendMessage(player, "&e/jobs rewards reload &7- Reload rewards configuration");
+            MessageUtils.sendMessage(player, "&e/jobs rewards debug <job> [reward] &7- Debug reward conditions");
+        }
     }
 }

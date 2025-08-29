@@ -7,6 +7,7 @@ import fr.ax_dev.universejobs.utils.MessageUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -142,19 +143,15 @@ public class MenuCommandHandler extends JobCommandHandler {
         
         if (args.length == 1) {
             // Base commands + all job names for direct access
-            List<String> completions = Arrays.asList(
+            List<String> completions = new ArrayList<>(Arrays.asList(
                 "main", "browse", "list", "all", // Main menu
                 "rankings", "leaderboard", "top", "rank", // Rankings
                 "help" // Help
-            );
+            ));
             
             // Add admin commands if player has permission
             if (sender.hasPermission("universejobs.admin.menu.reload")) {
-                completions = Arrays.asList(
-                    "main", "browse", "list", "all",
-                    "rankings", "leaderboard", "top", "rank",
-                    "help", "reload"
-                );
+                completions.add("reload");
             }
             
             // Add all job names for direct access

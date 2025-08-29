@@ -41,6 +41,9 @@ public class MenuManager implements Listener {
         
         // Load menu configurations
         menuConfig.loadConfigurations();
+        
+        // Initialize job slot manager with MenuConfig reference
+        jobSlotManager.initialize(menuConfig);
     }
     
     /**

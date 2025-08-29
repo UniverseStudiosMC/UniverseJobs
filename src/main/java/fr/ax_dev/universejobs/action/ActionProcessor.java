@@ -247,15 +247,21 @@ public class ActionProcessor {
                 plugin.getLogger().info("DEBUG: Processing action for " + action.getTarget() + " with " + action.getXp() + " XP");
             }
             
-            // Process rewards sans validation lourde
-            processActionRewardsFast(player, job, action, context);
-            
+            // Check requirements first before giving rewards
+            boolean conditionMet = true;
             if (action.hasRequirements()) {
                 ConditionResult result = action.getRequirements().evaluate(player, event, context);
+                conditionMet = result.isAllowed();
+                
                 if (result.shouldCancelEvent()) {
                     shouldCancel = true;
                 }
                 result.execute(player);
+            }
+            
+            // Only process rewards if conditions are met
+            if (conditionMet) {
+                processActionRewardsFast(player, job, action, context);
             }
         }
         

@@ -2,6 +2,7 @@ package fr.ax_dev.universejobs.menu.config;
 
 import fr.ax_dev.universejobs.UniverseJobs;
 import fr.ax_dev.universejobs.job.Job;
+import fr.ax_dev.universejobs.menu.MenuConfig;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -19,6 +20,7 @@ public class JobSlotManager {
     
     private final UniverseJobs plugin;
     private final File configFile;
+    private MenuConfig menuConfig;
     
     // Map: jobId -> slot number (0-53 pour inventaire 6 lignes)
     private final Map<String, Integer> jobSlots = new ConcurrentHashMap<>();
@@ -37,6 +39,14 @@ public class JobSlotManager {
         this.configFile = new File(plugin.getDataFolder(), "menus/job-slots.yml");
         
         initializeDefaultSlots();
+        // Don't load configuration in constructor - will be done after MenuManager is fully initialized
+    }
+    
+    /**
+     * Initialize with MenuConfig reference.
+     */
+    public void initialize(MenuConfig menuConfig) {
+        this.menuConfig = menuConfig;
         loadConfiguration();
     }
     
@@ -87,7 +97,11 @@ public class JobSlotManager {
             slotJobs.clear();
             
             // Get main menu configuration
-            var mainMenuConfig = plugin.getMenuManager().getMenuConfig().getMainMenuConfig();
+            if (menuConfig == null) {
+                plugin.getLogger().warning("MenuConfig not initialized in JobSlotManager");
+                return;
+            }
+            var mainMenuConfig = menuConfig.getMainMenuConfig();
             Map<String, Integer> configuredSlots = mainMenuConfig.getJobSlots();
             
             // Load job slots from main menu configuration
