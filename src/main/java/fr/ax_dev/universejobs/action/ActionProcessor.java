@@ -199,10 +199,22 @@ public class ActionProcessor {
             return false;
         }
         
-        boolean shouldCancel = processActionRequirements(player, action, event, context);
+        boolean shouldCancel = false;
+        boolean conditionMet = true;
         
-        processActionRewards(player, job, action, context);
-        executeActionEffects(player, action);
+        // Check requirements first
+        if (action.hasRequirements()) {
+            ConditionResult result = action.getRequirements().evaluate(player, event, context);
+            conditionMet = result.isAllowed();
+            shouldCancel = result.shouldCancelEvent();
+            result.execute(player);
+        }
+        
+        // Only process rewards and effects if conditions are met
+        if (conditionMet) {
+            processActionRewardsFast(player, job, action, context);
+            executeActionEffects(player, action);
+        }
         
         return shouldCancel;
     }
@@ -269,7 +281,7 @@ public class ActionProcessor {
     }
     
     /**
-     * Version ultra-rapide des rewards.
+     * Process action rewards with optimal performance and all features.
      */
     private void processActionRewardsFast(Player player, Job job, JobAction action, ConditionContext context) {
         double xp = action.getXp();
@@ -283,6 +295,20 @@ public class ActionProcessor {
             int craftMultiplier = (Integer) craftMultiplierObj;
             xp *= craftMultiplier;
             money *= craftMultiplier;
+        }
+        
+        // Check action limits first (if any)
+        if (action.hasLimits()) {
+            ActionLimitManager.ActionGains allowedGains = limitManager.checkAndConsumeLimit(
+                player, job.getId(), action.getTarget(), xp, money);
+            
+            xp = allowedGains.getXp();
+            money = allowedGains.getMoney();
+            
+            // If no gains allowed due to limits, return early
+            if (!allowedGains.hasGains()) {
+                return;
+            }
         }
         
         // XP processing avec cache
@@ -471,22 +497,6 @@ public class ActionProcessor {
                 MATCHES_SUFFIX + potionTypeMatches);
         
         return potionTypeMatches;
-    }
-    
-    /**
-     * Process action requirements and return whether event should be cancelled.
-     */
-    private boolean processActionRequirements(Player player, JobAction action, Event event, ConditionContext context) {
-        if (!action.hasRequirements()) {
-            return false;
-        }
-        
-        ConditionResult result = action.getRequirements().evaluate(player, event, context);
-        boolean shouldCancel = result.shouldCancelEvent();
-        
-        result.execute(player);
-        
-        return shouldCancel;
     }
     
     /**
