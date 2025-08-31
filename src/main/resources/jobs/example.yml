@@ -18,11 +18,27 @@ xp:
   xp: "example" ##FILE OR EQUATION
   message:
     type: "BOSSBAR" # Types: CHAT, ACTIONBAR, BOSSBAR, TITLE
-    text: "&e+{exp} XP &6+{money} MONEY &8| &6{job} &7Level {level}"
-    show-progress: true
-    tick: 20 #update bossbar, actionbar in tick
+    text: "{message_xp} {message_money} <gray>| <#FFD700>{job} <gray>Level <#32CD32>{level}"
+    money: "<#FFD700>+{money} money"
+    xp: "<#32CD32>+{xp} xp"
+    options:
+      color: "RED" #BOSSBAR
+      style: "SEGMENTED_20" #BOSSBAR
+      duration: "10" #TITLE BOSSBAR ACTIONBAR
+      fade-in: 10 #TITLE
+      fade-out: 20 #TITLE
+      show-progress: true #BOSSBAR
 
 actions:
+  PLACE:
+    simple_place:
+      target: "COBBLESTONE"
+      display-name: "Place cobblestone"
+      lore:
+      - "Place cobblestone blocks"
+      xp: 0.5
+      money: 1.0
+      
   BREAK:
     simple_stone:
       target: "stone"                       # Block to break
@@ -173,6 +189,54 @@ actions:
       target: "POTION"  # No potion-type = any potion
       xp: 1.0
 
+  KILL:
+    simple_kill:
+      target: "ZOMBIE"
+      display-name: "Kill zombies"
+      lore:
+      - "Eliminate zombies"
+      xp: 2.0
+      money: 1.5
+    mythic_boss:
+      target: "mythicmobs:DRAGON_BOSS"
+      xp: 50.0
+      money: 100.0
+      
+  FISH:
+    simple_fish:
+      target: "COD"
+      display-name: "Catch fish"
+      lore:
+      - "Go fishing for rewards"
+      xp: 3.0
+      money: 2.0
+    treasure_fish:
+      target: "ENCHANTED_BOOK"  # Treasure fishing
+      xp: 15.0
+      money: 10.0
+      
+  BREW:
+    simple_brew:
+      target: "POTION"
+      display-name: "Brew potions"
+      lore:
+      - "Create potions for XP"
+      xp: 5.0
+      money: 3.0
+      
+  CRAFT:
+    simple_craft:
+      target: "STONE_SWORD"
+      display-name: "Craft stone sword"
+      lore:
+      - "Craft basic weapons"
+      xp: 2.0
+      money: 1.0
+    advanced_craft:
+      target: "DIAMOND_PICKAXE"
+      xp: 10.0
+      money: 15.0
+
     mine_diamond_vip:
       target: "DIAMOND_ORE"
       xp: 30.0
@@ -183,7 +247,7 @@ actions:
         multiple_condition:
           level_check:
             placeholder:
-              placeholder: "%UniverseJobs_level_example%"
+              placeholder: "%universejobs_player_level%"
               operator: "greater_equal"
               value: "10"
           player_name_check:
@@ -192,7 +256,7 @@ actions:
               operator: "equals"
               value: "STEVE"
           deny:
-            message: "&c❌ NOT STEVE or insufficient level!"
+            message: "<#FF6B6B>❌ NOT STEVE or insufficient level!"
             cancel-event: true
           accept:
             commands:

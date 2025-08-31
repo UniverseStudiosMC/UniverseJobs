@@ -17,6 +17,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,8 +39,16 @@ public abstract class BaseMenu implements InventoryHolder {
         this.player = player;
         this.config = config;
         
+        // Don't create inventory here - let subclass call initialize() when ready
+    }
+    
+    /**
+     * Initialize the menu after all fields are set.
+     * Must be called by subclasses after their initialization is complete.
+     */
+    protected final void initialize() {
         createInventory();
-        // Don't call populateInventory() here - let subclass call it after initialization
+        populateInventory();
     }
     
     /**
@@ -145,9 +154,26 @@ public abstract class BaseMenu implements InventoryHolder {
         
         ItemStack item = builder.build();
         
-        // Add enchantments and glow effect after building
+        // Add enchantments, glow effect, and skull owner after building
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
+            // Handle skull owner for player heads
+            if (item.getType() == Material.PLAYER_HEAD && !itemConfig.getSkullOwner().isEmpty()) {
+                if (meta instanceof SkullMeta) {
+                    SkullMeta skullMeta = (SkullMeta) meta;
+                    String skullOwner = itemConfig.getSkullOwner();
+                    if (customPlaceholders != null) {
+                        skullOwner = replacePlaceholders(skullOwner, customPlaceholders);
+                    }
+                    skullOwner = processPlaceholders(skullOwner);
+                    try {
+                        skullMeta.setOwningPlayer(plugin.getServer().getOfflinePlayer(skullOwner));
+                    } catch (Exception e) {
+                        plugin.getLogger().warning("Failed to set skull owner: " + skullOwner);
+                    }
+                }
+            }
+            
             // Enchantments
             for (Map.Entry<String, Integer> entry : itemConfig.getEnchantments().entrySet()) {
                 try {
@@ -166,6 +192,11 @@ public abstract class BaseMenu implements InventoryHolder {
                 meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
             }
             
+            // Hide tooltip (all item information)
+            if (itemConfig.isHideToolTip()) {
+                meta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
+            }
+            
             item.setItemMeta(meta);
         }
         
@@ -174,6 +205,7 @@ public abstract class BaseMenu implements InventoryHolder {
     
     /**
      * Fill empty slots with the configured fill item.
+     * Uses fill-item slots if defined, otherwise uses global fill-slots.
      */
     protected void addFillItems() {
         MenuItemConfig fillConfig = config.getFillItem();
@@ -181,7 +213,13 @@ public abstract class BaseMenu implements InventoryHolder {
         
         ItemStack fillItem = createMenuItem(fillConfig);
         
-        for (int slot : config.getFillSlots()) {
+        // Use fill-item's specific slots if defined, otherwise use global fill-slots
+        List<Integer> slotsToFill = fillConfig.getSlots();
+        if (slotsToFill.isEmpty()) {
+            slotsToFill = config.getFillSlots();
+        }
+        
+        for (int slot : slotsToFill) {
             if (slot >= 0 && slot < inventory.getSize() && inventory.getItem(slot) == null) {
                 inventory.setItem(slot, fillItem);
             }
@@ -214,7 +252,13 @@ public abstract class BaseMenu implements InventoryHolder {
         
         String result = text;
         for (Map.Entry<String, String> entry : placeholders.entrySet()) {
-            result = result.replace("{" + entry.getKey() + "}", entry.getValue());
+            // Handle placeholders that already include braces or don't
+            String key = entry.getKey();
+            if (key.startsWith("{") && key.endsWith("}")) {
+                result = result.replace(key, entry.getValue());
+            } else {
+                result = result.replace("{" + key + "}", entry.getValue());
+            }
         }
         
         return result;

@@ -231,8 +231,8 @@ public class ActionProcessor {
             return false;
         }
         
-        // Cache lookup direct des actions
-        Set<JobAction> actions = configCache.getActionsForMaterial(context.getTarget());
+        // Cache lookup direct des actions par ActionType
+        Set<JobAction> actions = configCache.getActionsForMaterial(actionType, context.getTarget());
         if (actions.isEmpty()) {
             if (configCache.isDebugEnabled()) {
                 plugin.getLogger().info("DEBUG: No actions found for material " + context.getTarget());

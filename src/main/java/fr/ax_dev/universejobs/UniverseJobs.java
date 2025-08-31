@@ -56,6 +56,7 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
     private MythicMobsHandler mythicMobsHandler;
     private BukkitTask saveTask;
     private long startTime;
+    private fr.ax_dev.universejobs.utils.PluginAccessor accessor;
     
     // ========== ULTRA-FAST CACHE SYSTEM ==========
     private ConfigurationCache configCache;
@@ -100,14 +101,6 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
             return;
         }
         
-        // Validate and auto-generate missing configurations
-        try {
-            configManager.validateAllConfigurations();
-            getLogger().info("Configuration validation and auto-generation complete");
-        } catch (Exception e) {
-            getLogger().log(Level.WARNING, "Configuration validation encountered issues", e);
-            // Don't disable plugin, just log warning - missing configs have defaults
-        }
         
         // Load jobs
         try {
@@ -228,6 +221,9 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         
         // Check for optional dependencies
         checkDependencies();
+        
+        // Initialize accessor
+        this.accessor = new fr.ax_dev.universejobs.utils.PluginAccessor(this);
         
         // Plugin enabled successfully
     }
@@ -611,6 +607,15 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
      */
     public static synchronized UniverseJobs getInstance() {
         return instance;
+    }
+    
+    /**
+     * Get the centralized accessor for all plugin components.
+     * 
+     * @return The plugin accessor
+     */
+    public fr.ax_dev.universejobs.utils.PluginAccessor getAccessor() {
+        return accessor;
     }
     
     /**

@@ -2,6 +2,7 @@ package fr.ax_dev.universejobs.menu.utils;
 
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
+import fr.ax_dev.universejobs.action.ActionType;
 
 /**
  * Utility class for determining materials based on action targets.
@@ -19,8 +20,19 @@ public class MaterialUtils {
      * @return The material to use for the item
      */
     public static Material getMaterialForTarget(String target) {
+        return getMaterialForTarget(target, null);
+    }
+    
+    /**
+     * Get the appropriate material for an action target with ActionType context.
+     * 
+     * @param target The action target (case-insensitive)
+     * @param actionType The action type for better material selection
+     * @return The material to use for the item
+     */
+    public static Material getMaterialForTarget(String target, ActionType actionType) {
         if (target == null || target.isEmpty()) {
-            return Material.STONE;
+            throw new IllegalArgumentException("Target cannot be null or empty");
         }
         
         // Normalize target to handle case-insensitivity
@@ -69,8 +81,22 @@ public class MaterialUtils {
             return spawnEgg;
         }
         
-        // Fallback to stone
-        return Material.STONE;
+        // Try ActionType-specific materials
+        if (actionType != null) {
+            Material actionMaterial = getMaterialForActionType(actionType, normalizedTarget);
+            if (actionMaterial != null) {
+                return actionMaterial;
+            }
+        }
+        
+        // Try enchantments and other special cases
+        Material fallbackMaterial = getFallbackMaterial(normalizedTarget);
+        if (fallbackMaterial != null) {
+            return fallbackMaterial;
+        }
+        
+        // No valid material found
+        throw new IllegalArgumentException("No valid material found for target: " + target);
     }
     
     /**
@@ -173,6 +199,25 @@ public class MaterialUtils {
     }
     
     /**
+     * Get material based on ActionType for better context.
+     */
+    private static Material getMaterialForActionType(ActionType actionType, String target) {
+        return switch (actionType) {
+            case ENCHANT -> getEnchantmentMaterial(target.toLowerCase());
+            case POTION -> Material.POTION;
+            case FISH -> Material.FISHING_ROD;
+            case CRAFT -> Material.CRAFTING_TABLE;
+            case SMELT -> Material.FURNACE;
+            case MILK -> Material.MILK_BUCKET;
+            case EAT -> Material.BREAD;
+            case TAME -> Material.BONE;
+            case BREED -> Material.WHEAT;
+            case SHEAR -> Material.SHEARS;
+            default -> null;
+        };
+    }
+    
+    /**
      * Get a generic material for a plugin namespace.
      * 
      * @param namespace The plugin namespace
@@ -187,5 +232,101 @@ public class MaterialUtils {
             case "mmoitems", "mmo" -> Material.DIAMOND;
             default -> Material.PAPER;
         };
+    }
+    
+    /**
+     * Get fallback material for special cases like enchantments, potions, etc.
+     * 
+     * @param target The action target
+     * @return A representative material or null if no fallback found
+     */
+    private static Material getFallbackMaterial(String target) {
+        String lowerTarget = target.toLowerCase();
+        
+        // Enchantments
+        if (isEnchantment(lowerTarget)) {
+            return getEnchantmentMaterial(lowerTarget);
+        }
+        
+        // Potions
+        if (isPotion(lowerTarget)) {
+            return Material.POTION;
+        }
+        
+        // Foods
+        if (isFood(lowerTarget)) {
+            return Material.BREAD;
+        }
+        
+        // Tools/Weapons
+        if (isTool(lowerTarget)) {
+            return getToolMaterial(lowerTarget);
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Check if target is an enchantment name.
+     */
+    private static boolean isEnchantment(String target) {
+        return target.equals("sharpness") || target.equals("protection") || 
+               target.equals("efficiency") || target.equals("unbreaking") ||
+               target.equals("looting") || target.equals("fortune") ||
+               target.equals("silk_touch") || target.equals("mending") ||
+               target.equals("fire_aspect") || target.equals("knockback") ||
+               target.equals("power") || target.equals("punch") ||
+               target.equals("flame") || target.equals("infinity");
+    }
+    
+    /**
+     * Get material for enchantment type.
+     */
+    private static Material getEnchantmentMaterial(String enchantment) {
+        return switch (enchantment) {
+            case "sharpness", "fire_aspect", "knockback", "looting" -> Material.DIAMOND_SWORD;
+            case "protection" -> Material.DIAMOND_CHESTPLATE;
+            case "efficiency", "fortune", "silk_touch" -> Material.DIAMOND_PICKAXE;
+            case "unbreaking", "mending" -> Material.ENCHANTED_BOOK;
+            case "power", "punch", "flame", "infinity" -> Material.BOW;
+            default -> Material.ENCHANTED_BOOK;
+        };
+    }
+    
+    /**
+     * Check if target is a potion name.
+     */
+    private static boolean isPotion(String target) {
+        return target.contains("potion") || target.equals("healing") || 
+               target.equals("strength") || target.equals("speed") ||
+               target.equals("regeneration") || target.equals("poison");
+    }
+    
+    /**
+     * Check if target is a food name.
+     */
+    private static boolean isFood(String target) {
+        return target.equals("eating") || target.equals("food") || target.equals("consume");
+    }
+    
+    /**
+     * Check if target is a tool name.
+     */
+    private static boolean isTool(String target) {
+        return target.contains("sword") || target.contains("pickaxe") ||
+               target.contains("axe") || target.contains("shovel") ||
+               target.contains("hoe");
+    }
+    
+    /**
+     * Get material for tool type.
+     */
+    private static Material getToolMaterial(String tool) {
+        if (tool.contains("sword")) return Material.DIAMOND_SWORD;
+        if (tool.contains("pickaxe")) return Material.DIAMOND_PICKAXE;
+        if (tool.contains("axe")) return Material.DIAMOND_AXE;
+        if (tool.contains("shovel")) return Material.DIAMOND_SHOVEL;
+        if (tool.contains("hoe")) return Material.DIAMOND_HOE;
+        return Material.STICK;
     }
 }

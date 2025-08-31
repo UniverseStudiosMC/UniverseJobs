@@ -3,7 +3,7 @@
 # To use this file, add to your job configuration:
 # gui-reward: "example_rewards_gui"
 
-title: "&6{job} Rewards"
+title: "<#FFD700><bold>{job} Rewards</bold>"
 size: 54  # Must be multiple of 9 (9, 18, 27, 36, 45, 54)
 
 # Slots where rewards will be displayed
@@ -40,13 +40,13 @@ fill-items:
 # Custom items in the GUI
 items:
   border_top:
-    material: BLACK_STAINED_GLASS_PANE
+    material: WHITE_STAINED_GLASS_PANE
     amount: 1
     display-name: " "
     slots: [0, 1, 2, 3, 4, 5, 6, 7, 8]
   
   border_bottom:
-    material: BLACK_STAINED_GLASS_PANE
+    material: WHITE_STAINED_GLASS_PANE
     amount: 1
     display-name: " "
     slots: [45, 46, 47, 48, 49, 50, 51, 52, 53]
@@ -56,39 +56,39 @@ navigation:
   previous-page:
     material: ARROW
     amount: 1
-    display-name: "&ePrevious Page"
+    display-name: "<#abffb3>Previous Page"
     lore:
-      - "&7Click to go back"
+      - "<#FFD700>Click to go back"
     slots: [18]
   
   next-page:
     material: ARROW
     amount: 1
-    display-name: "&eNext Page"
+    display-name: "<#abffb3>Next Page"
     lore:
-      - "&7Click to continue"
+      - "<#FFD700>Click to continue"
     slots: [26]
   
   close:
     material: BARRIER
     amount: 1
-    display-name: "&cClose"
+    display-name: "<#FF6B6B>Close"
     lore:
-      - "&7Click to close menu"
+      - "<#FFD700>Click to close menu"
     slots: [49]
   
   refresh:
     material: ENDER_EYE
     amount: 1
-    display-name: "&aRefresh"
+    display-name: "<#abffb3>Refresh"
     lore:
-      - "&7Click to refresh rewards"
+      - "<#FFD700>Click to refresh rewards"
     slots: [40]
   
   info:
     material: BOOK
     amount: 1
-    display-name: "&bInformation"
+    display-name: "<#FFD700>Information"
     lore:
-      - "&7View reward information"
+      - "<gray>View reward information"
     slots: [4]

@@ -1,6 +1,7 @@
 package fr.ax_dev.universejobs.reward.gui;
 
 import fr.ax_dev.universejobs.UniverseJobs;
+import fr.ax_dev.universejobs.config.LanguageManager;
 import fr.ax_dev.universejobs.job.Job;
 import fr.ax_dev.universejobs.reward.Reward;
 import fr.ax_dev.universejobs.reward.RewardManager;
@@ -25,6 +26,7 @@ import java.util.Map;
 public class CustomRewardGui implements InventoryHolder {
     
     private final UniverseJobs plugin;
+    private final LanguageManager languageManager;
     private final Player player;
     private final Job job;
     private final List<Reward> rewards;
@@ -47,6 +49,7 @@ public class CustomRewardGui implements InventoryHolder {
     public CustomRewardGui(UniverseJobs plugin, Player player, Job job, 
                           List<Reward> rewards, GuiConfig config, int page) {
         this.plugin = plugin;
+        this.languageManager = plugin.getLanguageManager();
         this.player = player;
         this.job = job;
         this.rewards = rewards;
@@ -413,17 +416,17 @@ public class CustomRewardGui implements InventoryHolder {
         
         if (status == RewardStatus.RETRIEVABLE) {
             if (rewardManager.claimReward(player, reward)) {
-                MessageUtils.sendMessage(player, "&aReward claimed successfully!");
+                MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.success", "reward", reward.getName()));
                 // Refresh GUI to update status
                 populateInventory();
             } else {
-                MessageUtils.sendMessage(player, "&cFailed to claim reward.");
+                MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.failed", "reward", reward.getName()));
             }
         } else if (status == RewardStatus.BLOCKED) {
             // Use the new feedback system with custom messages and sounds
             rewardManager.canClaimReward(player, reward, true);
         } else {
-            MessageUtils.sendMessage(player, "&7You have already claimed this reward.");
+            MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.already-claimed"));
         }
     }
     

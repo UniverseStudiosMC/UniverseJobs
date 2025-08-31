@@ -2,7 +2,7 @@
 # This file controls the appearance and behavior of the global rankings menu
 
 # Menu title (supports MiniMessage and PlaceholderAPI)
-title: "&6&lGlobal Job Rankings"
+title: "<#FFD700><bold>Global Job Rankings</bold>"
 
 # Menu size (must be multiple of 9, max 54)
 size: 54
@@ -15,14 +15,16 @@ pagination:
 # Fill item configuration
 fill-item:
   enabled: true
-  material: PURPLE_STAINED_GLASS_PANE
+  material: GRAY_STAINED_GLASS_PANE
   display-name: " "
   lore: []
   amount: 1
+  slots: []  # Empty = use global fill-slots. Specify slots like [1, 2, 3, 9, 18] to override
   custom-model-data: 0
   glow: false
   hide-attributes: true
   hide-enchants: true
+  hideToolTip: true
 
 # Slots to fill (empty = all empty slots)
 fill-slots: []
@@ -43,13 +45,13 @@ static-items:
   trophy:
     enabled: true
     material: GOLDEN_APPLE
-    display-name: "&6&lTop Players"
+    display-name: "<#FFD700><bold>Top Players</bold>"
     lore:
-      - "&7View the best players"
-      - "&7in each job category"
+      - "<gray>View the best players"
+      - "<gray>in each job category"
       - ""
-      - "&7Select a job below to"
-      - "&7view its rankings"
+      - "<gray>Select a job below to"
+      - "<gray>view its rankings"
     amount: 1
     slots: [4]
     custom-model-data: 0
@@ -61,14 +63,14 @@ static-items:
   ranking-info:
     enabled: true
     material: LECTERN
-    display-name: "&e&lRankings Information"
+    display-name: "<#FFD700><bold>Rankings Information</bold>"
     lore:
-      - "&7Rankings are updated in real-time"
-      - "&7based on player levels and XP"
+      - "<gray>Rankings are updated in real-time"
+      - "<gray>based on player levels and XP"
       - ""
-      - "&7Ranking factors:"
-      - "&8- Level (primary)"
-      - "&8- Total XP (secondary)"
+      - "<gray>Ranking factors:"
+      - "<gray>- Level (primary)"
+      - "<gray>- Total XP (secondary)"
     amount: 1
     slots: [8]
     custom-model-data: 0
@@ -85,12 +87,12 @@ navigation-items:
   previous:
     enabled: true
     material: ARROW
-    display-name: "&e← Previous Page"
+    display-name: "<#abffb3>← Previous Page"
     lore:
-      - "&7Click to go to the previous page"
+      - "<#FFD700>Click to go to the previous page"
       - ""
-      - "&7Page: &e{current_page}&7/&e{total_pages}"
-      - "&7Players: &e{total_players}"
+      - "<gray>Page: <#FFD700>{current_page}<gray>/<#FFD700>{total_pages}"
+      - "<gray>Players: <#FFD700>{total_players}"
     amount: 1
     slots: [45]
     custom-model-data: 0
@@ -102,12 +104,12 @@ navigation-items:
   next:
     enabled: true
     material: ARROW
-    display-name: "&eNext Page →"
+    display-name: "<#abffb3>Next Page →"
     lore:
-      - "&7Click to go to the next page"
+      - "<#FFD700>Click to go to the next page"
       - ""
-      - "&7Page: &e{current_page}&7/&e{total_pages}"
-      - "&7Players: &e{total_players}"
+      - "<gray>Page: <#FFD700>{current_page}<gray>/<#FFD700>{total_pages}"
+      - "<gray>Players: <#FFD700>{total_players}"
     amount: 1
     slots: [53]
     custom-model-data: 0
@@ -119,9 +121,9 @@ navigation-items:
   back:
     enabled: true
     material: ARROW
-    display-name: "&7← Back to Jobs Menu"
+    display-name: "<#abffb3>← Back to Jobs Menu"
     lore:
-      - "&7Click to go back to the main jobs menu"
+      - "<#FFD700>Click to go back to the main jobs menu"
     amount: 1
     slots: [48]
     custom-model-data: 0
@@ -133,9 +135,9 @@ navigation-items:
   close:
     enabled: true
     material: BARRIER
-    display-name: "&cClose Menu"
+    display-name: "<#FF6B6B>Close Menu"
     lore:
-      - "&7Click to close this menu"
+      - "<#FFD700>Click to close this menu"
     amount: 1
     slots: [49]
     custom-model-data: 0
@@ -146,15 +148,15 @@ navigation-items:
     
   info:
     enabled: true
-    material: BOOK
-    display-name: "&6Ranking Statistics"
+    material: COMPASS
+    display-name: "<#FFD700>Ranking Statistics"
     lore:
-      - "&7Selected Job: &e{selected_job}"
-      - "&7Total Players: &e{total_players}"
-      - "&7Page: &e{current_page}&7/&e{total_pages}"
+      - "<gray>Selected Job: <#FFD700>{selected_job}"
+      - "<gray>Total Players: <#FFD700>{total_players}"
+      - "<gray>Page: <#FFD700>{current_page}<gray>/<#FFD700>{total_pages}"
       - ""
-      - "&7Your ranking will be highlighted"
-      - "&7if you have joined this job"
+      - "<gray>Your ranking will be highlighted"
+      - "<gray>if you have joined this job"
     amount: 1
     slots: [50]
     custom-model-data: 0
@@ -175,8 +177,8 @@ ranking-display:
   
   # Colors for different ranking positions
   rank-colors:
-    1: "&6&l"          # Gold
-    2: "&7&l"          # Silver
-    3: "&c&l"          # Bronze/Copper
-    top-10: "&a"       # Green
-    default: "&f"      # White
+    1: "<#FFD700><bold>"          # Gold
+    2: "<#C0C0C0><bold>"          # Silver
+    3: "<#CD7F32><bold>"          # Bronze
+    top-10: "<#abffb3>"           # Green
+    default: "<white>"            # White

@@ -2,7 +2,7 @@
 # This file controls the appearance and behavior of the main jobs menu
 
 # Menu title (supports MiniMessage and PlaceholderAPI)
-title: "&6&lJobs Menu"
+title: "<#FFD700><bold>Jobs Menu</bold>"
 
 # Menu size (must be multiple of 9, max 54)
 size: 54
@@ -19,10 +19,12 @@ fill-item:
   display-name: " "
   lore: []
   amount: 1
+  slots: []  # Empty = use global fill-slots. Specify slots like [1, 2, 3, 9, 18] to override
   custom-model-data: 0
   glow: false
   hide-attributes: true
   hide-enchants: true
+  hideToolTip: true
 
 # Slots to fill (empty = all empty slots)
 fill-slots: []
@@ -48,15 +50,15 @@ static-items:
   info-item:
     enabled: true
     material: BOOK
-    display-name: "&6&lJobs Information"
+    display-name: "<#FFD700><bold>Jobs Information</bold>"
     lore:
-      - "&7Welcome to the Jobs system!"
+      - "<gray>Welcome to the Jobs system!"
       - ""
-      - "&7Choose a job to start earning"
-      - "&7money and experience points."
+      - "<gray>Choose a job to start earning"
+      - "<gray>money and experience points."
       - ""
-      - "&7Total Jobs: &e%universejobs_total_jobs%"
-      - "&7Your Active Jobs: &a%universejobs_player_jobs_count%"
+      - "<gray>Total Jobs: <#FFD700>%universejobs_total_jobs%"
+      - "<gray>Your Active Jobs: <#abffb3>%universejobs_player_jobs_count%"
     amount: 1
     slots: [4]
     custom-model-data: 0
@@ -86,36 +88,36 @@ job-item-format:
   use-job-icon: true
   
   # Display name format for job items
-  display-name: "&e&l{job_name}"
+  display-name: "<#FFD700><bold>{job_name}</bold>"
   
   # Lore format for job items
   lore:
-    - "&7{job_description}"
+    - "<gray>{job_description}"
     - ""
-    - "&7Max Level: &e{job_max_level}"
+    - "<gray>Max Level: <#FFD700>{job_max_level}"
     - ""
-    - "&7Your Status:"
-    - "&8├ &7Level: &a{player_level}&7/&e{job_max_level}"
-    - "&8├ &7XP: &b{player_xp}"
-    - "&8├ &7Progress: &e{progress_percent}%"
-    - "&8└ &7Status: {job_status}"
+    - "<gray>Your Status:"
+    - "<gray>├ <gray>Level: <#abffb3>{player_level}<gray>/<#FFD700>{job_max_level}"
+    - "<gray>├ <gray>XP: <#abffb3>{player_xp}"
+    - "<gray>├ <gray>Progress: <#FFD700>{progress_percent}%"
+    - "<gray>└ <gray>Status: {job_status}"
     - ""
-    - "&7Progress to Next Level:"
-    - "&8└ {progress_bar}"
+    - "<gray>Progress to Next Level:"
+    - "<gray>└ {progress_bar}"
     - ""
-    - "&e▶ Left-Click to open job menu"
-    - "&a▶ Shift-Left-Click to join/leave"
+    - "<#FFD700>▶ Left-Click to open job menu"
+    - "<#abffb3>▶ Shift-Left-Click to join/leave"
   
   # Lore when player doesn't have the job
   lore-without-job:
-    - "&7{job_description}"
+    - "<gray>{job_description}"
     - ""
-    - "&7Max Level: &e{job_max_level}"
+    - "<gray>Max Level: <#FFD700>{job_max_level}"
     - ""
-    - "&cYou don't have this job"
+    - "<#FF6B6B>You don't have this job"
     - ""
-    - "&e▶ Left-Click to open job menu"
-    - "&a▶ Shift-Left-Click to join"
+    - "<#FFD700>▶ Left-Click to open job menu"
+    - "<#abffb3>▶ Shift-Left-Click to join"
   
   # Item glow settings
   glow-when-joined: true
@@ -133,11 +135,11 @@ navigation-items:
   previous:
     enabled: true
     material: ARROW
-    display-name: "&e← Previous Page"
+    display-name: "<#abffb3>← Previous Page"
     lore:
-      - "&7Click to go to the previous page"
+      - "<#FFD700>Click to go to the previous page"
       - ""
-      - "&7Page: &e{current_page}&7/&e{total_pages}"
+      - "<gray>Page: <#FFD700>{current_page}<gray>/<#FFD700>{total_pages}"
     amount: 1
     slots: [45]
     custom-model-data: 0
@@ -149,11 +151,11 @@ navigation-items:
   next:
     enabled: true
     material: ARROW
-    display-name: "&eNext Page →"
+    display-name: "<#abffb3>Next Page →"
     lore:
-      - "&7Click to go to the next page"
+      - "<#FFD700>Click to go to the next page"
       - ""
-      - "&7Page: &e{current_page}&7/&e{total_pages}"
+      - "<gray>Page: <#FFD700>{current_page}<gray>/<#FFD700>{total_pages}"
     amount: 1
     slots: [53]
     custom-model-data: 0
@@ -165,9 +167,9 @@ navigation-items:
   close:
     enabled: true
     material: BARRIER
-    display-name: "&cClose Menu"
+    display-name: "<#FF6B6B>Close Menu"
     lore:
-      - "&7Click to close this menu"
+      - "<#FFD700>Click to close this menu"
     amount: 1
     slots: [49]
     custom-model-data: 0
@@ -179,11 +181,11 @@ navigation-items:
   info:
     enabled: true
     material: COMPASS
-    display-name: "&6Menu Information"
+    display-name: "<#FFD700>Menu Information"
     lore:
-      - "&7Total Jobs: &e{total_jobs}"
-      - "&7Your Jobs: &a{player_jobs}"
-      - "&7Page: &e{current_page}&7/&e{total_pages}"
+      - "<gray>Total Jobs: <#FFD700>{total_jobs}"
+      - "<gray>Your Jobs: <#abffb3>{player_jobs}"
+      - "<gray>Page: <#FFD700>{current_page}<gray>/<#FFD700>{total_pages}"
     amount: 1
     slots: [50]
     custom-model-data: 0

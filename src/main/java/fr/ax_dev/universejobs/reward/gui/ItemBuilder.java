@@ -55,8 +55,8 @@ public class ItemBuilder {
         try {
             material = Material.valueOf(materialName.toUpperCase());
         } catch (IllegalArgumentException e) {
-            plugin.getLogger().warning("Unknown material: " + materialName + ", using STONE");
-            material = Material.STONE;
+            plugin.getLogger().severe("Unknown material: " + materialName);
+            return null;
         }
         return new ItemBuilder(plugin, material);
     }
@@ -333,8 +333,8 @@ public class ItemBuilder {
             if (nexoItem != null) {
                 return new ItemBuilder(plugin, nexoItem);
             } else {
-                plugin.getLogger().warning("Nexo item not found: " + nexoId + ", falling back to STONE");
-                return new ItemBuilder(plugin, Material.STONE);
+                plugin.getLogger().severe("Nexo item not found: " + nexoId);
+                return null;
             }
         }
         
@@ -345,8 +345,8 @@ public class ItemBuilder {
             if (iaItem != null) {
                 return new ItemBuilder(plugin, iaItem);
             } else {
-                plugin.getLogger().warning("ItemsAdder item not found: " + iaId + ", falling back to STONE");
-                return new ItemBuilder(plugin, Material.STONE);
+                plugin.getLogger().severe("ItemsAdder item not found: " + iaId);
+                return null;
             }
         }
         
@@ -355,8 +355,8 @@ public class ItemBuilder {
             Material material = Material.valueOf(materialName.toUpperCase());
             return new ItemBuilder(plugin, material);
         } catch (IllegalArgumentException e) {
-            plugin.getLogger().warning("Unknown material: " + materialName + ", using STONE");
-            return new ItemBuilder(plugin, Material.STONE);
+            plugin.getLogger().severe("Unknown material: " + materialName);
+            return null;
         }
     }
 }

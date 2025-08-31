@@ -17,6 +17,7 @@ public class SingleMenuConfig {
     private final Map<String, List<Integer>> navigationSlots;
     private final Map<String, MenuItemConfig> staticItems;
     private final Map<String, MenuItemConfig> navigationItems;
+    private final Map<String, MenuItemConfig> menuItems;
     private final boolean enablePagination;
     private final int itemsPerPage;
     private final JobItemFormat jobItemFormat;
@@ -89,6 +90,18 @@ public class SingleMenuConfig {
             }
         } else {
             generateDefaultNavigationItems();
+        }
+        
+        // Load menu items (specific to job menu)
+        this.menuItems = new HashMap<>();
+        ConfigurationSection menuItemsSection = config.getConfigurationSection("menu-items");
+        if (menuItemsSection != null) {
+            for (String itemKey : menuItemsSection.getKeys(false)) {
+                ConfigurationSection itemSection = menuItemsSection.getConfigurationSection(itemKey);
+                if (itemSection != null) {
+                    this.menuItems.put(itemKey, new MenuItemConfig(itemSection));
+                }
+            }
         }
         
         // Load job item format configuration
@@ -266,6 +279,7 @@ public class SingleMenuConfig {
     public Map<String, List<Integer>> getNavigationSlots() { return new HashMap<>(navigationSlots); }
     public Map<String, MenuItemConfig> getStaticItems() { return new HashMap<>(staticItems); }
     public Map<String, MenuItemConfig> getNavigationItems() { return new HashMap<>(navigationItems); }
+    public Map<String, MenuItemConfig> getMenuItems() { return new HashMap<>(menuItems); }
     public boolean isEnablePagination() { return enablePagination; }
     public int getItemsPerPage() { return itemsPerPage; }
     public JobItemFormat getJobItemFormat() { return jobItemFormat; }

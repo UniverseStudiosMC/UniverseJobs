@@ -27,7 +27,7 @@ public class MenuCommandHandler extends JobCommandHandler {
     @Override
     public boolean handleCommand(CommandSender sender, String[] args) {
         if (!validateCommandStructure(args)) {
-            MessageUtils.sendMessage((Player) sender, "&cInvalid command format.");
+            MessageUtils.sendMessage((Player) sender, languageManager.getMessage("commands.menu.invalid-format"));
             return false;
         }
         
@@ -78,7 +78,7 @@ public class MenuCommandHandler extends JobCommandHandler {
                     return openJobMenu(player, subCommand);
                 }
                 
-                MessageUtils.sendMessage(player, "&cUnknown command. Type '&e/jobs menu help&c' for help.");
+                MessageUtils.sendMessage(player, languageManager.getMessage("commands.menu.unknown"));
                 showQuickHelp(player);
                 return false;
         }
@@ -127,7 +127,7 @@ public class MenuCommandHandler extends JobCommandHandler {
     private boolean reloadMenus(Player player) {
         try {
             menuManager.reloadConfigurations();
-            MessageUtils.sendMessage(player, "&aMenu configurations reloaded successfully!");
+            MessageUtils.sendMessage(player, languageManager.getMessage("commands.menu.reload.success"));
             plugin.getLogger().info("Menu configurations reloaded by " + player.getName());
             return true;
         } catch (Exception e) {
@@ -177,24 +177,24 @@ public class MenuCommandHandler extends JobCommandHandler {
      */
     private Job validateJobAccess(Player player, String jobId) {
         if (!isValidJobId(jobId)) {
-            MessageUtils.sendMessage(player, "&cInvalid job ID format.");
+            MessageUtils.sendMessage(player, languageManager.getMessage("commands.menu.invalid-job-id"));
             return null;
         }
         
         Job job = jobManager.getJob(jobId);
         if (job == null) {
-            MessageUtils.sendMessage(player, "&cJob not found: " + jobId);
+            MessageUtils.sendMessage(player, languageManager.getMessage("commands.menu.job-not-found", "job", jobId));
             return null;
         }
         
         if (!job.isEnabled()) {
-            MessageUtils.sendMessage(player, "&cThis job is currently disabled.");
+            MessageUtils.sendMessage(player, languageManager.getMessage("commands.menu.job-disabled"));
             return null;
         }
         
         // Check permission if job requires one
         if (job.getPermission() != null && !player.hasPermission(job.getPermission())) {
-            MessageUtils.sendMessage(player, "&cYou don't have permission to view this job.");
+            MessageUtils.sendMessage(player, languageManager.getMessage("commands.menu.no-permission"));
             return null;
         }
         
@@ -205,7 +205,7 @@ public class MenuCommandHandler extends JobCommandHandler {
      * Handle menu opening errors consistently.
      */
     private boolean handleMenuError(Player player, String menuType, Exception e) {
-        MessageUtils.sendMessage(player, "&cFailed to open " + menuType + ".");
+        MessageUtils.sendMessage(player, languageManager.getMessage("commands.menu.failed-open", "type", menuType));
         plugin.getLogger().warning("Failed to open " + menuType + " for " + player.getName() + ": " + e.getMessage());
         return false;
     }
@@ -226,21 +226,10 @@ public class MenuCommandHandler extends JobCommandHandler {
      * Show comprehensive menu help to the player.
      */
     private void showMenuHelp(Player player) {
-        MessageUtils.sendMessage(player, "&6&l=== Jobs Menu Help ===");
-        MessageUtils.sendMessage(player, "&e/jobs menu &7- Open main jobs menu");
-        MessageUtils.sendMessage(player, "&e/jobs menu <jobname> &7- Open specific job menu directly");
-        MessageUtils.sendMessage(player, "&e/jobs menu main &7- Open main jobs menu");
-        MessageUtils.sendMessage(player, "&e/jobs menu rankings &7- View job rankings");
-        MessageUtils.sendMessage(player, "");
-        MessageUtils.sendMessage(player, "&6Examples:");
-        MessageUtils.sendMessage(player, "&7- &e/jobs menu miner &7→ Open miner job menu");
-        MessageUtils.sendMessage(player, "&7- &e/jobs menu farmer &7→ Open farmer job menu");
-        MessageUtils.sendMessage(player, "&7- &e/jobs menu top &7→ View leaderboards");
+        MessageUtils.sendMessage(player, languageManager.getMessage("commands.menu.help.general"));
         
         if (player.hasPermission("universejobs.admin.menu.reload")) {
-            MessageUtils.sendMessage(player, "");
-            MessageUtils.sendMessage(player, "&cAdmin:");
-            MessageUtils.sendMessage(player, "&e/jobs menu reload &7- Reload menu configurations");
+            MessageUtils.sendMessage(player, languageManager.getMessage("commands.menu.help.admin"));
         }
     }
     
@@ -248,21 +237,20 @@ public class MenuCommandHandler extends JobCommandHandler {
      * Show quick help for invalid commands.
      */
     private void showQuickHelp(Player player) {
-        MessageUtils.sendMessage(player, "&6Quick Examples:");
-        MessageUtils.sendMessage(player, "&e/jobs menu main &7→ Browse all jobs");
-        
-        // Show first 3 available jobs as examples
         List<String> jobExamples = jobManager.getJobs().values().stream()
             .filter(Job::isEnabled)
             .filter(job -> job.getPermission() == null || player.hasPermission(job.getPermission()))
             .map(Job::getId)
             .limit(3)
             .collect(Collectors.toList());
-            
+        
+        MessageUtils.sendMessage(player, languageManager.getMessage("commands.menu.quick-help.header"));
+        MessageUtils.sendMessage(player, languageManager.getMessage("commands.menu.quick-help.main"));
+        
         for (String jobId : jobExamples) {
-            MessageUtils.sendMessage(player, "&e/jobs menu " + jobId + " &7→ Open " + jobId + " menu");
+            MessageUtils.sendMessage(player, languageManager.getMessage("commands.menu.quick-help.job-example", "job", jobId));
         }
         
-        MessageUtils.sendMessage(player, "&e/jobs menu rankings &7→ View top players");
+        MessageUtils.sendMessage(player, languageManager.getMessage("commands.menu.quick-help.rankings"));
     }
 }

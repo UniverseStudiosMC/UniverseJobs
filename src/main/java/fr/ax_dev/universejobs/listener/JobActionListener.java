@@ -132,7 +132,7 @@ public class JobActionListener implements Listener {
                     .setEntity(killed)
                     .set(TARGET_KEY, killed.getType().name());
             
-            // Check for MythicMobs using official API
+            // Check for MythicMobs using official API (this will override target if it's a MythicMob)
             mythicMobsHandler.populateMythicMobContext(killed, context);
             
             // Process the action
@@ -152,6 +152,21 @@ public class JobActionListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
+        
+        // Skip if this is a Nexo or ItemsAdder block - handled by their respective listeners
+        if (isNexoBlock(event.getBlock())) {
+            if (configCache.isDebugEnabled()) {
+                plugin.getLogger().info("Skipping vanilla BlockBreakEvent for Nexo block - handled by NexoEventListener");
+            }
+            return;
+        }
+        
+        if (isItemsAdderBlock(event.getBlock())) {
+            if (configCache.isDebugEnabled()) {
+                plugin.getLogger().info("Skipping vanilla BlockBreakEvent for ItemsAdder block - handled by ItemsAdderEventListener");
+            }
+            return;
+        }
         
         // Debug avec cache instantané
         if (configCache.isDebugEnabled()) {
@@ -201,6 +216,21 @@ public class JobActionListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
         Player player = event.getPlayer();
+        
+        // Skip if this is a Nexo or ItemsAdder block - handled by their respective listeners
+        if (isNexoBlock(event.getBlock())) {
+            if (configCache.isDebugEnabled()) {
+                plugin.getLogger().info("Skipping vanilla BlockPlaceEvent for Nexo block - handled by NexoEventListener");
+            }
+            return;
+        }
+        
+        if (isItemsAdderBlock(event.getBlock())) {
+            if (configCache.isDebugEnabled()) {
+                plugin.getLogger().info("Skipping vanilla BlockPlaceEvent for ItemsAdder block - handled by ItemsAdderEventListener");
+            }
+            return;
+        }
         
         // Track the placed block for anti-exploit protection (handles both vanilla and Nexo blocks)
         protectionManager.recordBlockPlacement(player, event.getBlock());
@@ -1219,6 +1249,48 @@ public class JobActionListener implements Listener {
             if (plugin.getConfigManager().isDebugEnabled()) {
                 plugin.getLogger().warning("Error detecting potion context: " + e.getMessage());
             }
+        }
+    }
+    
+    /**
+     * Check if a block is a Nexo custom block.
+     * This prevents duplicate processing between vanilla and Nexo events.
+     */
+    private boolean isNexoBlock(org.bukkit.block.Block block) {
+        try {
+            // Check if Nexo is installed
+            if (!plugin.getServer().getPluginManager().isPluginEnabled("Nexo")) {
+                return false;
+            }
+            
+            // Use Nexo API to check if this is a custom block
+            // Using the current Nexo API structure
+            return com.nexomc.nexo.api.NexoBlocks.isCustomBlock(block);
+        } catch (Exception e) {
+            // If any error occurs, assume it's not a Nexo block
+            return false;
+        }
+    }
+    
+    /**
+     * Check if a block is an ItemsAdder custom block.
+     * This prevents duplicate processing between vanilla and ItemsAdder events.
+     */
+    private boolean isItemsAdderBlock(org.bukkit.block.Block block) {
+        try {
+            // Check if ItemsAdder is installed
+            if (!plugin.getServer().getPluginManager().isPluginEnabled("ItemsAdder")) {
+                return false;
+            }
+            
+            // Use ItemsAdder API to check if this is a custom block
+            dev.lone.itemsadder.api.CustomBlock customBlock = 
+                dev.lone.itemsadder.api.CustomBlock.byAlreadyPlaced(block);
+            
+            return customBlock != null;
+        } catch (Exception e) {
+            // If any error occurs, assume it's not an ItemsAdder block
+            return false;
         }
     }
     

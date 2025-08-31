@@ -104,7 +104,9 @@ public abstract class BonusCommandHandler<T, M extends BonusManager<T>> extends 
             return;
         }
         
-        String reason = parseReason(args, 5);
+        // Si un job est spécifié, la raison commence à l'index 5, sinon à l'index 4
+        int reasonStartIndex = (jobId != null) ? 5 : 4;
+        String reason = parseReason(args, reasonStartIndex);
         
         if (jobId != null && !jobId.equals("*")) {
             Job job = jobManager.getJob(jobId);

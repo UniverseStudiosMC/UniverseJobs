@@ -1,7 +1,4 @@
 # UniverseJobs Configuration
-# Main configuration file - only includes settings actually used by the plugin
-
-# General Settings
 debug: false
 language:
   locale: "en_US"
@@ -43,4 +40,30 @@ jobs:
   # Only works when 'all-jobs-by-default' is false
   # Example: ["miner", "farmer", "hunter"]
   jobs-by-default: []
+  
+  # Maximum number of jobs a player can have at once (ignored if all-jobs-by-default is true)
+  max-jobs-per-player: 3
+
+# Progress Bar Configuration
+# Customize how XP progress bars appear in menus and messages
+progress-bar:
+  # Length of the progress bar (number of characters)
+  length: 20
+  # Characters used for the progress bar
+  characters:
+    completed: "█"    # Character for completed progress
+    remaining: "░"    # Character for remaining progress
+  # Colors (MiniMessage HEX format)
+  colors:
+    completed: "<#32CD32>"     # Color for completed portion
+    remaining: "<#404040>"     # Color for remaining portion
+    percentage: "<#FFD700>"    # Color for percentage text
+  # Format templates
+  format:
+    # Progress bar with percentage: [████░░░░░░] 40%
+    with-percentage: "{completed_bar}{remaining_bar} {percentage_color}{percentage}%"
+    # Progress bar only: [████░░░░░░]
+    bar-only: "{completed_bar}{remaining_bar}"
+    # Percentage only: 40%
+    percentage-only: "{percentage_color}{percentage}%"
 

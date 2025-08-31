@@ -29,7 +29,7 @@ public class ActionLimitCommandHandler extends JobCommandHandler {
     @Override
     public boolean handleCommand(CommandSender sender, String[] args) {
         if (!hasPermission(sender, "universejobs.admin.actionlimits")) {
-            MessageUtils.sendMessage(sender, "&cYou don't have permission to use this command.");
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.no-permission"));
             return true;
         }
         
@@ -75,7 +75,7 @@ public class ActionLimitCommandHandler extends JobCommandHandler {
     
     private void handleActionLimitRestore(CommandSender sender, String[] args) {
         if (args.length < 3) {
-            MessageUtils.sendMessage(sender, "&cUsage: /jobs actionlimit restore <player|*> [job] [target]");
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.restore.usage"));
             return;
         }
         
@@ -92,25 +92,25 @@ public class ActionLimitCommandHandler extends JobCommandHandler {
                 totalRestored += restored;
             }
             
-            MessageUtils.sendMessage(sender, "&aRestored &e" + totalRestored + "&a action limits for all online players.");
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.restore.all-success", "count", String.valueOf(totalRestored)));
         } else {
             Player targetPlayer = Bukkit.getPlayer(playerName);
             if (targetPlayer == null) {
-                MessageUtils.sendMessage(sender, "&cPlayer &e" + playerName + "&c not found or not online.");
+                MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.player-not-found", "player", playerName));
                 return;
             }
             
             int restored = limitManager.restorePlayerLimit(targetPlayer, jobId, target);
-            MessageUtils.sendMessage(sender, "&aRestored &e" + restored + "&a action limits for player &e" + targetPlayer.getName() + "&a.");
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.restore.player-success", "count", String.valueOf(restored), "player", targetPlayer.getName()));
             
             // Notify the player
-            MessageUtils.sendMessage(targetPlayer, "&aYour action limits have been restored by an administrator.");
+            MessageUtils.sendMessage(targetPlayer, languageManager.getMessage("commands.actionlimit.restore.player-notification"));
         }
     }
     
     private void handleActionLimitStatus(CommandSender sender, String[] args) {
         if (args.length < 5) {
-            MessageUtils.sendMessage(sender, "&cUsage: /jobs actionlimit status <player> <job> <target>");
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.usage"));
             return;
         }
         
@@ -118,7 +118,7 @@ public class ActionLimitCommandHandler extends JobCommandHandler {
         Player targetPlayer = Bukkit.getPlayer(playerName);
         
         if (targetPlayer == null) {
-            MessageUtils.sendMessage(sender, "&cPlayer &e" + playerName + "&c not found or not online.");
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.player-not-found", "player", playerName));
             return;
         }
         
@@ -128,46 +128,42 @@ public class ActionLimitCommandHandler extends JobCommandHandler {
         ActionLimitManager.ActionLimitStatus status = limitManager.getPlayerLimitStatus(targetPlayer, jobId, target);
         
         if (status == null) {
-            MessageUtils.sendMessage(sender, "&cNo limits configured for job &e" + jobId + "&c and target &e" + target + "&c.");
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.no-limits", "job", jobId, "target", target));
             return;
         }
         
-        MessageUtils.sendMessage(sender, "&6=== Action Limit Status ===");
-        MessageUtils.sendMessage(sender, "&ePlayer: &f" + targetPlayer.getName());
-        MessageUtils.sendMessage(sender, "&eJob: &f" + jobId);
-        MessageUtils.sendMessage(sender, "&eTarget: &f" + target);
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.header"));
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.player", "player", targetPlayer.getName()));
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.job", "job", jobId));
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.target", "target", target));
         
         if (status.isOnCooldown()) {
             long remainingSeconds = status.getRemainingCooldownSeconds();
             long minutes = remainingSeconds / 60;
             long seconds = remainingSeconds % 60;
-            MessageUtils.sendMessage(sender, "&cStatus: &4On Cooldown &c(Remaining: " + minutes + "m " + seconds + "s)");
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.cooldown", "minutes", String.valueOf(minutes), "seconds", String.valueOf(seconds)));
         } else {
-            MessageUtils.sendMessage(sender, "&aStatus: &2Available");
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.available"));
         }
         
-        MessageUtils.sendMessage(sender, "&eActions: &f" + status.getCurrentActionsPerformed() + "&7/&f" + 
-                status.getLimit().getMaxActionsPerPeriod() + " &7(Remaining: &f" + status.getRemainingActions() + "&7)");
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.actions", 
+            "current", String.valueOf(status.getCurrentActionsPerformed()),
+            "max", String.valueOf(status.getLimit().getMaxActionsPerPeriod()),
+            "remaining", String.valueOf(status.getRemainingActions())));
         
-        String blockingStatus = "";
         if (status.getLimit().isBlockExp() && status.getLimit().isBlockMoney()) {
-            blockingStatus = "&cBlocking: XP & Money";
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.blocking-both"));
         } else if (status.getLimit().isBlockExp()) {
-            blockingStatus = "&cBlocking: XP only";
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.blocking-xp"));
         } else if (status.getLimit().isBlockMoney()) {
-            blockingStatus = "&cBlocking: Money only";
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.blocking-money"));
         } else {
-            blockingStatus = "&aBlocking: None";
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.blocking-none"));
         }
-        MessageUtils.sendMessage(sender, blockingStatus);
     }
     
     private void sendActionLimitHelp(CommandSender sender) {
-        MessageUtils.sendMessage(sender, "&6=== Action Limit Commands ===");
-        MessageUtils.sendMessage(sender, "&e/jobs actionlimit restore <player|*> [job] [target] &7- Restore action limits");
-        MessageUtils.sendMessage(sender, "&e/jobs actionlimit status <player> <job> <target> &7- Check limit status");
-        MessageUtils.sendMessage(sender, "&7Use '*' for player to restore all online players");
-        MessageUtils.sendMessage(sender, "&7Use '*' for job/target to restore all jobs/targets");
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.help"));
     }
     
     /**

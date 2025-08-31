@@ -63,9 +63,23 @@ public class MenuManager implements Listener {
     public void openJobMenu(Player player, String jobId) {
         closeCurrentMenu(player);
         
-        SingleJobMenu menu = new SingleJobMenu(plugin, player, jobId, menuConfig.getJobMenuConfig());
-        openMenus.put(player.getUniqueId(), menu);
-        menu.open();
+        // Use centralized accessor for cleaner code
+        var accessor = plugin.getAccessor();
+        
+        // Check if job exists before creating menu
+        if (accessor.getJobManager().getJob(jobId) == null) {
+            accessor.getLanguageManager().sendMessage(player, "job-not-found", jobId);
+            return;
+        }
+        
+        try {
+            SingleJobMenu menu = new SingleJobMenu(plugin, player, jobId, menuConfig.getJobMenuConfig());
+            openMenus.put(player.getUniqueId(), menu);
+            menu.open();
+        } catch (IllegalArgumentException e) {
+            accessor.logWarning("Failed to create SingleJobMenu: " + e.getMessage());
+            // Menu creation failed silently - job was already validated above
+        }
     }
     
     /**
@@ -74,9 +88,42 @@ public class MenuManager implements Listener {
     public void openJobActionsMenu(Player player, String jobId) {
         closeCurrentMenu(player);
         
-        JobActionsMenu menu = new JobActionsMenu(plugin, player, jobId, menuConfig.getActionsMenuConfig());
-        openMenus.put(player.getUniqueId(), menu);
-        menu.open();
+        // Use centralized accessor for cleaner code
+        var accessor = plugin.getAccessor();
+        
+        // Check if job exists before creating menu
+        if (accessor.getJobManager().getJob(jobId) == null) {
+            accessor.getLanguageManager().sendMessage(player, "job-not-found", jobId);
+            return;
+        }
+        
+        try {
+            JobActionsMenu menu = new JobActionsMenu(plugin, player, jobId, menuConfig.getActionsMenuConfig());
+            openMenus.put(player.getUniqueId(), menu);
+            menu.open();
+        } catch (IllegalArgumentException e) {
+            accessor.logWarning("Failed to create JobActionsMenu: " + e.getMessage());
+            // Menu creation failed silently - job was already validated above
+        }
+    }
+    
+    /**
+     * Open the rewards menu for a specific job.
+     */
+    public void openRewardsMenu(Player player, String jobId) {
+        closeCurrentMenu(player);
+        
+        // Use centralized accessor for cleaner code
+        var accessor = plugin.getAccessor();
+        
+        // Check if job exists before creating menu
+        if (accessor.getJobManager().getJob(jobId) == null) {
+            accessor.getLanguageManager().sendMessage(player, "job-not-found", jobId);
+            return;
+        }
+        
+        // Open rewards GUI using existing RewardGuiManager
+        accessor.getRewardGuiManager().openRewardsGui(player, jobId);
     }
     
     /**

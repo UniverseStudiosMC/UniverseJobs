@@ -1,6 +1,7 @@
 package fr.ax_dev.universejobs.reward.gui;
 
 import fr.ax_dev.universejobs.UniverseJobs;
+import fr.ax_dev.universejobs.config.LanguageManager;
 import fr.ax_dev.universejobs.job.Job;
 import fr.ax_dev.universejobs.reward.Reward;
 import fr.ax_dev.universejobs.reward.RewardManager;
@@ -26,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RewardGuiManager implements Listener {
     
     private final UniverseJobs plugin;
+    private final LanguageManager languageManager;
     private final RewardManager rewardManager;
     private final Map<UUID, Object> openGuis; // Can hold RewardGui or CustomRewardGui
     
@@ -37,10 +39,10 @@ public class RewardGuiManager implements Listener {
      */
     public RewardGuiManager(UniverseJobs plugin, RewardManager rewardManager) {
         this.plugin = plugin;
+        this.languageManager = plugin.getLanguageManager();
         this.rewardManager = rewardManager;
         this.openGuis = new ConcurrentHashMap<>();
         
-        // Register event listener
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
     
@@ -53,13 +55,13 @@ public class RewardGuiManager implements Listener {
     public void openRewardsGui(Player player, String jobId) {
         Job job = plugin.getJobManager().getJob(jobId);
         if (job == null) {
-            MessageUtils.sendMessage(player, "&cJob not found: " + jobId);
+            MessageUtils.sendMessage(player, languageManager.getMessage("rewards.gui.job-not-found", "job", jobId));
             return;
         }
         
         List<Reward> rewards = rewardManager.getJobRewards(jobId);
         if (rewards.isEmpty()) {
-            MessageUtils.sendMessage(player, "&cNo rewards available for job: " + job.getName());
+            MessageUtils.sendMessage(player, languageManager.getMessage("rewards.gui.no-rewards", "job", job.getName()));
             return;
         }
         
@@ -72,7 +74,7 @@ public class RewardGuiManager implements Listener {
         }
         
         if (availableRewards.isEmpty()) {
-            MessageUtils.sendMessage(player, "&cNo rewards available for you in job: " + job.getName());
+            MessageUtils.sendMessage(player, languageManager.getMessage("rewards.gui.no-available-rewards", "job", job.getName()));
             return;
         }
         
@@ -183,7 +185,7 @@ public class RewardGuiManager implements Listener {
             this.rewards = rewards;
             this.page = page;
             this.inventory = Bukkit.createInventory(this, GUI_SIZE, 
-                    MessageUtils.colorize("&6" + job.getName() + " Rewards"));
+                    MessageUtils.parseMessage("<#FFD700><bold>" + job.getName() + " Rewards</bold>"));
             
             setupGui();
         }
@@ -244,15 +246,15 @@ public class RewardGuiManager implements Listener {
             
             // Modify the item with reward information
             ItemBuilder builder = new ItemBuilder(plugin, item)
-                    .name("&e" + reward.getName())
+                    .name("<#FFD700>" + reward.getName())
                     .addLore("")
-                    .addLore("&7" + reward.getDescription());
+                    .addLore("<gray>" + reward.getDescription());
             
             // Add requirement information
             if (reward.getRequiredLevel() > 1) {
                 int playerLevel = plugin.getJobManager().getLevel(player, reward.getJobId());
-                String levelColor = playerLevel >= reward.getRequiredLevel() ? "&a" : "&c";
-                builder.addLore("&7Required Level: " + levelColor + reward.getRequiredLevel());
+                String levelColor = playerLevel >= reward.getRequiredLevel() ? "<#abffb3>" : "<#FF6B6B>";
+                builder.addLore("<gray>Required Level: " + levelColor + reward.getRequiredLevel());
             }
             
             // Add cooldown information
@@ -263,42 +265,42 @@ public class RewardGuiManager implements Listener {
                 
                 if (timeLeft > 0) {
                     String timeString = formatTime(timeLeft);
-                    builder.addLore("&7Cooldown: &c" + timeString);
+                    builder.addLore("<gray>Cooldown: <#FF6B6B>" + timeString);
                 }
             }
             
             // Add reward items information
             if (!reward.getItems().isEmpty()) {
                 builder.addLore("")
-                     .addLore("&6Rewards:");
+                     .addLore("<#FFD700>Rewards:");
                 
                 int itemsShown = 0;
                 for (Reward.RewardItem rewardItem : reward.getItems()) {
                     if (itemsShown >= 3) {
-                        builder.addLore("&7... and " + (reward.getItems().size() - 3) + " more");
+                        builder.addLore("<gray>... and " + (reward.getItems().size() - 3) + " more");
                         break;
                     }
                     
                     String itemName = rewardItem.getDisplayName() != null ? 
                             rewardItem.getDisplayName() : rewardItem.getMaterial();
-                    builder.addLore("&8- &f" + rewardItem.getAmount() + "x " + itemName);
+                    builder.addLore("<gray>- <white>" + rewardItem.getAmount() + "x " + itemName);
                     itemsShown++;
                 }
             }
             
             // Add economy reward information
             if (reward.hasEconomyReward()) {
-                builder.addLore("&8- &f$" + reward.getEconomyReward());
+                builder.addLore("<gray>- <#FFD700>$" + reward.getEconomyReward());
             }
             
             // Add commands information
             if (reward.hasCommands()) {
-                builder.addLore("&8- &fSpecial rewards");
+                builder.addLore("<gray>- <white>Special rewards");
             }
             
             // Add status information
             builder.addLore("")
-                   .addLore("&7Status: " + status.getIndicator() + " " + status.getDescription());
+                   .addLore("<gray>Status: " + status.getIndicator() + " " + status.getDescription());
             
             return builder.build();
         }
@@ -312,31 +314,31 @@ public class RewardGuiManager implements Listener {
             // Previous page button
             if (page > 0) {
                 ItemStack prevItem = ItemBuilder.createNavigationItem(plugin, Material.ARROW,
-                        "&ePrevious Page", "&7Click to go to page " + page);
+                        "<#abffb3>Previous Page", "<#FFD700>Click to go to page " + page);
                 inventory.setItem(45, prevItem);
             }
             
             // Page info
             ItemStack pageInfo = ItemBuilder.createNavigationItem(plugin, Material.BOOK,
-                    "&6Page " + (page + 1) + " of " + totalPages,
-                    "&7Showing rewards for " + job.getName());
+                    "<#FFD700>Page " + (page + 1) + " of " + totalPages,
+                    "<gray>Showing rewards for " + job.getName());
             inventory.setItem(49, pageInfo);
             
             // Next page button
             if (page < totalPages - 1) {
                 ItemStack nextItem = ItemBuilder.createNavigationItem(plugin, Material.ARROW,
-                        "&eNext Page", "&7Click to go to page " + (page + 2));
+                        "<#abffb3>Next Page", "<#FFD700>Click to go to page " + (page + 2));
                 inventory.setItem(53, nextItem);
             }
             
             // Close button
             ItemStack closeItem = ItemBuilder.createNavigationItem(plugin, Material.BARRIER,
-                    "&cClose", "&7Click to close this menu");
+                    "<#FF6B6B>Close", "<#FFD700>Click to close this menu");
             inventory.setItem(48, closeItem);
             
             // Refresh button
             ItemStack refreshItem = ItemBuilder.createNavigationItem(plugin, Material.EMERALD,
-                    "&aRefresh", "&7Click to refresh rewards");
+                    "<#abffb3>Refresh", "<#FFD700>Click to refresh rewards");
             inventory.setItem(50, refreshItem);
         }
         
@@ -419,15 +421,15 @@ public class RewardGuiManager implements Listener {
             if (status == RewardStatus.RETRIEVABLE) {
                 // Try to claim the reward
                 if (rewardManager.claimReward(player, reward)) {
-                    MessageUtils.sendMessage(player, "&aSuccessfully claimed reward: " + reward.getName());
+                    MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.success", "reward", reward.getName()));
                     
                     // Refresh the GUI to update status
                     setupGui();
                 } else {
-                    MessageUtils.sendMessage(player, "&cFailed to claim reward: " + reward.getName());
+                    MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.failed", "reward", reward.getName()));
                 }
             } else if (status == RewardStatus.BLOCKED) {
-                MessageUtils.sendMessage(player, "&cYou don't meet the requirements for this reward yet.");
+                MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.requirements-not-met"));
             } else if (status == RewardStatus.RETRIEVED) {
                 if (reward.isRepeatable() && reward.getCooldownHours() > 0) {
                     long lastClaim = rewardManager.getLastClaimTime(player, reward);
@@ -436,10 +438,10 @@ public class RewardGuiManager implements Listener {
                     
                     if (timeLeft > 0) {
                         String timeString = formatTime(timeLeft);
-                        MessageUtils.sendMessage(player, "&cYou can claim this reward again in: " + timeString);
+                        MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.cooldown", "time", timeString));
                     }
                 } else {
-                    MessageUtils.sendMessage(player, "&cYou have already claimed this reward.");
+                    MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.already-claimed"));
                 }
             }
         }

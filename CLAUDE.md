@@ -1,0 +1,11 @@
+- Met toujours des commentaires en anglais
+- ne met pas des features inutile ou trop too much
+- utilise toujours mcp context7 et par la suite une web search si besoin pour les docs
+- Rends toujours la configuration user friendly
+- pour les inventory met des InventoryHolder
+- centralise un max de chose avec un code robuste et optimisé
+- NMS et Packet en priorité, ou meilleur methodes paper
+- Evite les fallback au maximum et juste affiche un message d'erreur propre
+- AUCUN message HARDCODE , et met pas de message INUTILE
+- N'utilise jamais de reflexion mais bien les vrai API des plugins
+- tout les getters doivent etre dans @src\main\java\fr\ax_dev\universejobs\utils\PluginAccessor.java

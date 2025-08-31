@@ -6,8 +6,8 @@
 rewards:
   # EXAMPLE 1: Simple starter reward - No requirements
   starter_bonus:
-    name: "&aStarter Bonus"
-    description: "&7Your first reward!"
+    name: "<#32CD32>Starter Bonus"
+    description: "<gray>Your first reward!"
     required-level: 1
     repeatable: false
     items:
@@ -16,15 +16,15 @@ rewards:
         amount: 1
 
   tool_upgrade:
-    name: "&bTool Upgrade"
-    description: "&7Give 200 money when levelup 10 and your nickname is STEVE"
+    name: "<#FFD700>Tool Upgrade"
+    description: "<gray>Give 200 money when levelup 10 and your nickname is STEVE"
     required-level: 10
     repeatable: false
     requirements:
       logic: "AND"
       multiple_condition:
         placeholder:
-          placeholder: "%UniverseJobs_level_example%"
+          placeholder: "%universejobs_player_level%"
           operator: "greater_equal"
           value: "10"
         placeholder2:
@@ -32,7 +32,7 @@ rewards:
           operator: "equals"
           value: "STEVE"
         deny:
-          message: "&c❌ NOT STEVE"
+          message: "<#FF6B6B>❌ NOT STEVE"
         accept:
           commands:
           - "eco give 200 %player_name%"

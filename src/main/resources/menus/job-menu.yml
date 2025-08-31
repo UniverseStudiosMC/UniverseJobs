@@ -1,45 +1,31 @@
 # Individual Job Menu Configuration
-# This file controls the appearance and behavior of individual job menus
+# Modern, clean design with consistent color palette
 
-# Menu title (supports MiniMessage and PlaceholderAPI)
-title: "&6&l{job_name} Menu"
+# Menu title (MiniMessage format with modern styling)
+title: "<#32CD32><bold>{job_name}</bold> <#FFD700>Menu"
 
 # Menu size (must be multiple of 9, max 54)
 size: 45
 
-# Pagination settings (not used for job menu)
-pagination:
-  enabled: false
-  items-per-page: 21
-
-# Fill item configuration
+# Modern glass pane background
 fill-item:
   enabled: true
   material: GRAY_STAINED_GLASS_PANE
-  display-name: " "
+  display-name: ""
   lore: []
   amount: 1
+  slots: []  # Empty = use global fill-slots. Specify slots like [1, 2, 3, 9, 18] to override
   custom-model-data: 0
   glow: false
   hide-attributes: true
   hide-enchants: true
-
-# Slots to fill (empty = all empty slots)
-fill-slots: []
-
-# Content slots (not used for job menu as items have fixed positions)
-content-slots: []
-
-# Navigation slot configuration
-navigation-slots:
-  back: [39]
-  close: [41]
+  hideToolTip: true
 
 # Static items (decorative items)
 static-items:
   border-left:
     enabled: true
-    material: BLUE_STAINED_GLASS_PANE
+    material: WHITE_STAINED_GLASS_PANE
     display-name: " "
     lore: []
     amount: 1
@@ -52,7 +38,7 @@ static-items:
     
   border-right:
     enabled: true
-    material: BLUE_STAINED_GLASS_PANE
+    material: WHITE_STAINED_GLASS_PANE
     display-name: " "
     lore: []
     amount: 1
@@ -68,9 +54,9 @@ navigation-items:
   back:
     enabled: true
     material: ARROW
-    display-name: "&7← Back to Jobs Menu"
+    display-name: "<#32CD32>← Back to Jobs Menu"
     lore:
-      - "&7Click to go back to the main jobs menu"
+      - "<#FFD700>Click to go back to the main jobs menu"
     amount: 1
     slots: [39]
     custom-model-data: 0
@@ -82,9 +68,9 @@ navigation-items:
   close:
     enabled: true
     material: BARRIER
-    display-name: "&cClose Menu"
+    display-name: "<#FF6B6B>Close Menu"
     lore:
-      - "&7Click to close this menu"
+      - "<#FFD700>Click to close this menu"
     amount: 1
     slots: [41]
     custom-model-data: 0
@@ -93,9 +79,157 @@ navigation-items:
     hide-enchants: false
     action: close
 
-# Fixed button positions (these are hardcoded in the menu but can be customized here)
-# Slot 13: Job information display
-# Slot 22: Player stats display
-# Slot 29: Join/Leave button
-# Slot 31: Actions & Rewards button  
-# Slot 33: Rankings button
+# Main menu items
+menu-items:
+  job-info:
+    enabled: true
+    material: BOOK
+    display-name: "<#32CD32><bold>{job_name}</bold>"
+    lore:
+      - ""
+      - "<#FFD700>Description:"
+      - "<white>{job_description}"
+      - ""
+      - "<#FFD700>Max Level: <#32CD32>{job_max_level}"
+      - "<#FFD700>Permission: <#32CD32>{job_permission}"
+      - ""
+      - "<gray>Click for more details"
+    amount: 1
+    slots: [13]
+    custom-model-data: 0
+    glow: true
+    hide-attributes: true
+    hide-enchants: false
+    action: none
+    
+  player-stats:
+    enabled: true
+    material: PLAYER_HEAD
+    display-name: "<#32CD32><bold>Your Statistics</bold>"
+    lore:
+      - ""
+      - "<#FFD700>Job: <#32CD32>{job_name}"
+      - "<#FFD700>Status: {job_status}"
+      - ""
+      - "<gray>├ <#FFD700>Level: <#32CD32>{player_level}<gray>/<#FFD700>{job_max_level}"
+      - "<gray>├ <#FFD700>XP: <#32CD32>{player_xp}"
+      - "<gray>├ <#FFD700>Next Level: <#32CD32>{xp_to_next} XP"
+      - "<gray>└ <#FFD700>Progress: <#32CD32>{progress_percent}%"
+      - ""
+      - "<gray>└ {progress_bar}"
+    amount: 1
+    slots: [22]
+    custom-model-data: 0
+    glow: false
+    hide-attributes: true
+    hide-enchants: false
+    action: none
+    skull-owner: "{player_name}"
+    
+  join-leave-button:
+    enabled: true
+    # Material will be dynamically set based on job status
+    material: EMERALD_BLOCK
+    display-name: "<#32CD32><bold>Join Job</bold>"
+    lore:
+      - ""
+      - "<#FFD700>Click to join this job"
+      - "<#FFD700>and start earning rewards!"
+      - ""
+      - "<#FFD700>Requires: <white>{job_permission}"
+    amount: 1
+    slots: [29]
+    custom-model-data: 0
+    glow: false
+    hide-attributes: true
+    hide-enchants: false
+    action: toggle-job
+    # Alternative configuration when player has the job
+    has-job-material: REDSTONE_BLOCK
+    has-job-display-name: "<#FF6B6B><bold>Leave Job</bold>"
+    has-job-lore:
+      - ""
+      - "<#FFD700>Click to leave this job"
+      - ""
+      - "<#FF6B6B><bold>Warning:</bold>"
+      - "<#FF6B6B>You will lose all progress!"
+    
+  actions-button:
+    enabled: true
+    material: DIAMOND_SWORD
+    display-name: "<#32CD32><bold>Job Actions</bold>"
+    lore:
+      - ""
+      - "<#FFD700>View all available actions"
+      - "<#FFD700>for this job"
+      - ""
+      - "<gray>• <#FFD700>Total Actions: <#32CD32>{total_actions}"
+      - ""
+      - "<#FFD700>Click to view actions"
+    amount: 1
+    slots: [30]
+    custom-model-data: 0
+    glow: false
+    hide-attributes: true
+    hide-enchants: false
+    action: open-actions
+    
+  rewards-button:
+    enabled: true
+    material: EMERALD
+    display-name: "<#32CD32><bold>Job Rewards</bold>"
+    lore:
+      - ""
+      - "<#FFD700>View all available rewards"
+      - "<#FFD700>for this job"
+      - ""
+      - "<gray>• <#FFD700>Total Rewards: <#32CD32>{total_rewards}"
+      - ""
+      - "<#FFD700>Click to view rewards"
+    amount: 1
+    slots: [32]
+    custom-model-data: 0
+    glow: false
+    hide-attributes: true
+    hide-enchants: false
+    action: open-rewards
+    
+  rankings-button:
+    enabled: true
+    material: GOLDEN_HELMET
+    display-name: "<#FFD700><bold>Rankings</bold>"
+    lore:
+      - ""
+      - "<#FFD700>View the top players"
+      - "<#FFD700>for this job"
+      - ""
+      - "<gray>• <#FFD700>Your Rank: <#32CD32>#{player_rank}"
+      - "<gray>• <#FFD700>Top Player: <#32CD32>{top_player}"
+      - ""
+      - "<#FFD700>Click to view rankings"
+    amount: 1
+    slots: [33]
+    custom-model-data: 0
+    glow: false
+    hide-attributes: true
+    hide-enchants: false
+    action: open-rankings
+
+# Available placeholders for this menu:
+# - {job_id} - The job's internal ID
+# - {job_name} - The job's display name
+# - {job_description} - The job's description
+# - {job_max_level} - Maximum level for the job
+# - {job_permission} - Permission required for the job
+# - {job_status} - Current status (Joined/Not Joined)
+# - {player_name} - Player's name
+# - {player_level} - Player's current level in the job
+# - {player_xp} - Player's current XP in the job
+# - {xp_to_next} - XP needed for next level
+# - {next_level_xp} - Total XP for next level
+# - {progress_bar} - Visual XP progress bar
+# - {progress_percent} - XP progress percentage
+# - {total_actions} - Total number of actions for this job
+# - {total_rewards} - Total number of rewards for this job
+# - {player_rank} - Player's rank in this job
+# - {top_player} - Name of the top player in this job

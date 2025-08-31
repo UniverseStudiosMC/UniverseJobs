@@ -1,8 +1,8 @@
 # Job Actions Menu Configuration
-# This file controls the appearance and behavior of job actions and rewards menus
+# This file controls the appearance and behavior of job actions menu
 
 # Menu title (supports MiniMessage and PlaceholderAPI)
-title: "&6&l{job_name} - Actions & Rewards"
+title: "<#FFD700><bold>{job_name} - Actions</bold>"
 
 # Menu size (must be multiple of 9, max 54)
 size: 54
@@ -15,19 +15,21 @@ pagination:
 # Fill item configuration
 fill-item:
   enabled: true
-  material: BLACK_STAINED_GLASS_PANE
+  material: GRAY_STAINED_GLASS_PANE
   display-name: " "
   lore: []
   amount: 1
+  slots: []  # Empty = use global fill-slots. Specify slots like [1, 2, 3, 9, 18] to override
   custom-model-data: 0
   glow: false
   hide-attributes: true
   hide-enchants: true
+  hideToolTip: true
 
 # Slots to fill (empty = all empty slots)
 fill-slots: []
 
-# Content slots where action and reward items will be placed
+# Content slots where action items will be placed
 content-slots: [10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43]
 
 # Navigation slot configuration
@@ -40,32 +42,19 @@ navigation-slots:
 
 # Static items
 static-items:
-  separator-left:
+  info-header:
     enabled: true
-    material: YELLOW_STAINED_GLASS_PANE
-    display-name: "&e&lActions"
+    material: DIAMOND_SWORD
+    display-name: "<#FFD700><bold>Job Actions</bold>"
     lore:
-      - "&7This section shows all"
-      - "&7available job actions"
+      - "<gray>This section shows all"
+      - "<gray>available actions for this job"
+      - ""
+      - "<gray>Total Actions: <#FFD700>{total_actions}"
     amount: 1
-    slots: [1]
+    slots: [4]
     custom-model-data: 0
-    glow: false
-    hide-attributes: true
-    hide-enchants: false
-    action: none
-    
-  separator-right:
-    enabled: true
-    material: GREEN_STAINED_GLASS_PANE
-    display-name: "&a&lRewards"
-    lore:
-      - "&7This section shows all"
-      - "&7available job rewards"
-    amount: 1
-    slots: [7]
-    custom-model-data: 0
-    glow: false
+    glow: true
     hide-attributes: true
     hide-enchants: false
     action: none
@@ -75,12 +64,12 @@ navigation-items:
   previous:
     enabled: true
     material: ARROW
-    display-name: "&e← Previous Page"
+    display-name: "<#abffb3>← Previous Page"
     lore:
-      - "&7Click to go to the previous page"
+      - "<#FFD700>Click to go to the previous page"
       - ""
-      - "&7Page: &e{current_page}&7/&e{total_pages}"
-      - "&7Items: &e{total_items}"
+      - "<gray>Page: <#FFD700>{current_page}<gray>/<#FFD700>{total_pages}"
+      - "<gray>Actions: <#FFD700>{total_items}"
     amount: 1
     slots: [45]
     custom-model-data: 0
@@ -92,12 +81,12 @@ navigation-items:
   next:
     enabled: true
     material: ARROW
-    display-name: "&eNext Page →"
+    display-name: "<#abffb3>Next Page →"
     lore:
-      - "&7Click to go to the next page"
+      - "<#FFD700>Click to go to the next page"
       - ""
-      - "&7Page: &e{current_page}&7/&e{total_pages}"
-      - "&7Items: &e{total_items}"
+      - "<gray>Page: <#FFD700>{current_page}<gray>/<#FFD700>{total_pages}"
+      - "<gray>Actions: <#FFD700>{total_items}"
     amount: 1
     slots: [53]
     custom-model-data: 0
@@ -109,9 +98,9 @@ navigation-items:
   back:
     enabled: true
     material: ARROW
-    display-name: "&7← Back to Job Menu"
+    display-name: "<#abffb3>← Back to Job Menu"
     lore:
-      - "&7Click to go back to the job menu"
+      - "<#FFD700>Click to go back to the job menu"
     amount: 1
     slots: [48]
     custom-model-data: 0
@@ -123,9 +112,9 @@ navigation-items:
   close:
     enabled: true
     material: BARRIER
-    display-name: "&cClose Menu"
+    display-name: "<#FF6B6B>Close Menu"
     lore:
-      - "&7Click to close this menu"
+      - "<#FFD700>Click to close this menu"
     amount: 1
     slots: [49]
     custom-model-data: 0
@@ -136,13 +125,12 @@ navigation-items:
     
   info:
     enabled: true
-    material: BOOK
-    display-name: "&6Menu Information"
+    material: COMPASS
+    display-name: "<#FFD700>Menu Information"
     lore:
-      - "&7Job: &e{job_name}"
-      - "&7Total Actions: &e{total_actions}"
-      - "&7Total Rewards: &a{total_rewards}"
-      - "&7Page: &e{current_page}&7/&e{total_pages}"
+      - "<gray>Job: <#FFD700>{job_name}"
+      - "<gray>Total Actions: <#FFD700>{total_actions}"
+      - "<gray>Page: <#FFD700>{current_page}<gray>/<#FFD700>{total_pages}"
     amount: 1
     slots: [50]
     custom-model-data: 0
@@ -167,11 +155,11 @@ navigation-items:
 action-item-format:
   lore_bonus:
     - ""
-    - "&7Rewards:"
-    - "&8├ &7XP: &a+{action_xp}"
-    - "&8└ &7Money: &6${action_money}"
+    - "<gray>Rewards:"
+    - "<gray>├ <gray>XP: <#abffb3>+{action_xp}"
+    - "<gray>└ <gray>Money: <#FFD700>${action_money}"
     - ""
-    - "&7Requirements: {action_requirements}"
+    - "<gray>Requirements: {action_requirements}"
   # Item settings
   amount: 1
   glow: false

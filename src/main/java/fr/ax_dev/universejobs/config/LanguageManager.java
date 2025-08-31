@@ -6,6 +6,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
@@ -292,5 +293,10 @@ public class LanguageManager {
     public void reload() {
         plugin.getLogger().info("Reloading language files...");
         loadLanguage();
+    }
+
+    public void sendMessage(Player player, String string, String jobId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'sendMessage'");
     }
 }

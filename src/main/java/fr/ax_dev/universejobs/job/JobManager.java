@@ -587,13 +587,10 @@ public class JobManager {
      * Create example job files.
      */
     private void createExampleJobs() {
-        // Creating example job files
         try {
-            // Save example.yml (the only job file that exists in resources)
             plugin.saveResource("jobs/example.yml", false);
             plugin.getLogger().info("Created example job file: example.yml");
         } catch (IllegalArgumentException e) {
-            // Handle case where example.yml doesn't exist in resources
             plugin.getLogger().warning("Could not create example job file: " + e.getMessage());
             plugin.getLogger().info("No example jobs will be created. You can create your own job files manually.");
         }

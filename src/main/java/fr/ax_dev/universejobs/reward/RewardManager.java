@@ -1,6 +1,7 @@
 package fr.ax_dev.universejobs.reward;
 
 import fr.ax_dev.universejobs.UniverseJobs;
+import fr.ax_dev.universejobs.config.LanguageManager;
 import fr.ax_dev.universejobs.condition.ConditionContext;
 import fr.ax_dev.universejobs.condition.ConditionResult;
 import fr.ax_dev.universejobs.job.Job;
@@ -29,6 +30,7 @@ import java.util.logging.Level;
 public class RewardManager {
     
     private final UniverseJobs plugin;
+    private final LanguageManager languageManager;
     private final RewardStorage storage;
     private final Map<String, List<Reward>> jobRewards;
     private final Map<String, Reward> allRewards;
@@ -41,6 +43,7 @@ public class RewardManager {
      */
     public RewardManager(UniverseJobs plugin) {
         this.plugin = plugin;
+        this.languageManager = plugin.getLanguageManager();
         this.storage = new FileRewardStorage(plugin);
         this.jobRewards = new ConcurrentHashMap<>();
         this.allRewards = new ConcurrentHashMap<>();
@@ -275,7 +278,7 @@ public class RewardManager {
         // Check if player has the job
         if (!plugin.getJobManager().hasJob(player, reward.getJobId())) {
             if (showFeedback) {
-                MessageUtils.sendMessage(player, "&cYou must have the " + reward.getJobId() + " job to claim this reward!");
+                MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.no-job", "job", reward.getJobId()));
             }
             return false;
         }
@@ -284,8 +287,10 @@ public class RewardManager {
         int playerLevel = plugin.getJobManager().getLevel(player, reward.getJobId());
         if (playerLevel < reward.getRequiredLevel()) {
             if (showFeedback) {
-                MessageUtils.sendMessage(player, "&cYou need level " + reward.getRequiredLevel() + 
-                    " in " + reward.getJobId() + "! (Current: " + playerLevel + ")");
+                MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.level-requirement", 
+                    "required", String.valueOf(reward.getRequiredLevel()), 
+                    "job", reward.getJobId(), 
+                    "current", String.valueOf(playerLevel)));
             }
             return false;
         }
@@ -293,7 +298,7 @@ public class RewardManager {
         // Check permission
         if (reward.getPermission() != null && !player.hasPermission(reward.getPermission())) {
             if (showFeedback) {
-                MessageUtils.sendMessage(player, "&cYou don't have the required permission: " + reward.getPermission());
+                MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.no-permission", "permission", reward.getPermission()));
             }
             return false;
         }

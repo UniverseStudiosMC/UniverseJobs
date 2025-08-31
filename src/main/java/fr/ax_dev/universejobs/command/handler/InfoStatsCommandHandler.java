@@ -120,8 +120,7 @@ public class InfoStatsCommandHandler extends JobCommandHandler {
                 if (targetPlayer != null) {
                     showPlayerJobInfo(player, targetPlayer);
                 } else {
-                    MessageUtils.sendMessage(player, plugin.getConfigManager().getMessage("job-or-player-not-found", 
-                            "&cJob or player '{target}' not found!"), "target", target);
+                    MessageUtils.sendMessage(player, languageManager.getMessage("commands.info.not-found", "target", target));
                 }
             }
         }
@@ -168,22 +167,22 @@ public class InfoStatsCommandHandler extends JobCommandHandler {
      * Show information about a specific job.
      */
     private void showJobInfo(Player player, Job job) {
-        MessageUtils.sendMessage(player, "&6=== " + job.getName() + " ===");
-        MessageUtils.sendMessage(player, "&7Description: &f" + job.getDescription());
-        MessageUtils.sendMessage(player, "&7Max Level: &f" + job.getMaxLevel());
-        MessageUtils.sendMessage(player, "&7Permission: &f" + job.getPermission());
+        MessageUtils.sendMessage(player, languageManager.getMessage("commands.info.job.header", "job", job.getName()));
+        MessageUtils.sendMessage(player, languageManager.getMessage("commands.info.job.description", "description", job.getDescription()));
+        MessageUtils.sendMessage(player, languageManager.getMessage("commands.info.job.max-level", "level", String.valueOf(job.getMaxLevel())));
+        MessageUtils.sendMessage(player, languageManager.getMessage("commands.info.job.permission", "permission", job.getPermission()));
         
         if (!job.getLore().isEmpty()) {
-            MessageUtils.sendMessage(player, "&7Lore:");
+            MessageUtils.sendMessage(player, languageManager.getMessage("commands.info.job.lore-header"));
             for (String line : job.getLore()) {
-                MessageUtils.sendMessage(player, "&f  " + line);
+                MessageUtils.sendMessage(player, languageManager.getMessage("commands.info.job.lore-line", "line", line));
             }
         }
         
-        MessageUtils.sendMessage(player, "&7Action Types: &f" + 
-                job.getActionTypes().stream()
+        MessageUtils.sendMessage(player, languageManager.getMessage("commands.info.job.action-types", 
+                "types", job.getActionTypes().stream()
                         .map(Enum::name)
-                        .collect(Collectors.joining(", ")));
+                        .collect(Collectors.joining(", "))));
     }
     
     /**
@@ -202,17 +201,23 @@ public class InfoStatsCommandHandler extends JobCommandHandler {
             return;
         }
         
-        String playerName = viewer == target ? "Your" : target.getName() + "'s";
-        MessageUtils.sendMessage(viewer, "&6=== " + playerName + " Jobs ===");
+        if (viewer == target) {
+            MessageUtils.sendMessage(viewer, languageManager.getMessage("commands.stats.header-self"));
+        } else {
+            MessageUtils.sendMessage(viewer, languageManager.getMessage("commands.stats.header-other", "player", target.getName()));
+        }
         
         for (String jobId : playerJobs) {
             Job job = jobManager.getJob(jobId);
             if (job != null) {
-                int level = jobManager.getLevel(target, jobId); // Use JobManager for accurate level calculation
+                int level = jobManager.getLevel(target, jobId);
                 double[] progress = data.getXpProgress(jobId);
                 
-                MessageUtils.sendMessage(viewer, String.format("&e%s &7- Level %d &8(%.1f/%.1f XP)", 
-                        job.getName(), level, progress[0], progress[1]));
+                MessageUtils.sendMessage(viewer, languageManager.getMessage("commands.stats.job-entry", 
+                        "job", job.getName(), 
+                        "level", String.valueOf(level), 
+                        "current_xp", String.valueOf(Math.round(progress[0])), 
+                        "required_xp", String.valueOf(Math.round(progress[1]))));
             }
         }
     }

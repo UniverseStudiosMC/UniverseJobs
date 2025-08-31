@@ -39,8 +39,8 @@ public class GlobalRankingsMenu extends BaseMenu {
         
         loadRankings();
         
-        // Populate inventory after all fields are initialized
-        populateInventory();
+        // Initialize menu after all fields are set
+        initialize();
     }
     
     /**

@@ -19,9 +19,16 @@ public class MenuItemConfig {
     private final boolean glow;
     private final boolean hideAttributes;
     private final boolean hideEnchants;
+    private final boolean hideToolTip;
     private final List<Integer> slots;
     private final String action;
     private final String actionValue;
+    private final String skullOwner;
+    
+    // Alternative configuration for when player has job
+    private final String hasJobMaterial;
+    private final String hasJobDisplayName;
+    private final List<String> hasJobLore;
     
     public MenuItemConfig(ConfigurationSection config) {
         this.enabled = config.getBoolean("enabled", true);
@@ -33,9 +40,16 @@ public class MenuItemConfig {
         this.glow = config.getBoolean("glow", false);
         this.hideAttributes = config.getBoolean("hide-attributes", false);
         this.hideEnchants = config.getBoolean("hide-enchants", false);
+        this.hideToolTip = config.getBoolean("hideToolTip", false);
         this.slots = config.getIntegerList("slots");
         this.action = config.getString("action", "none");
         this.actionValue = config.getString("action-value", "");
+        this.skullOwner = config.getString("skull-owner", "");
+        
+        // Load alternative job configurations
+        this.hasJobMaterial = config.getString("has-job-material", "");
+        this.hasJobDisplayName = config.getString("has-job-display-name", "");
+        this.hasJobLore = config.getStringList("has-job-lore");
         
         // Load enchantments
         this.enchantments = new HashMap<>();
@@ -62,6 +76,7 @@ public class MenuItemConfig {
         configMap.put("glow", false);
         configMap.put("hide-attributes", false);
         configMap.put("hide-enchants", false);
+        configMap.put("hideToolTip", false);
         configMap.put("slots", new ArrayList<Integer>());
         configMap.put("action", "none");
         configMap.put("action-value", "");
@@ -83,6 +98,7 @@ public class MenuItemConfig {
         configMap.put("glow", false);
         configMap.put("hide-attributes", false);
         configMap.put("hide-enchants", false);
+        configMap.put("hideToolTip", false);
         configMap.put("slots", slots);
         configMap.put("action", action);
         configMap.put("action-value", "");
@@ -101,8 +117,19 @@ public class MenuItemConfig {
     public boolean isGlow() { return glow; }
     public boolean isHideAttributes() { return hideAttributes; }
     public boolean isHideEnchants() { return hideEnchants; }
+    public boolean isHideToolTip() { return hideToolTip; }
     public List<Integer> getSlots() { return new ArrayList<>(slots); }
     public String getAction() { return action; }
     public String getActionValue() { return actionValue; }
+    public String getSkullOwner() { return skullOwner; }
+    
+    // Alternative job configuration getters
+    public String getHasJobMaterial() { return hasJobMaterial; }
+    public String getHasJobDisplayName() { return hasJobDisplayName; }
+    public List<String> getHasJobLore() { return new ArrayList<>(hasJobLore); }
+    
+    public boolean hasJobAlternative() { 
+        return hasJobMaterial != null && !hasJobMaterial.isEmpty(); 
+    }
     
 }

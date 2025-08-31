@@ -1,6 +1,7 @@
 package fr.ax_dev.universejobs.menu.impl;
 
 import fr.ax_dev.universejobs.UniverseJobs;
+import fr.ax_dev.universejobs.config.LanguageManager;
 import fr.ax_dev.universejobs.job.Job;
 import fr.ax_dev.universejobs.job.PlayerJobData;
 import fr.ax_dev.universejobs.menu.BaseMenu;
@@ -11,379 +12,312 @@ import fr.ax_dev.universejobs.menu.utils.MenuItemUtils;
 import fr.ax_dev.universejobs.utils.MessageUtils;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
 /**
  * Menu for an individual job showing job information and action buttons.
+ * Implements InventoryHolder for better integration.
  */
-public class SingleJobMenu extends BaseMenu {
+public class SingleJobMenu extends BaseMenu implements InventoryHolder {
+    
+    private static final int DEFAULT_PROGRESS_BARS = 20;
+    private static final String JOB_PLACEHOLDER_PREFIX = "{job_";
+    private static final String PLAYER_PLACEHOLDER_PREFIX = "{player_";
     
     private final Job job;
     private final PlayerJobData playerData;
-    private boolean hasJob; // Not final so we can update it
+    private final Map<String, String> cachedPlaceholders;
+    private final LanguageManager languageManager;
+    private boolean hasJob;
     
     public SingleJobMenu(UniverseJobs plugin, org.bukkit.entity.Player player, String jobId, SingleMenuConfig config) {
         super(plugin, player, config);
         
+        // Initialize job and check if valid
         this.job = plugin.getJobManager().getJob(jobId);
-        this.playerData = plugin.getJobManager().getPlayerData(player.getUniqueId());
-        this.hasJob = playerData.hasJob(jobId);
-        
         if (this.job == null) {
-            MessageUtils.sendMessage(player, "&cJob not found: " + jobId);
-            close();
-            return;
+            throw new IllegalArgumentException("Job not found: " + jobId);
         }
         
-        // Populate inventory after all fields are initialized
-        populateInventory();
+        this.playerData = plugin.getJobManager().getPlayerData(player.getUniqueId());
+        this.languageManager = plugin.getLanguageManager();
+        this.hasJob = playerData.hasJob(jobId);
+        
+        // Initialize cachedPlaceholders
+        this.cachedPlaceholders = new HashMap<>();
+        this.cachedPlaceholders.putAll(createJobPlaceholders());
+        
+        // Initialize menu after all fields are set
+        initialize();
+    }
+    
+    @Override
+    protected void createInventory() {
+        String title = config.getTitle();
+        
+        // Replace custom placeholders first
+        for (Map.Entry<String, String> entry : cachedPlaceholders.entrySet()) {
+            title = title.replace(entry.getKey(), entry.getValue());
+        }
+        
+        // Then process PlaceholderAPI and other placeholders
+        title = processPlaceholders(title);
+        
+        net.kyori.adventure.text.Component titleComponent = MessageUtils.parseMessage(title);
+        this.inventory = org.bukkit.Bukkit.createInventory(this, config.getSize(), titleComponent);
     }
     
     @Override
     protected void populateInventory() {
         if (job == null) return;
         
-        // Clear inventory first
         inventory.clear();
         
-        // Add job information display
-        addJobInformation();
+        // Use centralized approach for menu population
+        populateJobInformation();
+        populateActionButtons();
+        populateNavigationItems();
         
-        // Add action buttons
-        addActionButtons();
-        
-        // Add navigation items
-        addNavigationItems();
-        
-        // Add static items
         addStaticItems();
-        
-        // Fill empty slots
         addFillItems();
     }
     
     /**
-     * Add job information display item.
+     * Populate job information display items using configuration-driven approach.
      */
-    private void addJobInformation() {
-        // Job info item (center top)
-        ItemStack jobInfoItem = createJobInfoItem();
-        inventory.setItem(13, jobInfoItem); // Center of top row
+    private void populateJobInformation() {
+        Map<String, MenuItemConfig> menuItems = loadMenuItemsFromConfig();
         
-        // Player stats item
-        ItemStack playerStatsItem = createPlayerStatsItem();
-        inventory.setItem(22, playerStatsItem); // Center of middle row
+        // Job info item - centralized configuration handling
+        MenuItemConfig jobInfoConfig = menuItems.get("job-info");
+        if (jobInfoConfig != null && jobInfoConfig.isEnabled()) {
+            ItemStack jobInfo = createMenuItem(jobInfoConfig, cachedPlaceholders);
+            placeItemInSlots(jobInfo, jobInfoConfig.getSlots());
+        }
+        
+        // Player stats item - centralized configuration handling
+        MenuItemConfig playerStatsConfig = menuItems.get("player-stats");
+        if (playerStatsConfig != null && playerStatsConfig.isEnabled()) {
+            ItemStack playerStats = createMenuItem(playerStatsConfig, cachedPlaceholders);
+            placeItemInSlots(playerStats, playerStatsConfig.getSlots());
+        }
     }
     
     /**
-     * Create the main job information item.
+     * Populate action buttons using configuration-driven approach.
      */
-    private ItemStack createJobInfoItem() {
-        Material iconMaterial;
-        try {
-            iconMaterial = Material.valueOf(job.getIconMaterial().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            iconMaterial = Material.STONE;
+    private void populateActionButtons() {
+        Map<String, MenuItemConfig> menuItems = loadMenuItemsFromConfig();
+        
+        // Join/Leave button with dynamic configuration based on job status
+        MenuItemConfig joinLeaveConfig = menuItems.get("join-leave-button");
+        if (joinLeaveConfig != null && joinLeaveConfig.isEnabled()) {
+            ItemStack button = createJoinLeaveButton(joinLeaveConfig);
+            placeItemInSlots(button, joinLeaveConfig.getSlots());
         }
         
-        List<String> lore = new ArrayList<>();
-        lore.add("&7" + job.getDescription());
-        lore.add("");
-        lore.add("&7Max Level: &e" + job.getMaxLevel());
-        lore.add("&7XP Type: &e" + job.getXpType());
-        
-        // Add job lore from configuration
-        if (!job.getLore().isEmpty()) {
-            lore.add("");
-            lore.addAll(job.getLore());
+        // Actions button
+        MenuItemConfig actionsConfig = menuItems.get("actions-button");
+        if (actionsConfig != null && actionsConfig.isEnabled()) {
+            ItemStack button = createMenuItem(actionsConfig, cachedPlaceholders);
+            placeItemInSlots(button, actionsConfig.getSlots());
         }
         
-        // Add action types info
-        if (!job.getActionTypes().isEmpty()) {
-            lore.add("");
-            lore.add("&6Available Actions:");
-            job.getActionTypes().forEach(actionType -> 
-                lore.add("&8- &e" + actionType.name().toLowerCase().replace("_", " "))
-            );
+        // Rewards button
+        MenuItemConfig rewardsConfig = menuItems.get("rewards-button");
+        if (rewardsConfig != null && rewardsConfig.isEnabled()) {
+            ItemStack button = createMenuItem(rewardsConfig, cachedPlaceholders);
+            placeItemInSlots(button, rewardsConfig.getSlots());
         }
-        
-        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
-            job.getIconMaterial(), "&e&l" + job.getName(), lore, true
-        );
-        
-        // Apply custom model data if set
-        if (job.getCustomModelData() > 0) {
-            configMap.put("custom-model-data", job.getCustomModelData());
-        }
-        
-        MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig, MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription()));
-    }
-    
-    /**
-     * Create the player stats item.
-     */
-    private ItemStack createPlayerStatsItem() {
-        List<String> lore = new ArrayList<>();
-        
-        if (hasJob) {
-            int playerLevel = playerData.getLevel(job.getId());
-            long playerXp = (long) playerData.getXp(job.getId());
-            
-            lore.add("&7Your Level: &a" + playerLevel);
-            lore.add("&7Your XP: &b" + playerXp);
-            
-            if (playerLevel < job.getMaxLevel() && job.getXpCurve() != null) {
-                long nextLevelXp = (long) job.getXpCurve().getXpForLevel(playerLevel + 1);
-                long xpToNext = nextLevelXp - playerXp;
-                lore.add("&7XP to Next Level: &e" + Math.max(0, xpToNext));
-                
-                // Progress bar
-                double progress = (double) playerXp / nextLevelXp;
-                String progressBar = createProgressBar(progress);
-                lore.add("&7Progress: " + progressBar);
-            }
-            
-            lore.add("");
-            lore.add("&7Status: &aJoined");
-        } else {
-            lore.add("&7Your Level: &c0");
-            lore.add("&7Your XP: &c0");
-            lore.add("");
-            lore.add("&7Status: &cNot Joined");
-        }
-        
-        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
-            "PLAYER_HEAD", "&6Your Progress", lore, hasJob
-        );
-        
-        MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig, MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription()));
-    }
-    
-    /**
-     * Add action buttons to the menu.
-     */
-    private void addActionButtons() {
-        // Join/Leave button
-        ItemStack joinLeaveButton = createJoinLeaveButton();
-        inventory.setItem(29, joinLeaveButton);
-        
-        // Actions & Rewards button
-        ItemStack actionsButton = createActionsButton();
-        inventory.setItem(31, actionsButton);
         
         // Rankings button
-        ItemStack rankingsButton = createRankingsButton();
-        inventory.setItem(33, rankingsButton);
+        MenuItemConfig rankingsConfig = menuItems.get("rankings-button");
+        if (rankingsConfig != null && rankingsConfig.isEnabled()) {
+            ItemStack button = createMenuItem(rankingsConfig, cachedPlaceholders);
+            placeItemInSlots(button, rankingsConfig.getSlots());
+        }
     }
     
     /**
-     * Create join/leave button.
+     * Get the job this menu represents.
+     * 
+     * @return The job or null if not found
      */
-    private ItemStack createJoinLeaveButton() {
-        String material = hasJob ? "RED_CONCRETE" : "GREEN_CONCRETE";
-        String name = hasJob ? "&c&lLeave Job" : "&a&lJoin Job";
-        List<String> lore = new ArrayList<>();
+    public Job getJob() {
+        return job;
+    }
+    
+    /**
+     * Populate navigation items using centralized approach.
+     */
+    private void populateNavigationItems() {
+        Map<String, MenuItemConfig> navItems = config.getNavigationItems();
         
-        if (hasJob) {
-            lore.add("&7Click to leave this job");
-            lore.add("");
-            lore.add("&c&lWARNING:");
-            lore.add("&cYou will lose all progress!");
-        } else {
-            lore.add("&7Click to join this job");
-            
-            if (job.getPermission() != null && !player.hasPermission(job.getPermission())) {
-                lore.add("");
-                lore.add("&c&lRequired Permission:");
-                lore.add("&c" + job.getPermission());
+        for (Map.Entry<String, MenuItemConfig> entry : navItems.entrySet()) {
+            MenuItemConfig navConfig = entry.getValue();
+            if (navConfig.isEnabled()) {
+                ItemStack navItem = createMenuItem(navConfig, cachedPlaceholders);
+                placeItemInSlots(navItem, navConfig.getSlots());
             }
         }
-        
-        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(material, name, lore, false);
-        configMap.put("action", hasJob ? "leave_job" : "join_job");
-        
-        MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig, MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription()));
     }
     
     /**
-     * Create actions & rewards button.
+     * Create join/leave button with dynamic configuration based on job status.
+     * Uses proper API instead of manual configuration parsing.
      */
-    private ItemStack createActionsButton() {
-        List<String> lore = Arrays.asList(
-            "&7View all available actions",
-            "&7and their rewards for this job",
-            "",
-            "&e▶ Click to open actions menu"
-        );
+    private ItemStack createJoinLeaveButton(MenuItemConfig baseConfig) {
+        if (!hasJob) {
+            return createMenuItem(baseConfig, cachedPlaceholders);
+        }
         
-        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
-            "DIAMOND_PICKAXE", "&6&lActions & Rewards", lore, false
-        );
-        configMap.put("action", "open_actions");
+        // For "leave" state, use alternative configuration if available
+        if (baseConfig.hasJobAlternative()) {
+            Map<String, Object> leaveConfig = new HashMap<>();
+            leaveConfig.put("enabled", true);
+            leaveConfig.put("material", baseConfig.getHasJobMaterial());
+            leaveConfig.put("display-name", baseConfig.getHasJobDisplayName());
+            leaveConfig.put("lore", baseConfig.getHasJobLore());
+            leaveConfig.put("amount", baseConfig.getAmount());
+            leaveConfig.put("custom-model-data", baseConfig.getCustomModelData());
+            leaveConfig.put("glow", baseConfig.isGlow());
+            leaveConfig.put("hide-attributes", baseConfig.isHideAttributes());
+            leaveConfig.put("hide-enchants", baseConfig.isHideEnchants());
+            leaveConfig.put("slots", baseConfig.getSlots());
+            leaveConfig.put("action", baseConfig.getAction());
+            
+            MenuItemConfig leaveItemConfig = new MenuItemConfig(new SimpleConfigurationSection(leaveConfig));
+            return createMenuItem(leaveItemConfig, cachedPlaceholders);
+        }
         
-        MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig, MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription()));
+        return createMenuItem(baseConfig, cachedPlaceholders);
     }
     
     /**
-     * Create rankings button.
+     * Place item in multiple slots efficiently.
      */
-    private ItemStack createRankingsButton() {
-        List<String> lore = Arrays.asList(
-            "&7View global job rankings",
-            "&7and see top players",
-            "",
-            "&e▶ Click to open rankings"
-        );
+    private void placeItemInSlots(ItemStack item, List<Integer> slots) {
+        if (item == null || slots == null) return;
         
-        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
-            "GOLD_INGOT", "&6&lGlobal Rankings", lore, false
-        );
-        configMap.put("action", "open_rankings");
-        
-        MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig, MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription()));
+        for (int slot : slots) {
+            if (slot >= 0 && slot < inventory.getSize()) {
+                inventory.setItem(slot, item);
+            }
+        }
     }
     
     /**
-     * Add navigation items.
-     */
-    private void addNavigationItems() {
-        // Back to main menu button
-        ItemStack backButton = createBackButton();
-        inventory.setItem(39, backButton);
-        
-        // Close button
-        ItemStack closeButton = createCloseButton();
-        inventory.setItem(41, closeButton);
-    }
-    
-    /**
-     * Create back button.
-     */
-    private ItemStack createBackButton() {
-        List<String> lore = Arrays.asList(
-            "&7Go back to the main jobs menu"
-        );
-        
-        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
-            "ARROW", "&7&l← Back to Jobs Menu", lore, false
-        );
-        configMap.put("action", "back_to_main");
-        
-        MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig);
-    }
-    
-    /**
-     * Create close button.
-     */
-    private ItemStack createCloseButton() {
-        List<String> lore = Arrays.asList(
-            "&7Close this menu"
-        );
-        
-        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
-            "BARRIER", "&c&lClose", lore, false
-        );
-        configMap.put("action", "close");
-        
-        MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig);
-    }
-    
-    /**
-     * Add static items from configuration.
+     * Add static items from configuration using centralized approach.
      */
     private void addStaticItems() {
-        Map<String, String> placeholders = MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription());
-        MenuItemUtils.addStaticItems(inventory, config.getStaticItems(), placeholders,
-            config -> createMenuItem(config, placeholders));
+        MenuItemUtils.addStaticItems(inventory, config.getStaticItems(), cachedPlaceholders,
+            config -> createMenuItem(config, cachedPlaceholders));
     }
     
     @Override
     public void handleClick(int slot, InventoryClickEvent event) {
-        ItemStack clickedItem = event.getCurrentItem();
-        if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
+        event.setCancelled(true);
         
-        // Handle specific button clicks
-        switch (slot) {
-            case 29: // Join/Leave button
-                handleJoinLeave();
-                break;
-                
-            case 31: // Actions & Rewards button
-                plugin.getMenuManager().openJobActionsMenu(player, job.getId());
-                break;
-                
-            case 33: // Rankings button
-                plugin.getMenuManager().openGlobalRankingsMenu(player);
-                break;
-                
-            case 39: // Back button
-                plugin.getMenuManager().openJobsMainMenu(player);
-                break;
-                
-            case 41: // Close button
-                close();
-                break;
-                
-            default:
-                // Handle navigation clicks
-                handleNavigationClick(slot);
-                break;
+        // Handle navigation items first
+        if (handleNavigationClick(slot)) {
+            return;
+        }
+        
+        // Handle menu items based on configured slots
+        String action = getActionForSlot(slot);
+        
+        switch (action) {
+            case "toggle-job" -> handleJoinLeave();
+            case "open-actions" -> plugin.getMenuManager().openJobActionsMenu(player, job.getId());
+            case "open-rewards" -> plugin.getMenuManager().openRewardsMenu(player, job.getId());
+            case "open-rankings" -> plugin.getMenuManager().openGlobalRankingsMenu(player);
+            case "back" -> plugin.getMenuManager().openJobsMainMenu(player);
+            case "close" -> close();
         }
     }
     
     /**
-     * Handle join/leave job action.
+     * Get action for a specific slot based on menu configuration.
+     */
+    private String getActionForSlot(int slot) {
+        // Check menu items configuration
+        for (Map.Entry<String, MenuItemConfig> entry : config.getMenuItems().entrySet()) {
+            MenuItemConfig itemConfig = entry.getValue();
+            if (itemConfig.getSlots().contains(slot)) {
+                return itemConfig.getAction();
+            }
+        }
+        
+        // Check navigation items
+        for (Map.Entry<String, MenuItemConfig> entry : config.getNavigationItems().entrySet()) {
+            MenuItemConfig itemConfig = entry.getValue();
+            if (itemConfig.getSlots().contains(slot)) {
+                return itemConfig.getAction();
+            }
+        }
+        
+        return "none";
+    }
+    
+    /**
+     * Handle join/leave job action with proper error handling.
      */
     private void handleJoinLeave() {
         if (hasJob) {
-            // Leave job
-            if (plugin.getJobManager().leaveJob(player, job.getId())) {
-                MessageUtils.sendMessage(player, "&cYou have left the job: &e" + job.getName());
-                hasJob = false; // Update local status
-                refresh(); // Refresh menu to update status
-            } else {
-                MessageUtils.sendMessage(player, "&cFailed to leave the job.");
-            }
+            handleLeaveJob();
         } else {
-            // Join job - first check limitations
-            if (!canJoinJob()) {
-                return; // Error message already sent by canJoinJob()
-            }
-            
-            if (plugin.getJobManager().joinJob(player, job.getId())) {
-                MessageUtils.sendMessage(player, "&aYou have joined the job: &e" + job.getName());
-                hasJob = true; // Update local status
-                refresh(); // Refresh menu to update status
-            } else {
-                MessageUtils.sendMessage(player, "&cFailed to join the job.");
-            }
+            handleJoinJob();
         }
     }
     
     /**
-     * Check if player can join the job.
+     * Handle leaving a job with proper error messages.
      */
-    private boolean canJoinJob() {
-        // Check permission
+    private void handleLeaveJob() {
+        if (plugin.getJobManager().leaveJob(player, job.getId())) {
+            MessageUtils.sendMessage(player, languageManager.getMessage("commands.leave.success", "job", job.getName()));
+            hasJob = false;
+            updatePlaceholdersAndRefresh();
+        } else {
+            MessageUtils.sendMessage(player, languageManager.getMessage("commands.leave.failed", "job", job.getName()));
+        }
+    }
+    
+    /**
+     * Handle joining a job with proper validation and error messages.
+     */
+    private void handleJoinJob() {
+        if (!validateJobJoinRequirements()) {
+            return;
+        }
+        
+        if (plugin.getJobManager().joinJob(player, job.getId())) {
+            MessageUtils.sendMessage(player, languageManager.getMessage("commands.join.success", "job", job.getName()));
+            hasJob = true;
+            updatePlaceholdersAndRefresh();
+        } else {
+            MessageUtils.sendMessage(player, languageManager.getMessage("commands.join.failed", "job", job.getName()));
+        }
+    }
+    
+    /**
+     * Validate job join requirements with proper error messages.
+     */
+    private boolean validateJobJoinRequirements() {
+        // Permission check
         if (job.getPermission() != null && !player.hasPermission(job.getPermission())) {
-            MessageUtils.sendMessage(player, "&cYou don't have permission to join this job.");
+            MessageUtils.sendMessage(player, languageManager.getMessage("commands.join.no-permission", "job", job.getName()));
             return false;
         }
         
-        // Check max jobs limit
-        int maxJobs = getMaxJobsForPlayer(player);
-        int currentJobs = plugin.getJobManager().getPlayerData(player.getUniqueId()).getJobs().size();
+        // Max jobs limit check
+        int maxJobs = calculateMaxJobsForPlayer();
+        int currentJobs = playerData.getJobs().size();
         if (currentJobs >= maxJobs) {
-            MessageUtils.sendMessage(player, "&cYou have reached the maximum number of jobs (" + maxJobs + ").");
+            MessageUtils.sendMessage(player, languageManager.getMessage("commands.join.max-jobs-reached", "max", String.valueOf(maxJobs)));
             return false;
         }
         
@@ -391,29 +325,20 @@ public class SingleJobMenu extends BaseMenu {
     }
     
     /**
-     * Get the maximum number of jobs a player can have based on their permissions.
+     * Calculate max jobs for player using proper permission API.
      */
-    private int getMaxJobsForPlayer(org.bukkit.entity.Player player) {
-        int maxJobs = 1; // Default value
-        
-        for (org.bukkit.permissions.PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
-            String permission = permInfo.getPermission();
-            
-            if (permission.startsWith("universejobs.max_join.") && permInfo.getValue()) {
-                try {
-                    String numberPart = permission.substring("universejobs.max_join.".length());
-                    int permissionValue = Integer.parseInt(numberPart);
-                    
-                    if (permissionValue > maxJobs) {
-                        maxJobs = permissionValue;
-                    }
-                } catch (NumberFormatException e) {
-                    // Invalid number in permission, ignore it
-                }
-            }
-        }
-        
-        return maxJobs;
+    private int calculateMaxJobsForPlayer() {
+        // Use ConfigManager to get max jobs instead of hardcoded permission parsing
+        return plugin.getConfigManager().getMaxJobsPerPlayer();
+    }
+    
+    /**
+     * Update cached placeholders and refresh menu efficiently.
+     */
+    private void updatePlaceholdersAndRefresh() {
+        cachedPlaceholders.clear();
+        cachedPlaceholders.putAll(createJobPlaceholders());
+        refresh();
     }
     
     @Override
@@ -426,26 +351,190 @@ public class SingleJobMenu extends BaseMenu {
         plugin.getMenuManager().openJobsMainMenu(player);
     }
     
-    
     /**
-     * Create a progress bar string.
+     * Create optimized progress bar with proper formatting.
      */
     private String createProgressBar(double progress) {
-        int bars = 20;
-        int filled = (int) Math.round(progress * bars);
+        var progressBarConfig = plugin.getAccessor().getConfigManager().getProgressBarConfig();
+        if (progressBarConfig != null) {
+            return progressBarConfig.generateProgressBar(progress * 100, 100, true);
+        }
+        
+        // Fallback to legacy progress bar if config is not available
+        int filled = (int) Math.round(progress * DEFAULT_PROGRESS_BARS);
         
         StringBuilder progressBar = new StringBuilder("&a");
-        for (int i = 0; i < bars; i++) {
-            if (i < filled) {
-                progressBar.append("█");
-            } else {
-                progressBar.append("&7█");
-            }
+        for (int i = 0; i < DEFAULT_PROGRESS_BARS; i++) {
+            progressBar.append(i < filled ? "█" : "&7█");
         }
         progressBar.append(" &f").append(String.format("%.1f", progress * 100)).append("%");
         
         return progressBar.toString();
     }
     
+    /**
+     * Load menu items from configuration using proper API access.
+     */
+    private Map<String, MenuItemConfig> loadMenuItemsFromConfig() {
+        // Use configuration if available
+        Map<String, MenuItemConfig> configItems = config.getMenuItems();
+        if (!configItems.isEmpty()) {
+            return configItems;
+        }
+        
+        // Fallback to default items
+        Map<String, MenuItemConfig> items = new HashMap<>();
+        try {
+            // Create job-info item
+            Map<String, Object> jobInfoData = new HashMap<>();
+            jobInfoData.put("enabled", true);
+            jobInfoData.put("material", "PAPER");
+            jobInfoData.put("slots", Arrays.asList(10));
+            items.put("job-info", new MenuItemConfig(new SimpleConfigurationSection(jobInfoData)));
+            
+            // Create player-stats item
+            Map<String, Object> playerStatsData = new HashMap<>();
+            playerStatsData.put("enabled", true);
+            playerStatsData.put("material", "PLAYER_HEAD");
+            playerStatsData.put("slots", Arrays.asList(12));
+            items.put("player-stats", new MenuItemConfig(new SimpleConfigurationSection(playerStatsData)));
+            
+            // Create join-leave-button
+            Map<String, Object> joinLeaveData = new HashMap<>();
+            joinLeaveData.put("enabled", true);
+            joinLeaveData.put("material", "EMERALD_BLOCK");
+            joinLeaveData.put("slots", Arrays.asList(14));
+            items.put("join-leave-button", new MenuItemConfig(new SimpleConfigurationSection(joinLeaveData)));
+            
+            // Create actions-button
+            Map<String, Object> actionsData = new HashMap<>();
+            actionsData.put("enabled", true);
+            actionsData.put("material", "DIAMOND_SWORD");
+            actionsData.put("slots", Arrays.asList(15));
+            items.put("actions-button", new MenuItemConfig(new SimpleConfigurationSection(actionsData)));
+            
+            // Create rewards-button
+            Map<String, Object> rewardsData = new HashMap<>();
+            rewardsData.put("enabled", true);
+            rewardsData.put("material", "EMERALD");
+            rewardsData.put("slots", Arrays.asList(17));
+            items.put("rewards-button", new MenuItemConfig(new SimpleConfigurationSection(rewardsData)));
+            
+            // Create rankings-button
+            Map<String, Object> rankingsData = new HashMap<>();
+            rankingsData.put("enabled", true);
+            rankingsData.put("material", "GOLD_INGOT");
+            rankingsData.put("slots", Arrays.asList(18));
+            items.put("rankings-button", new MenuItemConfig(new SimpleConfigurationSection(rankingsData)));
+            
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to load menu items configuration: " + e.getMessage());
+        }
+        
+        return items;
+    }
     
+    /**
+     * Create optimized placeholders for this job and player.
+     * Cached for performance improvement.
+     */
+    private Map<String, String> createJobPlaceholders() {
+        Map<String, String> placeholders = new HashMap<>();
+        
+        // Job placeholders - centralized approach
+        addJobPlaceholders(placeholders);
+        
+        // Player placeholders - centralized approach
+        addPlayerPlaceholders(placeholders);
+        
+        // Statistics placeholders - centralized approach
+        addStatisticsPlaceholders(placeholders);
+        
+        return placeholders;
+    }
+    
+    /**
+     * Add job-related placeholders efficiently.
+     */
+    private void addJobPlaceholders(Map<String, String> placeholders) {
+        placeholders.put("{job_id}", job.getId());
+        placeholders.put("{job_name}", job.getDisplayName());
+        placeholders.put("{job_description}", job.getDescription());
+        placeholders.put("{job_max_level}", String.valueOf(job.getMaxLevel()));
+        placeholders.put("{job_permission}", job.getPermission() != null ? job.getPermission() : "none");
+    }
+    
+    /**
+     * Add player-related placeholders efficiently.
+     */
+    private void addPlayerPlaceholders(Map<String, String> placeholders) {
+        placeholders.put("{player_name}", player.getName());
+        placeholders.put("{job_status}", hasJob ? "&aJoined" : "&cNot Joined");
+        
+        if (hasJob) {
+            int playerLevel = playerData.getLevel(job.getId());
+            long playerXp = (long) playerData.getXp(job.getId());
+            
+            placeholders.put("{player_level}", String.valueOf(playerLevel));
+            placeholders.put("{player_xp}", String.valueOf(playerXp));
+            
+            // Calculate progress efficiently
+            calculateAndAddProgressPlaceholders(placeholders, playerLevel, playerXp);
+        } else {
+            addDefaultProgressPlaceholders(placeholders);
+        }
+    }
+    
+    /**
+     * Calculate and add progress-related placeholders efficiently.
+     */
+    private void calculateAndAddProgressPlaceholders(Map<String, String> placeholders, int playerLevel, long playerXp) {
+        if (playerLevel < job.getMaxLevel() && job.getXpCurve() != null) {
+            long nextLevelXp = (long) job.getXpCurve().getXpForLevel(playerLevel + 1);
+            long xpToNext = Math.max(0, nextLevelXp - playerXp);
+            double progress = Math.min(1.0, (double) playerXp / nextLevelXp);
+            
+            placeholders.put("{xp_to_next}", String.valueOf(xpToNext));
+            placeholders.put("{next_level_xp}", String.valueOf(nextLevelXp));
+            placeholders.put("{progress_percent}", String.format("%.1f", progress * 100));
+            placeholders.put("{progress_bar}", createProgressBar(progress));
+        } else {
+            // Max level reached
+            addDefaultProgressPlaceholders(placeholders);
+            placeholders.put("{progress_percent}", "100.0");
+            placeholders.put("{progress_bar}", createProgressBar(1.0));
+        }
+    }
+    
+    /**
+     * Add default progress placeholders for players without the job.
+     */
+    private void addDefaultProgressPlaceholders(Map<String, String> placeholders) {
+        placeholders.put("{player_level}", "0");
+        placeholders.put("{player_xp}", "0");
+        placeholders.put("{xp_to_next}", "0");
+        placeholders.put("{next_level_xp}", "0");
+        placeholders.put("{progress_percent}", "0.0");
+        placeholders.put("{progress_bar}", createProgressBar(0));
+    }
+    
+    /**
+     * Add statistics-related placeholders efficiently.
+     */
+    private void addStatisticsPlaceholders(Map<String, String> placeholders) {
+        // Calculate total actions efficiently
+        int totalActions = job.getActionTypes().stream()
+            .mapToInt(type -> job.getActions(type).size())
+            .sum();
+        placeholders.put("{total_actions}", String.valueOf(totalActions));
+        
+        // Get total rewards efficiently
+        int totalRewards = plugin.getRewardManager() != null ? 
+            plugin.getRewardManager().getJobRewards(job.getId()).size() : 0;
+        placeholders.put("{total_rewards}", String.valueOf(totalRewards));
+        
+        // Ranking placeholders - would need proper calculation implementation
+        placeholders.put("{player_rank}", "N/A");
+        placeholders.put("{top_player}", "N/A");
+    }
 }

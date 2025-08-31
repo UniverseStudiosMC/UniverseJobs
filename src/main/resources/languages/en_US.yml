@@ -4,39 +4,39 @@
 # XP and leveling messages
 xp:
   gain-message:
-    default: "&e+{xp} XP ({job})"
-  level-up: "&aCongratulations! You reached level {level} in {job}!"
+    default: "<#FFD700>+{xp} XP (<#32CD32>{job}<#FFD700>)"
+  level-up: "<#32CD32>Congratulations! You reached level <#FFD700>{level}<#32CD32> in <#FFD700>{job}<#32CD32>!"
 
 # XP Bonus system messages
 xp-bonus:
-  global-announced: "&e&lBONUS XP! &6All players received &e{bonus}% &6bonus XP for &e{duration}&6!"
-  added: "&a&lXP BOOST! &e+{bonus}% XP &afor &e{duration} &a({reason})"
-  expired: "&c&lXP BOOST EXPIRED! &7{bonus}% bonus ended ({reason})"
+  global-announced: "<#FFD700><bold>BONUS XP!</bold> <#32CD32>All players received <#FFD700>{bonus}%<#32CD32> bonus XP for <#FFD700>{duration}<#32CD32>!"
+  added: "<#32CD32><bold>XP BOOST!</bold> <#FFD700>+{bonus}% XP<#32CD32> for <#FFD700>{duration} <#32CD32>({reason})"
+  expired: "<#FF6B6B><bold>XP BOOST EXPIRED!</bold> <gray>{bonus}% bonus ended ({reason})"
 
 # Command system messages
 commands:
-  players-only: "§cThis command can only be used by players!"
-  no-permission: "§cYou don't have permission to use this command!"
-  player-not-found: "§cPlayer not found!"
+  players-only: "<#FF6B6B>This command can only be used by players!"
+  no-permission: "<#FF6B6B>You don't have permission to use this command!"
+  player-not-found: "<#FF6B6B>Player not found!"
   
   # Join command
   join:
-    usage: "&cUsage: /job join <job>"
-    success: "&aYou joined the {job} job!"
-    already-have: "&cYou already have the {job} job!"
-    max-jobs-reached: "&cYou can only have {max} jobs at once!"
-    no-permission: "&cYou don't have permission to join the {job} job!"
-    failed: "&cFailed to join the {job} job!"
-    job-not-found: "&cJob '{job}' not found!"
+    usage: "<#FF6B6B>Usage: /job join <job>"
+    success: "<#32CD32>You joined the <#FFD700>{job}<#32CD32> job!"
+    already-have: "<#FF6B6B>You already have the <#FFD700>{job}<#FF6B6B> job!"
+    max-jobs-reached: "<#FF6B6B>You can only have <#FFD700>{max}<#FF6B6B> jobs at once!"
+    no-permission: "<#FF6B6B>You don't have permission to join the <#FFD700>{job}<#FF6B6B> job!"
+    failed: "<#FF6B6B>Failed to join the <#FFD700>{job}<#FF6B6B> job!"
+    job-not-found: "<#FF6B6B>Job '<#FFD700>{job}<#FF6B6B>' not found!"
     
   # Leave command
   leave:
-    usage: "&cUsage: /job leave <job>"
-    success: "&cYou left the {job} job!"
-    dont-have: "&cYou don't have the {job} job!"
-    failed: "&cFailed to leave the {job} job!"
-    job-not-found: "&cJob '{job}' not found!"
-    default-job: "&cYou cannot leave the {job} job as it is a default job!"
+    usage: "<#FF6B6B>Usage: /job leave <job>"
+    success: "<#FF6B6B>You left the <#FFD700>{job}<#FF6B6B> job!"
+    dont-have: "<#FF6B6B>You don't have the <#FFD700>{job}<#FF6B6B> job!"
+    failed: "<#FF6B6B>Failed to leave the <#FFD700>{job}<#FF6B6B> job!"
+    job-not-found: "<#FF6B6B>Job '<#FFD700>{job}<#FF6B6B>' not found!"
+    default-job: "<#FF6B6B>You cannot leave the <#FFD700>{job}<#FF6B6B> job as it is a default job!"
     
   # Info command
   info:
@@ -51,17 +51,17 @@ commands:
     
   # Stats command
   stats:
-    no-jobs-self: "&cYou don't have any jobs!"
-    no-jobs-other: "&c{player} doesn't have any jobs!"
-    header: "&6=== {player} Jobs ==="
-    job-line: "&e{job} &7- Level {level} &8({currentXp}/{requiredXp} XP)"
+    no-jobs-self: "<#FF6B6B>You don't have any jobs!"
+    no-jobs-other: "<#FF6B6B>{player} doesn't have any jobs!"
+    header: "<#FFD700>=== {player} Jobs ==="
+    job-line: "<#FFD700>{job} <gray>- Level <#32CD32>{level} <gray>({currentXp}/{requiredXp} XP)"
     
   # List command
   list:
-    no-jobs: "&cNo jobs are available!"
-    header: "&6=== Available Jobs ==="
-    status-have: "§a✓"
-    status-dont-have: "§c✗"
+    no-jobs: "<#FF6B6B>No jobs are available!"
+    header: "<#FFD700>=== Available Jobs ==="
+    status-have: "<#32CD32>✓"
+    status-dont-have: "<#FF6B6B>✗"
     
   # XP Bonus commands
   xpbonus:
@@ -103,15 +103,15 @@ commands:
     
   # Help command
   help:
-    header: "&6=== UniverseJobs Commands ==="
-    join: "&e/jobs join <job> &7- Join a job"
-    leave: "&e/jobs leave <job> &7- Leave a job"
-    list: "&e/jobs list &7- List available jobs"
-    info: "&e/jobs info [job/player] &7- Show job or player info"
-    stats: "&e/jobs stats [player] &7- Show job statistics"
-    rewards: "&e/jobs rewards <subcommand> &7- Manage job rewards"
-    xpbonus: "&e/jobs xpbonus &7- Manage XP bonuses"
-    reload: "&e/jobs reload &7- Reload configuration"
+    header: "<#FFD700>=== UniverseJobs Commands ==="
+    join: "<#FFD700>/jobs join <job> <gray>- Join a job"
+    leave: "<#FFD700>/jobs leave <job> <gray>- Leave a job"
+    list: "<#FFD700>/jobs list <gray>- List available jobs"
+    info: "<#FFD700>/jobs info [job/player] <gray>- Show job or player info"
+    stats: "<#FFD700>/jobs stats [player] <gray>- Show job statistics"
+    rewards: "<#FFD700>/jobs rewards <subcommand> <gray>- Manage job rewards"
+    xpbonus: "<#FFD700>/jobs xpbonus <gray>- Manage XP bonuses"
+    reload: "<#FFD700>/jobs reload <gray>- Reload configuration"
     
   # Admin commands
   admin:
@@ -214,19 +214,19 @@ commands:
 # GUI system messages
 gui:
   rewards:
-    title: "&6{job} Rewards"
-    job-label: "&7Job: &e{job}"
-    total-label: "&7Total Rewards: &e{count}"
-    page-label: "&7Page: &e{current}/{total}"
-    required-level: "&7Required Level: &e{level}"
-    status-label: "&7Status: {status}"
-    repeatable-yes: "&7Repeatable: &aYes"
-    repeatable-no: "&7Repeatable: &cNo"
-    cooldown-label: "&7Cooldown: &e{cooldown}"
-    click-to-claim: "&a▶ Click to claim!"
-    claim-success: "&aReward claimed successfully!"
-    claim-failed: "&cFailed to claim reward."
-    already-claimed: "&7You have already claimed this reward."
+    title: "<#FFD700>{job} Rewards"
+    job-label: "<gray>Job: <#FFD700>{job}"
+    total-label: "<gray>Total Rewards: <#FFD700>{count}"
+    page-label: "<gray>Page: <#FFD700>{current}/{total}"
+    required-level: "<gray>Required Level: <#FFD700>{level}"
+    status-label: "<gray>Status: {status}"
+    repeatable-yes: "<gray>Repeatable: <#32CD32>Yes"
+    repeatable-no: "<gray>Repeatable: <#FF6B6B>No"
+    cooldown-label: "<gray>Cooldown: <#FFD700>{cooldown}"
+    click-to-claim: "<#32CD32>▶ Click to claim!"
+    claim-success: "<#32CD32>Reward claimed successfully!"
+    claim-failed: "<#FF6B6B>Failed to claim reward."
+    already-claimed: "<gray>You have already claimed this reward."
 
 # System messages (console/logger)
 system:
@@ -240,16 +240,16 @@ system:
 
 # Legacy message support (backward compatibility)
 messages:
-  level-up: "&aCongratulations! You reached level {level} in {job}!"
-  xp-gain: "&e+{xp} XP ({job})"
-  job-joined: "&aYou joined the {job} job!"
-  job-left: "&cYou left the {job} job!"
-  already-have-job: "&cYou already have the {job} job!"
-  dont-have-job: "&cYou don't have the {job} job!"
-  job-not-found: "&cJob '{job}' not found!"
-  no-permission: "&cYou don't have permission to join the {job} job!"
-  max-jobs-reached: "&cYou can only have {max} jobs at once!"
-  invalid-usage: "&cInvalid usage! Use /job help for commands."
-  job-or-player-not-found: "&cJob or player '{target}' not found!"
-  join-failed: "&cFailed to join the {job} job!"
-  leave-failed: "&cFailed to leave the {job} job!"
+  level-up: "<#32CD32>Congratulations! You reached level <#FFD700>{level}<#32CD32> in <#FFD700>{job}<#32CD32>!"
+  xp-gain: "<#FFD700>+{xp} XP (<#32CD32>{job}<#FFD700>)"
+  job-joined: "<#32CD32>You joined the <#FFD700>{job}<#32CD32> job!"
+  job-left: "<#FF6B6B>You left the <#FFD700>{job}<#FF6B6B> job!"
+  already-have-job: "<#FF6B6B>You already have the <#FFD700>{job}<#FF6B6B> job!"
+  dont-have-job: "<#FF6B6B>You don't have the <#FFD700>{job}<#FF6B6B> job!"
+  job-not-found: "<#FF6B6B>Job '<#FFD700>{job}<#FF6B6B>' not found!"
+  no-permission: "<#FF6B6B>You don't have permission to join the <#FFD700>{job}<#FF6B6B> job!"
+  max-jobs-reached: "<#FF6B6B>You can only have <#FFD700>{max}<#FF6B6B> jobs at once!"
+  invalid-usage: "<#FF6B6B>Invalid usage! Use /job help for commands."
+  job-or-player-not-found: "<#FF6B6B>Job or player '<#FFD700>{target}<#FF6B6B>' not found!"
+  join-failed: "<#FF6B6B>Failed to join the <#FFD700>{job}<#FF6B6B> job!"
+  leave-failed: "<#FF6B6B>Failed to leave the <#FFD700>{job}<#FF6B6B> job!"

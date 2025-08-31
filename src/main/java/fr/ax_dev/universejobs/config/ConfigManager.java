@@ -13,7 +13,7 @@ import java.util.Map;
 public class ConfigManager {
     
     private final UniverseJobs plugin;
-    private final ConfigValidator validator;
+    private ProgressBarConfig progressBarConfig;
     
     /**
      * Create a new ConfigManager.
@@ -22,16 +22,12 @@ public class ConfigManager {
      */
     public ConfigManager(UniverseJobs plugin) {
         this.plugin = plugin;
-        this.validator = new ConfigValidator(plugin);
     }
     
     /**
      * Load the main configuration file.
      */
     public void loadConfig() {
-        // First, validate and auto-generate missing configurations
-        validator.validateAndUpdate("config.yml");
-        
         plugin.saveDefaultConfig();
         plugin.reloadConfig();
         
@@ -39,6 +35,9 @@ public class ConfigManager {
         
         // Validate configuration
         validateConfig(config);
+        
+        // Load progress bar configuration
+        this.progressBarConfig = new ProgressBarConfig(config.getConfigurationSection("progress-bar"));
         
         // Configuration loaded successfully
     }
@@ -58,25 +57,12 @@ public class ConfigManager {
      * Reload the configuration.
      */
     public void reloadConfig() {
-        // Validate and auto-generate missing configurations before reload
-        validator.validateAndUpdate("config.yml");
-        
         plugin.reloadConfig();
-        validateConfig(plugin.getConfig());
-    }
-    
-    /**
-     * Validate all known configuration files and auto-generate missing values.
-     */
-    public void validateAllConfigurations() {
-        validator.validateAllConfigurations();
-    }
-    
-    /**
-     * Get the configuration validator instance.
-     */
-    public ConfigValidator getValidator() {
-        return validator;
+        FileConfiguration config = plugin.getConfig();
+        validateConfig(config);
+        
+        // Reload progress bar configuration
+        this.progressBarConfig = new ProgressBarConfig(config.getConfigurationSection("progress-bar"));
     }
     
     /**
@@ -180,5 +166,14 @@ public class ConfigManager {
      */
     public int getSaveInterval() {
         return plugin.getConfig().getInt("settings.save-interval", 300);
+    }
+    
+    /**
+     * Get the progress bar configuration.
+     * 
+     * @return The progress bar configuration
+     */
+    public ProgressBarConfig getProgressBarConfig() {
+        return progressBarConfig;
     }
 }
