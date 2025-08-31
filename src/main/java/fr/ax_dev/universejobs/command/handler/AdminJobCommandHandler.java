@@ -175,71 +175,20 @@ public class AdminJobCommandHandler extends JobCommandHandler {
     }
     
     private boolean handleForceJoin(CommandSender sender, String[] args) {
-        if (args.length < 4) {
-            sendMessage(sender, "usage.forcejoin");
-            return true;
-        }
-        
-        if (!sender.hasPermission("universejobs.admin.forcejoin")) {
-            sendMessage(sender, "no-permission");
-            return true;
-        }
-        
-        String playerName = args[2];
-        String jobId = args[3];
-        
-        OfflinePlayer target = Bukkit.getOfflinePlayer(playerName);
-        if (target == null) {
-            sendMessage(sender, "player-not-found", "player", playerName);
-            return true;
-        }
-        
-        Job job = jobManager.getJob(jobId);
-        if (job == null) {
-            sendMessage(sender, "job-not-found", "job", jobId);
-            return true;
-        }
-        
-        plugin.getFoliaManager().runAsync(() -> {
-            try {
-                if (target.isOnline()) {
-                    plugin.getPlayerCache().preloadPlayer(target.getUniqueId());
-                }
-                
-                boolean success = jobManager.joinJob(target.getUniqueId(), jobId);
-                
-                plugin.getFoliaManager().runNextTick(() -> {
-                    if (success) {
-                        if (target.isOnline()) {
-                            plugin.getPlayerCache().addPlayerJob(target.getUniqueId(), jobId);
-                        }
-                        
-                        sendMessage(sender, "forcejoin-success", "player", target.getName(), "job", job.getName());
-                        
-                        if (target.isOnline()) {
-                            MessageUtils.sendMessage(target.getPlayer(), 
-                                languageManager.getMessage("commands.admin.forcejoin-notify", "job", job.getName()));
-                        }
-                    } else {
-                        sendMessage(sender, "forcejoin-failed");
-                    }
-                });
-            } catch (Exception e) {
-                plugin.getLogger().warning("Erreur lors du force join: " + e.getMessage());
-                plugin.getFoliaManager().runNextTick(() -> sendMessage(sender, "forcejoin-failed"));
-            }
-        });
-        
-        return true;
+        return handleForceJobAction(sender, args, "forcejoin", true);
     }
     
     private boolean handleForceLeave(CommandSender sender, String[] args) {
+        return handleForceJobAction(sender, args, "forceleave", false);
+    }
+    
+    private boolean handleForceJobAction(CommandSender sender, String[] args, String action, boolean isJoin) {
         if (args.length < 4) {
-            sendMessage(sender, "usage.forceleave");
+            sendMessage(sender, "usage." + action);
             return true;
         }
         
-        if (!sender.hasPermission("universejobs.admin.forceleave")) {
+        if (!sender.hasPermission("universejobs.admin." + action)) {
             sendMessage(sender, "no-permission");
             return true;
         }
@@ -261,27 +210,37 @@ public class AdminJobCommandHandler extends JobCommandHandler {
         
         plugin.getFoliaManager().runAsync(() -> {
             try {
-                boolean success = jobManager.leaveJob(target.getUniqueId(), jobId);
+                if (isJoin && target.isOnline()) {
+                    plugin.getPlayerCache().preloadPlayer(target.getUniqueId());
+                }
+                
+                boolean success = isJoin ? 
+                    jobManager.joinJob(target.getUniqueId(), jobId) :
+                    jobManager.leaveJob(target.getUniqueId(), jobId);
                 
                 plugin.getFoliaManager().runNextTick(() -> {
                     if (success) {
                         if (target.isOnline()) {
-                            plugin.getPlayerCache().removePlayerJob(target.getUniqueId(), jobId);
+                            if (isJoin) {
+                                plugin.getPlayerCache().addPlayerJob(target.getUniqueId(), jobId);
+                            } else {
+                                plugin.getPlayerCache().removePlayerJob(target.getUniqueId(), jobId);
+                            }
                         }
                         
-                        sendMessage(sender, "forceleave-success", "player", target.getName(), "job", job.getName());
+                        sendMessage(sender, action + "-success", "player", target.getName(), "job", job.getName());
                         
                         if (target.isOnline()) {
                             MessageUtils.sendMessage(target.getPlayer(), 
-                                languageManager.getMessage("commands.admin.forceleave-notify", "job", job.getName()));
+                                languageManager.getMessage("commands.admin." + action + "-notify", "job", job.getName()));
                         }
                     } else {
-                        sendMessage(sender, "forceleave-failed");
+                        sendMessage(sender, action + "-failed");
                     }
                 });
             } catch (Exception e) {
-                plugin.getLogger().warning("Erreur lors du force leave: " + e.getMessage());
-                plugin.getFoliaManager().runNextTick(() -> sendMessage(sender, "forceleave-failed"));
+                plugin.getLogger().severe("Error during " + action + ": " + e.getMessage());
+                plugin.getFoliaManager().runNextTick(() -> sendMessage(sender, action + "-failed"));
             }
         });
         
