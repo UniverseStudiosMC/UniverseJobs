@@ -385,7 +385,8 @@ public class XpMessageSettings {
         
         // Replace {message_xp} with the formatted XP message
         if (xp > 0) {
-            String xpMessage = xpMessageFormat.replace("{xp}", String.valueOf((int) xp));
+            String formattedXp = formatNumber(xp);
+            String xpMessage = xpMessageFormat.replace("{xp}", formattedXp);
             processedText = processedText.replace("{message_xp}", xpMessage);
         } else {
             processedText = processedText.replace("{message_xp}", "");
@@ -393,18 +394,34 @@ public class XpMessageSettings {
         
         // Replace {message_money} with the formatted money message
         if (money > 0) {
-            String moneyMessage = moneyMessageFormat.replace("{money}", String.valueOf(money));
+            String formattedMoney = formatNumber(money);
+            String moneyMessage = moneyMessageFormat.replace("{money}", formattedMoney);
             processedText = processedText.replace("{message_money}", moneyMessage);
         } else {
             processedText = processedText.replace("{message_money}", "");
         }
         
         // Replace standard placeholders
-        processedText = processedText.replace("{xp}", String.valueOf((int) xp));
-        processedText = processedText.replace("{money}", String.valueOf(money));
+        processedText = processedText.replace("{xp}", formatNumber(xp));
+        processedText = processedText.replace("{money}", formatNumber(money));
         
         return processedText;
     }
+    
+    /**
+     * Format a number to show decimals only when necessary.
+     * Examples: 1.0 -> "1", 1.5 -> "1.5", 1.25 -> "1.25"
+     */
+    private String formatNumber(double value) {
+        if (value == Math.floor(value)) {
+            // It's a whole number, show as integer
+            return String.valueOf((int) value);
+        } else {
+            // It has decimals, format with up to 2 decimal places
+            return String.format("%.2f", value).replaceAll("0+$", "").replaceAll("\\.$", "");
+        }
+    }
+
     
     /**
      * Convert to Bukkit BossBar color.

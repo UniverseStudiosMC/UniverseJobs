@@ -402,46 +402,45 @@ public class ActionProcessor {
             }
         }
         
-        // XP processing avec cache
+        // XP processing (same logic as awardRewards)
         if (xp > 0) {
-            int currentLevel = playerCache.getPlayerLevel(player.getUniqueId(), job.getId());
+            int currentLevel = jobManager.getLevel(player, job.getId());
             if (currentLevel < job.getMaxLevel()) {
-                // Multiplier avec cache
-                double multiplier = playerCache.getPlayerMultiplier(player.getUniqueId());
-                xp *= multiplier;
+                // Apply any XP multipliers
+                double finalXp = applyMultipliers(player, job, xp);
                 
-                // Bonus avec cache
+                // Apply bonus multipliers
                 double bonusMultiplier = bonusManager.getTotalMultiplier(player.getUniqueId(), job.getId());
-                xp *= bonusMultiplier;
+                finalXp *= bonusMultiplier;
                 
-                // Add XP et mise à jour cache
-                jobManager.addXp(player, job.getId(), xp);
+                // Add XP to the player
+                jobManager.addXp(player, job.getId(), finalXp);
+                
+                // Check for level up
                 int newLevel = jobManager.getLevel(player, job.getId());
-                playerCache.updatePlayerXp(player.getUniqueId(), job.getId(), 
-                    playerCache.getPlayerXp(player.getUniqueId(), job.getId()) + xp, newLevel);
-                
                 if (newLevel > currentLevel) {
                     handleLevelUp(player, job, currentLevel, newLevel);
                 }
             }
         }
         
-        // Money processing
+        // Money processing (same logic as awardRewards)
         if (money > 0) {
-            double multiplier = playerCache.getPlayerMultiplier(player.getUniqueId());
-            money *= multiplier;
-            
             double moneyBonusMultiplier = moneyBonusManager.getTotalMultiplier(player.getUniqueId(), job.getId());
-            money *= moneyBonusMultiplier;
+            double finalMoney = money * moneyBonusMultiplier;
             
-            addPlayerMoney(player, money);
+            // Add money to the player
+            addPlayerMoney(player, finalMoney);
         }
         
-        // Message async seulement si activé (et si pas supprimé)
+        // Message async seulement si activé (et si pas supprimé) - use final values
         boolean suppressMessage = "true".equals(context.get("suppress_message"));
-        if (configCache.isShowXpGain() && (xp > 0 || money > 0) && !suppressMessage) {
+        double finalXp = xp > 0 ? applyMultipliers(player, job, xp) * bonusManager.getTotalMultiplier(player.getUniqueId(), job.getId()) : 0;
+        double finalMoney = money > 0 ? money * moneyBonusManager.getTotalMultiplier(player.getUniqueId(), job.getId()) : 0;
+        
+        if (configCache.isShowXpGain() && (finalXp > 0 || finalMoney > 0) && !suppressMessage) {
             fr.ax_dev.universejobs.job.PlayerJobData playerData = jobManager.getPlayerData(player);
-            messageSender.sendXpMessage(player, job, xp, money, playerData);
+            messageSender.sendXpMessage(player, job, finalXp, finalMoney, playerData);
         }
     }
     
