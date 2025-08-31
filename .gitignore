@@ -2,8 +2,8 @@
 # UniverseJobs .gitignore
 # ================================
 
-# .md
-*.md
+# Claude specific files
+CLAUDE.md
 # Compiled class files
 *.class
 
