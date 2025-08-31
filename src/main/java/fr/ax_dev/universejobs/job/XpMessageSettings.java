@@ -418,7 +418,11 @@ public class XpMessageSettings {
             return String.valueOf((int) value);
         } else {
             // It has decimals, format with up to 2 decimal places
-            return String.format("%.2f", value).replaceAll("0+$", "").replaceAll("\\.$", "");
+            String formatted = String.format("%.2f", value);
+            if (formatted.contains(".")) {
+                formatted = formatted.replaceAll("0+$", "").replaceAll("\\.$", "");
+            }
+            return formatted;
         }
     }
 

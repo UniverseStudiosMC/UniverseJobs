@@ -41,9 +41,9 @@ BREW:
     money: 5
 ```
 
-#### Action TAME (Apprivoisement)
-- Récompenses pour l'apprivoisement d'animaux
-- Support de tous les types d'animaux apprivoisables
+#### TAME Action (Animal Taming)
+- Rewards for taming animals
+- Support for all tameable animal types
 
 ```yaml
 TAME:
@@ -58,12 +58,12 @@ TAME:
     money: 25
 ```
 
-### 🔥 Support Étendu pour SMELT
+### 🔥 Extended SMELT Support
 
-#### Blast Furnace et Smoker
-- Support complet des blast furnaces et smokers
-- Système de blacklist configurable par action
-- Tracking séparé pour chaque type de fourneau
+#### Blast Furnace and Smoker
+- Full support for blast furnaces and smokers
+- Configurable blacklist system per action
+- Separate tracking for each furnace type
 
 ```yaml
 SMELT:
@@ -72,56 +72,56 @@ SMELT:
     xp: 10
     money: 5
     blacklisted-furnaces:
-      - "BLAST_FURNACE"  # Empêche l'XP depuis les blast furnaces
-      - "SMOKER"         # Empêche l'XP depuis les smokers
+      - "BLAST_FURNACE"  # Prevents XP from blast furnaces
+      - "SMOKER"         # Prevents XP from smokers
     
   food_cooking:
     target: "COOKED_BEEF"
     xp: 5
     money: 2
-    # Pas de blacklist = tous les fourneaux acceptés
+    # No blacklist = all furnace types accepted
 ```
 
-### ⚔️ Amélioration des Actions ENCHANT
+### ⚔️ Enhanced ENCHANT Actions
 
-#### Validation des Niveaux d'Enchantement
-- Support des niveaux spécifiques et des ranges
-- Messages cumulatifs silencieux pour éviter le spam
-- Configuration flexible des niveaux requis
+#### Enchantment Level Validation
+- Support for specific levels and ranges
+- Silent cumulative messages to avoid spam
+- Flexible required level configuration
 
 ```yaml
 ENCHANT:
   low_level_enchant:
     target: "sharpness"
-    enchant-level: "1-3"  # Niveaux 1 à 3
+    enchant-level: "1-3"  # Levels 1 to 3
     xp: 10
     money: 5
     
   high_level_enchant:
     target: "sharpness"
-    enchant-level: "4-5"  # Niveaux 4 et 5
+    enchant-level: "4-5"  # Levels 4 and 5
     xp: 30
     money: 20
-    suppress_message: true  # Évite le spam de messages
+    suppress_message: true  # Avoids message spam
     
   specific_level:
     target: "protection"
-    enchant-level: "5"  # Exactement niveau 5
+    enchant-level: "5"  # Exactly level 5
     xp: 50
     money: 35
 ```
 
-### 🎨 Interface Graphique Modernisée
+### 🎨 Modernized GUI
 
-#### Nouveau Design Green-Yellow
-- Palette de couleurs cohérente (#FFD700 pour or, #abffb3 pour vert)
-- Support complet MiniMessage avec couleurs HEX
-- Design épuré et moderne
+#### New Green-Yellow Design
+- Consistent color palette (#FFD700 for gold, #abffb3 for green)
+- Full MiniMessage support with HEX colors
+- Clean and modern design
 
-#### Séparation Actions/Rewards
-- Menus séparés pour les actions et récompenses
-- Navigation intuitive avec boutons dédiés
-- Configuration flexible des slots
+#### Actions/Rewards Separation
+- Separate menus for actions and rewards
+- Intuitive navigation with dedicated buttons
+- Flexible slot configuration
 
 ```yaml
 # job-menu.yml
@@ -147,7 +147,7 @@ fill-items:
     slots: [0, 1, 2, 6, 7, 8, 9, 17, 18, 26, 27, 35]
 ```
 
-### 📊 Système de Progress Bar Customisable
+### 📊 Customizable Progress Bar System
 
 ```yaml
 # config.yml
@@ -164,13 +164,13 @@ progress-bar:
     with-percentage: "{completed_bar}{remaining_bar} {percentage_color}{percentage}%"
 ```
 
-### 💬 Messages XP Avancés
+### 💬 Advanced XP Messages
 
-#### Support des Décimales
-- Affichage correct des valeurs décimales (0.5 XP, 2.75 money)
-- Format intelligent sans zéros inutiles
+#### Decimal Support
+- Correct display of decimal values (0.5 XP, 2.75 money)
+- Smart formatting without unnecessary zeros
 
-#### Messages Personnalisés par Job
+#### Custom Messages per Job
 ```yaml
 xp-message:
   type: "ACTIONBAR"
@@ -182,41 +182,53 @@ xp-message:
     tick: 20
 ```
 
-### 🛠️ Nouvelles Commandes Admin
+### 🛠️ Streamlined Admin Commands
 
-#### /jobs admin givecustom
-Permet de donner XP et argent avec affichage du message personnalisé
+#### New Command: /jobs admin givecustom
+Give XP and money with custom message display
 ```
 /jobs admin givecustom <player> <job> <exp> <money>
 ```
 
-#### /jobs admin validateconfig
-Valide la configuration pour détecter les erreurs
+#### Cleaned Up Commands
+- Removed duplicate `exp` command (kept `xp` only)
+- Removed redundant commands: `validateconfig`, `cache`, `migrate`, `cleanup`
+- Simplified command structure for better usability
+
+#### Available Admin Commands
 ```
-/jobs admin validateconfig
+/jobs admin xp <give|set|remove> <player> <job> <amount>
+/jobs admin level <set> <player> <job> <level>
+/jobs admin givecustom <player> <job> <exp> <money>
+/jobs admin forcejoin <player> <job>
+/jobs admin forceleave <player> <job>
+/jobs admin reset <player> [job|ALL]
+/jobs admin info <player>
+/jobs admin reload
+/jobs admin debug [xp|config]
 ```
 
-## 🐛 Corrections de Bugs
+## 🐛 Bug Fixes
 
-### Fixes Majeurs
-- **Fix ENTITY_INTERACT vs MILK** : MILK a maintenant priorité sur ENTITY_INTERACT
-- **Fix Mode Debug** : Synchronisation parfaite entre mode debug et mode rapide
-- **Fix Cache Actions** : Séparation du cache par ActionType pour éviter les mélanges
-- **Fix Messages Enchantement** : Cumul silencieux pour éviter le spam
-- **Fix Décimales XP** : Affichage correct des valeurs décimales
+### Major Fixes
+- **Fix ENTITY_INTERACT vs MILK**: MILK now has priority over ENTITY_INTERACT
+- **Fix Debug Mode**: Perfect synchronization between debug and fast mode
+- **Fix Action Cache**: Cache separation by ActionType to avoid mixing
+- **Fix Enchantment Messages**: Silent accumulation to avoid spam
+- **Fix XP Decimals**: Correct display of decimal values
 
-### Optimisations
-- **Performance** : Processing des actions 40% plus rapide
-- **Cache** : Système de cache intelligent par ActionType
-- **Validation** : Validation ultra-rapide des conditions
+### Optimizations
+- **Performance**: 40% faster action processing
+- **Cache**: Smart caching system by ActionType
+- **Validation**: Ultra-fast condition validation
 
-## 📝 Exemples de Configuration Complète
+## 📝 Complete Configuration Examples
 
-### Job de Fermier Moderne
+### Modern Farmer Job
 ```yaml
 farmer:
-  name: "Fermier"
-  description: "Cultivez et élevez pour gagner de l'XP"
+  name: "Farmer"
+  description: "Farm and breed to earn XP"
   enabled: true
   
   actions:
@@ -246,11 +258,11 @@ farmer:
         money: 2
 ```
 
-### Job d'Enchanteur
+### Enchanter Job
 ```yaml
 enchanter:
-  name: "Enchanteur"
-  description: "Maîtrisez l'art des enchantements"
+  name: "Enchanter"
+  description: "Master the art of enchantments"
   
   actions:
     ENCHANT:
@@ -275,11 +287,11 @@ enchanter:
         money: 10
 ```
 
-### Job de Forgeron avec Blacklist
+### Blacksmith Job with Blacklist
 ```yaml
 blacksmith:
-  name: "Forgeron"
-  description: "Fondez et forgez les métaux"
+  name: "Blacksmith"
+  description: "Smelt and forge metals"
   
   actions:
     SMELT:
@@ -288,42 +300,42 @@ blacksmith:
         xp: 10
         money: 5
         blacklisted-furnaces:
-          - "BLAST_FURNACE"  # Forge traditionnelle seulement
+          - "BLAST_FURNACE"  # Traditional furnace only
           
       gold_modern:
         target: "GOLD_INGOT"
         xp: 15
         money: 8
         blacklisted-furnaces:
-          - "FURNACE"  # Blast furnace seulement
+          - "FURNACE"  # Blast furnace only
           - "SMOKER"
 ```
 
-## 🔧 Migration depuis v0.2.x
+## 🔧 Migration from v0.2.x
 
-### Actions à Mettre à Jour
-1. Vérifiez vos actions ENCHANT pour ajouter `enchant-level` si nécessaire
-2. Ajoutez `suppress_message: true` pour éviter le spam sur les enchantements multiples
-3. Configurez les `blacklisted-furnaces` pour vos actions SMELT si besoin
-4. Mettez à jour vos couleurs vers le format MiniMessage HEX
+### Actions to Update
+1. Check your ENCHANT actions to add `enchant-level` if needed
+2. Add `suppress_message: true` to avoid spam on multiple enchantments
+3. Configure `blacklisted-furnaces` for your SMELT actions if needed
+4. Update your colors to MiniMessage HEX format
 
-### Nouvelles Permissions
-- `universejobs.admin.givecustom` - Pour la commande givecustom
-- `universejobs.admin.validateconfig` - Pour valider la configuration
+### New Permissions
+- `universejobs.admin.givecustom` - For givecustom command
+- `universejobs.admin.validateconfig` - To validate configuration
 
-## 📋 Notes Importantes
+## 📋 Important Notes
 
-- **Compatibilité** : Bukkit/Spigot/Paper 1.16+
-- **Dépendances Optionnelles** : Vault (économie), MythicMobs, CustomCrops, ItemsAdder, Nexo
-- **Performance** : Amélioration significative, recommandé pour serveurs 100+ joueurs
+- **Compatibility**: Bukkit/Spigot/Paper 1.16+
+- **Optional Dependencies**: Vault (economy), MythicMobs, CustomCrops, ItemsAdder, Nexo
+- **Performance**: Significant improvement, recommended for 100+ player servers
 
-## 🚀 Prochainement (v0.4.0)
-- Système de quêtes journalières
-- Statistiques détaillées par job
-- API pour développeurs
-- Support PlaceholderAPI étendu
+## 🚀 Coming Soon (v0.4.0)
+- Daily quest system
+- Detailed job statistics
+- Developer API
+- Extended PlaceholderAPI support
 
 ---
 
-**Merci d'utiliser UniverseJobs !** 
-Pour tout bug ou suggestion : [GitHub Issues](https://github.com/yourusername/UniverseJobs/issues)
+**Thank you for using UniverseJobs!** 
+For bugs or suggestions: [GitHub Issues](https://github.com/yourusername/UniverseJobs/issues)

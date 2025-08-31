@@ -9,3 +9,4 @@
 - AUCUN message HARDCODE , et met pas de message INUTILE
 - N'utilise jamais de reflexion mais bien les vrai API des plugins
 - tout les getters doivent etre dans @src\main\java\fr\ax_dev\universejobs\utils\PluginAccessor.java
+- jamais de printStackTrace()
