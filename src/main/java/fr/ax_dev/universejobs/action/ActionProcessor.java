@@ -199,6 +199,10 @@ public class ActionProcessor {
             return false;
         }
         
+        if (!validateEnchantLevel(action, context, job)) {
+            return false;
+        }
+        
         boolean shouldCancel = false;
         boolean conditionMet = true;
         
@@ -497,6 +501,75 @@ public class ActionProcessor {
                 MATCHES_SUFFIX + potionTypeMatches);
         
         return potionTypeMatches;
+    }
+    
+    /**
+     * Validate enchant-level requirements for ENCHANT actions.
+     */
+    private boolean validateEnchantLevel(JobAction action, ConditionContext context, Job job) {
+        ActionType actionType = job.getActionTypeForAction(action);
+        if (actionType != ActionType.ENCHANT) {
+            return true; // Enchant-level validation only applies to ENCHANT actions
+        }
+        
+        // If no enchant-level requirements specified, allow all levels
+        if (action.getEnchantLevel() == null || action.getEnchantLevel().isEmpty()) {
+            return true;
+        }
+        
+        String enchantLevelStr = context.get("enchantment_level");
+        if (enchantLevelStr == null) {
+            debugLog("Enchant-level check - no enchantment level in context");
+            return false;
+        }
+        
+        try {
+            int enchantLevel = Integer.parseInt(enchantLevelStr);
+            boolean levelMatches = matchesEnchantLevel(action.getEnchantLevel(), enchantLevel);
+            
+            debugLog("Enchant-level check - required: " + action.getEnchantLevel() + 
+                    ", actual: " + enchantLevel + 
+                    MATCHES_SUFFIX + levelMatches);
+            
+            return levelMatches;
+        } catch (NumberFormatException e) {
+            debugLog("Enchant-level check - invalid level format: " + enchantLevelStr);
+            return false;
+        }
+    }
+    
+    /**
+     * Check if an enchantment level matches the requirement.
+     * Supports ranges like "3-10" and single values like "5".
+     */
+    private boolean matchesEnchantLevel(String requirement, int actualLevel) {
+        if (requirement == null || requirement.isEmpty()) {
+            return true;
+        }
+        
+        requirement = requirement.trim();
+        
+        // Check for range (e.g., "3-10")
+        if (requirement.contains("-")) {
+            String[] parts = requirement.split("-", 2);
+            if (parts.length == 2) {
+                try {
+                    int minLevel = Integer.parseInt(parts[0].trim());
+                    int maxLevel = Integer.parseInt(parts[1].trim());
+                    return actualLevel >= minLevel && actualLevel <= maxLevel;
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            }
+        }
+        
+        // Single value (e.g., "5")
+        try {
+            int requiredLevel = Integer.parseInt(requirement);
+            return actualLevel == requiredLevel;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
     
     /**
