@@ -419,9 +419,11 @@ public class XpMessageSettings {
         } else {
             // It has decimals, format with up to 2 decimal places
             String formatted = String.format("%.2f", value);
-            if (formatted.endsWith("0")) {
-                formatted = formatted.replaceFirst("0+$", "");
+            // Remove trailing zeros safely without regex
+            while (formatted.endsWith("0") && formatted.contains(".")) {
+                formatted = formatted.substring(0, formatted.length() - 1);
             }
+            // Remove trailing dot if present
             if (formatted.endsWith(".")) {
                 formatted = formatted.substring(0, formatted.length() - 1);
             }
