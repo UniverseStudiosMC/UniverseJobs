@@ -33,7 +33,7 @@ public class EnchantEventListener implements Listener {
     
     /**
      * Handle enchantment events.
-     * Processes each enchantment applied during the event.
+     * Processes each enchantment applied during the event and cumulates rewards.
      */
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onEnchantItem(EnchantItemEvent event) {
@@ -44,7 +44,11 @@ public class EnchantEventListener implements Listener {
                                   event.getItem().getType() + " with " + event.getEnchantsToAdd().size() + " enchantments");
         }
         
-        // Process each enchantment being applied
+        double totalXp = 0;
+        double totalMoney = 0;
+        int processedEnchantments = 0;
+        
+        // Process each enchantment being applied and cumulate rewards
         for (Enchantment enchantment : event.getEnchantsToAdd().keySet()) {
             int level = event.getEnchantsToAdd().get(enchantment);
             
@@ -57,14 +61,20 @@ public class EnchantEventListener implements Listener {
                     .set("enchantment", enchantmentKey)
                     .set("enchantment_level", String.valueOf(level))
                     .set("item_type", event.getItem().getType().name())
-                    .set("experience_cost", String.valueOf(event.getExpLevelCost()));
+                    .set("experience_cost", String.valueOf(event.getExpLevelCost()))
+                    .set("suppress_message", "true"); // Flag to suppress individual messages
             
             if (plugin.getConfigManager().isDebugEnabled()) {
                 plugin.getLogger().info("Processing enchantment: " + enchantmentKey + " level " + level);
             }
             
-            // Process the enchantment action
+            // Process the enchantment action (this will cumulate internally)
             actionProcessor.processAction(player, ActionType.ENCHANT, event, context);
+            processedEnchantments++;
+        }
+        
+        if (plugin.getConfigManager().isDebugEnabled() && processedEnchantments > 0) {
+            plugin.getLogger().info("Processed " + processedEnchantments + " enchantments for " + player.getName());
         }
     }
     

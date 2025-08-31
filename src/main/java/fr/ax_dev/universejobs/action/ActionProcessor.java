@@ -235,22 +235,23 @@ public class ActionProcessor {
             return false;
         }
         
-        // Cache lookup direct des actions par ActionType
-        Set<JobAction> actions = configCache.getActionsForMaterial(actionType, context.getTarget());
-        if (actions.isEmpty()) {
+        // Always use job's action list directly to ensure ALL actions are checked
+        // The cache may miss actions with complex targets or conditions
+        List<JobAction> actionsList = job.getActions(actionType);
+        
+        if (actionsList.isEmpty()) {
             if (configCache.isDebugEnabled()) {
-                plugin.getLogger().info("DEBUG: No actions found for material " + context.getTarget());
-                plugin.getLogger().info("DEBUG: Available cached materials: " + configCache.getCachedMaterials());
+                plugin.getLogger().info("DEBUG: No actions found for " + actionType);
             }
             return false;
         }
         
         if (configCache.isDebugEnabled()) {
-            plugin.getLogger().info("DEBUG: Found " + actions.size() + " actions for material " + context.getTarget());
+            plugin.getLogger().info("DEBUG: Found " + actionsList.size() + " actions for " + actionType + " with target " + context.getTarget());
         }
         
         boolean shouldCancel = false;
-        for (JobAction action : actions) {
+        for (JobAction action : actionsList) {
             // Validation ultra-rapide avec toutes les conditions
             if (!validateActionTargetFast(action, context)) continue;
             if (!validateInteractTypeFast(action, context, job)) continue;
@@ -436,8 +437,9 @@ public class ActionProcessor {
             addPlayerMoney(player, money);
         }
         
-        // Message async seulement si activé
-        if (configCache.isShowXpGain() && (xp > 0 || money > 0)) {
+        // Message async seulement si activé (et si pas supprimé)
+        boolean suppressMessage = "true".equals(context.get("suppress_message"));
+        if (configCache.isShowXpGain() && (xp > 0 || money > 0) && !suppressMessage) {
             fr.ax_dev.universejobs.job.PlayerJobData playerData = jobManager.getPlayerData(player);
             messageSender.sendXpMessage(player, job, xp, money, playerData);
         }
@@ -678,7 +680,15 @@ public class ActionProcessor {
         }
         
         if (xp > 0 || money > 0) {
-            awardRewards(player, job, action, xp, money);
+            // Check if messages should be suppressed
+            boolean suppressMessage = "true".equals(context.get("suppress_message"));
+            if (suppressMessage) {
+                // Award rewards silently (without messages)
+                awardRewardsSilently(player, job, action, xp, money);
+            } else {
+                // Award rewards normally (with messages)
+                awardRewards(player, job, action, xp, money);
+            }
         }
     }
     
@@ -751,6 +761,64 @@ public class ActionProcessor {
             messageSender.sendXpMessage(player, job, finalXp, finalMoney, playerData);
             
             debugLog("Player " + player.getName() + " earned " + finalXp + " XP and " + finalMoney + " money from job " + job.getId());
+        }
+    }
+    
+    /**
+     * Award XP and money to a player for a job action (silently, without messages).
+     * This is used for cumulative rewards like enchanting multiple items.
+     */
+    private void awardRewardsSilently(Player player, Job job, JobAction action, double xp, double money) {
+        // Check action limits first
+        if (action.hasLimits()) {
+            ActionLimitManager.ActionGains allowedGains = limitManager.checkAndConsumeLimit(
+                player, job.getId(), action.getTarget(), xp, money);
+            
+            xp = allowedGains.getXp();
+            money = allowedGains.getMoney();
+            
+            // If no gains allowed due to limits, return early
+            if (!allowedGains.hasGains()) {
+                return;
+            }
+        }
+        
+        double finalXp = 0.0;
+        double finalMoney = 0.0;
+        
+        // Process XP if present
+        if (xp > 0) {
+            // Get current level for level cap check
+            int currentLevel = jobManager.getLevel(player, job.getId());
+            if (currentLevel < job.getMaxLevel()) {
+                // Apply any XP multipliers
+                finalXp = applyMultipliers(player, job, xp);
+                
+                // Apply bonus multipliers
+                double bonusMultiplier = bonusManager.getTotalMultiplier(player.getUniqueId(), job.getId());
+                finalXp *= bonusMultiplier;
+                
+                // Add XP to the player
+                jobManager.addXp(player, job.getId(), finalXp);
+                
+                debugLog("Awarded " + finalXp + " XP to " + player.getName() + " for job " + job.getId());
+            }
+        }
+        
+        // Process money if present
+        if (money > 0) {
+            double moneyBonusMultiplier = moneyBonusManager.getTotalMultiplier(player.getUniqueId(), job.getId());
+            finalMoney = money * moneyBonusMultiplier;
+            
+            // Add money to the player
+            addPlayerMoney(player, finalMoney);
+            
+            debugLog("Awarded " + finalMoney + " money to " + player.getName() + " for job " + job.getId());
+        }
+        
+        // No message sent - rewards are given silently for cumulative processing
+        if (finalXp > 0 || finalMoney > 0) {
+            debugLog("Player " + player.getName() + " earned " + finalXp + " XP and " + finalMoney + " money from job " + job.getId() + " (silently)");
         }
     }
     
