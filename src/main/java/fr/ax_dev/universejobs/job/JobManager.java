@@ -730,8 +730,7 @@ public class JobManager {
                 }
                 
             } catch (Exception e) {
-                plugin.getLogger().warning("Error during job cleanup: " + e.getMessage());
-                e.printStackTrace();
+                plugin.getLogger().severe("Error during job cleanup: " + e.getMessage());
             }
         });
     }

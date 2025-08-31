@@ -53,19 +53,14 @@ public class AdminJobCommandHandler extends JobCommandHandler {
         
         return switch (subCommand) {
             case "xp" -> handleXpCommand(sender, args);
-            case "exp" -> handleExpCommand(sender, args);
             case "level" -> handleLevelCommand(sender, args);
             case "givecustom" -> handleGiveCustom(sender, args);
             case "forcejoin" -> handleForceJoin(sender, args);
             case "forceleave" -> handleForceLeave(sender, args);
             case "reset" -> handleReset(sender, args);
             case "info" -> handlePlayerInfo(sender, args);
-            case "cache" -> handleCacheCommand(sender, args);
             case "reload" -> handleReload(sender, args);
-            case "migrate" -> handleMigrate(sender, args);
-            case "cleanup" -> handleCleanup(sender, args);
             case "debug" -> handleDebug(sender, args);
-            case "validateconfig" -> handleValidateConfig(sender, args);
             default -> {
                 sendAdminHelp(sender);
                 yield true;
@@ -873,8 +868,7 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                 plugin.getFoliaManager().runNextTick(() ->
                     sendMessage(sender, "reload-success"));
             } catch (Exception e) {
-                plugin.getLogger().warning("Error during reload: " + e.getMessage());
-                e.printStackTrace();
+                plugin.getLogger().severe("Error during reload: " + e.getMessage());
                 plugin.getFoliaManager().runNextTick(() ->
                     sendMessage(sender, "reload-failed", "error", e.getMessage()));
             }
@@ -1129,24 +1123,19 @@ public class AdminJobCommandHandler extends JobCommandHandler {
     private void sendAdminHelp(CommandSender sender) {
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.header"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.xp"));
-        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.exp"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.level"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.givecustom"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.forcejoin"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.forceleave"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.reset"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.info"));
-        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.cache"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.reload"));
-        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.migrate"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.debug"));
-        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.cleanup"));
-        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.validateconfig"));
     }
     
     public List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 2) {
-            return Arrays.asList("xp", "exp", "level", "givecustom", "forcejoin", "forceleave", "reset", "info", "cache", "debug", "cleanup", "reload", "migrate", "validateconfig");
+            return Arrays.asList("xp", "level", "givecustom", "forcejoin", "forceleave", "reset", "info", "reload", "debug");
         }
         
         if (args.length == 3) {
@@ -1155,18 +1144,10 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                 return Arrays.asList("give", "set", "remove");
             }
             
-            if ("exp".equals(subCommand)) {
-                return Arrays.asList("give", "take", "set");
-            }
-            
             if (Arrays.asList("forcejoin", "forceleave", "reset", "info").contains(subCommand)) {
                 return Bukkit.getOnlinePlayers().stream()
                     .map(Player::getName)
                     .collect(Collectors.toList());
-            }
-            
-            if ("cache".equals(subCommand)) {
-                return Arrays.asList("reload", "stats", "clear");
             }
             
             if ("debug".equals(subCommand)) {
@@ -1178,12 +1159,6 @@ public class AdminJobCommandHandler extends JobCommandHandler {
             String subCommand = args[1].toLowerCase();
             
             if ("xp".equals(subCommand) || "level".equals(subCommand)) {
-                return Bukkit.getOnlinePlayers().stream()
-                    .map(Player::getName)
-                    .collect(Collectors.toList());
-            }
-            
-            if ("exp".equals(subCommand)) {
                 return Bukkit.getOnlinePlayers().stream()
                     .map(Player::getName)
                     .collect(Collectors.toList());
@@ -1243,7 +1218,7 @@ public class AdminJobCommandHandler extends JobCommandHandler {
         if (args.length == 6) {
             String subCommand = args[1].toLowerCase();
             
-            if ("xp".equals(subCommand) || "level".equals(subCommand) || "exp".equals(subCommand)) {
+            if ("xp".equals(subCommand) || "level".equals(subCommand)) {
                 return Arrays.asList("100", "500", "1000", "5000", "10000");
             }
             

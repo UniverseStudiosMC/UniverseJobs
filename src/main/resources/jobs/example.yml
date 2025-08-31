@@ -96,6 +96,7 @@ actions:
       enchant-level: "4-10"              # High level enchantments only
       xp: 20.0
       money: 15.0
+      suppress_message: true  # Avoids message spam
       
     # Wildcard examples - all enchantments from a specific plugin
     all_excellent_enchants:
