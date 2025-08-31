@@ -2,6 +2,8 @@
 # UniverseJobs .gitignore
 # ================================
 
+# .md
+*.md
 # Compiled class files
 *.class
 
