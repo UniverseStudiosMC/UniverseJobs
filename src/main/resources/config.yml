@@ -43,6 +43,7 @@ jobs:
   
   # Maximum number of jobs a player can have at once (ignored if all-jobs-by-default is true)
   max-jobs-per-player: 3
+  
 
 # Progress Bar Configuration
 # Customize how XP progress bars appear in menus and messages

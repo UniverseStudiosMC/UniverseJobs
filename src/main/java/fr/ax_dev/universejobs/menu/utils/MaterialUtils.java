@@ -205,6 +205,7 @@ public class MaterialUtils {
         return switch (actionType) {
             case ENCHANT -> getEnchantmentMaterial(target.toLowerCase());
             case POTION -> Material.POTION;
+            case BREW -> Material.BREWING_STAND;
             case FISH -> Material.FISHING_ROD;
             case CRAFT -> Material.CRAFTING_TABLE;
             case SMELT -> Material.FURNACE;

@@ -8,6 +8,8 @@ import fr.ax_dev.universejobs.integration.MythicMobsHandler;
 import fr.ax_dev.universejobs.protection.BlockProtectionManager;
 import fr.ax_dev.universejobs.cache.ConfigurationCache;
 import fr.ax_dev.universejobs.cache.PlayerJobCache;
+
+import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -33,6 +35,8 @@ import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.inventory.BrewEvent;
+import org.bukkit.event.block.BlockCookEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.event.block.Action;
@@ -482,6 +486,12 @@ public class JobActionListener implements Listener {
         // Rate limiting check
         totalEvents.incrementAndGet();
         
+        // Check for MILK action first (milking cows)
+        if (isMilkingAction(player, entity)) {
+            processMilkAction(player, entity, event);
+            return; // Don't process ENTITY_INTERACT if it's a milking action
+        }
+        
         // Determine interact type (right-click interaction)
         String interactType = player.isSneaking() ? "RIGHT_SHIFT_CLICK" : "RIGHT_CLICK";
         
@@ -501,6 +511,51 @@ public class JobActionListener implements Listener {
         }
         
         processedEvents.incrementAndGet();
+    }
+    
+    /**
+     * Check if this is a milking action (player with bucket + cow/goat).
+     */
+    private boolean isMilkingAction(Player player, Entity entity) {
+        // Must be a cow or goat
+        if (entity.getType() != org.bukkit.entity.EntityType.COW && 
+            entity.getType() != org.bukkit.entity.EntityType.GOAT) {
+            return false;
+        }
+        
+        // Player must have a bucket in main or off hand
+        ItemStack mainHand = player.getInventory().getItemInMainHand();
+        ItemStack offHand = player.getInventory().getItemInOffHand();
+        
+        return (mainHand != null && mainHand.getType() == Material.BUCKET) ||
+               (offHand != null && offHand.getType() == Material.BUCKET);
+    }
+    
+    /**
+     * Process MILK action when player milks a cow/goat.
+     */
+    private void processMilkAction(Player player, Entity entity, PlayerInteractEntityEvent event) {
+        try {
+            // Create context for milking
+            ConditionContext context = new ConditionContext()
+                    .setEntity(entity)
+                    .set(TARGET_KEY, entity.getType().name())
+                    .set("milk_source", entity.getType().name());
+            
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("Processing MILK action for " + player.getName() + 
+                    " - source: " + entity.getType().name());
+            }
+            
+            // Process the milk action
+            boolean shouldCancel = actionProcessor.processAction(player, ActionType.MILK, event, context);
+            if (shouldCancel) {
+                event.setCancelled(true);
+            }
+            
+        } catch (Exception e) {
+            plugin.getLogger().warning("Error processing MILK action for player " + player.getName() + ": " + e.getMessage());
+        }
     }
     
     /**
@@ -776,8 +831,11 @@ public class JobActionListener implements Listener {
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
-        // Only track furnace inventories
-        if (event.getInventory().getType() != InventoryType.FURNACE) {
+        // Only track furnace, blast furnace, smoker, and brewing stand inventories
+        if (event.getInventory().getType() != InventoryType.FURNACE && 
+            event.getInventory().getType() != InventoryType.BLAST_FURNACE &&
+            event.getInventory().getType() != InventoryType.SMOKER &&
+            event.getInventory().getType() != InventoryType.BREWING) {
             return;
         }
         
@@ -786,32 +844,41 @@ public class JobActionListener implements Listener {
             return;
         }
         
-        // Skip if not putting items into the furnace (slot 0 = input, slot 1 = fuel, slot 2 = result)
-        if (event.getSlot() != 0 && event.getSlot() != 1) {
-            return; // Only track input and fuel slots
+        // Skip if not putting items into the right slots
+        if (event.getInventory().getType() == InventoryType.FURNACE) {
+            // For furnaces: slot 0 = input, slot 1 = fuel, slot 2 = result
+            if (event.getSlot() != 0 && event.getSlot() != 1) {
+                return; // Only track input and fuel slots
+            }
+        } else if (event.getInventory().getType() == InventoryType.BREWING) {
+            // For brewing stands: slots 0-2 = bottles, slot 3 = ingredient, slot 4 = fuel
+            if (event.getSlot() < 0 || event.getSlot() > 4) {
+                return; // Only track brewing stand slots
+            }
         }
         
         // Skip if removing items (empty cursor means putting items in)
         if (event.getCursor() == null || event.getCursor().getType().isAir()) {
-            return; // Not adding items to furnace
+            return; // Not adding items
         }
         
-        // Get furnace location as key
-        org.bukkit.Location furnaceLocation = event.getInventory().getLocation();
-        if (furnaceLocation == null) {
+        // Get inventory location as key (works for both furnaces and brewing stands)
+        org.bukkit.Location inventoryLocation = event.getInventory().getLocation();
+        if (inventoryLocation == null) {
             return;
         }
         
-        String furnaceKey = locationToKey(furnaceLocation);
+        String locationKey = locationToKey(inventoryLocation);
         long currentTime = System.currentTimeMillis();
         
-        // Track this player as the owner of this furnace
-        furnaceOwners.put(furnaceKey, player.getUniqueId());
-        furnaceLastUse.put(furnaceKey, currentTime);
+        // Track this player as the owner of this inventory
+        furnaceOwners.put(locationKey, player.getUniqueId());
+        furnaceLastUse.put(locationKey, currentTime);
         
         if (plugin.getConfigManager().isDebugEnabled()) {
-            plugin.getLogger().info("Furnace owner tracked: " + player.getName() + 
-                " at " + furnaceLocation.toString() + " (slot " + event.getSlot() + ")");
+            String inventoryType = event.getInventory().getType().name();
+            plugin.getLogger().info(inventoryType + " owner tracked: " + player.getName() + 
+                " at " + inventoryLocation.toString() + " (slot " + event.getSlot() + ")");
         }
     }
     
@@ -826,17 +893,20 @@ public class JobActionListener implements Listener {
     }
     
     /**
-     * Handle item smelting (SMELT action).
+     * Handle item smelting/cooking (SMELT action).
+     * Supports furnaces, blast furnaces, and smokers with configurable blacklist.
      * Supports detection of nexo:, itemsadder:, customfishing:, and customcrops: items.
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onFurnaceSmelt(FurnaceSmeltEvent event) {
+    public void onBlockCook(BlockCookEvent event) {
+        // We'll check blacklist per action during processing
+        
         // Find the player who owns this furnace by checking our tracking system
         Player player = getFurnaceOwner(event.getBlock().getLocation());
         
         if (player == null) {
             if (plugin.getConfigManager().isDebugEnabled()) {
-                plugin.getLogger().info("No tracked owner for furnace at " + event.getBlock().getLocation() + " - no XP awarded");
+                plugin.getLogger().info("No tracked owner for " + event.getBlock().getType() + " at " + event.getBlock().getLocation() + " - no XP awarded");
             }
             return; // No tracked owner for this furnace
         }
@@ -854,7 +924,8 @@ public class JobActionListener implements Listener {
             ConditionContext context = new ConditionContext()
                     .setItem(result)
                     .set(TARGET_KEY, detectItemTarget(result))
-                    .set("amount", result.getAmount());
+                    .set("amount", result.getAmount())
+                    .set("furnace_type", event.getBlock().getType().name());
             
             // Add source item information if available
             ItemStack source = event.getSource();
@@ -908,6 +979,18 @@ public class JobActionListener implements Listener {
         }
         
         return owner;
+    }
+    
+    /**
+     * Check if a furnace type is blacklisted for SMELT actions.
+     */
+    private boolean isFurnaceBlacklisted(org.bukkit.Material furnaceType, fr.ax_dev.universejobs.action.JobAction action) {
+        // Check if action has its own blacklist
+        if (action.getBlacklistedFurnaces() != null && !action.getBlacklistedFurnaces().isEmpty()) {
+            return action.getBlacklistedFurnaces().contains(furnaceType.name());
+        }
+        
+        return false; // No blacklist = allow all
     }
     
     /**
@@ -1270,6 +1353,86 @@ public class JobActionListener implements Listener {
             // If any error occurs, assume it's not a Nexo block
             return false;
         }
+    }
+    
+    /**
+     * Handle brewing events (BREW action).
+     * Tracks brewing stand interactions to award XP for completed brews.
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBrew(BrewEvent event) {
+        // Find the player who owns this brewing stand by checking recent interactions
+        Player player = getBrewingStandOwner(event.getBlock().getLocation());
+        
+        if (player == null) {
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("No tracked owner for brewing stand at " + event.getBlock().getLocation() + " - no XP awarded");
+            }
+            return;
+        }
+        
+        // Rate limiting check
+        totalEvents.incrementAndGet();
+        
+        try {
+            // Get the result items after brewing
+            org.bukkit.inventory.BrewerInventory inventory = (org.bukkit.inventory.BrewerInventory) event.getContents();
+            
+            // Process each result slot (bottles)
+            for (int i = 0; i < 3; i++) { // Brewing stand has 3 bottle slots
+                ItemStack result = inventory.getItem(i);
+                if (result != null && !result.getType().isAir()) {
+                    // Create context with brewing information
+                    ConditionContext context = new ConditionContext()
+                            .setItem(result)
+                            .set(TARGET_KEY, detectItemTarget(result))
+                            .set("amount", result.getAmount());
+                    
+                    if (plugin.getConfigManager().isDebugEnabled()) {
+                        plugin.getLogger().info("Processing BREW action for " + player.getName() + 
+                            TARGET_SUFFIX + context.get(TARGET_KEY));
+                    }
+                    
+                    // Process the brewing action
+                    actionProcessor.processAction(player, ActionType.BREW, event, context);
+                    processedEvents.incrementAndGet();
+                }
+            }
+            
+        } catch (Exception e) {
+            plugin.getLogger().warning("Error processing BREW action for player " + player.getName() + ": " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Track brewing stand interactions to know who should get XP.
+     * This uses the same tracking system as furnaces.
+     */
+    private Player getBrewingStandOwner(org.bukkit.Location brewingLocation) {
+        // Use the same furnace tracking system since brewing stands work similarly
+        String locationKey = locationToKey(brewingLocation);
+        java.util.UUID ownerUUID = furnaceOwners.get(locationKey);
+        
+        if (ownerUUID == null) {
+            return null;
+        }
+        
+        Player owner = plugin.getServer().getPlayer(ownerUUID);
+        if (owner == null || !owner.isOnline()) {
+            furnaceOwners.remove(locationKey);
+            furnaceLastUse.remove(locationKey);
+            return null;
+        }
+        
+        // Check if tracking is too old (30 minutes)
+        Long lastUse = furnaceLastUse.get(locationKey);
+        if (lastUse != null && (System.currentTimeMillis() - lastUse) > 30 * 60 * 1000L) {
+            furnaceOwners.remove(locationKey);
+            furnaceLastUse.remove(locationKey);
+            return null;
+        }
+        
+        return owner;
     }
     
     /**

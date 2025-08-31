@@ -77,11 +77,6 @@ public enum ActionType {
     SHEAR,
     
     /**
-     * Milking cows
-     */
-    MILK,
-    
-    /**
      * Eating food
      */
     EAT,
@@ -90,6 +85,16 @@ public enum ActionType {
      * Drinking potions
      */
     POTION,
+    
+    /**
+     * Brewing potions
+     */
+    BREW,
+    
+    /**
+     * Milking cows
+     */
+    MILK,
     
     /**
      * Custom action for plugin integrations

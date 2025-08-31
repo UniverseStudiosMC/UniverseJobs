@@ -55,6 +55,7 @@ public class AdminJobCommandHandler extends JobCommandHandler {
             case "xp" -> handleXpCommand(sender, args);
             case "exp" -> handleExpCommand(sender, args);
             case "level" -> handleLevelCommand(sender, args);
+            case "givecustom" -> handleGiveCustom(sender, args);
             case "forcejoin" -> handleForceJoin(sender, args);
             case "forceleave" -> handleForceLeave(sender, args);
             case "reset" -> handleReset(sender, args);
@@ -70,6 +71,112 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                 yield true;
             }
         };
+    }
+    
+    private boolean handleGiveCustom(CommandSender sender, String[] args) {
+        if (args.length < 6) {
+            MessageUtils.sendMessage(sender, "&cUsage: /jobs admin givecustom <player> <job> <exp> <money>");
+            return true;
+        }
+        
+        if (!sender.hasPermission("universejobs.admin.givecustom")) {
+            sendMessage(sender, "no-permission");
+            return true;
+        }
+        
+        String playerName = args[2];
+        String jobId = args[3];
+        
+        double xp, money;
+        try {
+            xp = Double.parseDouble(args[4]);
+            money = Double.parseDouble(args[5]);
+        } catch (NumberFormatException e) {
+            MessageUtils.sendMessage(sender, "&cMontants invalides. Utilisez des nombres.");
+            return true;
+        }
+        
+        OfflinePlayer target = Bukkit.getOfflinePlayer(playerName);
+        if (target == null || !target.hasPlayedBefore()) {
+            sendMessage(sender, "player-not-found", "player", playerName);
+            return true;
+        }
+        
+        Job job = jobManager.getJob(jobId);
+        if (job == null) {
+            sendMessage(sender, "job-not-found", "job", jobId);
+            return true;
+        }
+        
+        plugin.getFoliaManager().runAsync(() -> {
+            try {
+                PlayerJobData playerData = jobManager.getPlayerData(target.getUniqueId());
+                if (!playerData.hasJob(jobId)) {
+                    plugin.getFoliaManager().runNextTick(() -> 
+                        sendMessage(sender, "player-no-job", "player", playerName, "job", jobId));
+                    return;
+                }
+                
+                if (xp > 0) {
+                    playerData.addXp(jobId, xp);
+                }
+                
+                if (money > 0) {
+                    addPlayerMoney(target, money);
+                }
+                
+                plugin.getFoliaManager().runNextTick(() -> {
+                    sendMessage(sender, "givecustom-success", "player", target.getName(), 
+                               "job", job.getName(), "xp", String.valueOf(xp), "money", String.valueOf(money));
+                    
+                    if (target.isOnline()) {
+                        Player onlinePlayer = target.getPlayer();
+                        
+                        String messageText = job.getXpMessageSettings().processMessage(xp, money);
+                        messageText = messageText.replace("{job}", job.getDisplayName());
+                        
+                        plugin.getMessageSender().sendXpMessage(onlinePlayer, job, xp, money, playerData);
+                    }
+                });
+                
+            } catch (Exception e) {
+                plugin.getLogger().warning("Erreur lors du givecustom: " + e.getMessage());
+                plugin.getFoliaManager().runNextTick(() -> 
+                    MessageUtils.sendMessage(sender, "&cErreur lors de l'attribution des récompenses."));
+            }
+        });
+        
+        return true;
+    }
+    
+    private void addPlayerMoney(OfflinePlayer player, double amount) {
+        if (plugin.getServer().getPluginManager().isPluginEnabled("Vault")) {
+            try {
+                net.milkbowl.vault.economy.Economy economy = getVaultEconomy();
+                if (economy != null) {
+                    economy.depositPlayer(player, amount);
+                    return;
+                }
+            } catch (Exception e) {
+                plugin.getLogger().warning("Failed to use Vault for money reward: " + e.getMessage());
+            }
+        }
+        
+        if (player.isOnline()) {
+            String command = "eco give " + player.getName() + " " + amount;
+            plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), command);
+        }
+    }
+    
+    private net.milkbowl.vault.economy.Economy getVaultEconomy() {
+        try {
+            if (plugin.getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class) != null) {
+                return plugin.getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class).getProvider();
+            }
+        } catch (Exception e) {
+            // Class not found or other error
+        }
+        return null;
     }
     
     private boolean handleForceJoin(CommandSender sender, String[] args) {
@@ -1024,6 +1131,7 @@ public class AdminJobCommandHandler extends JobCommandHandler {
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.xp"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.exp"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.level"));
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.givecustom"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.forcejoin"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.forceleave"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.reset"));
@@ -1038,7 +1146,7 @@ public class AdminJobCommandHandler extends JobCommandHandler {
     
     public List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 2) {
-            return Arrays.asList("xp", "exp", "level", "forcejoin", "forceleave", "reset", "info", "cache", "debug", "cleanup", "reload", "migrate", "validateconfig");
+            return Arrays.asList("xp", "exp", "level", "givecustom", "forcejoin", "forceleave", "reset", "info", "cache", "debug", "cleanup", "reload", "migrate", "validateconfig");
         }
         
         if (args.length == 3) {
@@ -1081,9 +1189,9 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                     .collect(Collectors.toList());
             }
             
-            if (Arrays.asList("forcejoin", "forceleave").contains(subCommand)) {
-                return jobManager.getAllJobs().stream()
-                    .map(Job::getId)
+            if (Arrays.asList("forcejoin", "forceleave", "givecustom").contains(subCommand)) {
+                return Bukkit.getOnlinePlayers().stream()
+                    .map(Player::getName)
                     .collect(Collectors.toList());
             }
             
@@ -1093,6 +1201,22 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                     .collect(Collectors.toList());
                 options.add("ALL");
                 return options;
+            }
+        }
+        
+        if (args.length == 4) {
+            String subCommand = args[1].toLowerCase();
+            
+            if (Arrays.asList("forcejoin", "forceleave").contains(subCommand)) {
+                return jobManager.getAllJobs().stream()
+                    .map(Job::getId)
+                    .collect(Collectors.toList());
+            }
+            
+            if ("givecustom".equals(subCommand)) {
+                return jobManager.getAllJobs().stream()
+                    .map(Job::getId)
+                    .collect(Collectors.toList());
             }
         }
         
@@ -1110,6 +1234,10 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                     .map(Job::getId)
                     .collect(Collectors.toList());
             }
+            
+            if ("givecustom".equals(subCommand)) {
+                return Arrays.asList("0", "10", "50", "100", "500", "1000");
+            }
         }
         
         if (args.length == 6) {
@@ -1117,6 +1245,10 @@ public class AdminJobCommandHandler extends JobCommandHandler {
             
             if ("xp".equals(subCommand) || "level".equals(subCommand) || "exp".equals(subCommand)) {
                 return Arrays.asList("100", "500", "1000", "5000", "10000");
+            }
+            
+            if ("givecustom".equals(subCommand)) {
+                return Arrays.asList("0", "10", "50", "100", "500", "1000");
             }
         }
         

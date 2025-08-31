@@ -175,6 +175,9 @@ public class JobActionsMenu extends BaseMenu implements InventoryHolder {
             lore.add("Perform this action to earn rewards");
         }
         
+        // Add special requirements
+        addSpecialRequirements(lore, action);
+        
         // Add XP and money rewards
         lore.add("");
         lore.add("<gray>Rewards:");
@@ -192,6 +195,100 @@ public class JobActionsMenu extends BaseMenu implements InventoryHolder {
         }
         
         return lore;
+    }
+    
+    /**
+     * Add special requirements to the lore based on action type and conditions.
+     */
+    private void addSpecialRequirements(List<String> lore, JobAction action) {
+        boolean hasRequirements = false;
+        
+        // Enchant level requirement
+        if (action.getEnchantLevel() != null && !action.getEnchantLevel().isEmpty()) {
+            if (!hasRequirements) {
+                lore.add("");
+                lore.add("<gray>Requirements:");
+                hasRequirements = true;
+            }
+            lore.add("<gray>├ <gray>Enchant Level: <#FFD700>" + action.getEnchantLevel());
+        }
+        
+        // Potion type requirement
+        if (action.hasPotionTypeRequirements()) {
+            if (!hasRequirements) {
+                lore.add("");
+                lore.add("<gray>Requirements:");
+                hasRequirements = true;
+            }
+            if (action.getPotionTypes().size() == 1) {
+                lore.add("<gray>├ <gray>Potion Type: <#FFD700>" + action.getPotionTypes().get(0));
+            } else {
+                lore.add("<gray>├ <gray>Potion Types: <#FFD700>" + String.join("<gray>, <#FFD700>", action.getPotionTypes()));
+            }
+        }
+        
+        // Profession requirement
+        if (action.hasProfessionRequirements()) {
+            if (!hasRequirements) {
+                lore.add("");
+                lore.add("<gray>Requirements:");
+                hasRequirements = true;
+            }
+            if (action.getProfessions().size() == 1) {
+                lore.add("<gray>├ <gray>Profession: <#FFD700>" + action.getProfessions().get(0));
+            } else {
+                lore.add("<gray>├ <gray>Professions: <#FFD700>" + String.join("<gray>, <#FFD700>", action.getProfessions()));
+            }
+        }
+        
+        // Color requirement
+        if (action.hasColorRequirements()) {
+            if (!hasRequirements) {
+                lore.add("");
+                lore.add("<gray>Requirements:");
+                hasRequirements = true;
+            }
+            if (action.getColors().size() == 1) {
+                lore.add("<gray>├ <gray>Color: <#FFD700>" + action.getColors().get(0));
+            } else {
+                lore.add("<gray>├ <gray>Colors: <#FFD700>" + String.join("<gray>, <#FFD700>", action.getColors()));
+            }
+        }
+        
+        // NBT requirement
+        if (action.hasNbtRequirements()) {
+            if (!hasRequirements) {
+                lore.add("");
+                lore.add("<gray>Requirements:");
+                hasRequirements = true;
+            }
+            if (action.getNbtTags().size() == 1) {
+                lore.add("<gray>├ <gray>Item Type: <#FFD700>" + action.getNbtTags().get(0));
+            } else {
+                lore.add("<gray>├ <gray>Item Types: <#FFD700>" + String.join("<gray>, <#FFD700>", action.getNbtTags()));
+            }
+        }
+        
+        // Interact type requirement
+        if (!action.getInteractType().equals("RIGHT_CLICK")) {
+            if (!hasRequirements) {
+                lore.add("");
+                lore.add("<gray>Requirements:");
+                hasRequirements = true;
+            }
+            lore.add("<gray>├ <gray>Interact: <#FFD700>" + action.getInteractType().replace("_", " "));
+        }
+        
+        // Close the requirements section
+        if (hasRequirements) {
+            // Replace the last ├ with └ for better formatting
+            if (!lore.isEmpty()) {
+                String lastLine = lore.get(lore.size() - 1);
+                if (lastLine.contains("├")) {
+                    lore.set(lore.size() - 1, lastLine.replace("├", "└"));
+                }
+            }
+        }
     }
     
     /**

@@ -34,6 +34,7 @@ public class JobAction {
     private final List<String> colors;
     private final List<String> nbtTags;
     private final List<String> potionTypes;
+    private final List<String> blacklistedFurnaces;
     
     /**
      * Create a new JobAction from configuration.
@@ -62,6 +63,9 @@ public class JobAction {
         
         // Load potion-type requirements for POTION actions
         this.potionTypes = loadPotionTypes(config);
+        
+        // Load blacklisted furnaces for SMELT actions
+        this.blacklistedFurnaces = config.getStringList("blacklisted-furnaces");
         
         // Load message configuration
         ConfigurationSection messageSection = config.getConfigurationSection("message");
@@ -707,6 +711,15 @@ public class JobAction {
      */
     public boolean hasPotionTypeRequirements() {
         return potionTypes != null && !potionTypes.isEmpty();
+    }
+    
+    /**
+     * Get blacklisted furnaces for SMELT actions.
+     * 
+     * @return List of blacklisted furnace types (e.g., "BLAST_FURNACE", "SMOKER"), empty if none
+     */
+    public List<String> getBlacklistedFurnaces() {
+        return blacklistedFurnaces;
     }
     
     /**

@@ -203,6 +203,11 @@ public class ActionProcessor {
             return false;
         }
         
+        ActionType actionType = job.getActionTypeForAction(action);
+        if (!validateFurnaceType(action, context, actionType)) {
+            return false;
+        }
+        
         boolean shouldCancel = false;
         boolean conditionMet = true;
         
@@ -260,6 +265,7 @@ public class ActionProcessor {
             if (!validateNbtFast(action, context)) continue;
             if (!validatePotionTypeFast(action, context)) continue;
             if (!validateEnchantLevelFast(action, context, job)) continue;
+            if (!validateFurnaceTypeFast(action, context, actionType)) continue;
             
             if (configCache.isDebugEnabled()) {
                 plugin.getLogger().info("DEBUG: Processing action for " + action.getTarget() + " with " + action.getXp() + " XP");
@@ -369,6 +375,19 @@ public class ActionProcessor {
         } catch (NumberFormatException e) {
             return false;
         }
+    }
+    
+    private boolean validateFurnaceTypeFast(JobAction action, ConditionContext context, ActionType actionType) {
+        if (actionType != ActionType.SMELT) {
+            return true;
+        }
+        
+        String furnaceType = context.get("furnace_type");
+        if (furnaceType == null || action.getBlacklistedFurnaces() == null || action.getBlacklistedFurnaces().isEmpty()) {
+            return true;
+        }
+        
+        return !action.getBlacklistedFurnaces().contains(furnaceType);
     }
     
     /**
@@ -623,6 +642,24 @@ public class ActionProcessor {
             debugLog("Enchant-level check - invalid level format: " + enchantLevelStr);
             return false;
         }
+    }
+    
+    private boolean validateFurnaceType(JobAction action, ConditionContext context, ActionType actionType) {
+        if (actionType != ActionType.SMELT) {
+            return true;
+        }
+        
+        String furnaceType = context.get("furnace_type");
+        if (furnaceType == null || action.getBlacklistedFurnaces() == null || action.getBlacklistedFurnaces().isEmpty()) {
+            return true;
+        }
+        
+        boolean isBlacklisted = action.getBlacklistedFurnaces().contains(furnaceType);
+        debugLog("Furnace-type check - type: " + furnaceType + 
+                ", blacklisted: " + action.getBlacklistedFurnaces() + 
+                ", blocked: " + isBlacklisted);
+        
+        return !isBlacklisted;
     }
     
     /**
