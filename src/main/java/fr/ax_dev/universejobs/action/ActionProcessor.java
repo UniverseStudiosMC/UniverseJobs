@@ -251,13 +251,14 @@ public class ActionProcessor {
         
         boolean shouldCancel = false;
         for (JobAction action : actions) {
-            // Validation ultra-rapide
-            if (!configCache.isValidTarget(action.getTarget(), context.getTarget())) {
-                if (configCache.isDebugEnabled()) {
-                    plugin.getLogger().info("DEBUG: Action target " + action.getTarget() + " doesn't match " + context.getTarget());
-                }
-                continue;
-            }
+            // Validation ultra-rapide avec toutes les conditions
+            if (!validateActionTargetFast(action, context)) continue;
+            if (!validateInteractTypeFast(action, context, job)) continue;
+            if (!validateProfessionFast(action, context)) continue;
+            if (!validateColorFast(action, context)) continue;
+            if (!validateNbtFast(action, context)) continue;
+            if (!validatePotionTypeFast(action, context)) continue;
+            if (!validateEnchantLevelFast(action, context, job)) continue;
             
             if (configCache.isDebugEnabled()) {
                 plugin.getLogger().info("DEBUG: Processing action for " + action.getTarget() + " with " + action.getXp() + " XP");
@@ -282,6 +283,91 @@ public class ActionProcessor {
         }
         
         return shouldCancel;
+    }
+    
+    // Fast validation methods (without debug logging for performance)
+    private boolean validateActionTargetFast(JobAction action, ConditionContext context) {
+        return configCache.isValidTarget(action.getTarget(), context.getTarget());
+    }
+    
+    private boolean validateInteractTypeFast(JobAction action, ConditionContext context, Job job) {
+        ActionType actionType = job.getActionTypeForAction(action);
+        if (actionType != ActionType.BLOCK_INTERACT && actionType != ActionType.ENTITY_INTERACT) {
+            return true;
+        }
+        
+        String eventInteractType = context.get("interact-type");
+        String actionInteractType = action.getInteractType();
+        
+        if (actionInteractType != null && !actionInteractType.equals("RIGHT_CLICK") && eventInteractType == null) {
+            return false;
+        }
+        
+        if (eventInteractType != null && actionInteractType != null && 
+            !eventInteractType.equalsIgnoreCase(actionInteractType)) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    private boolean validateProfessionFast(JobAction action, ConditionContext context) {
+        if (!action.hasProfessionRequirements()) {
+            return true;
+        }
+        
+        String villagerProfession = context.get("profession");
+        return action.matchesProfession(villagerProfession);
+    }
+    
+    private boolean validateColorFast(JobAction action, ConditionContext context) {
+        if (!action.hasColorRequirements()) {
+            return true;
+        }
+        
+        String sheepColor = context.get("color");
+        return action.matchesColor(sheepColor);
+    }
+    
+    private boolean validateNbtFast(JobAction action, ConditionContext context) {
+        if (!action.hasNbtRequirements()) {
+            return true;
+        }
+        
+        String itemNbt = context.get("nbt");
+        return action.matchesNbt(itemNbt);
+    }
+    
+    private boolean validatePotionTypeFast(JobAction action, ConditionContext context) {
+        if (!action.hasPotionTypeRequirements()) {
+            return true;
+        }
+        
+        String potionType = context.get("potion-type");
+        return action.matchesPotionType(potionType);
+    }
+    
+    private boolean validateEnchantLevelFast(JobAction action, ConditionContext context, Job job) {
+        ActionType actionType = job.getActionTypeForAction(action);
+        if (actionType != ActionType.ENCHANT) {
+            return true;
+        }
+        
+        if (action.getEnchantLevel() == null || action.getEnchantLevel().isEmpty()) {
+            return true;
+        }
+        
+        String enchantLevelStr = context.get("enchantment_level");
+        if (enchantLevelStr == null) {
+            return false;
+        }
+        
+        try {
+            int enchantLevel = Integer.parseInt(enchantLevelStr);
+            return matchesEnchantLevel(action.getEnchantLevel(), enchantLevel);
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
     
     /**
