@@ -117,7 +117,6 @@ public class SingleMenuConfig {
         if (actionFormatSection != null) {
             this.actionItemFormat = new ActionItemFormat(actionFormatSection);
         } else {
-            plugin.getLogger().warning("Action item format configuration not found, using defaults");
             this.actionItemFormat = ActionItemFormat.getDefault();
         }
         
