@@ -23,6 +23,7 @@ import fr.ax_dev.universejobs.protection.BlockProtectionManager;
 import fr.ax_dev.universejobs.reward.RewardManager;
 import fr.ax_dev.universejobs.reward.gui.RewardGuiManager;
 import fr.ax_dev.universejobs.menu.MenuManager;
+import fr.ax_dev.universejobs.menu.BoostManagerGui;
 import fr.ax_dev.universejobs.utils.AsyncXpMessageSender;
 import fr.ax_dev.universejobs.placeholder.PlaceholderManager;
 import org.bukkit.entity.Player;
@@ -52,6 +53,7 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
     private RewardManager rewardManager;
     private RewardGuiManager rewardGuiManager;
     private MenuManager menuManager;
+    private BoostManagerGui boostManagerGui;
     private PlaceholderManager placeholderManager;
     private MythicMobsHandler mythicMobsHandler;
     private BukkitTask saveTask;
@@ -80,6 +82,7 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         this.rewardManager = new RewardManager(this);
         this.rewardGuiManager = new RewardGuiManager(this, rewardManager);
         this.menuManager = new MenuManager(this);
+        this.boostManagerGui = new BoostManagerGui(this);
         this.placeholderManager = new PlaceholderManager(this);
         this.mythicMobsHandler = new MythicMobsHandler(this);
         
@@ -544,6 +547,10 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
      */
     public MenuManager getMenuManager() {
         return menuManager;
+    }
+    
+    public BoostManagerGui getBoostManagerGui() {
+        return boostManagerGui;
     }
     
     /**

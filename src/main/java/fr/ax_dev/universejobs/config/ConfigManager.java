@@ -176,4 +176,28 @@ public class ConfigManager {
     public ProgressBarConfig getProgressBarConfig() {
         return progressBarConfig;
     }
+    
+    /**
+     * Get the boost calculation mode.
+     * 
+     * @return The boost calculation mode
+     */
+    public BoostCalculationMode getBoostCalculationMode() {
+        String modeStr = plugin.getConfig().getString("jobs.boost-calculation-mode", "MULTIPLICATIVE");
+        try {
+            return BoostCalculationMode.valueOf(modeStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger().warning("Invalid boost calculation mode: " + modeStr + ", using MULTIPLICATIVE");
+            return BoostCalculationMode.MULTIPLICATIVE;
+        }
+    }
+    
+    /**
+     * Enum for boost calculation modes.
+     */
+    public enum BoostCalculationMode {
+        ADDITIVE,       // Mode 1: 2.5x + 2.5x = 5.0x
+        MULTIPLICATIVE, // Mode 2: 2.5x * 2.5x = 6.25x
+        HIGHEST        // Mode 3: Only use the highest multiplier
+    }
 }

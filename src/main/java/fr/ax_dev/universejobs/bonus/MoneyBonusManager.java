@@ -19,8 +19,8 @@ public class MoneyBonusManager extends BaseBonusManager<MoneyBonus> {
     
     
     @Override
-    protected MoneyBonus createBonus(UUID playerId, String jobId, double multiplier, long duration, String reason, String grantedBy) {
-        return new MoneyBonus(playerId, jobId, multiplier, duration, reason, grantedBy);
+    protected MoneyBonus createBonus(UUID playerId, String jobId, double multiplier, long duration, String reason, String grantedBy, String boostId, boolean isGlobal, String actionType, String actionId) {
+        return new MoneyBonus(playerId, jobId, multiplier, duration, reason, grantedBy, boostId, isGlobal, actionType, actionId);
     }
     
     @Override

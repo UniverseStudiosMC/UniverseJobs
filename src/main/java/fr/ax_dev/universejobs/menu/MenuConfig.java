@@ -2,6 +2,7 @@ package fr.ax_dev.universejobs.menu;
 
 import fr.ax_dev.universejobs.UniverseJobs;
 import fr.ax_dev.universejobs.menu.config.SingleMenuConfig;
+import fr.ax_dev.universejobs.menu.config.BoostMenuConfig;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -22,6 +23,7 @@ public class MenuConfig {
     private SingleMenuConfig jobMenuConfig;
     private SingleMenuConfig actionsMenuConfig;
     private SingleMenuConfig rankingsMenuConfig;
+    private BoostMenuConfig boostMenuConfig;
     
     public MenuConfig(UniverseJobs plugin) {
         this.plugin = plugin;
@@ -43,7 +45,8 @@ public class MenuConfig {
             "main-menu.yml",
             "job-menu.yml", 
             "actions-menu.yml",
-            "rankings-menu.yml"
+            "rankings-menu.yml",
+            "boost-manager.yml"
         };
         
         for (String configName : defaultConfigs) {
@@ -113,6 +116,10 @@ public class MenuConfig {
                 this.rankingsMenuConfig = SingleMenuConfig.getDefaultRankingsMenu();
             }
             
+            // Load boost menu configuration
+            this.boostMenuConfig = new BoostMenuConfig(plugin);
+            this.boostMenuConfig.loadConfiguration();
+            
             plugin.getLogger().info("Menu configurations loaded successfully");
             
         } catch (Exception e) {
@@ -123,6 +130,8 @@ public class MenuConfig {
             this.jobMenuConfig = SingleMenuConfig.getDefaultJobMenu();
             this.actionsMenuConfig = SingleMenuConfig.getDefaultActionsMenu();
             this.rankingsMenuConfig = SingleMenuConfig.getDefaultRankingsMenu();
+            this.boostMenuConfig = new BoostMenuConfig(plugin);
+            this.boostMenuConfig.loadConfiguration();
         }
     }
     
@@ -154,6 +163,10 @@ public class MenuConfig {
     
     public SingleMenuConfig getRankingsMenuConfig() {
         return rankingsMenuConfig;
+    }
+    
+    public BoostMenuConfig getBoostMenuConfig() {
+        return boostMenuConfig;
     }
     
     public File getMenusFolder() {

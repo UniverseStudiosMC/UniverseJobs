@@ -78,6 +78,26 @@ public abstract class JobCommandHandler {
         return sanitized.substring(0, Math.min(sanitized.length(), 64));
     }
     
+    protected String sanitizeInputWithWildcard(String input) {
+        if (input == null) {
+            return "";
+        }
+        
+        // Allow * wildcard in addition to normal characters
+        String sanitized = input.replaceAll("[^a-zA-Z0-9_\\-*]", "");
+        return sanitized.substring(0, Math.min(sanitized.length(), 64));
+    }
+    
+    protected String sanitizeNumber(String input) {
+        if (input == null) {
+            return "";
+        }
+        
+        // Allow numbers with decimal point
+        String sanitized = input.replaceAll("[^0-9.]", "");
+        return sanitized.substring(0, Math.min(sanitized.length(), 10));
+    }
+    
     /**
      * Validate job ID format.
      * 

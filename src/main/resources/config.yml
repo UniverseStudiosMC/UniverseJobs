@@ -44,6 +44,12 @@ jobs:
   # Maximum number of jobs a player can have at once (ignored if all-jobs-by-default is true)
   max-jobs-per-player: 3
   
+  # Boost Calculation Mode
+  # ADDITIVE: Multipliers are added together (2.5x + 2.5x = 5.0x)
+  # MULTIPLICATIVE: Multipliers are multiplied (2.5x * 2.5x = 6.25x) - Current default
+  # HIGHEST: Only the highest multiplier is used (3.0x, 2.5x = 3.0x)
+  boost-calculation-mode: MULTIPLICATIVE
+  
 
 # Progress Bar Configuration
 # Customize how XP progress bars appear in menus and messages

@@ -27,12 +27,14 @@ public class MenuManager implements Listener {
     
     private final UniverseJobs plugin;
     private final Map<UUID, BaseMenu> openMenus;
+    private final Map<UUID, BoostManagerGui> openBoostGuis;
     private final MenuConfig menuConfig;
     private final JobSlotManager jobSlotManager;
     
     public MenuManager(UniverseJobs plugin) {
         this.plugin = plugin;
         this.openMenus = new ConcurrentHashMap<>();
+        this.openBoostGuis = new ConcurrentHashMap<>();
         this.menuConfig = new MenuConfig(plugin);
         this.jobSlotManager = new JobSlotManager(plugin);
         
@@ -145,6 +147,37 @@ public class MenuManager implements Listener {
         if (currentMenu != null) {
             currentMenu.close();
         }
+        
+        BoostManagerGui currentBoostGui = openBoostGuis.remove(player.getUniqueId());
+        if (currentBoostGui != null) {
+            currentBoostGui.onInventoryClose(player);
+            player.closeInventory();
+        }
+    }
+    
+    /**
+     * Register a BoostManagerGui as open for a player.
+     */
+    public void registerBoostGui(Player player, BoostManagerGui boostGui) {
+        closeCurrentMenu(player);
+        openBoostGuis.put(player.getUniqueId(), boostGui);
+    }
+    
+    /**
+     * Unregister a BoostManagerGui for a player.
+     */
+    public void unregisterBoostGui(Player player) {
+        BoostManagerGui boostGui = openBoostGuis.remove(player.getUniqueId());
+        if (boostGui != null) {
+            boostGui.onInventoryClose(player);
+        }
+    }
+    
+    /**
+     * Get the currently open BoostManagerGui for a player.
+     */
+    public BoostManagerGui getCurrentBoostGui(Player player) {
+        return openBoostGuis.get(player.getUniqueId());
     }
     
     /**
@@ -155,6 +188,7 @@ public class MenuManager implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
         
+        // Check for BaseMenu first
         BaseMenu menu = openMenus.get(player.getUniqueId());
         if (menu != null && event.getView().getTopInventory().equals(menu.getInventory())) {
             // Player has our menu open - always cancel to prevent item theft/movement
@@ -168,13 +202,24 @@ public class MenuManager implements Listener {
                 }
                 // Dangerous click types (like number keys, middle click, etc.) are blocked
             }
-            // Clicks in bottom inventory (player inventory) are cancelled but ignored
-            // This prevents players from:
-            // - Stealing items from the menu
-            // - Moving items between menu and their inventory  
-            // - Shift-clicking items into the menu
-            // - Using hotbar keys to swap items
-            // - Double-clicking to gather items
+            return;
+        }
+        
+        // Check for BoostManagerGui
+        BoostManagerGui boostGui = openBoostGuis.get(player.getUniqueId());
+        if (boostGui != null && event.getInventory().getHolder() == boostGui) {
+            // Player has boost GUI open - always cancel to prevent item theft/movement
+            event.setCancelled(true);
+            
+            // Only process if click is in the boost GUI inventory and is a secure click
+            if (event.getClickedInventory() != null && 
+                event.getClickedInventory().equals(event.getView().getTopInventory()) &&
+                event.getClickedInventory().getHolder() == boostGui &&
+                isSecureClickType(event)) {
+                
+                boostGui.handleClick(player, event.getSlot(), event.isRightClick());
+            }
+            return;
         }
     }
     
@@ -185,6 +230,7 @@ public class MenuManager implements Listener {
     public void onInventoryDrag(InventoryDragEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
         
+        // Check BaseMenu first
         BaseMenu menu = openMenus.get(player.getUniqueId());
         if (menu != null) {
             // Check if dragging involves our menu inventory
@@ -197,6 +243,19 @@ public class MenuManager implements Listener {
                     }
                 }
             }
+            return;
+        }
+        
+        // Check BoostManagerGui
+        BoostManagerGui boostGui = openBoostGuis.get(player.getUniqueId());
+        if (boostGui != null && event.getView().getTopInventory().getHolder() == boostGui) {
+            // Cancel any drag that involves the boost GUI inventory
+            for (int slot : event.getRawSlots()) {
+                if (slot < event.getView().getTopInventory().getSize()) {
+                    event.setCancelled(true);
+                    break;
+                }
+            }
         }
     }
     
@@ -207,10 +266,19 @@ public class MenuManager implements Listener {
     public void onInventoryClose(InventoryCloseEvent event) {
         if (!(event.getPlayer() instanceof Player player)) return;
         
+        // Check BaseMenu first
         BaseMenu menu = openMenus.get(player.getUniqueId());
         if (menu != null && menu.isInventory(event.getInventory())) {
             openMenus.remove(player.getUniqueId());
             menu.onClose();
+            return;
+        }
+        
+        // Check BoostManagerGui
+        BoostManagerGui boostGui = openBoostGuis.get(player.getUniqueId());
+        if (boostGui != null && boostGui.isInventory(event.getInventory())) {
+            openBoostGuis.remove(player.getUniqueId());
+            boostGui.onInventoryClose(player);
         }
     }
     
@@ -220,6 +288,15 @@ public class MenuManager implements Listener {
     public void closeAllMenus() {
         openMenus.values().forEach(BaseMenu::close);
         openMenus.clear();
+        
+        for (Map.Entry<UUID, BoostManagerGui> entry : openBoostGuis.entrySet()) {
+            Player player = Bukkit.getPlayer(entry.getKey());
+            if (player != null) {
+                entry.getValue().onInventoryClose(player);
+                player.closeInventory();
+            }
+        }
+        openBoostGuis.clear();
     }
     
     /**

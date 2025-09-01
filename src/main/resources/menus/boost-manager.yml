@@ -1,0 +1,140 @@
+# ========================================
+# Boost Manager GUI Configuration
+# ========================================
+# This file configures the boost management GUI
+# All text supports MiniMessage format
+
+# GUI Settings
+title: "<gold><b>Boost Manager</b></gold>"
+size: 54
+
+# XP Boost Configuration
+xp-boosts:
+  enabled: true
+  slots: [10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25]
+  item:
+    material: EXPERIENCE_BOTTLE
+    display-name: "<white>XP Boost <gold>{boost_id}</gold></white>"
+    lore:
+      - "<gray>Player: <white>{player_name}</white>"
+      - "<gray>Job: <yellow>{job_info}</yellow>"
+      - "<gray>Action: <blue>{action_info}</blue>"
+      - "<gray>Multiplier: <green>{multiplier}x</green>"
+      - "<gray>Remaining: <red>{remaining_time}</red>"
+      - ""
+      - "<red>Right-click to remove</red>"
+    glow: false
+    custom-model-data: 0
+
+# Money Boost Configuration
+money-boosts:
+  enabled: true
+  slots: [28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43]
+  item:
+    material: GOLD_INGOT
+    display-name: "<white>Money Boost <gold>{boost_id}</gold></white>"
+    lore:
+      - "<gray>Player: <white>{player_name}</white>"
+      - "<gray>Job: <yellow>{job_info}</yellow>"
+      - "<gray>Action: <blue>{action_info}</blue>"
+      - "<gray>Multiplier: <green>{multiplier}x</green>"
+      - "<gray>Remaining: <red>{remaining_time}</red>"
+      - ""
+      - "<red>Right-click to remove</red>"
+    glow: false
+    custom-model-data: 0
+
+# Filler Item Configuration
+filler:
+  enabled: true
+  material: GRAY_STAINED_GLASS_PANE
+  display-name: "<gray> </gray>"
+  lore: []
+  slots: [] # Empty = fill all empty slots
+
+# Navigation Items
+navigation:
+  close:
+    enabled: true
+    slots: [49]
+    material: BARRIER
+    display-name: "<red>Close</red>"
+    lore:
+      - "<gray>Click to close this menu</gray>"
+    glow: false
+    
+  refresh:
+    enabled: true
+    slots: [45]
+    material: CLOCK
+    display-name: "<aqua>Refresh</aqua>"
+    lore:
+      - "<gray>Click to refresh boosts</gray>"
+      - "<dark_gray>(Auto-refreshes every second)</dark_gray>"
+    glow: true
+    
+  info:
+    enabled: true
+    slots: [53]
+    material: BOOK
+    display-name: "<yellow>Information</yellow>"
+    lore:
+      - "<gray>Active XP Boosts: <green>{xp_count}</green>"
+      - "<gray>Active Money Boosts: <gold>{money_count}</gold>"
+      - "<gray>Total Boosts: <white>{total_count}</white>"
+      - ""
+      - "<dark_gray>Right-click boosts to remove them</dark_gray>"
+    glow: false
+
+# Custom Items (can add any custom decorative items)
+custom-items:
+  separator-1:
+    enabled: true
+    slots: [9, 18, 27, 36]
+    material: BLACK_STAINED_GLASS_PANE
+    display-name: "<dark_gray>▼ XP Boosts ▼</dark_gray>"
+    lore: []
+    
+  separator-2:
+    enabled: true
+    slots: [17, 26, 35, 44]
+    material: BLACK_STAINED_GLASS_PANE
+    display-name: "<dark_gray>▼ Money Boosts ▼</dark_gray>"
+    lore: []
+
+
+# Auto-refresh Configuration
+auto-refresh:
+  enabled: true
+  interval: 20 # Ticks (20 = 1 second)
+
+# Sound Effects
+sounds:
+  open:
+    enabled: true
+    sound: ENTITY_EXPERIENCE_ORB_PICKUP
+    volume: 0.5
+    pitch: 1.0
+    
+  remove-boost:
+    enabled: true
+    sound: ENTITY_EXPERIENCE_ORB_PICKUP
+    volume: 0.7
+    pitch: 1.5
+    
+  close:
+    enabled: true
+    sound: UI_BUTTON_CLICK
+    volume: 0.5
+    pitch: 1.0
+
+# Permissions
+permissions:
+  view: "universejobs.admin.boost.gui"
+  remove: "universejobs.admin.boost.remove"
+
+# Messages (sent when actions are performed)
+messages:
+  boost-removed: "<green>Removed {type} boost: <gold>{boost_id}</gold></green>"
+  no-permission: "<red>You don't have permission to do that!</red>"
+  refresh-clicked: "<aqua>Refreshing boost list...</aqua>"
