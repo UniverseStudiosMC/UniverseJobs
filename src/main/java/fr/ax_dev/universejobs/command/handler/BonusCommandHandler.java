@@ -44,12 +44,11 @@ public abstract class BonusCommandHandler<T, M extends BonusManager<T>> extends 
         }
         
         String subCommand = args[1].toLowerCase();
-        String[] subArgs = Arrays.copyOfRange(args, 1, args.length);
         
         switch (subCommand) {
-            case "give" -> handleBonusGive(sender, subArgs);
-            case CMD_REMOVE -> handleBonusRemove(sender, subArgs);
-            case "list" -> handleBonusList(sender, subArgs);
+            case "give" -> handleBonusGive(sender, args);
+            case CMD_REMOVE -> handleBonusRemove(sender, args);
+            case "list" -> handleBonusList(sender, args);
             case "info" -> handleBonusInfo(sender);
             case "cleanup" -> handleBonusCleanup(sender);
             default -> sendBonusHelp(sender);
@@ -80,7 +79,7 @@ public abstract class BonusCommandHandler<T, M extends BonusManager<T>> extends 
     }
     
     private void handleBonusGive(CommandSender sender, String[] args) {
-        if (args.length < 4) {
+        if (args.length < 5) {
             sender.sendMessage(USAGE_PREFIX + bonusType + " give <player|*> <multiplier> <duration> [job] [reason]");
             sender.sendMessage("§7Examples:");
             sender.sendMessage("§7  /jobs " + bonusType + " give * 2.0 3600 - Give all players 2x " + bonusType + " for 1 hour");
@@ -88,24 +87,24 @@ public abstract class BonusCommandHandler<T, M extends BonusManager<T>> extends 
             return;
         }
         
-        String target = sanitizeInput(args[1]);
+        String target = sanitizeInput(args[2]);
         if (!target.equals("*") && !isValidPlayerName(target)) {
             return;
         }
         
-        double multiplier = parseMultiplier(args[2]);
+        double multiplier = parseMultiplier(args[3]);
         if (multiplier <= 0) return;
         
-        long duration = parseDuration(args[3]);
+        long duration = parseDuration(args[4]);
         if (duration <= 0) return;
         
-        String jobId = args.length > 4 ? sanitizeInput(args[4]) : null;
+        String jobId = args.length > 5 ? sanitizeInput(args[5]) : null;
         if (jobId != null && !jobId.equals("*") && !isValidJobId(jobId)) {
             return;
         }
         
-        // Si un job est spécifié, la raison commence à l'index 5, sinon à l'index 4
-        int reasonStartIndex = (jobId != null) ? 5 : 4;
+        // Si un job est spécifié, la raison commence à l'index 6, sinon à l'index 5
+        int reasonStartIndex = (jobId != null) ? 6 : 5;
         String reason = parseReason(args, reasonStartIndex);
         
         if (jobId != null && !jobId.equals("*")) {
@@ -130,18 +129,18 @@ public abstract class BonusCommandHandler<T, M extends BonusManager<T>> extends 
     }
     
     private void handleBonusRemove(CommandSender sender, String[] args) {
-        if (args.length < 2) {
+        if (args.length < 3) {
             sender.sendMessage(USAGE_PREFIX + bonusType + " remove <player> [job]");
             return;
         }
         
-        String playerName = sanitizeInput(args[1]);
+        String playerName = sanitizeInput(args[2]);
         if (!isValidPlayerName(playerName)) return;
         
         Player targetPlayer = Bukkit.getPlayer(playerName);
         if (targetPlayer == null) return;
         
-        String jobId = args.length > 2 ? sanitizeInput(args[2]) : null;
+        String jobId = args.length > 3 ? sanitizeInput(args[3]) : null;
         if (jobId != null && !isValidJobId(jobId)) return;
         
         if (jobId == null) {
@@ -153,7 +152,7 @@ public abstract class BonusCommandHandler<T, M extends BonusManager<T>> extends 
     }
     
     private void handleBonusList(CommandSender sender, String[] args) {
-        String playerName = args.length > 1 ? args[1] : (sender instanceof Player ? sender.getName() : null);
+        String playerName = args.length > 2 ? args[2] : (sender instanceof Player ? sender.getName() : null);
         
         if (playerName == null) {
             sender.sendMessage(USAGE_PREFIX + bonusType + " list [player]");
