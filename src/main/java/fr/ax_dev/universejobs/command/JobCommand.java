@@ -25,8 +25,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     private final JoinLeaveCommandHandler joinLeaveHandler;
     private final InfoStatsCommandHandler infoStatsHandler;
     private final RewardsCommandHandler rewardsHandler;
-    private final XpBonusCommandHandler xpBonusHandler;
-    private final MoneyBonusCommandHandler moneyBonusHandler;
     private final ActionLimitCommandHandler actionLimitHandler;
     private final AdminJobCommandHandler adminJobHandler;
     private final MenuCommandHandler menuHandler;
@@ -65,8 +63,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         this.joinLeaveHandler = new JoinLeaveCommandHandler(plugin);
         this.infoStatsHandler = new InfoStatsCommandHandler(plugin);
         this.rewardsHandler = new RewardsCommandHandler(plugin);
-        this.xpBonusHandler = new XpBonusCommandHandler(plugin);
-        this.moneyBonusHandler = new MoneyBonusCommandHandler(plugin);
         this.actionLimitHandler = new ActionLimitCommandHandler(plugin);
         this.adminJobHandler = new AdminJobCommandHandler(plugin, jobManager);
         this.menuHandler = new MenuCommandHandler(plugin);
@@ -110,8 +106,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 case CMD_JOIN, CMD_LEAVE -> handled = joinLeaveHandler.handleCommand(sender, args);
                 case CMD_INFO, CMD_LIST, CMD_STATS -> handled = infoStatsHandler.handleCommand(sender, args);
                 case CMD_REWARDS -> handled = rewardsHandler.handleCommand(sender, args);
-                case CMD_XP_BONUS -> handled = xpBonusHandler.handleCommand(sender, args);
-                case CMD_MONEY_BONUS -> handled = moneyBonusHandler.handleCommand(sender, args);
                 case CMD_ACTION_LIMIT -> handled = actionLimitHandler.handleCommand(sender, args);
                 case CMD_ADMIN -> handled = adminJobHandler.handleAdminCommand(sender, args);
                 case CMD_MENU -> handled = menuHandler.handleCommand(sender, Arrays.copyOfRange(args, 1, args.length));
@@ -177,8 +171,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 case CMD_JOIN, CMD_LEAVE -> completions.addAll(joinLeaveHandler.getTabCompletions(sender, args));
                 case CMD_INFO, CMD_LIST, CMD_STATS -> completions.addAll(infoStatsHandler.getTabCompletions(sender, args));
                 case CMD_REWARDS -> completions.addAll(rewardsHandler.getTabCompletions(sender, args));
-                case CMD_XP_BONUS -> completions.addAll(xpBonusHandler.getTabCompletions(sender, args));
-                case CMD_MONEY_BONUS -> completions.addAll(moneyBonusHandler.getTabCompletions(sender, args));
                 case CMD_ACTION_LIMIT -> completions.addAll(actionLimitHandler.getTabCompletions(sender, args));
                 case CMD_ADMIN -> completions.addAll(adminJobHandler.getTabCompletions(sender, args));
                 case CMD_MENU -> completions.addAll(menuHandler.getTabCompletions(sender, Arrays.copyOfRange(args, 1, args.length)));
