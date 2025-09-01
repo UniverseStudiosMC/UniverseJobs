@@ -15,6 +15,10 @@ public abstract class BaseBonus {
     protected final long duration; // in milliseconds
     protected final String reason;
     protected final String grantedBy;
+    protected final String boostId;
+    protected final boolean isGlobal;
+    protected final String actionType; // null for all action types
+    protected final String actionId; // null for all action IDs
     
     /**
      * Bonus type enum.
@@ -33,8 +37,12 @@ public abstract class BaseBonus {
      * @param duration Duration in seconds
      * @param reason Reason for the bonus
      * @param grantedBy Who granted the bonus
+     * @param boostId Unique boost ID
+     * @param isGlobal Whether this is a global boost
+     * @param actionType The action type (null for all action types)
+     * @param actionId The action ID (null for all action IDs)
      */
-    protected BaseBonus(UUID playerId, String jobId, double multiplier, long duration, String reason, String grantedBy) {
+    protected BaseBonus(UUID playerId, String jobId, double multiplier, long duration, String reason, String grantedBy, String boostId, boolean isGlobal, String actionType, String actionId) {
         this.playerId = playerId;
         this.jobId = jobId;
         this.multiplier = multiplier;
@@ -42,6 +50,10 @@ public abstract class BaseBonus {
         this.duration = duration * 1000; // Convert to milliseconds
         this.reason = reason;
         this.grantedBy = grantedBy;
+        this.boostId = boostId;
+        this.isGlobal = isGlobal;
+        this.actionType = actionType;
+        this.actionId = actionId;
     }
     
     /**
@@ -179,6 +191,42 @@ public abstract class BaseBonus {
         return grantedBy;
     }
     
+    /**
+     * Get the boost ID.
+     * 
+     * @return The boost ID
+     */
+    public String getBoostId() {
+        return boostId;
+    }
+    
+    /**
+     * Check if this is a global boost.
+     * 
+     * @return true if global boost
+     */
+    public boolean isGlobal() {
+        return isGlobal;
+    }
+    
+    /**
+     * Get the action type.
+     * 
+     * @return The action type or null if applies to all
+     */
+    public String getActionType() {
+        return actionType;
+    }
+    
+    /**
+     * Get the action ID.
+     * 
+     * @return The action ID or null if applies to all
+     */
+    public String getActionId() {
+        return actionId;
+    }
+    
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -205,7 +253,8 @@ public abstract class BaseBonus {
     @Override
     public String toString() {
         return getBonusTypeName() + "{" +
-               "playerId=" + playerId +
+               "boostId='" + boostId + '\'' +
+               ", playerId=" + playerId +
                ", jobId='" + jobId + '\'' +
                ", multiplier=" + multiplier +
                ", remaining=" + getRemainingTimeFormatted() +

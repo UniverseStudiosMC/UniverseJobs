@@ -16,9 +16,13 @@ public class XpBonus extends BaseBonus {
      * @param duration Duration in seconds
      * @param reason Reason for the bonus
      * @param grantedBy Who granted the bonus
+     * @param boostId Unique boost ID
+     * @param isGlobal Whether this is a global boost
+     * @param actionType The action type (null for all)
+     * @param actionId The action ID (null for all)
      */
-    public XpBonus(UUID playerId, String jobId, double multiplier, long duration, String reason, String grantedBy) {
-        super(playerId, jobId, multiplier, duration, reason, grantedBy);
+    public XpBonus(UUID playerId, String jobId, double multiplier, long duration, String reason, String grantedBy, String boostId, boolean isGlobal, String actionType, String actionId) {
+        super(playerId, jobId, multiplier, duration, reason, grantedBy, boostId, isGlobal, actionType, actionId);
     }
     
     /**
@@ -29,10 +33,13 @@ public class XpBonus extends BaseBonus {
      * @param duration Duration in seconds
      * @param reason Reason for the bonus
      * @param grantedBy Who granted the bonus
+     * @param boostId Unique boost ID
+     * @param actionType The action type (null for all)
+     * @param actionId The action ID (null for all)
      * @return The XP bonus
      */
-    public static XpBonus createGlobalBonus(UUID playerId, double multiplier, long duration, String reason, String grantedBy) {
-        return new XpBonus(playerId, null, multiplier, duration, reason, grantedBy);
+    public static XpBonus createGlobalBonus(UUID playerId, double multiplier, long duration, String reason, String grantedBy, String boostId, String actionType, String actionId) {
+        return new XpBonus(playerId, null, multiplier, duration, reason, grantedBy, boostId, true, actionType, actionId);
     }
     
     /**
@@ -44,10 +51,13 @@ public class XpBonus extends BaseBonus {
      * @param duration Duration in seconds
      * @param reason Reason for the bonus
      * @param grantedBy Who granted the bonus
+     * @param boostId Unique boost ID
+     * @param actionType The action type (null for all)
+     * @param actionId The action ID (null for all)
      * @return The XP bonus
      */
-    public static XpBonus createJobBonus(UUID playerId, String jobId, double multiplier, long duration, String reason, String grantedBy) {
-        return new XpBonus(playerId, jobId, multiplier, duration, reason, grantedBy);
+    public static XpBonus createJobBonus(UUID playerId, String jobId, double multiplier, long duration, String reason, String grantedBy, String boostId, String actionType, String actionId) {
+        return new XpBonus(playerId, jobId, multiplier, duration, reason, grantedBy, boostId, false, actionType, actionId);
     }
     
     

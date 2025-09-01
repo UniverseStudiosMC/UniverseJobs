@@ -18,8 +18,8 @@ public class XpBonusManager extends BaseBonusManager<XpBonus> {
     }
     
     @Override
-    protected XpBonus createBonus(UUID playerId, String jobId, double multiplier, long duration, String reason, String grantedBy) {
-        return new XpBonus(playerId, jobId, multiplier, duration, reason, grantedBy);
+    protected XpBonus createBonus(UUID playerId, String jobId, double multiplier, long duration, String reason, String grantedBy, String boostId, boolean isGlobal, String actionType, String actionId) {
+        return new XpBonus(playerId, jobId, multiplier, duration, reason, grantedBy, boostId, isGlobal, actionType, actionId);
     }
     
     @Override

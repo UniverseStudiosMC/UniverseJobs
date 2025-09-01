@@ -18,7 +18,9 @@ public abstract class BaseBonusManager<T extends BaseBonus> implements BonusMana
     protected final UniverseJobs plugin;
     protected final FoliaCompatibilityManager foliaManager;
     protected final Map<UUID, List<T>> playerBonuses = new ConcurrentHashMap<>();
+    protected final Map<String, T> boostIdMap = new ConcurrentHashMap<>();
     protected boolean cleanupRunning = false;
+    protected int nextBoostCounter = 1;
     
     protected BaseBonusManager(UniverseJobs plugin) {
         this.plugin = plugin;
@@ -29,19 +31,31 @@ public abstract class BaseBonusManager<T extends BaseBonus> implements BonusMana
     /**
      * Create a new bonus instance (factory method).
      */
-    protected abstract T createBonus(UUID playerId, String jobId, double multiplier, long duration, String reason, String grantedBy);
+    protected abstract T createBonus(UUID playerId, String jobId, double multiplier, long duration, String reason, String grantedBy, String boostId, boolean isGlobal, String actionType, String actionId);
     
     /**
      * Get the bonus type name for logging.
      */
     protected abstract String getBonusTypeName();
     
+    /**
+     * Generate a unique boost ID.
+     */
+    protected String generateBoostId() {
+        String prefix = getBonusTypeName().toLowerCase();
+        if (prefix.endsWith("bonus")) {
+            prefix = prefix.substring(0, prefix.length() - 5);
+        }
+        return prefix + nextBoostCounter++;
+    }
+    
     @Override
     public int addGlobalBonus(double multiplier, long duration, String reason, String grantedBy) {
         int count = 0;
         
         for (Player player : Bukkit.getOnlinePlayers()) {
-            T bonus = createBonus(player.getUniqueId(), null, multiplier, duration, reason, grantedBy);
+            String boostId = generateBoostId();
+            T bonus = createBonus(player.getUniqueId(), null, multiplier, duration, reason, grantedBy, boostId, true, null, null);
             addBonus(bonus);
             count++;
         }
@@ -58,22 +72,31 @@ public abstract class BaseBonusManager<T extends BaseBonus> implements BonusMana
     
     @Override
     public void addPlayerBonus(UUID playerId, double multiplier, long duration, String reason, String grantedBy) {
-        T bonus = createBonus(playerId, null, multiplier, duration, reason, grantedBy);
+        String boostId = generateBoostId();
+        T bonus = createBonus(playerId, null, multiplier, duration, reason, grantedBy, boostId, false, null, null);
         addBonus(bonus);
     }
     
     @Override
     public void addJobBonus(UUID playerId, String jobId, double multiplier, long duration, String reason, String grantedBy) {
-        T bonus = createBonus(playerId, jobId, multiplier, duration, reason, grantedBy);
+        String boostId = generateBoostId();
+        T bonus = createBonus(playerId, jobId, multiplier, duration, reason, grantedBy, boostId, false, null, null);
+        addBonus(bonus);
+    }
+    
+    public void addActionBonus(UUID playerId, String jobId, String actionType, String actionId, double multiplier, long duration, String reason, String grantedBy, boolean isGlobal) {
+        String boostId = generateBoostId();
+        T bonus = createBonus(playerId, jobId, multiplier, duration, reason, grantedBy, boostId, isGlobal, actionType, actionId);
         addBonus(bonus);
     }
     
     protected void addBonus(T bonus) {
         playerBonuses.computeIfAbsent(bonus.getPlayerId(), k -> new ArrayList<>()).add(bonus);
+        boostIdMap.put(bonus.getBoostId(), bonus);
         
         Player player = Bukkit.getPlayer(bonus.getPlayerId());
         if (player != null) {
-            String message = getBonusTypeName() + " bonus received: " + bonus.getMultiplier() + "x for " + bonus.getRemainingTimeFormatted();
+            String message = getBonusTypeName() + " boost [" + bonus.getBoostId() + "] received: " + bonus.getMultiplier() + "x for " + bonus.getRemainingTimeFormatted();
             if (bonus.getJobId() != null) {
                 message += " (Job: " + bonus.getJobId() + ")";
             }
@@ -105,18 +128,46 @@ public abstract class BaseBonusManager<T extends BaseBonus> implements BonusMana
         List<T> bonuses = playerBonuses.get(bonus.getPlayerId());
         if (bonuses != null) {
             boolean removed = bonuses.remove(bonus);
-            if (removed && bonuses.isEmpty()) {
-                playerBonuses.remove(bonus.getPlayerId());
+            if (removed) {
+                boostIdMap.remove(bonus.getBoostId());
+                if (bonuses.isEmpty()) {
+                    playerBonuses.remove(bonus.getPlayerId());
+                }
             }
             return removed;
         }
         return false;
     }
     
+    public boolean removeBoostById(String boostId) {
+        T bonus = boostIdMap.get(boostId);
+        if (bonus != null) {
+            return removeBonus(bonus);
+        }
+        return false;
+    }
+    
+    public T getBoostById(String boostId) {
+        return boostIdMap.get(boostId);
+    }
+    
+    public List<String> getAllActiveBoostIds() {
+        return boostIdMap.values().stream()
+                .filter(BaseBonus::isActive)
+                .map(BaseBonus::getBoostId)
+                .collect(Collectors.toList());
+    }
+    
     @Override
     public int removeAllBonuses(UUID playerId) {
         List<T> bonuses = playerBonuses.remove(playerId);
-        return bonuses != null ? bonuses.size() : 0;
+        if (bonuses != null) {
+            for (T bonus : bonuses) {
+                boostIdMap.remove(bonus.getBoostId());
+            }
+            return bonuses.size();
+        }
+        return 0;
     }
     
     @Override
@@ -133,8 +184,15 @@ public abstract class BaseBonusManager<T extends BaseBonus> implements BonusMana
                 List<T> bonuses = entry.getValue();
                 
                 int sizeBefore = bonuses.size();
-                bonuses.removeIf(bonus -> !bonus.isActive());
-                cleaned += sizeBefore - bonuses.size();
+                Iterator<T> bonusIterator = bonuses.iterator();
+                while (bonusIterator.hasNext()) {
+                    T bonus = bonusIterator.next();
+                    if (!bonus.isActive()) {
+                        bonusIterator.remove();
+                        boostIdMap.remove(bonus.getBoostId());
+                        cleaned++;
+                    }
+                }
                 
                 if (bonuses.isEmpty()) {
                     iterator.remove();
@@ -195,5 +253,20 @@ public abstract class BaseBonusManager<T extends BaseBonus> implements BonusMana
         } else {
             return String.format("%ds", secs);
         }
+    }
+    
+    public Set<UUID> getPlayersWithActiveBonuses() {
+        return playerBonuses.entrySet().stream()
+                .filter(entry -> entry.getValue().stream().anyMatch(BaseBonus::isActive))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+    }
+    
+    public Set<String> getJobsWithActiveBonuses(UUID playerId) {
+        List<T> bonuses = getActiveBonuses(playerId);
+        return bonuses.stream()
+                .map(BaseBonus::getJobId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
     }
 }
