@@ -1033,17 +1033,6 @@ public class JobActionListener implements Listener {
                material == Material.BREWING_STAND;
     }
     
-    /**
-     * Check if a furnace type is blacklisted for SMELT actions.
-     */
-    private boolean isFurnaceBlacklisted(org.bukkit.Material furnaceType, fr.ax_dev.universejobs.action.JobAction action) {
-        // Check if action has its own blacklist
-        if (action.getBlacklistedFurnaces() != null && !action.getBlacklistedFurnaces().isEmpty()) {
-            return action.getBlacklistedFurnaces().contains(furnaceType.name());
-        }
-        
-        return false; // No blacklist = allow all
-    }
     
     /**
      * Detect the target format for an item, supporting all plugin formats.
