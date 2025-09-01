@@ -40,21 +40,23 @@ commands:
     
   # Commande info
   info:
-    target-not-found: "&cMétier ou joueur '{target}' introuvable !"
-    job-header: "&6=== {job} ==="
-    description: "&7Description : &f{description}"
-    max-level: "&7Niveau max : &f{maxLevel}"
-    permission: "&7Permission : &f{permission}"
-    lore: "&7Histoire :"
-    lore-line: "&f  {line}"
-    action-types: "&7Types d'actions : &f{actionTypes}"
+    not-found: "&cMétier ou joueur '{target}' introuvable !"
+    job:
+      header: "&6=== {job} ==="
+      description: "&7Description : &f{description}"
+      max-level: "&7Niveau max : &e{level}"
+      permission: "&7Permission : &f{permission}"
+      lore-header: "&7Histoire :"
+      lore-line: "&f  {line}"
+      action-types: "&7Types d'actions : &f{actionTypes}"
     
   # Commande stats
   stats:
     no-jobs-self: "&cVous n'avez aucun métier !"
     no-jobs-other: "&c{player} n'a aucun métier !"
-    header: "&6=== Métiers de {player} ==="
-    job-line: "&e{job} &7- Niveau {level} &8({currentXp}/{requiredXp} XP)"
+    header-self: "&6=== Vos métiers ==="
+    header-other: "&6=== Métiers de {player} ==="
+    job-entry: "&e{job} &7- Niveau {level} &8({currentXp}/{requiredXp} XP)"
     
   # Commande list
   list:
@@ -78,6 +80,51 @@ commands:
     gave-global: "§aBonus XP de {multiplier}x donné à {playerCount} joueurs en ligne pendant {duration}"
     player-offline: "§cLe joueur '{player}' n'est pas en ligne !"
     gave-player: "§aBonus XP de {bonus}% donné à {player} pendant {duration} ({job})"
+    
+  # Commandes de menu
+  menu:
+    invalid-format: "&cFormat invalide ! Utilisez /jobs menu <type> [args]"
+    unknown: "&cType de menu inconnu : {type}"
+    reload:
+      success: "&aMenus rechargés avec succès !"
+    invalid-job-id: "&cID de métier invalide !"
+    job-not-found: "&cMétier '{job}' introuvable !"
+    job-disabled: "&cCe métier est désactivé !"
+    no-permission: "&cVous n'avez pas la permission d'ouvrir ce menu !"
+    failed-open: "&cÉchec de l'ouverture du menu {type} !"
+    help:
+      general: "&6=== Aide Menu ==="
+      admin: "&e/jobs menu reload &7- Recharger les menus (Admin)"
+    quick-help:
+      header: "&6=== Aide Rapide Menus ==="
+      main: "&e/jobs menu &7- Menu principal"
+      job-example: "&e/jobs menu {job} &7- Menu du métier {job}"
+      rankings: "&e/jobs menu rankings &7- Classements"
+    
+  # Commandes de gestion des limites d'actions
+  actionlimit:
+    no-permission: "&cVous n'avez pas la permission d'utiliser cette commande !"
+    help: "&6=== Commandes Action Limit ===\n&e/jobs actionlimit restore [joueur] &7- Restaurer les limites\n&e/jobs actionlimit status <joueur> <métier> <cible> &7- Voir le statut"
+    player-not-found: "&cJoueur '{player}' introuvable !"
+    restore:
+      usage: "&cUtilisation : /jobs actionlimit restore [joueur]"
+      all-success: "&a{count} limites d'action restaurées pour tous les joueurs !"
+      player-success: "&a{count} limites d'action restaurées pour {player} !"
+      player-notification: "&aVos limites d'action ont été restaurées par un administrateur !"
+    status:
+      usage: "&cUtilisation : /jobs actionlimit status <joueur> <métier> <cible>"
+      header: "&6=== Statut des Limites d'Action ==="
+      player: "&7Joueur : &e{player}"
+      job: "&7Métier : &e{job}"
+      target: "&7Cible : &e{target}"
+      no-limits: "&7Aucune limite configurée pour {job} -> {target} pour {player}"
+      cooldown: "&cTemps d'attente : &e{minutes}m {seconds}s"
+      available: "&aDisponible maintenant"
+      actions: "&7Actions : &e{current}/{max} &7(Limite : {limit})"
+      blocking-both: "&cBloque : XP et Argent"
+      blocking-xp: "&cBloque : XP seulement"
+      blocking-money: "&cBloque : Argent seulement"
+      blocking-none: "&aAucun blocage"
     
   # Commandes de récompenses
   rewards:

@@ -40,21 +40,23 @@ commands:
     
   # Info command
   info:
-    target-not-found: "&cJob or player '{target}' not found!"
-    job-header: "&6=== {job} ==="
-    description: "&7Description: &f{description}"
-    max-level: "&7Max Level: &f{maxLevel}"
-    permission: "&7Permission: &f{permission}"
-    lore: "&7Lore:"
-    lore-line: "&f  {line}"
-    action-types: "&7Action Types: &f{actionTypes}"
+    not-found: "&cJob or player '{target}' not found!"
+    job:
+      header: "&6=== {job} ==="
+      description: "&7Description: &f{description}"
+      max-level: "&7Max Level: &e{level}"
+      permission: "&7Permission: &f{permission}"
+      lore-header: "&7Lore:"
+      lore-line: "&f  {line}"
+      action-types: "&7Action Types: &f{actionTypes}"
     
   # Stats command
   stats:
     no-jobs-self: "<#FF6B6B>You don't have any jobs!"
     no-jobs-other: "<#FF6B6B>{player} doesn't have any jobs!"
-    header: "<#FFD700>=== {player} Jobs ==="
-    job-line: "<#FFD700>{job} <gray>- Level <#32CD32>{level} <gray>({currentXp}/{requiredXp} XP)"
+    header-self: "<#FFD700>=== Your Jobs ==="
+    header-other: "<#FFD700>=== {player} Jobs ==="
+    job-entry: "<#FFD700>{job} <gray>- Level <#32CD32>{level} <gray>({currentXp}/{requiredXp} XP)"
     
   # List command
   list:
@@ -78,6 +80,51 @@ commands:
     gave-global: "§aGave {multiplier}x XP bonus to {playerCount} online players for {duration}"
     player-offline: "§cPlayer '{player}' is not online!"
     gave-player: "§aGave {player} {bonus}% XP bonus for {duration} ({job})"
+    
+  # Menu commands
+  menu:
+    invalid-format: "&cInvalid format! Use /jobs menu <type> [args]"
+    unknown: "&cUnknown menu type: {type}"
+    reload:
+      success: "&aMenus reloaded successfully!"
+    invalid-job-id: "&cInvalid job ID!"
+    job-not-found: "&cJob '{job}' not found!"
+    job-disabled: "&cThis job is disabled!"
+    no-permission: "&cYou don't have permission to open this menu!"
+    failed-open: "&cFailed to open {type} menu!"
+    help:
+      general: "&6=== Menu Help ==="
+      admin: "&e/jobs menu reload &7- Reload menus (Admin)"
+    quick-help:
+      header: "&6=== Quick Menu Help ==="
+      main: "&e/jobs menu &7- Main menu"
+      job-example: "&e/jobs menu {job} &7- {job} job menu"
+      rankings: "&e/jobs menu rankings &7- Rankings"
+    
+  # Action limit commands
+  actionlimit:
+    no-permission: "&cYou don't have permission to use this command!"
+    help: "&6=== Action Limit Commands ===\n&e/jobs actionlimit restore [player] &7- Restore limits\n&e/jobs actionlimit status <player> <job> <target> &7- View status"
+    player-not-found: "&cPlayer '{player}' not found!"
+    restore:
+      usage: "&cUsage: /jobs actionlimit restore [player]"
+      all-success: "&a{count} action limits restored for all players!"
+      player-success: "&a{count} action limits restored for {player}!"
+      player-notification: "&aYour action limits have been restored by an administrator!"
+    status:
+      usage: "&cUsage: /jobs actionlimit status <player> <job> <target>"
+      header: "&6=== Action Limit Status ==="
+      player: "&7Player: &e{player}"
+      job: "&7Job: &e{job}"
+      target: "&7Target: &e{target}"
+      no-limits: "&7No limits configured for {job} -> {target} for {player}"
+      cooldown: "&cCooldown: &e{minutes}m {seconds}s"
+      available: "&aAvailable now"
+      actions: "&7Actions: &e{current}/{max} &7(Limit: {limit})"
+      blocking-both: "&cBlocking: XP and Money"
+      blocking-xp: "&cBlocking: XP only"
+      blocking-money: "&cBlocking: Money only"
+      blocking-none: "&aNo blocking"
     
   # Rewards commands
   rewards:
