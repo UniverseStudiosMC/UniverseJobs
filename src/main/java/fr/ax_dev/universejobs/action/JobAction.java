@@ -47,8 +47,8 @@ public class JobAction {
         this.money = config.getDouble("money", 0.0);
         this.name = config.getString("name", "");
         this.description = config.getString("description", "");
-        this.displayName = config.getString("display-name", "");
-        this.lore = config.getStringList("lore");
+        this.displayName = applyDefaultFormatting(config.getString("display-name", ""));
+        this.lore = applyDefaultFormattingToList(config.getStringList("lore"));
         this.interactType = config.getString("interact-type", "RIGHT_CLICK").toUpperCase();
         this.enchantLevel = config.getString("enchant-level", null);
         
@@ -747,5 +747,44 @@ public class JobAction {
     @Override
     public String toString() {
         return "JobAction{target='" + target + "', xp=" + xp + ", money=" + money + ", hasRequirements=" + hasRequirements() + "}";
+    }
+    
+    /**
+     * Apply default formatting to a single string if no formatting is present.
+     * 
+     * @param text The text to format
+     * @return Formatted text with default styling if needed
+     */
+    private String applyDefaultFormatting(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return text;
+        }
+        
+        // If already has formatting, keep it as is
+        if (text.startsWith("<") || text.startsWith("&")) {
+            return text;
+        }
+        
+        // Apply default formatting
+        return "<!italic><white>" + text;
+    }
+    
+    /**
+     * Apply default formatting to a list of strings if no formatting is present.
+     * 
+     * @param textList The list of text to format
+     * @return List with formatted text with default styling if needed
+     */
+    private List<String> applyDefaultFormattingToList(List<String> textList) {
+        if (textList == null || textList.isEmpty()) {
+            return textList;
+        }
+        
+        List<String> formattedList = new ArrayList<>();
+        for (String text : textList) {
+            formattedList.add(applyDefaultFormatting(text));
+        }
+        
+        return formattedList;
     }
 }
