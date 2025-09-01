@@ -40,15 +40,12 @@ public class BoostManagerGui implements InventoryHolder {
     private Inventory currentInventory;
     
     public void openGui(Player player) {
-        // Vérifier les permissions
-        if (config.getPermissionsConfig() != null && config.getPermissionsConfig().viewPermission != null) {
-            if (!player.hasPermission(config.getPermissionsConfig().viewPermission)) {
-                if (config.getMessagesConfig() != null && config.getMessagesConfig().noPermission != null) {
-                    Component message = miniMessage.deserialize("<!italic>" + config.getMessagesConfig().noPermission);
-                    player.sendMessage(message);
-                }
-                return;
-            }
+        // Vérifier les permissions (utilise les permissions intégrées du plugin)
+        if (!player.hasPermission("universejobs.admin.boost")) {
+            String message = plugin.getLanguageManager().getMessage("boost-gui.no-permission");
+            Component component = miniMessage.deserialize("<!italic>" + message);
+            player.sendMessage(component);
+            return;
         }
         
         Inventory gui = createGui();
@@ -349,10 +346,9 @@ public class BoostManagerGui implements InventoryHolder {
             
             // Refresh button
             if (nav.refreshItem.enabled && nav.refreshItem.slots.contains(slot)) {
-                if (config.getMessagesConfig() != null && config.getMessagesConfig().refreshClicked != null) {
-                    Component message = miniMessage.deserialize("<!italic>" + config.getMessagesConfig().refreshClicked);
-                    player.sendMessage(message);
-                }
+                String message = plugin.getLanguageManager().getMessage("boost-gui.refresh-clicked");
+                Component component = miniMessage.deserialize("<!italic>" + message);
+                player.sendMessage(component);
                 updateGuiContent(player.getOpenInventory().getTopInventory());
                 return;
             }
@@ -361,15 +357,12 @@ public class BoostManagerGui implements InventoryHolder {
         // Pour les boosts, seulement en clic droit
         if (!isRightClick) return;
         
-        // Vérifier les permissions pour supprimer
-        if (config.getPermissionsConfig() != null && config.getPermissionsConfig().removePermission != null) {
-            if (!player.hasPermission(config.getPermissionsConfig().removePermission)) {
-                if (config.getMessagesConfig() != null && config.getMessagesConfig().noPermission != null) {
-                    Component message = miniMessage.deserialize("<!italic>" + config.getMessagesConfig().noPermission);
-                    player.sendMessage(message);
-                }
-                return;
-            }
+        // Vérifier les permissions pour supprimer (utilise les permissions intégrées)
+        if (!player.hasPermission("universejobs.admin.boost")) {
+            String message = plugin.getLanguageManager().getMessage("boost-gui.no-permission");
+            Component component = miniMessage.deserialize("<!italic>" + message);
+            player.sendMessage(component);
+            return;
         }
         
         // Récupérer l'ID du boost depuis les métadonnées
@@ -390,13 +383,11 @@ public class BoostManagerGui implements InventoryHolder {
                 playSound(player, config.getSoundsConfig().removeBoostSound);
                 
                 // Message de confirmation
-                if (config.getMessagesConfig() != null && config.getMessagesConfig().boostRemoved != null) {
-                    String message = config.getMessagesConfig().boostRemoved
-                        .replace("{type}", type)
-                        .replace("{boost_id}", boostId);
-                    Component component = miniMessage.deserialize("<!italic>" + message);
-                    player.sendMessage(component);
-                }
+                String message = plugin.getLanguageManager().getMessage("boost-gui.removed")
+                    .replace("{type}", type)
+                    .replace("{boost_id}", boostId);
+                Component component = miniMessage.deserialize("<!italic>" + message);
+                player.sendMessage(component);
                 
                 // L'actualisation automatique mettra à jour le GUI
             }

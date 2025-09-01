@@ -280,6 +280,12 @@ gui:
     claim-failed: "<#FF6B6B>Failed to claim reward."
     already-claimed: "<gray>You have already claimed this reward."
 
+# Boost GUI messages
+boost-gui:
+  removed: "<green>Removed {type} boost: <gold>{boost_id}</gold></green>"
+  no-permission: "<red>You don't have permission to do that!</red>"
+  refresh-clicked: "<aqua>Refreshing boost list...</aqua>"
+
 # System messages (console/logger)
 system:
   config-loaded: "Configuration loaded successfully"
