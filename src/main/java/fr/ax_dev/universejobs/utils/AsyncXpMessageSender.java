@@ -8,7 +8,6 @@ import fr.ax_dev.universejobs.job.XpMessageSettings;
 import org.bukkit.entity.Player;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.UUID;
 
 /**
  * Ultra-high performance XP message sender.

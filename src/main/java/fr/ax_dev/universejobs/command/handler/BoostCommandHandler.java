@@ -10,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -66,82 +67,77 @@ public class BoostCommandHandler extends JobCommandHandler {
             return new ArrayList<>();
         }
         
-        return switch (args.length) {
+        // Déterminer l'offset selon le contexte d'appel
+        final int offset = (args.length >= 3 && "boost".equals(args[2])) ? 1 : 0;
+        
+        int adjustedLength = args.length - offset;
+        
+        return switch (adjustedLength) {
             case 3 -> Arrays.asList(CMD_GIVE, CMD_REMOVE, CMD_INFO).stream()
-                    .filter(action -> action.startsWith(args[2].toLowerCase()))
+                    .filter(action -> action.startsWith(args[2 + offset].toLowerCase()))
                     .collect(Collectors.toList());
-            case 4 -> getTypeCompletions(args);
-            case 5 -> getPlayerCompletions(args);
-            case 6 -> getJobCompletions(args);
-            case 7 -> getActionTypeCompletions(args);
-            case 8 -> getActionIdCompletions(args);
-            case 9 -> getMultiplierCompletions(args);
-            case 10 -> getDurationCompletions(args);
+            case 4 -> getTypeCompletions(args, offset);
+            case 5 -> getPlayerCompletions(args, offset);
+            case 6 -> getJobCompletions(args, offset);
+            case 7 -> getActionTypeCompletions(args, offset);
+            case 8 -> getActionIdOrMultiplierCompletions(args, offset);
+            case 9 -> getMultiplierOrDurationCompletions(args, offset);
+            case 10 -> getDurationCompletions(args, offset);
             default -> new ArrayList<>();
         };
     }
     
-    private List<String> getTypeCompletions(String[] args) {
-        String action = args[2].toLowerCase();
+    private List<String> getTypeCompletions(String[] args, int offset) {
+        String action = args[2 + offset].toLowerCase();
         if (action.equals(CMD_GIVE) || action.equals(CMD_REMOVE)) {
             return Arrays.asList(TYPE_XP, TYPE_MONEY).stream()
-                    .filter(type -> type.startsWith(args[3].toLowerCase()))
+                    .filter(type -> type.startsWith(args[3 + offset].toLowerCase()))
                     .collect(Collectors.toList());
         }
         return new ArrayList<>();
     }
     
-    private List<String> getPlayerCompletions(String[] args) {
-        String action = args[2].toLowerCase();
+    private List<String> getPlayerCompletions(String[] args, int offset) {
+        String action = args[2 + offset].toLowerCase();
         if (action.equals(CMD_GIVE)) {
             List<String> players = new ArrayList<>();
             players.add("*");
             players.addAll(Bukkit.getOnlinePlayers().stream()
                     .map(Player::getName)
-                    .filter(name -> name.toLowerCase().startsWith(args[4].toLowerCase()))
+                    .filter(name -> name.toLowerCase().startsWith(args[4 + offset].toLowerCase()))
                     .collect(Collectors.toList()));
             return players;
         }
         return new ArrayList<>();
     }
     
-    private List<String> getMultiplierCompletions(String[] args) {
-        String action = args[2].toLowerCase();
-        if (action.equals(CMD_GIVE)) {
-            return Arrays.asList("1.25", "1.5", "2.0", "2.5", "3.0").stream()
-                    .filter(mult -> mult.startsWith(args[5]))
-                    .collect(Collectors.toList());
-        }
-        return new ArrayList<>();
-    }
-    
-    private List<String> getDurationCompletions(String[] args) {
-        String action = args[2].toLowerCase();
+    private List<String> getDurationCompletions(String[] args, int offset) {
+        String action = args[2 + offset].toLowerCase();
         if (action.equals(CMD_GIVE)) {
             return Arrays.asList("300", "600", "1800", "3600", "7200").stream()
-                    .filter(dur -> dur.startsWith(args[6]))
+                    .filter(dur -> dur.startsWith(args[6 + offset]))
                     .collect(Collectors.toList());
         }
         return new ArrayList<>();
     }
     
-    private List<String> getJobCompletions(String[] args) {
-        String action = args[2].toLowerCase();
+    private List<String> getJobCompletions(String[] args, int offset) {
+        String action = args[2 + offset].toLowerCase();
         if (action.equals(CMD_GIVE)) {
             List<String> jobs = new ArrayList<>();
             jobs.add("*");
             jobs.addAll(plugin.getJobManager().getJobs().keySet().stream()
-                    .filter(id -> id.toLowerCase().startsWith(args[5].toLowerCase()))
+                    .filter(id -> id.toLowerCase().startsWith(args[5 + offset].toLowerCase()))
                     .collect(Collectors.toList()));
             return jobs;
         }
         return new ArrayList<>();
     }
     
-    private List<String> getActionTypeCompletions(String[] args) {
-        String action = args[2].toLowerCase();
-        if (action.equals(CMD_GIVE) && args.length > 5) {
-            String jobId = args[5];
+    private List<String> getActionTypeCompletions(String[] args, int offset) {
+        String action = args[2 + offset].toLowerCase();
+        if (action.equals(CMD_GIVE) && args.length > 5 + offset) {
+            String jobId = args[5 + offset];
             List<String> actionTypes = new ArrayList<>();
             actionTypes.add("*");
             
@@ -167,17 +163,55 @@ public class BoostCommandHandler extends JobCommandHandler {
             return actionTypes.stream()
                     .distinct()
                     .sorted()
-                    .filter(act -> act.toLowerCase().startsWith(args[6].toLowerCase()))
+                    .filter(act -> act.toLowerCase().startsWith(args[6 + offset].toLowerCase()))
                     .collect(Collectors.toList());
         }
         return new ArrayList<>();
     }
     
-    private List<String> getActionIdCompletions(String[] args) {
-        String action = args[2].toLowerCase();
-        if (action.equals(CMD_GIVE) && args.length > 6) {
-            String actionType = args[6].toUpperCase();
-            String jobId = args.length > 5 ? args[5] : "*";
+    private List<String> getActionIdOrMultiplierCompletions(String[] args, int offset) {
+        String action = args[2 + offset].toLowerCase();
+        if (action.equals(CMD_GIVE) && args.length > 6 + offset) {
+            String actionType = args[6 + offset];
+            
+            if (actionType.equals("*")) {
+                // Si action_type est *, alors args[7] est le multiplier
+                return Arrays.asList("1.0", "1.5", "2.0", "2.5", "3.0").stream()
+                        .filter(mult -> mult.startsWith(args[7 + offset]))
+                        .collect(Collectors.toList());
+            } else {
+                // Sinon, c'est l'id_in_action
+                return getActionIdCompletions(args, offset);
+            }
+        }
+        return new ArrayList<>();
+    }
+    
+    private List<String> getMultiplierOrDurationCompletions(String[] args, int offset) {
+        String action = args[2 + offset].toLowerCase();
+        if (action.equals(CMD_GIVE) && args.length > 6 + offset) {
+            String actionType = args[6 + offset];
+            
+            if (actionType.equals("*")) {
+                // Si action_type est *, alors args[8] est la duration
+                return Arrays.asList("300", "600", "1800", "3600", "7200").stream()
+                        .filter(dur -> dur.startsWith(args[8 + offset]))
+                        .collect(Collectors.toList());
+            } else {
+                // Sinon, c'est le multiplier
+                return Arrays.asList("1.0", "1.5", "2.0", "2.5", "3.0").stream()
+                        .filter(mult -> mult.startsWith(args[8 + offset]))
+                        .collect(Collectors.toList());
+            }
+        }
+        return new ArrayList<>();
+    }
+    
+    private List<String> getActionIdCompletions(String[] args, int offset) {
+        String action = args[2 + offset].toLowerCase();
+        if (action.equals(CMD_GIVE) && args.length > 6 + offset) {
+            String actionType = args[6 + offset].toUpperCase();
+            String jobId = args.length > 5 + offset ? args[5 + offset] : "*";
             List<String> ids = new ArrayList<>();
             ids.add("*");
             
@@ -194,7 +228,7 @@ public class BoostCommandHandler extends JobCommandHandler {
             
             return ids.stream()
                     .distinct()
-                    .filter(id -> id.toLowerCase().startsWith(args[7].toLowerCase()))
+                    .filter(id -> id.toLowerCase().startsWith(args[7 + offset].toLowerCase()))
                     .collect(Collectors.toList());
         }
         return new ArrayList<>();
@@ -203,6 +237,22 @@ public class BoostCommandHandler extends JobCommandHandler {
     private List<String> getJobActionIds(Job job, String actionType) {
         List<String> actionIds = new ArrayList<>();
         
+        try {
+            // Essayer d'accéder à la configuration via le job manager
+            File jobFile = new File(plugin.getDataFolder(), "jobs/" + job.getId() + ".yml");
+            if (jobFile.exists()) {
+                org.bukkit.configuration.file.YamlConfiguration jobConfig = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(jobFile);
+                org.bukkit.configuration.ConfigurationSection actionSection = jobConfig.getConfigurationSection("actions." + actionType);
+                if (actionSection != null) {
+                    actionIds.addAll(actionSection.getKeys(false));
+                    return actionIds;
+                }
+            }
+        } catch (Exception e) {
+            // En cas d'erreur, continuer avec le fallback
+        }
+        
+        // Fallback : utiliser getName() depuis les JobAction
         try {
             ActionType enumActionType = ActionType.valueOf(actionType.toUpperCase());
             List<JobAction> actions = job.getActions(enumActionType);
@@ -219,12 +269,12 @@ public class BoostCommandHandler extends JobCommandHandler {
     }
     
     private void handleGiveBoost(CommandSender sender, String[] args) {
-        // /jobs admin boost give <xp|money> <player/*> <job/*> <action_type> <id_in_action> <multiplier> <duration>
-        if (args.length < 10) {
-            sender.sendMessage("§cUsage: /jobs admin boost give <xp|money> <player/*> <job/*> <action_type> <id_in_action> <multiplier> <duration>");
+        // /jobs admin boost give <xp|money> <player/*> <job/*> <action_type> [id_in_action] <multiplier> <duration>
+        if (args.length < 9) {
+            sender.sendMessage("§cUsage: /jobs admin boost give <xp|money> <player/*> <job/*> <action_type> [id_in_action] <multiplier> <duration>");
             sender.sendMessage("§7Examples:");
-            sender.sendMessage("§7  /jobs admin boost give xp * miner BREAK simple_break 2.0 3600");
-            sender.sendMessage("§7  /jobs admin boost give money Player123 * KILL simple_kill 1.5 1800");
+            sender.sendMessage("§7  /jobs admin boost give xp * miner * 2.0 3600");
+            sender.sendMessage("§7  /jobs admin boost give money Player123 * BREAK simple_break 1.5 1800");
             return;
         }
         
@@ -252,22 +302,48 @@ public class BoostCommandHandler extends JobCommandHandler {
             return;
         }
         
-        String actionId = sanitizeInput(args[7]);
-        if (!actionId.equals("*") && !isValidActionId(actionType, actionId)) {
-            sender.sendMessage("§cInvalid action ID for type " + actionType + "!");
-            return;
-        }
+        String actionId = "*";
+        double multiplier;
+        long duration;
         
-        double multiplier = parseMultiplier(args[8]);
-        if (multiplier <= 0) {
-            sender.sendMessage("§cInvalid multiplier! Must be between 0.1 and 10.0");
-            return;
-        }
-        
-        long duration = parseDuration(args[9]);
-        if (duration <= 0) {
-            sender.sendMessage("§cInvalid duration! Must be between 1 and 86400 seconds");
-            return;
+        if (actionType.equals("*")) {
+            // Si action_type est *, pas besoin d'id_in_action
+            multiplier = parseMultiplier(args[7]);
+            if (multiplier <= 0) {
+                sender.sendMessage("§cInvalid multiplier! Must be between 0.1 and 10.0");
+                return;
+            }
+            
+            duration = parseDuration(args[8]);
+            if (duration <= 0) {
+                sender.sendMessage("§cInvalid duration! Must be between 1 and 86400 seconds");
+                return;
+            }
+        } else {
+            // Action type spécifique, id_in_action requis
+            if (args.length < 10) {
+                sender.sendMessage("§cWhen using specific action type, id_in_action is required!");
+                sender.sendMessage("§7Usage: /jobs admin boost give <xp|money> <player/*> <job/*> <action_type> <id_in_action> <multiplier> <duration>");
+                return;
+            }
+            
+            actionId = sanitizeInput(args[7]);
+            if (!actionId.equals("*") && !isValidActionId(actionType, actionId)) {
+                sender.sendMessage("§cInvalid action ID for type " + actionType + "!");
+                return;
+            }
+            
+            multiplier = parseMultiplier(args[8]);
+            if (multiplier <= 0) {
+                sender.sendMessage("§cInvalid multiplier! Must be between 0.1 and 10.0");
+                return;
+            }
+            
+            duration = parseDuration(args[9]);
+            if (duration <= 0) {
+                sender.sendMessage("§cInvalid duration! Must be between 1 and 86400 seconds");
+                return;
+            }
         }
         
         String reason = "Admin boost";
@@ -428,13 +504,13 @@ public class BoostCommandHandler extends JobCommandHandler {
         sender.sendMessage("§e/jobs admin boost <action> <type> <args...>");
         sender.sendMessage("");
         sender.sendMessage("§6Actions:");
-        sender.sendMessage("§e  give <xp|money> <player/*> <job/*> <action_type> <id_in_action> <multiplier> <duration>");
+        sender.sendMessage("§e  give <xp|money> <player/*> <job/*> <action_type> [id_in_action] <multiplier> <duration>");
         sender.sendMessage("§e  remove <xp|money> <player> [job]");
         sender.sendMessage("§e  info");
         sender.sendMessage("");
         sender.sendMessage("§7Examples:");
-        sender.sendMessage("§7  /jobs admin boost give xp * miner BREAK simple_break 2.0 3600");
-        sender.sendMessage("§7  /jobs admin boost give money Player123 * KILL simple_kill 1.5 1800");
+        sender.sendMessage("§7  /jobs admin boost give xp * miner * 2.0 3600");
+        sender.sendMessage("§7  /jobs admin boost give money Player123 * BREAK simple_break 1.5 1800");
         sender.sendMessage("§7  /jobs admin boost remove money Player123");
     }
 }

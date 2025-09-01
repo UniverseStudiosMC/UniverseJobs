@@ -238,7 +238,8 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         }
         
         // Remove dangerous characters and limit length
-        return input.replaceAll("[^a-zA-Z0-9_-]", "").substring(0, Math.min(input.length(), 64));
+        String sanitized = input.replaceAll("[^a-zA-Z0-9_-]", "");
+        return sanitized.substring(0, Math.min(sanitized.length(), 64));
     }
     
     /**

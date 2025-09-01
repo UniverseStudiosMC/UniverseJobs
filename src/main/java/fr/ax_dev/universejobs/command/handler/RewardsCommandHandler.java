@@ -4,7 +4,6 @@ import fr.ax_dev.universejobs.UniverseJobs;
 import fr.ax_dev.universejobs.job.Job;
 import fr.ax_dev.universejobs.reward.Reward;
 import fr.ax_dev.universejobs.utils.MessageUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 

@@ -792,30 +792,6 @@ public class AdminJobCommandHandler extends JobCommandHandler {
         return true;
     }
     
-    private boolean handleCleanup(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("universejobs.admin.cleanup")) {
-            sendMessage(sender, "no-permission");
-            return true;
-        }
-        
-        sendMessage(sender, "cleanup-start");
-        
-        plugin.getFoliaManager().runAsync(() -> {
-            try {
-                plugin.getJobManager().cleanupInvalidJobs();
-                
-                plugin.getFoliaManager().runNextTick(() ->
-                    sendMessage(sender, "cleanup-complete", "players", "N/A", "jobs", "N/A"));
-            } catch (Exception e) {
-                plugin.getLogger().warning("Erreur lors du nettoyage: " + e.getMessage());
-                plugin.getFoliaManager().runNextTick(() ->
-                    sendMessage(sender, "cleanup-error", "error", e.getMessage()));
-            }
-        });
-        
-        return true;
-    }
-    
     private boolean handleDebug(CommandSender sender, String[] args) {
         if (!sender.hasPermission("universejobs.admin.debug")) {
             sendMessage(sender, "no-permission");
@@ -890,151 +866,6 @@ public class AdminJobCommandHandler extends JobCommandHandler {
         sendMessage(sender, "debug-show-xp", "enabled", String.valueOf(plugin.getConfig().getBoolean("messages.show-xp-gain", true)));
     }
     
-    private boolean handleExpCommand(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("universejobs.admin.exp")) {
-            sendMessage(sender, "no-permission");
-            return true;
-        }
-        
-        if (args.length < 6) {
-            sendMessage(sender, "usage.exp");
-            return true;
-        }
-        
-        String expAction = args[2].toLowerCase();
-        String playerName = args[3];
-        String jobId = args[4];
-        String amountStr = args[5];
-        
-        if (!Arrays.asList("give", "take", "set").contains(expAction)) {
-            sendMessage(sender, "invalid-action", "actions", "give, take, set");
-            return true;
-        }
-        
-        double amount;
-        try {
-            if (amountStr.isEmpty() || amountStr.length() > 15) {
-                throw new NumberFormatException("Invalid amount format");
-            }
-            amount = Double.parseDouble(amountStr);
-        } catch (NumberFormatException e) {
-            sendMessage(sender, "invalid-amount", "amount", amountStr);
-            return true;
-        }
-        
-        if (amount <= 0 || amount > 1000000 || Double.isNaN(amount) || Double.isInfinite(amount)) {
-            sendMessage(sender, "amount-bounds");
-            return true;
-        }
-        
-        OfflinePlayer target = Bukkit.getOfflinePlayer(playerName);
-        if (target == null || target.getName() == null) {
-            sendMessage(sender, "player-not-found", "player", playerName);
-            return true;
-        }
-        
-        Job job = jobManager.getJob(jobId);
-        if (job == null) {
-            sendMessage(sender, "job-not-found", "job", jobId);
-            return true;
-        }
-        
-        plugin.getFoliaManager().runAsync(() -> {
-            try {
-                PlayerJobData data = jobManager.getPlayerData(target.getUniqueId());
-                if (!data.hasJob(jobId)) {
-                    plugin.getFoliaManager().runNextTick(() ->
-                        sendMessage(sender, "player-no-job", "player", target.getName(), "job", job.getName()));
-                    return;
-                }
-                
-                String senderName = sender instanceof Player ? sender.getName() : "Console";
-                
-                if (!target.isOnline()) {
-                    plugin.getFoliaManager().runNextTick(() ->
-                        sendMessage(sender, "player-offline", "player", target.getName()));
-                    return;
-                }
-                
-                Player onlinePlayer = target.getPlayer();
-                
-                switch (expAction) {
-                    case "give" -> {
-                        jobManager.addXp(onlinePlayer, jobId, amount);
-                        plugin.getFoliaManager().runNextTick(() -> {
-                            sendMessage(sender, "xp-given", "amount", String.valueOf(amount), "player", target.getName(), "job", job.getName());
-                            MessageUtils.sendMessage(onlinePlayer, languageManager.getMessage("commands.admin.xp-received", 
-                                "amount", String.valueOf(amount), "job", job.getName(), "sender", senderName));
-                        });
-                    }
-                    case "take" -> {
-                        double currentXp = data.getXp(jobId);
-                        double newXp = Math.max(0, currentXp - amount);
-                        double difference = newXp - currentXp;
-                        jobManager.addXp(onlinePlayer, jobId, difference);
-                        plugin.getFoliaManager().runNextTick(() -> {
-                            sendMessage(sender, "xp-taken", "amount", String.valueOf(amount), "player", target.getName(), "job", job.getName());
-                            MessageUtils.sendMessage(onlinePlayer, languageManager.getMessage("commands.admin.xp-lost", 
-                                "amount", String.valueOf(amount), "job", job.getName()));
-                        });
-                    }
-                    case "set" -> {
-                        double currentXp = data.getXp(jobId);
-                        double difference = amount - currentXp;
-                        jobManager.addXp(onlinePlayer, jobId, difference);
-                        plugin.getFoliaManager().runNextTick(() -> {
-                            sendMessage(sender, "xp-set", "amount", String.valueOf(amount), "player", target.getName(), "job", job.getName());
-                            MessageUtils.sendMessage(onlinePlayer, languageManager.getMessage("commands.admin.xp-set-notify", 
-                                "amount", String.valueOf(amount), "job", job.getName(), "sender", senderName));
-                        });
-                    }
-                }
-                
-            } catch (Exception e) {
-                plugin.getLogger().warning("Error during exp command: " + e.getMessage());
-                plugin.getFoliaManager().runNextTick(() ->
-                    sendMessage(sender, "xp-error", "error", e.getMessage()));
-            }
-        });
-        
-        return true;
-    }
-    
-    private boolean handleMigrate(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("universejobs.admin.migrate")) {
-            sendMessage(sender, "no-permission");
-            return true;
-        }
-        
-        String fromVersion = args.length > 2 ? args[2] : "auto";
-        String toVersion = args.length > 3 ? args[3] : plugin.getDescription().getVersion();
-        
-        sendMessage(sender, "migrate-start", "from", fromVersion, "to", toVersion);
-        sendMessage(sender, "migrate-not-implemented");
-        plugin.getLogger().info("Migration requested from " + fromVersion + " to " + toVersion + " by " + sender.getName());
-        
-        return true;
-    }
-    
-    private boolean handleValidateConfig(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("universejobs.admin.validateconfig")) {
-            sendMessage(sender, "no-permission");
-            return true;
-        }
-        
-        sendMessage(sender, "validate-start");
-        
-        try {
-            plugin.getConfigManager().reloadConfig();
-            sendMessage(sender, "validate-success");
-        } catch (Exception e) {
-            sendMessage(sender, "validate-failed", "error", e.getMessage());
-            plugin.getLogger().warning("Configuration validation failed: " + e.getMessage());
-        }
-        
-        return true;
-    }
-    
     private void sendAdminHelp(CommandSender sender) {
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.header"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.give"));
@@ -1071,6 +902,11 @@ public class AdminJobCommandHandler extends JobCommandHandler {
             if ("boost".equals(subCommand)) {
                 return boostHandler.getTabCompletions(sender, args);
             }
+        }
+        
+        // Délégation boost pour toutes les longueurs supérieures à 3
+        if (args.length > 3 && "boost".equals(args[1].toLowerCase())) {
+            return boostHandler.getTabCompletions(sender, args);
         }
         
         if (args.length == 4) {
