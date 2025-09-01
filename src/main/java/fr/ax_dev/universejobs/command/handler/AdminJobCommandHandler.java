@@ -19,10 +19,12 @@ import java.util.stream.Collectors;
 public class AdminJobCommandHandler extends JobCommandHandler {
     
     private final JobManager jobManager;
+    private final BoostCommandHandler boostHandler;
     
     public AdminJobCommandHandler(UniverseJobs plugin, JobManager jobManager) {
         super(plugin);
         this.jobManager = jobManager;
+        this.boostHandler = new BoostCommandHandler(plugin);
     }
     
     private void sendMessage(CommandSender sender, String messageKey, String... replacements) {
@@ -61,6 +63,10 @@ public class AdminJobCommandHandler extends JobCommandHandler {
             case "info" -> handlePlayerInfo(sender, args);
             case "reload" -> handleReload(sender, args);
             case "debug" -> handleDebug(sender, args);
+            case "boost" -> {
+                boostHandler.handleCommand(sender, args);
+                yield true;
+            }
             default -> {
                 sendAdminHelp(sender);
                 yield true;
@@ -1083,6 +1089,7 @@ public class AdminJobCommandHandler extends JobCommandHandler {
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.header"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.xp"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.level"));
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.boost"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.givecustom"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.forcejoin"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.forceleave"));
@@ -1094,7 +1101,7 @@ public class AdminJobCommandHandler extends JobCommandHandler {
     
     public List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 2) {
-            return Arrays.asList("xp", "level", "givecustom", "forcejoin", "forceleave", "reset", "info", "reload", "debug");
+            return Arrays.asList("xp", "level", "boost", "givecustom", "forcejoin", "forceleave", "reset", "info", "reload", "debug");
         }
         
         if (args.length == 3) {
@@ -1111,6 +1118,10 @@ public class AdminJobCommandHandler extends JobCommandHandler {
             
             if ("debug".equals(subCommand)) {
                 return Arrays.asList("xp", "cache", "config");
+            }
+            
+            if ("boost".equals(subCommand)) {
+                return boostHandler.getTabCompletions(sender, args);
             }
         }
         
