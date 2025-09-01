@@ -143,28 +143,11 @@ commands:
       usage: "&cUtilisation : /jobs rewards claim <métier> <idRécompense>"
       success: "&aRécompense '{reward}' réclamée avec succès !"
       failed: "&cÉchec de la réclamation de la récompense '{reward}' !"
-    admin:
-      no-permission: "&cVous n'avez pas la permission d'utiliser les commandes admin de récompenses !"
-      help:
-        header: "&6=== Commandes Admin Récompenses ==="
-        give: "&e/jobs rewards admin give <joueur> <métier> <idRécompense> &7- Donner une récompense à un joueur"
-        reset: "&e/jobs rewards admin reset <joueur> <métier> &7- Reset les récompenses d'un joueur pour un métier"
-      give:
-        usage: "&cUtilisation : /jobs rewards admin give <joueur> <métier> <idRécompense>"
-        success: "&aRécompense '{reward}' donnée à {player} avec succès !"
-        notify: "&aVous avez reçu la récompense '{reward}' de {sender} !"
-        failed: "&cÉchec du don de la récompense '{reward}' à {player} !"
-      reset:
-        usage: "&cUtilisation : /jobs rewards admin reset <joueur> <métier>"
-        success: "&aRécompenses du métier {job} réinitialisées pour {player} !"
     player-not-found: "&cJoueur '{player}' introuvable !"
     reward-not-found: "&cRécompense '{reward}' introuvable pour le métier {job} !"
     reload:
       success: "&aRécompenses rechargées avec succès !"
       failed: "&cÉchec du rechargement des récompenses !"
-    debug:
-      usage: "&cUtilisation : /jobs rewards debug <métier>"
-      failed: "&cÉchec du debug des récompenses !"
     
   # Commande d'aide
   help:
@@ -180,9 +163,7 @@ commands:
   # Commandes admin
   admin:
     header: "&6=== Commandes Admin UniverseJobs ==="
-    xp: "&e/jobs admin xp <give|set|remove> <joueur> <métier> <montant> &7- Gérer l'XP d'un joueur"
-    exp: "&e/jobs admin exp <give|take|set> <joueur> <métier> <montant> &7- Gérer l'XP (format legacy)"
-    level: "&e/jobs admin level <give|set|remove> <joueur> <métier> <montant> &7- Gérer le niveau d'un joueur"
+    give: "&e/jobs admin give <xp|level|custom> <give|set|remove> <joueur> <métier> <montant> &7- Donner XP/niveaux/récompenses"
     boost: "&e/jobs admin boost <xp|money> <give|remove|list|info|cleanup> &7- Gérer les bonus XP/argent"
     forcejoin: "&e/jobs admin forcejoin <joueur> <métier> &7- Forcer un joueur à rejoindre un métier"
     forceleave: "&e/jobs admin forceleave <joueur> <métier> &7- Forcer un joueur à quitter un métier"
@@ -193,6 +174,12 @@ commands:
     migrate: "&e/jobs admin migrate [version] &7- Migration des données"
     debug: "&e/jobs admin debug <xp|cache|config> &7- Debug système XP/cache/config"
     cleanup: "&e/jobs admin cleanup &7- Nettoyer les métiers invalides des données joueurs"
+    
+    # Messages d'aide pour la commande give
+    give-help-header: "&6=== Commandes Give ===" 
+    give-help-xp: "&e/jobs admin give xp <give|set|remove> <joueur> <métier> <montant> &7- Gérer l'XP"
+    give-help-level: "&e/jobs admin give level <give|set|remove> <joueur> <métier> <montant> &7- Gérer les niveaux"
+    give-help-custom: "&e/jobs admin give custom <joueur> <métier> <xp> <argent> &7- Donner XP et argent personnalisés"
     
     # Réponses des commandes admin
     no-permission: "&cVous n'avez pas la permission d'utiliser cette commande."

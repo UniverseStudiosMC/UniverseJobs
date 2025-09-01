@@ -27,29 +27,12 @@ public class ActionItemFormat {
         this.hideEnchants = config.getBoolean("hide-enchants", true);
     }
     
-    /**
-     * Private constructor for default format.
-     */
-    private ActionItemFormat(List<String> loreBonus, int amount, boolean glow, 
-                           boolean hideAttributes, boolean hideEnchants) {
-        this.loreBonus = loreBonus;
-        this.amount = amount;
-        this.glow = glow;
-        this.hideAttributes = hideAttributes;
-        this.hideEnchants = hideEnchants;
-    }
-    
-    /**
-     * Get default action item format.
-     */
-    public static ActionItemFormat getDefault() {
-        return new ActionItemFormat(
-            getDefaultLoreBonus(),  // loreBonus
-            1,  // amount
-            false,  // glow
-            true,  // hideAttributes
-            true  // hideEnchants
-        );
+    public ActionItemFormat() {
+        this.loreBonus = getDefaultLoreBonus();
+        this.amount = 1;
+        this.glow = false;
+        this.hideAttributes = true;
+        this.hideEnchants = true;
     }
     
     private static List<String> getDefaultLoreBonus() {
@@ -62,7 +45,6 @@ public class ActionItemFormat {
             "<gray>Requirements: {action_requirements}"
         );
     }
-    
     
     // Getters
     public List<String> getLoreBonus() {

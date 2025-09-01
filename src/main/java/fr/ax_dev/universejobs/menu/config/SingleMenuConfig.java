@@ -117,7 +117,7 @@ public class SingleMenuConfig {
         if (actionFormatSection != null) {
             this.actionItemFormat = new ActionItemFormat(actionFormatSection);
         } else {
-            this.actionItemFormat = ActionItemFormat.getDefault();
+            this.actionItemFormat = new ActionItemFormat();
         }
         
         // Load job slots configuration
