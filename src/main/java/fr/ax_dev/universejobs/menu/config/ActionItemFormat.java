@@ -55,11 +55,11 @@ public class ActionItemFormat {
     private static List<String> getDefaultLoreBonus() {
         return Arrays.asList(
             "",
-            "&7Rewards:",
-            "&8├ &7XP: &a+{action_xp}",
-            "&8└ &7Money: &6${action_money}",
+            "<gray>Rewards:",
+            "<gray>├ <gray>XP: <#abffb3>+{action_xp}",
+            "<gray>└ <gray>Money: <#FFD700>${action_money}",
             "",
-            "&7Requirements: {action_requirements}"
+            "<gray>Requirements: {action_requirements}"
         );
     }
     

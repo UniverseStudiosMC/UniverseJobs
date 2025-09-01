@@ -194,7 +194,7 @@ public abstract class BaseMenu implements InventoryHolder {
             
             // Hide tooltip (all item information)
             if (itemConfig.isHideToolTip()) {
-                meta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
+                meta.setHideTooltip(true);
             }
             
             item.setItemMeta(meta);
