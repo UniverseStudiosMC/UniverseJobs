@@ -10,11 +10,13 @@ import fr.ax_dev.universejobs.cache.ConfigurationCache;
 import fr.ax_dev.universejobs.cache.PlayerJobCache;
 
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.Sheep;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
 import org.bukkit.inventory.meta.PotionMeta;
@@ -66,9 +68,9 @@ public class JobActionListener implements Listener {
     private final AtomicLong totalEvents = new AtomicLong(0);
     private final AtomicLong processedEvents = new AtomicLong(0);
     
-    // Furnace tracking for SMELT action - tracks who put items in each furnace
-    private final Map<String, UUID> furnaceOwners = new ConcurrentHashMap<>();
-    private final Map<String, Long> furnaceLastUse = new ConcurrentHashMap<>();
+    // NBT keys for furnace owner tracking
+    private final NamespacedKey furnaceOwnerKey;
+    private final NamespacedKey furnaceLastUseKey;
     /**
      * Create a new ultra-fast JobActionListener with caching.
      * 
@@ -87,6 +89,9 @@ public class JobActionListener implements Listener {
         this.mythicMobsHandler = mythicMobsHandler;
         this.configCache = configCache;
         this.playerCache = playerCache;
+        
+        this.furnaceOwnerKey = new NamespacedKey(plugin, "furnace_owner");
+        this.furnaceLastUseKey = new NamespacedKey(plugin, "furnace_last_use");
     }
     
     
@@ -189,6 +194,16 @@ public class JobActionListener implements Listener {
                     plugin.getLogger().info("Player " + player.getName() + " mined a player-placed block - no XP awarded");
                 }
                 return;
+            }
+            
+            // Clean up furnace NBT data if it's a furnace-type block being broken
+            if (isFurnaceType(event.getBlock().getType())) {
+                String blockCoords = event.getBlock().getX() + ":" + event.getBlock().getY() + ":" + event.getBlock().getZ();
+                cleanupFurnaceNBT(event.getBlock(), blockCoords);
+                
+                if (configCache.isDebugEnabled()) {
+                    plugin.getLogger().info("Cleaned up furnace NBT data for broken " + event.getBlock().getType() + " at " + event.getBlock().getLocation());
+                }
             }
             
             // Create context
@@ -868,12 +883,14 @@ public class JobActionListener implements Listener {
             return;
         }
         
-        String locationKey = locationToKey(inventoryLocation);
         long currentTime = System.currentTimeMillis();
         
-        // Track this player as the owner of this inventory
-        furnaceOwners.put(locationKey, player.getUniqueId());
-        furnaceLastUse.put(locationKey, currentTime);
+        // Track this player as the owner of this inventory using NBT
+        org.bukkit.block.Block furnaceBlock = inventoryLocation.getBlock();
+        furnaceBlock.getChunk().getPersistentDataContainer().set(furnaceOwnerKey, PersistentDataType.STRING, 
+            furnaceBlock.getX() + ":" + furnaceBlock.getY() + ":" + furnaceBlock.getZ() + ":" + player.getUniqueId().toString());
+        furnaceBlock.getChunk().getPersistentDataContainer().set(furnaceLastUseKey, PersistentDataType.STRING,
+            furnaceBlock.getX() + ":" + furnaceBlock.getY() + ":" + furnaceBlock.getZ() + ":" + currentTime);
         
         if (plugin.getConfigManager().isDebugEnabled()) {
             String inventoryType = event.getInventory().getType().name();
@@ -882,15 +899,6 @@ public class JobActionListener implements Listener {
         }
     }
     
-    /**
-     * Convert location to string key for furnace tracking.
-     */
-    private String locationToKey(org.bukkit.Location location) {
-        return location.getWorld().getName() + ":" + 
-               location.getBlockX() + ":" + 
-               location.getBlockY() + ":" + 
-               location.getBlockZ();
-    }
     
     /**
      * Handle item smelting/cooking (SMELT action).
@@ -950,35 +958,79 @@ public class JobActionListener implements Listener {
     }
     
     /**
-     * Get the owner of a furnace based on our tracking system.
+     * Get the owner of a furnace based on NBT tracking system.
      * Returns the player who last put items into this furnace.
      */
     private Player getFurnaceOwner(org.bukkit.Location furnaceLocation) {
-        String furnaceKey = locationToKey(furnaceLocation);
-        UUID ownerUUID = furnaceOwners.get(furnaceKey);
+        org.bukkit.block.Block furnaceBlock = furnaceLocation.getBlock();
+        String blockCoords = furnaceBlock.getX() + ":" + furnaceBlock.getY() + ":" + furnaceBlock.getZ();
         
-        if (ownerUUID == null) {
+        // Get owner UUID from NBT
+        String ownerData = furnaceBlock.getChunk().getPersistentDataContainer().get(furnaceOwnerKey, PersistentDataType.STRING);
+        if (ownerData == null) {
             return null; // No tracked owner
+        }
+        
+        // Parse owner data (format: x:y:z:uuid)
+        String[] ownerParts = ownerData.split(":");
+        if (ownerParts.length != 4 || !ownerData.startsWith(blockCoords + ":")) {
+            return null; // Invalid or wrong block data
+        }
+        
+        UUID ownerUUID;
+        try {
+            ownerUUID = UUID.fromString(ownerParts[3]);
+        } catch (IllegalArgumentException e) {
+            return null; // Invalid UUID
         }
         
         Player owner = plugin.getServer().getPlayer(ownerUUID);
         if (owner == null || !owner.isOnline()) {
             // Player is offline, clean up tracking
-            furnaceOwners.remove(furnaceKey);
-            furnaceLastUse.remove(furnaceKey);
+            cleanupFurnaceNBT(furnaceBlock, blockCoords);
             return null;
         }
         
         // Check if the tracking is too old (30 minutes max)
-        Long lastUse = furnaceLastUse.get(furnaceKey);
-        if (lastUse != null && (System.currentTimeMillis() - lastUse) > 30 * 60 * 1000L) {
-            // Tracking expired, clean up
-            furnaceOwners.remove(furnaceKey);
-            furnaceLastUse.remove(furnaceKey);
-            return null;
+        String lastUseData = furnaceBlock.getChunk().getPersistentDataContainer().get(furnaceLastUseKey, PersistentDataType.STRING);
+        if (lastUseData != null && lastUseData.startsWith(blockCoords + ":")) {
+            String[] useParts = lastUseData.split(":");
+            if (useParts.length == 4) {
+                try {
+                    long lastUse = Long.parseLong(useParts[3]);
+                    if ((System.currentTimeMillis() - lastUse) > 30 * 60 * 1000L) {
+                        // Tracking expired, clean up
+                        cleanupFurnaceNBT(furnaceBlock, blockCoords);
+                        return null;
+                    }
+                } catch (NumberFormatException e) {
+                    // Invalid timestamp, clean up
+                    cleanupFurnaceNBT(furnaceBlock, blockCoords);
+                    return null;
+                }
+            }
         }
         
         return owner;
+    }
+    
+    /**
+     * Clean up furnace NBT data for a specific block.
+     */
+    private void cleanupFurnaceNBT(org.bukkit.block.Block furnaceBlock, String blockCoords) {
+        // Remove NBT entries for this specific block
+        furnaceBlock.getChunk().getPersistentDataContainer().remove(furnaceOwnerKey);
+        furnaceBlock.getChunk().getPersistentDataContainer().remove(furnaceLastUseKey);
+    }
+    
+    /**
+     * Check if a material is a furnace-type block.
+     */
+    private boolean isFurnaceType(Material material) {
+        return material == Material.FURNACE || 
+               material == Material.BLAST_FURNACE || 
+               material == Material.SMOKER || 
+               material == Material.BREWING_STAND;
     }
     
     /**
@@ -1406,33 +1458,11 @@ public class JobActionListener implements Listener {
     
     /**
      * Track brewing stand interactions to know who should get XP.
-     * This uses the same tracking system as furnaces.
+     * This uses the same NBT tracking system as furnaces.
      */
     private Player getBrewingStandOwner(org.bukkit.Location brewingLocation) {
-        // Use the same furnace tracking system since brewing stands work similarly
-        String locationKey = locationToKey(brewingLocation);
-        java.util.UUID ownerUUID = furnaceOwners.get(locationKey);
-        
-        if (ownerUUID == null) {
-            return null;
-        }
-        
-        Player owner = plugin.getServer().getPlayer(ownerUUID);
-        if (owner == null || !owner.isOnline()) {
-            furnaceOwners.remove(locationKey);
-            furnaceLastUse.remove(locationKey);
-            return null;
-        }
-        
-        // Check if tracking is too old (30 minutes)
-        Long lastUse = furnaceLastUse.get(locationKey);
-        if (lastUse != null && (System.currentTimeMillis() - lastUse) > 30 * 60 * 1000L) {
-            furnaceOwners.remove(locationKey);
-            furnaceLastUse.remove(locationKey);
-            return null;
-        }
-        
-        return owner;
+        // Use the same NBT tracking system as furnaces since brewing stands work similarly
+        return getFurnaceOwner(brewingLocation);
     }
     
     /**
