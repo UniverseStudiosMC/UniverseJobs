@@ -280,33 +280,26 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         player.sendMessage("§6=== UniverseJobs Commands ===");
         player.sendMessage("§e/jobs §7- Open main jobs menu");
         player.sendMessage("");
-        player.sendMessage("§6Menu Commands:");
-        player.sendMessage("§e/jobs menu <jobname> §7- Open job menu directly");
-        player.sendMessage("§e/jobs menu rankings §7- View job leaderboards");
-        player.sendMessage("§e/jobs menu help §7- Show menu help");
-        player.sendMessage("");
-        player.sendMessage("§6Job Management:");
+        player.sendMessage("§6⭐⭐⭐⭐ Most Used:");
         player.sendMessage("§e/jobs join <job> §7- Join a job");
         player.sendMessage("§e/jobs leave <job> §7- Leave a job");
+        player.sendMessage("");
+        player.sendMessage("§6⭐⭐⭐ Information:");
         player.sendMessage("§e/jobs list §7- List all available jobs");
-        player.sendMessage("§e/jobs info [job/player] §7- Show job or player information");
         player.sendMessage("§e/jobs stats [player] §7- Show job statistics");
+        player.sendMessage("§e/jobs info [job/player] §7- Show job or player information");
+        player.sendMessage("");
+        player.sendMessage("§6⭐⭐ Advanced:");
+        player.sendMessage("§e/jobs menu <jobname> §7- Open job menu directly");
+        player.sendMessage("§e/jobs menu rankings §7- View job leaderboards");
         
         if (player.hasPermission("universejobs.rewards.use")) {
-            player.sendMessage("§e/jobs rewards §7- Access job rewards");
-        }
-        
-        if (player.hasPermission("universejobs.admin.xpbonus")) {
-            player.sendMessage("§e/jobs xpbonus §7- Manage XP bonuses");
-        }
-        
-        if (player.hasPermission("universejobs.admin.actionlimits")) {
-            player.sendMessage("§e/jobs actionlimit §7- Manage action limits");
+            player.sendMessage("§e/jobs rewards open <job> §7- Access job rewards");
         }
         
         if (player.hasPermission("universejobs.admin")) {
             player.sendMessage("");
-            player.sendMessage("§6Admin Commands:");
+            player.sendMessage("§6⭐ Admin Commands:");
             player.sendMessage("§e/jobs admin §7- Show all admin commands");
         }
     }

@@ -43,34 +43,17 @@ public class MenuCommandHandler extends JobCommandHandler {
         String subCommand = args[0].toLowerCase();
         
         switch (subCommand) {
-            // Main menu commands - more intuitive names
-            case "main":
-            case "browse":
-            case "list":
-            case "all":
-                openMainMenu(player);
-                return true;
-            
-            // Rankings - multiple intuitive aliases
+            // Rankings menu
             case "rankings":
-            case "leaderboard":
-            case "top":
-            case "rank":
                 openRankingsMenu(player);
                 return true;
                 
             // Admin commands
             case "reload":
-                if (!validatePermission(player, "universejobs.admin.menu.reload")) {
+                if (!hasPermission(player, "universejobs.admin.menu.reload")) {
                     return false;
                 }
                 return reloadMenus(player);
-                
-            // Help command
-            case "help":
-            case "?":
-                showMenuHelp(player);
-                return true;
                 
             default:
                 // Try to interpret as direct job name - most intuitive approach
@@ -144,9 +127,7 @@ public class MenuCommandHandler extends JobCommandHandler {
         if (args.length == 1) {
             // Base commands + all job names for direct access
             List<String> completions = new ArrayList<>(Arrays.asList(
-                "main", "browse", "list", "all", // Main menu
-                "rankings", "leaderboard", "top", "rank", // Rankings
-                "help" // Help
+                "rankings" // Rankings only
             ));
             
             // Add admin commands if player has permission
@@ -222,16 +203,6 @@ public class MenuCommandHandler extends JobCommandHandler {
         return job != null && job.isEnabled();
     }
     
-    /**
-     * Show comprehensive menu help to the player.
-     */
-    private void showMenuHelp(Player player) {
-        MessageUtils.sendMessage(player, languageManager.getMessage("commands.menu.help.general"));
-        
-        if (player.hasPermission("universejobs.admin.menu.reload")) {
-            MessageUtils.sendMessage(player, languageManager.getMessage("commands.menu.help.admin"));
-        }
-    }
     
     /**
      * Show quick help for invalid commands.

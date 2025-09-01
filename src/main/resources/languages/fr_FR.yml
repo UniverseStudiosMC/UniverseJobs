@@ -131,11 +131,8 @@ commands:
     no-permission: "&cVous n'avez pas la permission d'utiliser les récompenses !"
     help:
       header: "&6=== Commandes de Récompenses ==="
-      browse: "&e/jobs rewards browse &7- Ouvrir le menu principal des métiers"
-      menu: "&e/jobs rewards menu &7- Ouvrir le menu principal des métiers"
       open: "&e/jobs rewards open <métier> &7- Ouvrir l'interface des récompenses d'un métier"
       claim: "&e/jobs rewards claim <métier> <idRécompense> &7- Réclamer une récompense spécifique"
-      info: "&e/jobs rewards info <métier> <idRécompense> &7- Obtenir des informations sur une récompense"
     browse:
       failed: "&cÉchec de l'ouverture du menu des métiers !"
     open:
@@ -152,8 +149,6 @@ commands:
         header: "&6=== Commandes Admin Récompenses ==="
         give: "&e/jobs rewards admin give <joueur> <métier> <idRécompense> &7- Donner une récompense à un joueur"
         reset: "&e/jobs rewards admin reset <joueur> <métier> &7- Reset les récompenses d'un joueur pour un métier"
-        reload: "&e/jobs rewards reload &7- Recharger les récompenses"
-        debug: "&e/jobs rewards debug <métier> &7- Debug des récompenses d'un métier"
       give:
         usage: "&cUtilisation : /jobs rewards admin give <joueur> <métier> <idRécompense>"
         success: "&aRécompense '{reward}' donnée à {player} avec succès !"
@@ -188,6 +183,7 @@ commands:
     xp: "&e/jobs admin xp <give|set|remove> <joueur> <métier> <montant> &7- Gérer l'XP d'un joueur"
     exp: "&e/jobs admin exp <give|take|set> <joueur> <métier> <montant> &7- Gérer l'XP (format legacy)"
     level: "&e/jobs admin level <give|set|remove> <joueur> <métier> <montant> &7- Gérer le niveau d'un joueur"
+    boost: "&e/jobs admin boost <xp|money> <give|remove|list|info|cleanup> &7- Gérer les bonus XP/argent"
     forcejoin: "&e/jobs admin forcejoin <joueur> <métier> &7- Forcer un joueur à rejoindre un métier"
     forceleave: "&e/jobs admin forceleave <joueur> <métier> &7- Forcer un joueur à quitter un métier"
     reset: "&e/jobs admin reset <joueur> [métier|ALL] &7- Reset les données d'un joueur"

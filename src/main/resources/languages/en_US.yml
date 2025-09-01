@@ -131,11 +131,8 @@ commands:
     no-permission: "&cYou don't have permission to use rewards!"
     help:
       header: "&6=== Reward Commands ==="
-      browse: "&e/jobs rewards browse &7- Open main jobs menu"
-      menu: "&e/jobs rewards menu &7- Open main jobs menu"
       open: "&e/jobs rewards open <job> &7- Open rewards GUI for a job"
       claim: "&e/jobs rewards claim <job> <rewardId> &7- Claim a specific reward"
-      info: "&e/jobs rewards info <job> <rewardId> &7- Get reward information"
     browse:
       failed: "&cFailed to open jobs menu!"
     open:
@@ -152,8 +149,6 @@ commands:
         header: "&6=== Rewards Admin Commands ==="
         give: "&e/jobs rewards admin give <player> <job> <rewardId> &7- Give a reward to a player"
         reset: "&e/jobs rewards admin reset <player> <job> &7- Reset player's rewards for a job"
-        reload: "&e/jobs rewards reload &7- Reload rewards"
-        debug: "&e/jobs rewards debug <job> &7- Debug rewards for a job"
       give:
         usage: "&cUsage: /jobs rewards admin give <player> <job> <rewardId>"
         success: "&aReward '{reward}' given to {player} successfully!"
@@ -188,6 +183,7 @@ commands:
     xp: "&e/jobs admin xp <give|set|remove> <player> <job> <amount> &7- Manage player XP"
     exp: "&e/jobs admin exp <give|take|set> <player> <job> <amount> &7- Manage XP (legacy format)"
     level: "&e/jobs admin level <give|set|remove> <player> <job> <amount> &7- Manage player level"
+    boost: "&e/jobs admin boost <xp|money> <give|remove|list|info|cleanup> &7- Manage XP/money bonuses"
     forcejoin: "&e/jobs admin forcejoin <player> <job> &7- Force a player to join a job"
     forceleave: "&e/jobs admin forceleave <player> <job> &7- Force a player to leave a job"
     reset: "&e/jobs admin reset <player> [job|ALL] &7- Reset player data"

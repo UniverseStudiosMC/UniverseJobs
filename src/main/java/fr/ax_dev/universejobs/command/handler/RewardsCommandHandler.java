@@ -20,8 +20,6 @@ import java.util.stream.Collectors;
 public class RewardsCommandHandler extends JobCommandHandler {
     
     private static final String CMD_CLAIM = "claim";
-    private static final String CMD_ADMIN = "admin";
-    private static final String CMD_DEBUG = "debug";
     private static final String CMD_RESET = "reset";
     private static final String PERM_REWARDS_ADMIN = "universejobs.rewards.admin";
     private static final String PERM_REWARDS_USE = "universejobs.rewards.use";
@@ -91,10 +89,10 @@ public class RewardsCommandHandler extends JobCommandHandler {
      * Get rewards subcommands based on player permissions.
      */
     private List<String> getRewardsSubCommands(Player player, String input) {
-        List<String> rewardSubCommands = new ArrayList<>(Arrays.asList("browse", "menu", "open", "list", CMD_CLAIM, "info"));
+        List<String> rewardSubCommands = new ArrayList<>(Arrays.asList("open", CMD_CLAIM));
         
         if (player.hasPermission(PERM_REWARDS_ADMIN)) {
-            rewardSubCommands.addAll(Arrays.asList(CMD_ADMIN, "reload", CMD_DEBUG));
+            rewardSubCommands.add(CMD_ADMIN);
         }
         
         return rewardSubCommands.stream()
@@ -401,11 +399,8 @@ public class RewardsCommandHandler extends JobCommandHandler {
      */
     private void sendRewardsHelp(Player player) {
         MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.help.header"));
-        MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.help.browse"));
-        MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.help.menu"));
-        MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.help.list"));
+        MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.help.open"));
         MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.help.claim"));
-        MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.help.info"));
         
         if (hasPermission(player, PERM_REWARDS_ADMIN)) {
             sendAdminHelp(player);
@@ -419,7 +414,5 @@ public class RewardsCommandHandler extends JobCommandHandler {
         MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.admin.help.header"));
         MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.admin.help.give"));
         MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.admin.help.reset"));
-        MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.admin.help.reload"));
-        MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.admin.help.debug"));
     }
 }
