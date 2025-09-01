@@ -222,12 +222,49 @@ public abstract class BaseBonusManager<T extends BaseBonus> implements BonusMana
     public double getTotalMultiplier(UUID playerId, String jobId) {
         List<T> activeBonuses = getActiveBonuses(playerId, jobId);
         
-        double totalMultiplier = 1.0;
-        for (T bonus : activeBonuses) {
-            totalMultiplier *= bonus.getMultiplier();
+        if (activeBonuses.isEmpty()) {
+            return 1.0;
         }
         
-        return totalMultiplier;
+        // Récupérer le mode de calcul depuis la configuration
+        fr.ax_dev.universejobs.config.ConfigManager.BoostCalculationMode mode = 
+            plugin.getConfigManager().getBoostCalculationMode();
+        
+        switch (mode) {
+            case ADDITIVE:
+                // Mode 1: Additionner les multiplicateurs (2.5x + 2.5x = 5.0x)
+                double sum = 0.0;
+                for (T bonus : activeBonuses) {
+                    sum += (bonus.getMultiplier() - 1.0); // Soustraire 1 pour éviter de compter la base plusieurs fois
+                }
+                return 1.0 + sum;
+                
+            case MULTIPLICATIVE:
+                // Mode 2: Multiplier les multiplicateurs (2.5x * 2.5x = 6.25x)
+                double product = 1.0;
+                for (T bonus : activeBonuses) {
+                    product *= bonus.getMultiplier();
+                }
+                return product;
+                
+            case HIGHEST:
+                // Mode 3: Utiliser uniquement le multiplicateur le plus élevé
+                double highest = 1.0;
+                for (T bonus : activeBonuses) {
+                    if (bonus.getMultiplier() > highest) {
+                        highest = bonus.getMultiplier();
+                    }
+                }
+                return highest;
+                
+            default:
+                // Par défaut, utiliser le mode multiplicatif
+                double defaultProduct = 1.0;
+                for (T bonus : activeBonuses) {
+                    defaultProduct *= bonus.getMultiplier();
+                }
+                return defaultProduct;
+        }
     }
     
     private void startCleanupTask() {
