@@ -143,28 +143,11 @@ commands:
       usage: "&cUsage: /jobs rewards claim <job> <rewardId>"
       success: "&aReward '{reward}' claimed successfully!"
       failed: "&cFailed to claim reward '{reward}'!"
-    admin:
-      no-permission: "&cYou don't have permission to use rewards admin commands!"
-      help:
-        header: "&6=== Rewards Admin Commands ==="
-        give: "&e/jobs rewards admin give <player> <job> <rewardId> &7- Give a reward to a player"
-        reset: "&e/jobs rewards admin reset <player> <job> &7- Reset player's rewards for a job"
-      give:
-        usage: "&cUsage: /jobs rewards admin give <player> <job> <rewardId>"
-        success: "&aReward '{reward}' given to {player} successfully!"
-        notify: "&aYou received reward '{reward}' from {sender}!"
-        failed: "&cFailed to give reward '{reward}' to {player}!"
-      reset:
-        usage: "&cUsage: /jobs rewards admin reset <player> <job>"
-        success: "&aRewards for job {job} reset for {player}!"
     player-not-found: "&cPlayer '{player}' not found!"
     reward-not-found: "&cReward '{reward}' not found for job {job}!"
     reload:
       success: "&aRewards reloaded successfully!"
       failed: "&cFailed to reload rewards!"
-    debug:
-      usage: "&cUsage: /jobs rewards debug <job>"
-      failed: "&cFailed to debug rewards!"
     
   # Help command
   help:
@@ -180,9 +163,7 @@ commands:
   # Admin commands
   admin:
     header: "&6=== UniverseJobs Admin Commands ==="
-    xp: "&e/jobs admin xp <give|set|remove> <player> <job> <amount> &7- Manage player XP"
-    exp: "&e/jobs admin exp <give|take|set> <player> <job> <amount> &7- Manage XP (legacy format)"
-    level: "&e/jobs admin level <give|set|remove> <player> <job> <amount> &7- Manage player level"
+    give: "&e/jobs admin give <xp|level|custom> <give|set|remove> <player> <job> <amount> &7- Give XP/levels/rewards"
     boost: "&e/jobs admin boost <xp|money> <give|remove|list|info|cleanup> &7- Manage XP/money bonuses"
     forcejoin: "&e/jobs admin forcejoin <player> <job> &7- Force a player to join a job"
     forceleave: "&e/jobs admin forceleave <player> <job> &7- Force a player to leave a job"
@@ -193,6 +174,12 @@ commands:
     migrate: "&e/jobs admin migrate [version] &7- Data migration"
     debug: "&e/jobs admin debug <xp|cache|config> &7- Debug XP/cache/config system"
     cleanup: "&e/jobs admin cleanup &7- Clean up invalid jobs from player data"
+    
+    # Give command help messages
+    give-help-header: "&6=== Give Commands ===" 
+    give-help-xp: "&e/jobs admin give xp <give|set|remove> <player> <job> <amount> &7- Manage XP"
+    give-help-level: "&e/jobs admin give level <give|set|remove> <player> <job> <amount> &7- Manage levels"
+    give-help-custom: "&e/jobs admin give custom <player> <job> <xp> <money> &7- Give custom XP and money"
     
     # Admin command responses
     no-permission: "&cYou don't have permission to use this command."

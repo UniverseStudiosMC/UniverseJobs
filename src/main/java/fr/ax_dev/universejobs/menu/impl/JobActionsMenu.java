@@ -30,7 +30,7 @@ public class JobActionsMenu extends BaseMenu implements InventoryHolder {
     private static final String ACTION_TYPE = "action";
     
     private final Job job;
-    private final List<ActionInfo> actionInfos;
+    private final Map<String, List<ActionInfo>> groupedActions;
     private final Map<String, String> cachedPlaceholders;
     public JobActionsMenu(UniverseJobs plugin, org.bukkit.entity.Player player, String jobId, SingleMenuConfig config) {
         super(plugin, player, config);
@@ -41,7 +41,7 @@ public class JobActionsMenu extends BaseMenu implements InventoryHolder {
         }
         
         plugin.getLanguageManager();
-        this.actionInfos = new ArrayList<>();
+        this.groupedActions = new HashMap<>();
         this.cachedPlaceholders = new HashMap<>();
         
         // Load data efficiently using centralized approach
@@ -70,12 +70,14 @@ public class JobActionsMenu extends BaseMenu implements InventoryHolder {
     }
     
     /**
-     * Load all actions for this job efficiently.
+     * Load all actions for this job efficiently and group them by target.
      */
     private void loadJobActionsEfficiently() {
         for (ActionType actionType : job.getActionTypes()) {
             for (JobAction action : job.getActions(actionType)) {
-                actionInfos.add(new ActionInfo(actionType, action));
+                String target = action.getTarget();
+                groupedActions.computeIfAbsent(target, k -> new ArrayList<>())
+                    .add(new ActionInfo(actionType, action));
             }
         }
     }
@@ -102,14 +104,14 @@ public class JobActionsMenu extends BaseMenu implements InventoryHolder {
     }
     
     /**
-     * Create display items for actions only.
+     * Create display items for grouped actions.
      */
     private List<DisplayItem> createDisplayItems() {
-        List<DisplayItem> displayItems = new ArrayList<>(actionInfos.size());
+        List<DisplayItem> displayItems = new ArrayList<>(groupedActions.size());
         
-        // Add actions efficiently
-        actionInfos.forEach(actionInfo -> 
-            displayItems.add(new DisplayItem(ACTION_TYPE, actionInfo)));
+        // Add grouped actions efficiently
+        groupedActions.forEach((target, actions) -> 
+            displayItems.add(new DisplayItem(ACTION_TYPE, new GroupedActionInfo(target, actions))));
         
         return displayItems;
     }
@@ -131,7 +133,7 @@ public class JobActionsMenu extends BaseMenu implements InventoryHolder {
             ItemStack item = null;
             
             if (ACTION_TYPE.equals(displayItem.type)) {
-                item = createActionItemOptimized((ActionInfo) displayItem.data);
+                item = createGroupedActionItem((GroupedActionInfo) displayItem.data);
             }
             
             if (item != null) {
@@ -141,25 +143,110 @@ public class JobActionsMenu extends BaseMenu implements InventoryHolder {
     }
     
     /**
-     * Create optimized action item using proper error handling.
+     * Create grouped action item combining multiple actions for the same target.
      */
-    private ItemStack createActionItemOptimized(ActionInfo actionInfo) {
-        JobAction action = actionInfo.action;
-        List<String> lore = buildActionLore(action);
+    private ItemStack createGroupedActionItem(GroupedActionInfo groupedInfo) {
+        List<String> lore = buildGroupedActionLore(groupedInfo);
         
-        // Use action target as material or default to appropriate material
-        Material material = MaterialUtils.getMaterialForTarget(action.getTarget(), actionInfo.actionType);
+        // Use the first action's material or default to appropriate material
+        ActionInfo firstAction = groupedInfo.actions.get(0);
+        Material material = MaterialUtils.getMaterialForTarget(groupedInfo.target, firstAction.actionType);
         String materialName = material.name();
+        
+        // Create display name showing the target
+        String displayName = groupedInfo.target;
+        if (firstAction.action.getDisplayName() != null && !firstAction.action.getDisplayName().isEmpty()) {
+            displayName = firstAction.action.getDisplayName();
+        }
         
         Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
             materialName, 
-            action.getDisplayName() != null ? action.getDisplayName() : actionInfo.actionType + ": " + action.getTarget(), 
+            displayName, 
             lore, 
             false
         );
         
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
         return createMenuItem(itemConfig, cachedPlaceholders);
+    }
+    
+    /**
+     * Build grouped action lore combining multiple actions for the same target.
+     */
+    private List<String> buildGroupedActionLore(GroupedActionInfo groupedInfo) {
+        List<String> lore = new ArrayList<>();
+        
+        // Add custom lore from first action config
+        JobAction firstAction = groupedInfo.actions.get(0).action;
+        if (firstAction.getLore() != null && !firstAction.getLore().isEmpty()) {
+            lore.addAll(firstAction.getLore());
+        }
+        
+        // Add action types and their rewards
+        lore.add("");
+        lore.add("<gray>Available Actions:");
+        
+        for (ActionInfo actionInfo : groupedInfo.actions) {
+            JobAction action = actionInfo.action;
+            String actionTypeStr = actionInfo.actionType.name().toLowerCase();
+            actionTypeStr = actionTypeStr.substring(0, 1).toUpperCase() + actionTypeStr.substring(1);
+            
+            lore.add("<gray>• <#FFD700>" + actionTypeStr + "<gray>: <#abffb3>+" + action.getXp() + " XP<gray>, <#FFD700>$" + action.getMoney());
+        }
+        
+        // Add combined requirements (if any exist)
+        addCombinedRequirements(lore, groupedInfo);
+        
+        return lore;
+    }
+    
+    /**
+     * Add combined requirements from all actions for the same target.
+     */
+    private void addCombinedRequirements(List<String> lore, GroupedActionInfo groupedInfo) {
+        Set<String> allRequirements = new HashSet<>();
+        
+        for (ActionInfo actionInfo : groupedInfo.actions) {
+            JobAction action = actionInfo.action;
+            
+            // Collect all unique requirements
+            if (action.getEnchantLevel() != null && !action.getEnchantLevel().isEmpty()) {
+                allRequirements.add("Enchant Level: " + action.getEnchantLevel());
+            }
+            
+            if (action.hasPotionTypeRequirements()) {
+                allRequirements.add("Potion Types: " + String.join(", ", action.getPotionTypes()));
+            }
+            
+            if (action.hasProfessionRequirements()) {
+                allRequirements.add("Professions: " + String.join(", ", action.getProfessions()));
+            }
+            
+            if (action.hasColorRequirements()) {
+                allRequirements.add("Colors: " + String.join(", ", action.getColors()));
+            }
+            
+            if (action.hasNbtRequirements()) {
+                allRequirements.add("Item Types: " + String.join(", ", action.getNbtTags()));
+            }
+            
+            if (!action.getInteractType().equals("RIGHT_CLICK")) {
+                allRequirements.add("Interact: " + action.getInteractType().replace("_", " "));
+            }
+        }
+        
+        // Add requirements section if any exist
+        if (!allRequirements.isEmpty()) {
+            lore.add("");
+            lore.add("<gray>Requirements:");
+            List<String> sortedRequirements = new ArrayList<>(allRequirements);
+            sortedRequirements.sort(String::compareTo);
+            
+            for (int i = 0; i < sortedRequirements.size(); i++) {
+                String prefix = i == sortedRequirements.size() - 1 ? "└" : "├";
+                lore.add("<gray>" + prefix + " <gray>" + sortedRequirements.get(i).replace(": ", ": <#FFD700>"));
+            }
+        }
     }
     
     /**
@@ -171,8 +258,6 @@ public class JobActionsMenu extends BaseMenu implements InventoryHolder {
         // Add custom lore from action config
         if (action.getLore() != null && !action.getLore().isEmpty()) {
             lore.addAll(action.getLore());
-        } else {
-            lore.add("Perform this action to earn rewards");
         }
         
         // Add special requirements
@@ -322,7 +407,7 @@ public class JobActionsMenu extends BaseMenu implements InventoryHolder {
     
     @Override
     protected boolean hasNextPage() {
-        return (currentPage + 1) * config.getItemsPerPage() < actionInfos.size();
+        return (currentPage + 1) * config.getItemsPerPage() < groupedActions.size();
     }
     
     /**
@@ -333,7 +418,8 @@ public class JobActionsMenu extends BaseMenu implements InventoryHolder {
         placeholders.put("{job_id}", job.getId());
         placeholders.put("{job_name}", job.getDisplayName());
         placeholders.put("{job_description}", job.getDescription());
-        placeholders.put("{total_actions}", String.valueOf(actionInfos.size()));
+        int totalActions = groupedActions.values().stream().mapToInt(List::size).sum();
+        placeholders.put("{total_actions}", String.valueOf(totalActions));
         return placeholders;
     }
     
@@ -341,9 +427,10 @@ public class JobActionsMenu extends BaseMenu implements InventoryHolder {
      * Create navigation placeholders efficiently.
      */
     private Map<String, String> createNavigationPlaceholders() {
+        int totalActions = groupedActions.values().stream().mapToInt(List::size).sum();
         Map<String, String> placeholders = MenuItemUtils.createNavigationPlaceholders(
-            currentPage, actionInfos.size(), config.getItemsPerPage());
-        placeholders.put("total_actions", String.valueOf(actionInfos.size()));
+            currentPage, groupedActions.size(), config.getItemsPerPage());
+        placeholders.put("total_actions", String.valueOf(totalActions));
         placeholders.put("job_name", job.getDisplayName());
         return placeholders;
     }
@@ -358,6 +445,19 @@ public class JobActionsMenu extends BaseMenu implements InventoryHolder {
         ActionInfo(ActionType actionType, JobAction action) {
             this.actionType = actionType;
             this.action = action;
+        }
+    }
+    
+    /**
+     * Grouped action information for same target.
+     */
+    private static class GroupedActionInfo {
+        final String target;
+        final List<ActionInfo> actions;
+        
+        GroupedActionInfo(String target, List<ActionInfo> actions) {
+            this.target = target;
+            this.actions = actions;
         }
     }
     
