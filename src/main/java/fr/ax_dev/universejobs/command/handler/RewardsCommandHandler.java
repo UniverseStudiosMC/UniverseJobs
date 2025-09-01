@@ -50,36 +50,16 @@ public class RewardsCommandHandler extends JobCommandHandler {
         String rewardSubCommand = args[1].toLowerCase();
         
         return switch (rewardSubCommand) {
-            case "browse", "menu", "gui" -> {
-                handleBrowseCommand(player);
-                yield true;
-            }
             case "open" -> {
                 handleOpenCommand(player, args);
-                yield true;
-            }
-            case "list" -> {
-                handleListCommand(player, args);
                 yield true;
             }
             case CMD_CLAIM -> {
                 handleClaimCommand(player, args);
                 yield true;
             }
-            case "info" -> {
-                handleInfoCommand(player, args);
-                yield true;
-            }
             case CMD_ADMIN -> {
                 handleAdminCommand(player, args);
-                yield true;
-            }
-            case "reload" -> {
-                handleReloadCommand(player);
-                yield true;
-            }
-            case CMD_DEBUG -> {
-                handleDebugCommand(player, args);
                 yield true;
             }
             default -> {
@@ -111,7 +91,7 @@ public class RewardsCommandHandler extends JobCommandHandler {
      * Get rewards subcommands based on player permissions.
      */
     private List<String> getRewardsSubCommands(Player player, String input) {
-        List<String> rewardSubCommands = new ArrayList<>(Arrays.asList("browse", "menu", "gui", "open", "list", CMD_CLAIM, "info"));
+        List<String> rewardSubCommands = new ArrayList<>(Arrays.asList("browse", "menu", "open", "list", CMD_CLAIM, "info"));
         
         if (player.hasPermission(PERM_REWARDS_ADMIN)) {
             rewardSubCommands.addAll(Arrays.asList(CMD_ADMIN, "reload", CMD_DEBUG));
@@ -145,77 +125,6 @@ public class RewardsCommandHandler extends JobCommandHandler {
         
         rewardGuiManager.openRewardsGui(player, jobId);
     }
-    
-    /**
-     * Handle browse/menu command with proper error handling.
-     */
-    private void handleBrowseCommand(Player player) {
-        try {
-            plugin.getMenuManager().openJobsMainMenu(player);
-        } catch (Exception e) {
-            MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.browse.failed"));
-            plugin.getLogger().warning("Failed to open jobs menu for " + player.getName() + ": " + e.getMessage());
-        }
-    }
-    
-    /**
-     * Handle list command with proper job validation.
-     */
-    private void handleListCommand(Player player, String[] args) {
-        String jobId = args.length > 2 ? args[2] : null;
-        
-        if (jobId == null) {
-            listAllJobsWithRewards(player);
-        } else {
-            listRewardsForJob(player, jobId);
-        }
-    }
-    
-    /**
-     * List all jobs that have rewards.
-     */
-    private void listAllJobsWithRewards(Player player) {
-        List<Job> jobsWithRewards = jobManager.getAllJobs().stream()
-            .filter(job -> !rewardManager.getJobRewards(job.getId()).isEmpty())
-            .collect(Collectors.toList());
-        
-        if (jobsWithRewards.isEmpty()) {
-            MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.no-jobs-with-rewards"));
-            return;
-        }
-        
-        MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.jobs-with-rewards-header"));
-        
-        jobsWithRewards.forEach(job -> {
-            int rewardCount = rewardManager.getJobRewards(job.getId()).size();
-            MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.job-entry", 
-                "job", job.getName(), "count", String.valueOf(rewardCount)));
-        });
-    }
-    
-    /**
-     * List rewards for a specific job.
-     */
-    private void listRewardsForJob(Player player, String jobId) {
-        Job job = validateAndGetJob(player, jobId);
-        if (job == null) {
-            return;
-        }
-        
-        List<Reward> rewards = rewardManager.getJobRewards(jobId);
-        if (rewards.isEmpty()) {
-            MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.no-rewards-for-job", "job", job.getName()));
-            return;
-        }
-        
-        MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.rewards-for-job-header", "job", job.getName()));
-        
-        rewards.forEach(reward -> {
-            MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.reward-entry",
-                "id", reward.getId(), "name", reward.getName(), "level", String.valueOf(reward.getRequiredLevel())));
-        });
-    }
-    
     /**
      * Handle claim command with proper validation.
      */
@@ -241,53 +150,6 @@ public class RewardsCommandHandler extends JobCommandHandler {
                 "reward", reward.getName()));
         }
     }
-    
-    /**
-     * Handle info command with proper validation.
-     */
-    private void handleInfoCommand(Player player, String[] args) {
-        if (args.length < 4) {
-            MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.info.usage"));
-            return;
-        }
-        
-        String jobId = args[2];
-        String rewardId = args[3];
-        
-        Reward reward = validateAndGetReward(player, jobId, rewardId);
-        if (reward == null) {
-            return;
-        }
-        
-        displayRewardInfo(player, reward);
-    }
-    
-    /**
-     * Display detailed reward information.
-     */
-    private void displayRewardInfo(Player player, Reward reward) {
-        MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.info.header", "name", reward.getName()));
-        MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.info.description", "description", reward.getDescription()));
-        MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.info.required-level", "level", String.valueOf(reward.getRequiredLevel())));
-        MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.info.repeatable", "repeatable", reward.isRepeatable() ? "Yes" : "No"));
-        
-        if (reward.getCooldownHours() > 0) {
-            MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.info.cooldown", "hours", String.valueOf(reward.getCooldownHours())));
-        }
-        
-        if (reward.hasEconomyReward()) {
-            MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.info.money", "amount", String.valueOf(reward.getEconomyReward())));
-        }
-        
-        if (!reward.getItems().isEmpty()) {
-            MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.info.items-header"));
-            reward.getItems().forEach(item -> {
-                MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.info.item-entry",
-                    "amount", String.valueOf(item.getAmount()), "material", item.getMaterial()));
-            });
-        }
-    }
-    
     /**
      * Handle admin command with proper permission checking.
      */
@@ -371,52 +233,6 @@ public class RewardsCommandHandler extends JobCommandHandler {
         rewardManager.resetJobRewards(target, jobId);
         MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.admin.reset.success", 
             "job", job.getName(), "player", target.getName()));
-    }
-    
-    /**
-     * Handle reload command with proper permission checking.
-     */
-    private void handleReloadCommand(Player player) {
-        if (!hasPermission(player, PERM_REWARDS_ADMIN)) {
-            MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.admin.no-permission"));
-            return;
-        }
-        
-        try {
-            rewardManager.reloadRewards();
-            MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.reload.success"));
-        } catch (Exception e) {
-            MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.reload.failed"));
-            plugin.getLogger().warning("Failed to reload rewards: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * Handle debug command with proper validation.
-     */
-    private void handleDebugCommand(Player player, String[] args) {
-        if (!hasPermission(player, PERM_REWARDS_ADMIN)) {
-            MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.admin.no-permission"));
-            return;
-        }
-        
-        if (args.length < 3) {
-            MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.debug.usage"));
-            return;
-        }
-        
-        String jobId = args[2];
-        Job job = validateAndGetJob(player, jobId);
-        if (job == null) {
-            return;
-        }
-        
-        try {
-            rewardManager.debugPlayerRewards(player, jobId);
-        } catch (Exception e) {
-            MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.debug.failed"));
-            plugin.getLogger().warning("Failed to debug rewards for job " + jobId + ": " + e.getMessage());
-        }
     }
     
     /**

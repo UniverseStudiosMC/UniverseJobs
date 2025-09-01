@@ -84,22 +84,45 @@ commands:
     no-permission: "&cVous n'avez pas la permission d'utiliser les récompenses !"
     help:
       header: "&6=== Commandes de Récompenses ==="
-      open: "&e/job rewards open <métier> &7- Ouvrir l'interface des récompenses d'un métier"
-      list: "&e/job rewards list &7- Lister les métiers avec des récompenses"
-      claim: "&e/job rewards claim <métier> <idRécompense> &7- Réclamer une récompense spécifique"
-      info: "&e/job rewards info <métier> <idRécompense> &7- Obtenir des informations sur une récompense"
+      browse: "&e/jobs rewards browse &7- Ouvrir le menu principal des métiers"
+      menu: "&e/jobs rewards menu &7- Ouvrir le menu principal des métiers"
+      open: "&e/jobs rewards open <métier> &7- Ouvrir l'interface des récompenses d'un métier"
+      claim: "&e/jobs rewards claim <métier> <idRécompense> &7- Réclamer une récompense spécifique"
+      info: "&e/jobs rewards info <métier> <idRécompense> &7- Obtenir des informations sur une récompense"
+    browse:
+      failed: "&cÉchec de l'ouverture du menu des métiers !"
     open:
       usage: "&cUtilisation : /jobs rewards open <métier>"
     job-not-found: "&cMétier '{job}' introuvable !"
     must-have-job: "&cVous devez avoir le métier {job} pour voir ses récompenses !"
-    list:
-      header: "&6Métiers avec des récompenses :"
-      job-item: "&e- {job}"
-      no-rewards: "&cAucun métier n'a de récompenses configurées."
     claim:
-      success: "&aRécompense réclamée avec succès !"
-      failed: "&cÉchec de la réclamation de récompense. Vérifiez les exigences et la disponibilité."
-    reward-not-found: "&cRécompense introuvable !"
+      usage: "&cUtilisation : /jobs rewards claim <métier> <idRécompense>"
+      success: "&aRécompense '{reward}' réclamée avec succès !"
+      failed: "&cÉchec de la réclamation de la récompense '{reward}' !"
+    admin:
+      no-permission: "&cVous n'avez pas la permission d'utiliser les commandes admin de récompenses !"
+      help:
+        header: "&6=== Commandes Admin Récompenses ==="
+        give: "&e/jobs rewards admin give <joueur> <métier> <idRécompense> &7- Donner une récompense à un joueur"
+        reset: "&e/jobs rewards admin reset <joueur> <métier> &7- Reset les récompenses d'un joueur pour un métier"
+        reload: "&e/jobs rewards reload &7- Recharger les récompenses"
+        debug: "&e/jobs rewards debug <métier> &7- Debug des récompenses d'un métier"
+      give:
+        usage: "&cUtilisation : /jobs rewards admin give <joueur> <métier> <idRécompense>"
+        success: "&aRécompense '{reward}' donnée à {player} avec succès !"
+        notify: "&aVous avez reçu la récompense '{reward}' de {sender} !"
+        failed: "&cÉchec du don de la récompense '{reward}' à {player} !"
+      reset:
+        usage: "&cUtilisation : /jobs rewards admin reset <joueur> <métier>"
+        success: "&aRécompenses du métier {job} réinitialisées pour {player} !"
+    player-not-found: "&cJoueur '{player}' introuvable !"
+    reward-not-found: "&cRécompense '{reward}' introuvable pour le métier {job} !"
+    reload:
+      success: "&aRécompenses rechargées avec succès !"
+      failed: "&cÉchec du rechargement des récompenses !"
+    debug:
+      usage: "&cUtilisation : /jobs rewards debug <métier>"
+      failed: "&cÉchec du debug des récompenses !"
     
   # Commande d'aide
   help:
@@ -111,7 +134,6 @@ commands:
     stats: "&e/jobs stats [joueur] &7- Afficher les statistiques des métiers"
     rewards: "&e/jobs rewards <sous-commande> &7- Gérer les récompenses des métiers"
     xpbonus: "&e/jobs xpbonus &7- Gérer les bonus XP"
-    reload: "&e/jobs reload &7- Recharger la configuration"
     
   # Commandes admin
   admin:
