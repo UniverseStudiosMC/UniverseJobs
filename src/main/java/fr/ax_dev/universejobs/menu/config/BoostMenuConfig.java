@@ -24,8 +24,6 @@ public class BoostMenuConfig {
     private Map<String, CustomItemConfig> customItems;
     private AutoRefreshConfig autoRefreshConfig;
     private SoundsConfig soundsConfig;
-    private PermissionsConfig permissionsConfig;
-    private MessagesConfig messagesConfig;
     
     public BoostMenuConfig(UniverseJobs plugin) {
         this.plugin = plugin;
@@ -48,8 +46,6 @@ public class BoostMenuConfig {
         loadCustomItems();
         loadAutoRefreshConfig();
         loadSoundsConfig();
-        loadPermissionsConfig();
-        loadMessagesConfig();
     }
     
     private void loadBasicSettings() {
@@ -176,25 +172,6 @@ public class BoostMenuConfig {
         }
     }
     
-    private void loadPermissionsConfig() {
-        ConfigurationSection permsSection = config.getConfigurationSection("permissions");
-        if (permsSection != null) {
-            permissionsConfig = new PermissionsConfig();
-            permissionsConfig.viewPermission = permsSection.getString("view", "universejobs.admin.boost.gui");
-            permissionsConfig.removePermission = permsSection.getString("remove", "universejobs.admin.boost.remove");
-        }
-    }
-    
-    private void loadMessagesConfig() {
-        ConfigurationSection messagesSection = config.getConfigurationSection("messages");
-        if (messagesSection != null) {
-            messagesConfig = new MessagesConfig();
-            messagesConfig.boostRemoved = messagesSection.getString("boost-removed", "<!italic><green>Removed {type} boost: <gold>{boost_id}</gold></green>");
-            messagesConfig.noPermission = messagesSection.getString("no-permission", "<!italic><red>You don't have permission to do that!</red>");
-            messagesConfig.refreshClicked = messagesSection.getString("refresh-clicked", "<!italic><aqua>Refreshing boost list...</aqua>");
-        }
-    }
-    
     public static class BoostItemConfig {
         public boolean enabled = true;
         public List<Integer> slots = new ArrayList<>();
@@ -254,16 +231,6 @@ public class BoostMenuConfig {
         public float pitch = 1.0f;
     }
     
-    public static class PermissionsConfig {
-        public String viewPermission = "universejobs.admin.boost.gui";
-        public String removePermission = "universejobs.admin.boost.remove";
-    }
-    
-    public static class MessagesConfig {
-        public String boostRemoved = "";
-        public String noPermission = "";
-        public String refreshClicked = "";
-    }
     
     public String getTitle() { return title; }
     public int getSize() { return size; }
@@ -274,6 +241,4 @@ public class BoostMenuConfig {
     public Map<String, CustomItemConfig> getCustomItems() { return customItems; }
     public AutoRefreshConfig getAutoRefreshConfig() { return autoRefreshConfig; }
     public SoundsConfig getSoundsConfig() { return soundsConfig; }
-    public PermissionsConfig getPermissionsConfig() { return permissionsConfig; }
-    public MessagesConfig getMessagesConfig() { return messagesConfig; }
 }

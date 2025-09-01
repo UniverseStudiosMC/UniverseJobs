@@ -128,13 +128,3 @@ sounds:
     volume: 0.5
     pitch: 1.0
 
-# Permissions
-permissions:
-  view: "universejobs.admin.boost.gui"
-  remove: "universejobs.admin.boost.remove"
-
-# Messages (sent when actions are performed)
-messages:
-  boost-removed: "<green>Removed {type} boost: <gold>{boost_id}</gold></green>"
-  no-permission: "<red>You don't have permission to do that!</red>"
-  refresh-clicked: "<aqua>Refreshing boost list...</aqua>"
