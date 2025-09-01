@@ -84,22 +84,45 @@ commands:
     no-permission: "&cYou don't have permission to use rewards!"
     help:
       header: "&6=== Reward Commands ==="
-      open: "&e/job rewards open <job> &7- Open rewards GUI for a job"
-      list: "&e/job rewards list &7- List jobs with rewards"
-      claim: "&e/job rewards claim <job> <rewardId> &7- Claim a specific reward"
-      info: "&e/job rewards info <job> <rewardId> &7- Get reward information"
+      browse: "&e/jobs rewards browse &7- Open main jobs menu"
+      menu: "&e/jobs rewards menu &7- Open main jobs menu"
+      open: "&e/jobs rewards open <job> &7- Open rewards GUI for a job"
+      claim: "&e/jobs rewards claim <job> <rewardId> &7- Claim a specific reward"
+      info: "&e/jobs rewards info <job> <rewardId> &7- Get reward information"
+    browse:
+      failed: "&cFailed to open jobs menu!"
     open:
       usage: "&cUsage: /jobs rewards open <job>"
     job-not-found: "&cJob '{job}' not found!"
     must-have-job: "&cYou must have the {job} job to view its rewards!"
-    list:
-      header: "&6Jobs with rewards:"
-      job-item: "&e- {job}"
-      no-rewards: "&cNo jobs have rewards configured."
     claim:
-      success: "&aReward claimed successfully!"
-      failed: "&cFailed to claim reward. Check requirements and availability."
-    reward-not-found: "&cReward not found!"
+      usage: "&cUsage: /jobs rewards claim <job> <rewardId>"
+      success: "&aReward '{reward}' claimed successfully!"
+      failed: "&cFailed to claim reward '{reward}'!"
+    admin:
+      no-permission: "&cYou don't have permission to use rewards admin commands!"
+      help:
+        header: "&6=== Rewards Admin Commands ==="
+        give: "&e/jobs rewards admin give <player> <job> <rewardId> &7- Give a reward to a player"
+        reset: "&e/jobs rewards admin reset <player> <job> &7- Reset player's rewards for a job"
+        reload: "&e/jobs rewards reload &7- Reload rewards"
+        debug: "&e/jobs rewards debug <job> &7- Debug rewards for a job"
+      give:
+        usage: "&cUsage: /jobs rewards admin give <player> <job> <rewardId>"
+        success: "&aReward '{reward}' given to {player} successfully!"
+        notify: "&aYou received reward '{reward}' from {sender}!"
+        failed: "&cFailed to give reward '{reward}' to {player}!"
+      reset:
+        usage: "&cUsage: /jobs rewards admin reset <player> <job>"
+        success: "&aRewards for job {job} reset for {player}!"
+    player-not-found: "&cPlayer '{player}' not found!"
+    reward-not-found: "&cReward '{reward}' not found for job {job}!"
+    reload:
+      success: "&aRewards reloaded successfully!"
+      failed: "&cFailed to reload rewards!"
+    debug:
+      usage: "&cUsage: /jobs rewards debug <job>"
+      failed: "&cFailed to debug rewards!"
     
   # Help command
   help:
@@ -111,7 +134,6 @@ commands:
     stats: "<#FFD700>/jobs stats [player] <gray>- Show job statistics"
     rewards: "<#FFD700>/jobs rewards <subcommand> <gray>- Manage job rewards"
     xpbonus: "<#FFD700>/jobs xpbonus <gray>- Manage XP bonuses"
-    reload: "<#FFD700>/jobs reload <gray>- Reload configuration"
     
   # Admin commands
   admin:
