@@ -21,6 +21,7 @@ public class BoostCommandHandler extends JobCommandHandler {
     
     private static final String CMD_XP = "xp";
     private static final String CMD_MONEY = "money";
+    private static final String CMD_CUSTOM = "custom";
     private static final String CMD_GIVE = "give";
     private static final String CMD_REMOVE = "remove";
     private static final String CMD_LIST = "list";
@@ -46,7 +47,7 @@ public class BoostCommandHandler extends JobCommandHandler {
         }
         
         String boostType = args[2].toLowerCase();
-        if (!boostType.equals(CMD_XP) && !boostType.equals(CMD_MONEY)) {
+        if (!boostType.equals(CMD_XP) && !boostType.equals(CMD_MONEY) && !boostType.equals(CMD_CUSTOM)) {
             sendBoostHelp(sender);
             return true;
         }
@@ -80,7 +81,7 @@ public class BoostCommandHandler extends JobCommandHandler {
         }
         
         if (args.length == 3) {
-            return Arrays.asList(CMD_XP, CMD_MONEY).stream()
+            return Arrays.asList(CMD_XP, CMD_MONEY, CMD_CUSTOM).stream()
                     .filter(type -> type.startsWith(args[2].toLowerCase()))
                     .collect(Collectors.toList());
         }
@@ -95,7 +96,7 @@ public class BoostCommandHandler extends JobCommandHandler {
             String boostType = args[2].toLowerCase();
             String action = args[3].toLowerCase();
             
-            if (boostType.equals(CMD_XP) || boostType.equals(CMD_MONEY)) {
+            if (boostType.equals(CMD_XP) || boostType.equals(CMD_MONEY) || boostType.equals(CMD_CUSTOM)) {
                 return getBoostTabCompletions(action, args);
             }
         }
@@ -104,7 +105,7 @@ public class BoostCommandHandler extends JobCommandHandler {
     }
     
     private void handleBoostGive(CommandSender sender, String boostType, String[] args) {
-        if (args.length < 4) {
+        if (args.length < 7) {
             sender.sendMessage("§cUsage: /jobs admin boost " + boostType + " give <player|*> <multiplier> <duration> [job] [reason]");
             sender.sendMessage("§7Examples:");
             sender.sendMessage("§7  /jobs admin boost " + boostType + " give * 2.0 3600");
@@ -112,23 +113,23 @@ public class BoostCommandHandler extends JobCommandHandler {
             return;
         }
         
-        String target = sanitizeInput(args[1]);
+        String target = sanitizeInput(args[4]);
         if (!target.equals("*") && !isValidPlayerName(target)) {
             return;
         }
         
-        double multiplier = parseMultiplier(args[2]);
+        double multiplier = parseMultiplier(args[5]);
         if (multiplier <= 0) return;
         
-        long duration = parseDuration(args[3]);
+        long duration = parseDuration(args[6]);
         if (duration <= 0) return;
         
-        String jobId = args.length > 4 ? sanitizeInput(args[4]) : null;
+        String jobId = args.length > 7 ? sanitizeInput(args[7]) : null;
         if (jobId != null && !jobId.equals("*") && !isValidJobId(jobId)) {
             return;
         }
         
-        int reasonStartIndex = (jobId != null) ? 5 : 4;
+        int reasonStartIndex = (jobId != null) ? 8 : 7;
         String reason = parseReason(args, reasonStartIndex);
         
         if (jobId != null && !jobId.equals("*")) {
@@ -141,7 +142,10 @@ public class BoostCommandHandler extends JobCommandHandler {
         if (target.equals("*")) {
             if (boostType.equals(CMD_XP)) {
                 plugin.getBonusManager().addGlobalBonus(multiplier, duration, reason, senderName);
-            } else {
+            } else if (boostType.equals(CMD_MONEY)) {
+                plugin.getMoneyBonusManager().addGlobalBonus(multiplier, duration, reason, senderName);
+            } else if (boostType.equals(CMD_CUSTOM)) {
+                plugin.getBonusManager().addGlobalBonus(multiplier, duration, reason, senderName);
                 plugin.getMoneyBonusManager().addGlobalBonus(multiplier, duration, reason, senderName);
             }
         } else {
@@ -151,13 +155,19 @@ public class BoostCommandHandler extends JobCommandHandler {
             if (jobId == null || jobId.equals("*")) {
                 if (boostType.equals(CMD_XP)) {
                     plugin.getBonusManager().addPlayerBonus(targetPlayer.getUniqueId(), multiplier, duration, reason, senderName);
-                } else {
+                } else if (boostType.equals(CMD_MONEY)) {
+                    plugin.getMoneyBonusManager().addPlayerBonus(targetPlayer.getUniqueId(), multiplier, duration, reason, senderName);
+                } else if (boostType.equals(CMD_CUSTOM)) {
+                    plugin.getBonusManager().addPlayerBonus(targetPlayer.getUniqueId(), multiplier, duration, reason, senderName);
                     plugin.getMoneyBonusManager().addPlayerBonus(targetPlayer.getUniqueId(), multiplier, duration, reason, senderName);
                 }
             } else {
                 if (boostType.equals(CMD_XP)) {
                     plugin.getBonusManager().addJobBonus(targetPlayer.getUniqueId(), jobId, multiplier, duration, reason, senderName);
-                } else {
+                } else if (boostType.equals(CMD_MONEY)) {
+                    plugin.getMoneyBonusManager().addJobBonus(targetPlayer.getUniqueId(), jobId, multiplier, duration, reason, senderName);
+                } else if (boostType.equals(CMD_CUSTOM)) {
+                    plugin.getBonusManager().addJobBonus(targetPlayer.getUniqueId(), jobId, multiplier, duration, reason, senderName);
                     plugin.getMoneyBonusManager().addJobBonus(targetPlayer.getUniqueId(), jobId, multiplier, duration, reason, senderName);
                 }
             }
@@ -165,39 +175,47 @@ public class BoostCommandHandler extends JobCommandHandler {
     }
     
     private void handleBoostRemove(CommandSender sender, String boostType, String[] args) {
-        if (args.length < 2) {
+        if (args.length < 5) {
             sender.sendMessage("§cUsage: /jobs admin boost " + boostType + " remove <player> [job]");
             return;
         }
         
-        String playerName = sanitizeInput(args[1]);
+        String playerName = sanitizeInput(args[4]);
         if (!isValidPlayerName(playerName)) return;
         
         Player targetPlayer = Bukkit.getPlayer(playerName);
         if (targetPlayer == null) return;
         
-        String jobId = args.length > 2 ? sanitizeInput(args[2]) : null;
+        String jobId = args.length > 5 ? sanitizeInput(args[5]) : null;
         if (jobId != null && !isValidJobId(jobId)) return;
         
         if (jobId == null) {
             if (boostType.equals(CMD_XP)) {
                 plugin.getBonusManager().removeAllBonuses(targetPlayer.getUniqueId());
-            } else {
+            } else if (boostType.equals(CMD_MONEY)) {
+                plugin.getMoneyBonusManager().removeAllBonuses(targetPlayer.getUniqueId());
+            } else if (boostType.equals(CMD_CUSTOM)) {
+                plugin.getBonusManager().removeAllBonuses(targetPlayer.getUniqueId());
                 plugin.getMoneyBonusManager().removeAllBonuses(targetPlayer.getUniqueId());
             }
         } else {
             if (boostType.equals(CMD_XP)) {
                 List<XpBonus> bonuses = plugin.getBonusManager().getActiveBonuses(targetPlayer.getUniqueId(), jobId);
                 bonuses.forEach(plugin.getBonusManager()::removeBonus);
-            } else {
+            } else if (boostType.equals(CMD_MONEY)) {
                 List<MoneyBonus> bonuses = plugin.getMoneyBonusManager().getActiveBonuses(targetPlayer.getUniqueId(), jobId);
                 bonuses.forEach(plugin.getMoneyBonusManager()::removeBonus);
+            } else if (boostType.equals(CMD_CUSTOM)) {
+                List<XpBonus> xpBonuses = plugin.getBonusManager().getActiveBonuses(targetPlayer.getUniqueId(), jobId);
+                xpBonuses.forEach(plugin.getBonusManager()::removeBonus);
+                List<MoneyBonus> moneyBonuses = plugin.getMoneyBonusManager().getActiveBonuses(targetPlayer.getUniqueId(), jobId);
+                moneyBonuses.forEach(plugin.getMoneyBonusManager()::removeBonus);
             }
         }
     }
     
     private void handleBoostList(CommandSender sender, String boostType, String[] args) {
-        String playerName = args.length > 1 ? args[1] : (sender instanceof Player ? sender.getName() : null);
+        String playerName = args.length > 4 ? args[4] : (sender instanceof Player ? sender.getName() : null);
         
         if (playerName == null) {
             sender.sendMessage("§cUsage: /jobs admin boost " + boostType + " list [player]");
@@ -213,11 +231,25 @@ public class BoostCommandHandler extends JobCommandHandler {
                 sender.sendMessage("§7No active XP bonuses for " + targetPlayer.getName());
                 return;
             }
-        } else {
+        } else if (boostType.equals(CMD_MONEY)) {
             List<MoneyBonus> bonuses = plugin.getMoneyBonusManager().getActiveBonuses(targetPlayer.getUniqueId());
             if (bonuses.isEmpty()) {
                 sender.sendMessage("§7No active money bonuses for " + targetPlayer.getName());
                 return;
+            }
+        } else if (boostType.equals(CMD_CUSTOM)) {
+            List<XpBonus> xpBonuses = plugin.getBonusManager().getActiveBonuses(targetPlayer.getUniqueId());
+            List<MoneyBonus> moneyBonuses = plugin.getMoneyBonusManager().getActiveBonuses(targetPlayer.getUniqueId());
+            if (xpBonuses.isEmpty() && moneyBonuses.isEmpty()) {
+                sender.sendMessage("§7No active bonuses for " + targetPlayer.getName());
+                return;
+            }
+            sender.sendMessage("§6=== Custom Bonuses for " + targetPlayer.getName() + " ===");
+            if (!xpBonuses.isEmpty()) {
+                sender.sendMessage("§aXP Bonuses: " + xpBonuses.size());
+            }
+            if (!moneyBonuses.isEmpty()) {
+                sender.sendMessage("§aMoney Bonuses: " + moneyBonuses.size());
             }
         }
     }
@@ -230,7 +262,10 @@ public class BoostCommandHandler extends JobCommandHandler {
     private void handleBoostCleanup(CommandSender sender, String boostType) {
         if (boostType.equals(CMD_XP)) {
             plugin.getBonusManager().cleanupExpiredBonuses();
-        } else {
+        } else if (boostType.equals(CMD_MONEY)) {
+            plugin.getMoneyBonusManager().cleanupExpiredBonuses();
+        } else if (boostType.equals(CMD_CUSTOM)) {
+            plugin.getBonusManager().cleanupExpiredBonuses();
             plugin.getMoneyBonusManager().cleanupExpiredBonuses();
         }
         
@@ -284,6 +319,7 @@ public class BoostCommandHandler extends JobCommandHandler {
             case 6 -> getBoostCompletions6Args(action, args[5].toLowerCase());
             case 7 -> getBoostCompletions7Args(action, args[6].toLowerCase());
             case 8 -> getBoostCompletions8Args(action, args[7].toLowerCase());
+            case 9 -> new ArrayList<>(); // reason completion could be added here
             default -> new ArrayList<>();
         };
     }
@@ -340,7 +376,12 @@ public class BoostCommandHandler extends JobCommandHandler {
     
     private void sendBoostHelp(CommandSender sender) {
         sender.sendMessage("§6=== Boost Commands ===");
-        sender.sendMessage("§e/jobs admin boost <xp|money> <action> [args...]");
+        sender.sendMessage("§e/jobs admin boost <xp|money|custom> <action> [args...]");
+        sender.sendMessage("");
+        sender.sendMessage("§6Types:");
+        sender.sendMessage("§e  xp §7- XP bonuses only");
+        sender.sendMessage("§e  money §7- Money bonuses only");
+        sender.sendMessage("§e  custom §7- Both XP and money bonuses");
         sender.sendMessage("");
         sender.sendMessage("§6Actions:");
         sender.sendMessage("§e  give <player|*> <multiplier> <duration> [job] [reason]");
@@ -348,9 +389,5 @@ public class BoostCommandHandler extends JobCommandHandler {
         sender.sendMessage("§e  list [player]");
         sender.sendMessage("§e  info");
         sender.sendMessage("§e  cleanup");
-        sender.sendMessage("");
-        sender.sendMessage("§7Examples:");
-        sender.sendMessage("§7  /jobs admin boost xp give * 2.0 3600");
-        sender.sendMessage("§7  /jobs admin boost money give Player123 1.5 1800 miner");
     }
 }

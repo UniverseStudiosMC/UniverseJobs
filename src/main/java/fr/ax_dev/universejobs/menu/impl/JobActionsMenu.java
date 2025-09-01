@@ -157,6 +157,13 @@ public class JobActionsMenu extends BaseMenu implements InventoryHolder {
         String displayName = groupedInfo.target;
         if (firstAction.action.getDisplayName() != null && !firstAction.action.getDisplayName().isEmpty()) {
             displayName = firstAction.action.getDisplayName();
+            // Remove default Minecraft formatting if present
+            if (!displayName.startsWith("<") && !displayName.startsWith("&")) {
+                displayName = "<!italic><white>" + displayName;
+            }
+        } else {
+            // Apply default formatting to target name
+            displayName = "<!italic><white>" + displayName;
         }
         
         Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
@@ -179,7 +186,14 @@ public class JobActionsMenu extends BaseMenu implements InventoryHolder {
         // Add custom lore from first action config
         JobAction firstAction = groupedInfo.actions.get(0).action;
         if (firstAction.getLore() != null && !firstAction.getLore().isEmpty()) {
-            lore.addAll(firstAction.getLore());
+            for (String loreLine : firstAction.getLore()) {
+                // Apply default formatting if no formatting is present and line is not empty
+                if (!loreLine.trim().isEmpty() && !loreLine.startsWith("<") && !loreLine.startsWith("&")) {
+                    lore.add("<!italic><white>" + loreLine);
+                } else {
+                    lore.add(loreLine);
+                }
+            }
         }
         
         // Add each action's information using the YAML format
@@ -204,6 +218,11 @@ public class JobActionsMenu extends BaseMenu implements InventoryHolder {
                     // Build requirements string
                     String requirements = buildRequirementsString(action);
                     line = line.replace("{action_requirements}", requirements);
+                    
+                    // Apply default formatting if no formatting is present and line is not empty
+                    if (!line.trim().isEmpty() && !line.startsWith("<") && !line.startsWith("&")) {
+                        line = "<!italic><white>" + line;
+                    }
                     
                     formatLore.set(i, line);
                 }
