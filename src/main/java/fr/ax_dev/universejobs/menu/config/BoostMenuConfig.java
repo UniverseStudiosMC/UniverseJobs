@@ -26,7 +26,6 @@ public class BoostMenuConfig {
     private SoundsConfig soundsConfig;
     private PermissionsConfig permissionsConfig;
     private MessagesConfig messagesConfig;
-    private BoostCalculationMode boostCalculationMode = BoostCalculationMode.MULTIPLICATIVE;
     
     public BoostMenuConfig(UniverseJobs plugin) {
         this.plugin = plugin;
@@ -51,7 +50,6 @@ public class BoostMenuConfig {
         loadSoundsConfig();
         loadPermissionsConfig();
         loadMessagesConfig();
-        loadBoostCalculationMode();
     }
     
     private void loadBasicSettings() {
@@ -197,22 +195,6 @@ public class BoostMenuConfig {
         }
     }
     
-    private void loadBoostCalculationMode() {
-        String modeStr = config.getString("boost-calculation-mode", "MULTIPLICATIVE");
-        try {
-            boostCalculationMode = BoostCalculationMode.valueOf(modeStr.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            plugin.getLogger().warning("Invalid boost calculation mode: " + modeStr + ", using MULTIPLICATIVE");
-            boostCalculationMode = BoostCalculationMode.MULTIPLICATIVE;
-        }
-    }
-    
-    public enum BoostCalculationMode {
-        ADDITIVE,       // Mode 1: 2.5x + 2.5x = 5.0x
-        MULTIPLICATIVE, // Mode 2: 2.5x * 2.5x = 6.25x
-        HIGHEST        // Mode 3: Only use the highest multiplier
-    }
-    
     public static class BoostItemConfig {
         public boolean enabled = true;
         public List<Integer> slots = new ArrayList<>();
@@ -294,5 +276,4 @@ public class BoostMenuConfig {
     public SoundsConfig getSoundsConfig() { return soundsConfig; }
     public PermissionsConfig getPermissionsConfig() { return permissionsConfig; }
     public MessagesConfig getMessagesConfig() { return messagesConfig; }
-    public BoostCalculationMode getBoostCalculationMode() { return boostCalculationMode; }
 }
