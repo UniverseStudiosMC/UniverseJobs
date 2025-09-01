@@ -24,6 +24,18 @@ public class MaterialUtils {
     }
     
     /**
+     * Get the source material for display (e.g., COPPER_ORE instead of COPPER_INGOT).
+     * 
+     * @param target The action target (case-insensitive)
+     * @param actionType The action type for better material selection
+     * @return The source material to use for the item display
+     */
+    public static Material getSourceMaterialForTarget(String target, ActionType actionType) {
+        Material baseMaterial = getMaterialForTarget(target, actionType);
+        return getSourceMaterial(baseMaterial);
+    }
+    
+    /**
      * Get the appropriate material for an action target with ActionType context.
      * 
      * @param target The action target (case-insensitive)
@@ -329,5 +341,107 @@ public class MaterialUtils {
         if (tool.contains("shovel")) return Material.DIAMOND_SHOVEL;
         if (tool.contains("hoe")) return Material.DIAMOND_HOE;
         return Material.STICK;
+    }
+    
+    /**
+     * Map processed/refined materials to their source materials for better display.
+     * 
+     * @param material The processed material
+     * @return The source material for display
+     */
+    private static Material getSourceMaterial(Material material) {
+        return switch (material) {
+            // Copper materials
+            case COPPER_INGOT -> Material.COPPER_ORE;
+            case COPPER_BLOCK -> Material.COPPER_ORE;
+            
+            // Iron materials  
+            case IRON_INGOT -> Material.IRON_ORE;
+            case IRON_BLOCK -> Material.IRON_ORE;
+            case IRON_NUGGET -> Material.IRON_ORE;
+            
+            // Gold materials
+            case GOLD_INGOT -> Material.GOLD_ORE;
+            case GOLD_BLOCK -> Material.GOLD_ORE;
+            case GOLD_NUGGET -> Material.GOLD_ORE;
+            
+            // Diamond materials
+            case DIAMOND_BLOCK -> Material.DIAMOND_ORE;
+            
+            // Emerald materials
+            case EMERALD_BLOCK -> Material.EMERALD_ORE;
+            
+            // Coal materials
+            case COAL_BLOCK -> Material.COAL_ORE;
+            
+            // Redstone materials
+            case REDSTONE_BLOCK -> Material.REDSTONE_ORE;
+            
+            // Lapis materials
+            case LAPIS_BLOCK -> Material.LAPIS_ORE;
+            
+            // Netherite materials
+            case NETHERITE_INGOT -> Material.ANCIENT_DEBRIS;
+            case NETHERITE_BLOCK -> Material.ANCIENT_DEBRIS;
+            
+            // Wood materials -> logs
+            case OAK_PLANKS -> Material.OAK_LOG;
+            case BIRCH_PLANKS -> Material.BIRCH_LOG;
+            case SPRUCE_PLANKS -> Material.SPRUCE_LOG;
+            case JUNGLE_PLANKS -> Material.JUNGLE_LOG;
+            case ACACIA_PLANKS -> Material.ACACIA_LOG;
+            case DARK_OAK_PLANKS -> Material.DARK_OAK_LOG;
+            case MANGROVE_PLANKS -> Material.MANGROVE_LOG;
+            case CHERRY_PLANKS -> Material.CHERRY_LOG;
+            case BAMBOO_PLANKS -> Material.BAMBOO;
+            case CRIMSON_PLANKS -> Material.CRIMSON_STEM;
+            case WARPED_PLANKS -> Material.WARPED_STEM;
+            
+            // Stone materials
+            case STONE_BRICKS -> Material.STONE;
+            case SMOOTH_STONE -> Material.STONE;
+            case STONE_BRICK_SLAB -> Material.STONE;
+            case STONE_BRICK_STAIRS -> Material.STONE;
+            
+            // Cobblestone derivatives
+            case COBBLESTONE_SLAB -> Material.COBBLESTONE;
+            case COBBLESTONE_STAIRS -> Material.COBBLESTONE;
+            case COBBLESTONE_WALL -> Material.COBBLESTONE;
+            
+            // Food materials -> crops
+            case BREAD -> Material.WHEAT;
+            case COOKIE -> Material.COCOA_BEANS;
+            case CAKE -> Material.WHEAT;
+            case PUMPKIN_PIE -> Material.PUMPKIN;
+            
+            // Glass materials -> sand
+            case GLASS -> Material.SAND;
+            case GLASS_PANE -> Material.SAND;
+            case WHITE_STAINED_GLASS -> Material.SAND;
+            case BLACK_STAINED_GLASS -> Material.SAND;
+            case BLUE_STAINED_GLASS -> Material.SAND;
+            case BROWN_STAINED_GLASS -> Material.SAND;
+            case CYAN_STAINED_GLASS -> Material.SAND;
+            case GRAY_STAINED_GLASS -> Material.SAND;
+            case GREEN_STAINED_GLASS -> Material.SAND;
+            case LIGHT_BLUE_STAINED_GLASS -> Material.SAND;
+            case LIGHT_GRAY_STAINED_GLASS -> Material.SAND;
+            case LIME_STAINED_GLASS -> Material.SAND;
+            case MAGENTA_STAINED_GLASS -> Material.SAND;
+            case ORANGE_STAINED_GLASS -> Material.SAND;
+            case PINK_STAINED_GLASS -> Material.SAND;
+            case PURPLE_STAINED_GLASS -> Material.SAND;
+            case RED_STAINED_GLASS -> Material.SAND;
+            case YELLOW_STAINED_GLASS -> Material.SAND;
+            
+            // Brick materials -> clay
+            case BRICKS -> Material.CLAY;
+            case BRICK_SLAB -> Material.CLAY;
+            case BRICK_STAIRS -> Material.CLAY;
+            case BRICK_WALL -> Material.CLAY;
+            
+            // Default: return the same material
+            default -> material;
+        };
     }
 }
