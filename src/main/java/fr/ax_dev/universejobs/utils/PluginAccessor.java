@@ -17,7 +17,6 @@ import fr.ax_dev.universejobs.placeholder.PlaceholderManager;
 import fr.ax_dev.universejobs.protection.BlockProtectionManager;
 import fr.ax_dev.universejobs.reward.RewardManager;
 import fr.ax_dev.universejobs.reward.gui.RewardGuiManager;
-import fr.ax_dev.universejobs.utils.AsyncXpMessageSender;
 import fr.ax_dev.universejobs.compatibility.FoliaCompatibilityManager;
 
 /**

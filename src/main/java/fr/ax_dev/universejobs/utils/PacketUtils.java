@@ -6,9 +6,6 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -33,12 +30,6 @@ public class PacketUtils {
     // BossBar management - no scheduler tasks needed
     private static final Map<UUID, BossBar> ACTIVE_BOSSBARS = new ConcurrentHashMap<>();
     private static final Map<UUID, CompletableFuture<Void>> BOSSBAR_CLEANUPS = new ConcurrentHashMap<>();
-    
-    // Reflection cache for performance
-    private static Method sendPacketMethod;
-    private static Constructor<?> actionBarConstructor;
-    private static Field connectionField;
-    private static boolean reflectionInitialized = false;
     
     static {
         initializeReflection();
@@ -362,14 +353,8 @@ public class PacketUtils {
      */
     private static void initializeReflection() {
         try {
-            String version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-            
-            // For future packet optimizations if needed
-            reflectionInitialized = true;
             
         } catch (Exception e) {
-            // Fall back to Bukkit API (which is what we're using anyway)
-            reflectionInitialized = false;
         }
     }
     
