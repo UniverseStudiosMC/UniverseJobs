@@ -33,7 +33,7 @@ public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
 
     @Override
     public String getIdentifier() {
-        return "jobsglobal";
+        return "universejobs";
     }
 
     @Override
@@ -58,24 +58,30 @@ public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
         String[] args = params.split("_");
         if (args.length < 2) return null;
 
-        String type = args[0];
+        if (!args[0].equalsIgnoreCase("global")) {
+            return null;
+        }
+
+        String type = args[1];
+        String[] newArgs = new String[args.length - 1];
+        System.arraycopy(args, 1, newArgs, 0, args.length - 1);
         
         switch (type.toLowerCase()) {
             case TOTAL_LEVELS_KEY:
-                return handleTotalLevelsLeaderboard(args);
+                return handleTotalLevelsLeaderboard(newArgs);
             case TOTAL_JOBS_KEY:
-                return handleTotalJobsLeaderboard(args);
+                return handleTotalJobsLeaderboard(newArgs);
             case TOTAL_XP_KEY:
-                return handleTotalXpLeaderboard(args);
+                return handleTotalXpLeaderboard(newArgs);
             case PLAYER_KEY:
-                return handleGlobalPlayerStats(player, args);
+                return handleGlobalPlayerStats(player, newArgs);
             default:
                 return null;
         }
     }
 
     private String handleTotalLevelsLeaderboard(String[] args) {
-        // Format: jobsglobal_totallevels_<position>_<info>
+        // Format: universejobs_global_totallevels_<position>_<info>
         if (args.length < 3) return null;
 
         try {
@@ -96,7 +102,7 @@ public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
     }
 
     private String handleTotalJobsLeaderboard(String[] args) {
-        // Format: jobsglobal_totaljobs_<position>_<info>
+        // Format: universejobs_global_totaljobs_<position>_<info>
         if (args.length < 3) return null;
 
         try {
@@ -117,7 +123,7 @@ public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
     }
 
     private String handleTotalXpLeaderboard(String[] args) {
-        // Format: jobsglobal_totalxp_<position>_<info>
+        // Format: universejobs_global_totalxp_<position>_<info>
         if (args.length < 3) return null;
 
         try {
