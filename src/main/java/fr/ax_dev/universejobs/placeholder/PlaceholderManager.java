@@ -8,6 +8,7 @@ public class PlaceholderManager {
     private final UniverseJobs plugin;
     private JobsLeaderboardPlaceholder jobsLeaderboardPlaceholder;
     private GlobalLeaderboardPlaceholder globalLeaderboardPlaceholder;
+    private BoostPlaceholder boostPlaceholder;
     private boolean placeholderApiEnabled = false;
 
     public PlaceholderManager(UniverseJobs plugin) {
@@ -19,9 +20,11 @@ public class PlaceholderManager {
             try {
                 jobsLeaderboardPlaceholder = new JobsLeaderboardPlaceholder(plugin);
                 globalLeaderboardPlaceholder = new GlobalLeaderboardPlaceholder(plugin);
+                boostPlaceholder = new BoostPlaceholder(plugin);
 
                 jobsLeaderboardPlaceholder.register();
                 globalLeaderboardPlaceholder.register();
+                boostPlaceholder.register();
 
                 placeholderApiEnabled = true;
                 // PlaceholderAPI integration enabled
@@ -42,6 +45,9 @@ public class PlaceholderManager {
                 }
                 if (globalLeaderboardPlaceholder != null) {
                     globalLeaderboardPlaceholder.unregister();
+                }
+                if (boostPlaceholder != null) {
+                    boostPlaceholder.unregister();
                 }
                 // PlaceholderAPI integration disabled
             } catch (Exception e) {
@@ -79,5 +85,9 @@ public class PlaceholderManager {
 
     public GlobalLeaderboardPlaceholder getGlobalLeaderboardPlaceholder() {
         return globalLeaderboardPlaceholder;
+    }
+
+    public BoostPlaceholder getBoostPlaceholder() {
+        return boostPlaceholder;
     }
 }
