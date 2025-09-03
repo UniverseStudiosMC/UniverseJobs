@@ -74,3 +74,8 @@ progress-bar:
     # Percentage only: 40%
     percentage-only: "{percentage_color}{percentage}%"
 
+# Block Protection Settings
+# Prevents XP farming by tracking player-placed blocks
+block-protection:
+  enabled: true
+
