@@ -6,9 +6,7 @@ import org.bukkit.Bukkit;
 public class PlaceholderManager {
 
     private final UniverseJobs plugin;
-    private JobsLeaderboardPlaceholder jobsLeaderboardPlaceholder;
-    private GlobalLeaderboardPlaceholder globalLeaderboardPlaceholder;
-    private BoostPlaceholder boostPlaceholder;
+    private UniversalPlaceholderExpansion universalPlaceholder;
     private boolean placeholderApiEnabled = false;
 
     public PlaceholderManager(UniverseJobs plugin) {
@@ -18,13 +16,8 @@ public class PlaceholderManager {
     public void initialize() {
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             try {
-                jobsLeaderboardPlaceholder = new JobsLeaderboardPlaceholder(plugin);
-                globalLeaderboardPlaceholder = new GlobalLeaderboardPlaceholder(plugin);
-                boostPlaceholder = new BoostPlaceholder(plugin);
-
-                jobsLeaderboardPlaceholder.register();
-                globalLeaderboardPlaceholder.register();
-                boostPlaceholder.register();
+                universalPlaceholder = new UniversalPlaceholderExpansion(plugin);
+                universalPlaceholder.register();
 
                 placeholderApiEnabled = true;
                 // PlaceholderAPI integration enabled
@@ -40,14 +33,8 @@ public class PlaceholderManager {
     public void shutdown() {
         if (placeholderApiEnabled) {
             try {
-                if (jobsLeaderboardPlaceholder != null) {
-                    jobsLeaderboardPlaceholder.unregister();
-                }
-                if (globalLeaderboardPlaceholder != null) {
-                    globalLeaderboardPlaceholder.unregister();
-                }
-                if (boostPlaceholder != null) {
-                    boostPlaceholder.unregister();
+                if (universalPlaceholder != null) {
+                    universalPlaceholder.unregister();
                 }
                 // PlaceholderAPI integration disabled
             } catch (Exception e) {
@@ -57,37 +44,20 @@ public class PlaceholderManager {
     }
 
     public void clearCache() {
-        if (placeholderApiEnabled) {
-            if (jobsLeaderboardPlaceholder != null) {
-                jobsLeaderboardPlaceholder.clearCache();
-            }
-            if (globalLeaderboardPlaceholder != null) {
-                globalLeaderboardPlaceholder.clearCache();
-            }
+        if (placeholderApiEnabled && universalPlaceholder != null) {
+            universalPlaceholder.clearCache();
             plugin.getLogger().info("Placeholder cache cleared.");
         }
     }
 
     public void clearJobCache(String jobId) {
-        if (placeholderApiEnabled && jobsLeaderboardPlaceholder != null) {
-            jobsLeaderboardPlaceholder.clearJobCache(jobId);
+        if (placeholderApiEnabled && universalPlaceholder != null) {
+            universalPlaceholder.clearJobCache(jobId);
             plugin.getLogger().info("Placeholder cache cleared for job: " + jobId);
         }
     }
 
     public boolean isPlaceholderApiEnabled() {
         return placeholderApiEnabled;
-    }
-
-    public JobsLeaderboardPlaceholder getJobsLeaderboardPlaceholder() {
-        return jobsLeaderboardPlaceholder;
-    }
-
-    public GlobalLeaderboardPlaceholder getGlobalLeaderboardPlaceholder() {
-        return globalLeaderboardPlaceholder;
-    }
-
-    public BoostPlaceholder getBoostPlaceholder() {
-        return boostPlaceholder;
     }
 }

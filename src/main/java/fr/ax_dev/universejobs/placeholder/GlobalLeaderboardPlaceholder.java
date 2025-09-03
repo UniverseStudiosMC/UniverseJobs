@@ -81,8 +81,8 @@ public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
     }
 
     private String handleTotalLevelsLeaderboard(String[] args) {
-        // Format: universejobs_global_totallevels_<position>_<info>
-        if (args.length < 3) return null;
+        // Format: totallevels_<position>_<info>
+        if (args.length < 2) return null;
 
         try {
             int position = Integer.parseInt(args[1]);
@@ -102,8 +102,8 @@ public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
     }
 
     private String handleTotalJobsLeaderboard(String[] args) {
-        // Format: universejobs_global_totaljobs_<position>_<info>
-        if (args.length < 3) return null;
+        // Format: totaljobs_<position>_<info>
+        if (args.length < 2) return null;
 
         try {
             int position = Integer.parseInt(args[1]);
@@ -123,8 +123,8 @@ public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
     }
 
     private String handleTotalXpLeaderboard(String[] args) {
-        // Format: universejobs_global_totalxp_<position>_<info>
-        if (args.length < 3) return null;
+        // Format: totalxp_<position>_<info>
+        if (args.length < 2) return null;
 
         try {
             int position = Integer.parseInt(args[1]);
@@ -160,7 +160,7 @@ public class GlobalLeaderboardPlaceholder extends PlaceholderExpansion {
                 if (args.length < 3) return null;
                 String rankType = args[2];
                 return String.valueOf(getGlobalPlayerRank(player.getUniqueId(), rankType));
-            case "avgLevel":
+            case "avglevel":
                 return String.format("%.1f", calculateAverageLevel(playerData));
             default:
                 return null;

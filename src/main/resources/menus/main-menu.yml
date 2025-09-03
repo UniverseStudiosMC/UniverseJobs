@@ -57,8 +57,8 @@ static-items:
       - "<gray>Choose a job to start earning"
       - "<gray>money and experience points."
       - ""
-      - "<gray>Total Jobs: <#FFD700>%universejobs_total_jobs%"
-      - "<gray>Your Active Jobs: <#abffb3>%universejobs_player_jobs_count%"
+      - "<gray>Total Jobs: <#FFD700>%universejobs_totaljobs%"
+      - "<gray>Your Active Jobs: <#abffb3>%universejobs_global_player_totaljobs%"
     amount: 1
     slots: [4]
     custom-model-data: 0
