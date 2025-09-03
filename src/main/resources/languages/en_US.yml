@@ -143,11 +143,21 @@ commands:
       usage: "&cUsage: /jobs rewards claim <job> <rewardId>"
       success: "&aReward '{reward}' claimed successfully!"
       failed: "&cFailed to claim reward '{reward}'!"
+      already-claimed: "&7You have already claimed this reward."
+      no-job: "&cYou must have the {job} job to claim this reward!"
+      level-requirement: "&cYou must be level {level} in the {job} job to claim this reward!"
+      no-permission: "&cYou don't have the '{permission}' permission required for this reward!"
+      requirements-not-met: "&cYou don't meet all requirements to claim this reward!"
+      cooldown: "&cYou must wait {time} before claiming this reward again!"
     player-not-found: "&cPlayer '{player}' not found!"
     reward-not-found: "&cReward '{reward}' not found for job {job}!"
     reload:
       success: "&aRewards reloaded successfully!"
       failed: "&cFailed to reload rewards!"
+    gui:
+      job-not-found: "&cJob '{job}' not found!"
+      no-rewards: "&cNo rewards available for job {job}!"
+      no-available-rewards: "&cNo rewards are currently available for job {job}!"
     
   # Help command
   help:
