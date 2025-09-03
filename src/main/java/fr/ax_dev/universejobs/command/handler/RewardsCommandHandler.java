@@ -117,7 +117,7 @@ public class RewardsCommandHandler extends JobCommandHandler {
      */
     private void handleClaimCommand(Player player, String[] args) {
         if (args.length < 4) {
-            MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.claim.usage"));
+            MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.usage"));
             return;
         }
         
@@ -130,10 +130,10 @@ public class RewardsCommandHandler extends JobCommandHandler {
         }
         
         if (rewardManager.claimReward(player, reward)) {
-            MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.claim.success", 
+            MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.success", 
                 "reward", reward.getName()));
         } else {
-            MessageUtils.sendMessage(player, languageManager.getMessage("commands.rewards.claim.failed", 
+            MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.failed", 
                 "reward", reward.getName()));
         }
     }
