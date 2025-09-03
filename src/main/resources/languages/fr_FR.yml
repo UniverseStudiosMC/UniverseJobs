@@ -143,11 +143,21 @@ commands:
       usage: "&cUtilisation : /jobs rewards claim <métier> <idRécompense>"
       success: "&aRécompense '{reward}' réclamée avec succès !"
       failed: "&cÉchec de la réclamation de la récompense '{reward}' !"
+      already-claimed: "&7Vous avez déjà réclamé cette récompense."
+      no-job: "&cVous devez avoir le métier {job} pour réclamer cette récompense !"
+      level-requirement: "&cVous devez être niveau {level} dans le métier {job} pour réclamer cette récompense !"
+      no-permission: "&cVous n'avez pas la permission '{permission}' requise pour cette récompense !"
+      requirements-not-met: "&cVous ne remplissez pas toutes les conditions pour réclamer cette récompense !"
+      cooldown: "&cVous devez attendre {time} avant de pouvoir réclamer cette récompense à nouveau !"
     player-not-found: "&cJoueur '{player}' introuvable !"
     reward-not-found: "&cRécompense '{reward}' introuvable pour le métier {job} !"
     reload:
       success: "&aRécompenses rechargées avec succès !"
       failed: "&cÉchec du rechargement des récompenses !"
+    gui:
+      job-not-found: "&cMétier '{job}' introuvable !"
+      no-rewards: "&cAucune récompense disponible pour le métier {job} !"
+      no-available-rewards: "&cAucune récompense n'est actuellement disponible pour le métier {job} !"
     
   # Commande d'aide
   help:
