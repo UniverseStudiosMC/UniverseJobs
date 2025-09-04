@@ -74,7 +74,7 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         this.foliaManager = new FoliaCompatibilityManager(this);
         this.jobManager = new JobManager(this);
         this.levelUpActionManager = new SimpleLevelUpActionManager(this);
-        this.limitManager = new ActionLimitManager(this);
+        this.limitManager = new ActionLimitManager(this, configCache);
         this.bonusManager = new XpBonusManager(this);
         this.moneyBonusManager = new MoneyBonusManager(this);
         this.messageSender = new AsyncXpMessageSender(this);

@@ -12,7 +12,7 @@ softdepend: [PlaceholderAPI, MythicMobs, MMOItems, CustomCrops, Nexo, ItemsAdder
 commands:
   jobs:
     description: Main jobs command with rewards, XP bonus management, and action limits
-    usage: /jobs <join|leave|info|list|rewards|xpbonus|actionlimit> [args...]
+    usage: /jobs <join|leave|info|list|rewards|actionlimit> [args...]
     aliases: [job]
     permission: universejobs.use
 
@@ -22,7 +22,6 @@ permissions:
     children:
       universejobs.use: true
       universejobs.admin: true
-      universejobs.admin.xpbonus: true
       universejobs.admin.actionlimits: true
       universejobs.rewards.*: true
   universejobs.use:
@@ -46,9 +45,6 @@ permissions:
   universejobs.job.hunter:
     description: Allows joining the hunter job
     default: true
-  universejobs.admin.xpbonus:
-    description: Allows managing XP bonuses for players
-    default: op
   universejobs.rewards.*:
     description: Gives access to all reward permissions
     children:
