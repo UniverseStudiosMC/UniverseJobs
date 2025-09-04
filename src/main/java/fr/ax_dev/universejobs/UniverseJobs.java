@@ -88,15 +88,7 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         this.placeholderManager = new PlaceholderManager(this);
         this.mythicMobsHandler = new MythicMobsHandler(this);
         
-        // ========== ULTRA-FAST CACHE INITIALIZATION ==========
-        getLogger().info("Initializing ultra-fast cache system...");
-        this.configCache = new ConfigurationCache(this);
-        this.playerCache = new PlayerJobCache(this);
-        
-        this.actionProcessor = new ActionProcessor(this, jobManager, bonusManager, moneyBonusManager, 
-                                                 messageSender, limitManager, configCache, playerCache);
-        
-        // Load configuration
+        // Load configuration first
         try {
             configManager.loadConfig();
             // Configuration loaded successfully
@@ -106,8 +98,7 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
             return;
         }
         
-        
-        // Load jobs
+        // Load jobs second
         try {
             jobManager.loadJobs();
             // Jobs loaded successfully
@@ -117,7 +108,11 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
             return;
         }
         
-        // ========== LOAD ULTRA-FAST CACHE ==========
+        // ========== INITIALIZE ULTRA-FAST CACHE AFTER JOBS ARE LOADED ==========
+        getLogger().info("Initializing ultra-fast cache system...");
+        this.configCache = new ConfigurationCache(this);
+        this.playerCache = new PlayerJobCache(this);
+        
         try {
             configCache.loadAllConfigurations();
             playerCache.preloadOnlinePlayers();
@@ -127,6 +122,10 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
+        
+        // Initialize action processor with loaded cache
+        this.actionProcessor = new ActionProcessor(this, jobManager, bonusManager, moneyBonusManager, 
+                                                 messageSender, limitManager, configCache, playerCache);
         
         // Load level up actions
         try {
