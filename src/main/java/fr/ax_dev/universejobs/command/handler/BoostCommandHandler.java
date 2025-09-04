@@ -616,7 +616,7 @@ public class BoostCommandHandler extends JobCommandHandler {
     }
     
     private void sendBoostHelp(CommandSender sender) {
-        for (String line : languageManager.getMessage("commands.admin.boost-help").split("\\n")) {
+        for (String line : languageManager.getMessageList("commands.admin.boost-help")) {
             sender.sendMessage(line);
         }
     }

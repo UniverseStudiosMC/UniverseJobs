@@ -262,7 +262,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      * @param player The player to send help to
      */
     private void sendHelp(Player player) {
-        for (String line : languageManager.getMessage("commands.help.player").split("\\n")) {
+        for (String line : languageManager.getMessageList("commands.help.player")) {
             player.sendMessage(line);
         }
 
@@ -271,7 +271,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         }
 
         if (player.hasPermission("universejobs.admin")) {
-            for (String line : languageManager.getMessage("commands.help.admin").split("\\n")) {
+            for (String line : languageManager.getMessageList("commands.help.admin")) {
                 player.sendMessage(line);
             }
         }
@@ -283,7 +283,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      * @param sender The console sender
      */
     private void sendConsoleHelp(CommandSender sender) {
-        for (String line : languageManager.getMessage("commands.help.console").split("\\n")) {
+        for (String line : languageManager.getMessageList("commands.help.console")) {
             sender.sendMessage(line);
         }
     }
