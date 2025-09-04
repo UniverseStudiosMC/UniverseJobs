@@ -228,52 +228,6 @@ commands:
     reload-start: "&6Rechargement d'UniverseJobs..."
     reload-success: "&aUniverseJobs rechargé avec succès !"
     reload-failed: "&cÉchec du rechargement : %error%"
-    
-    # Debug
-    debug-invalid-type: "&cType de debug invalide : %type%"
-    debug-available-types: "&7Types disponibles : xp, cache, config"
-    debug-xp-header: "&6=== Info Debug XP ==="
-    debug-job-enabled: "&eMétier activé : &a%enabled%"
-    debug-actions-break: "&eActions de cassage : &a%count%"
-    debug-cache-configured: "&aLe cache est configuré"
-    debug-cache-not-configured: "&cLe cache n'est pas configuré"
-    debug-enabled: "&7Debug activé : %enabled%"
-    debug-show-xp: "&7Affichage XP : %enabled%"
-    debug-cache-header: "&6=== Statistiques du cache ==="
-    debug-cache-stats: "&eStats du cache : &a%stats%"
-    debug-stat-entry: "&7  %key% : &a%value%"
-    debug-config-header: "&6=== Debug de configuration ==="
-    cache-stats-hitrate: "&eTaux de réussite : &a%rate%%"
-    cache-reloaded: "&aCache rechargé avec succès."
-
-# =============
-# XP & NIVEAUX
-# =============
-xp:
-  # Messages de gain
-  gain-message:
-    default: "&a+%xp% XP (&e%job%&a)"
-    with-bonus: "&a+%xp% XP (&e+%bonus%&a) pour &e%job%"
-    
-  # Montée de niveau
-  level-up: "&6&lNIVEAU SUPÉRIEUR ! &aVous avez atteint le niveau &6%level% &adans &e%job%&a !"
-  level-up-broadcast: "&e%player% &aa atteint le niveau &6%level% &adans &e%job%&a !"
-    
-  # Barre d'action
-  actionbar:
-    format: "&e%job% : &a%xp% XP"
-    
-  # Barre de boss
-  bossbar:
-    format: "&e%job% &7| &aNiveau %level% &7| &b%currentXp%&7/&3%requiredXp% XP"
-
-# =============
-# SYSTÈME DE BONUS
-# =============
-xp-bonus:
-  global-announced: "&6&lBONUS XP ! &aTous les joueurs ont reçu &6%bonus%% &ade bonus XP pendant &e%duration%&a !"
-  added: "&a&lBOOST XP ! &e+%bonus%% XP &apendant &e%duration% &7(%reason%)"
-  expired: "&c&lBOOST XP EXPIRÉ ! &7Le bonus de %bonus%% s'est terminé (%reason%)"
 
 # =============
 # SYSTÈME DE RÉCOMPENSES
@@ -289,24 +243,12 @@ rewards:
     no-permission: "&cVous n'avez pas la permission '%permission%' requise pour cette récompense !"
     requirements-not-met: "&cVous ne remplissez pas toutes les conditions pour réclamer cette récompense !"
     cooldown: "&cVous devez attendre %time% avant de pouvoir réclamer cette récompense à nouveau !"
+  
+  gui:
+    job-not-found: "&cMétier '%job%' introuvable !"
+    no-rewards: "&cAucune récompense disponible pour le métier '%job%' !"
+    no-available-rewards: "&cAucune récompense disponible pour votre niveau dans le métier '%job%' !"
 
-# =============
-# MESSAGES GUI
-# =============
-gui:
-  rewards:
-    title: "&6Récompenses %job%"
-    job-label: "&7Métier : &e%job%"
-    total-label: "&7Total récompenses : &e%count%"
-    page-label: "&7Page : &e%current%/%total%"
-    required-level: "&7Niveau requis : &e%level%"
-    status-label: "&7Statut : %status%"
-    repeatable-yes: "&7Répétable : &aOui"
-    repeatable-no: "&7Répétable : &cNon"
-    cooldown-label: "&7Temps de recharge : &e%cooldown%"
-    click-to-claim: "&a▶ Cliquez pour réclamer !"
-    claim-success: "&aRécompense réclamée avec succès !"
-    claim-failed: "&cÉchec de réclamation de la récompense."
 
 # =============
 # BOOST GUI
@@ -328,19 +270,3 @@ protection:
     spawned-recently: "&cCette entité a été générée récemment et ne donne aucune récompense !"
     protected: "&cCette entité est protégée !"
 
-
-# =============
-# PLACEHOLDERS
-# =============
-placeholders:
-  no-job: "&7Aucun"
-  no-data: "&7N/D"
-  unlimited: "&aIllimité"
-  never: "&7Jamais"
-  now: "&aMaintenant"
-  enabled: "&aActivé"
-  disabled: "&cDésactivé"
-  true: "&aVrai"
-  false: "&cFaux"
-  yes: "&aOui"
-  no: "&cNon"

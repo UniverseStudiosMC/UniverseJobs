@@ -23,18 +23,6 @@ commands:
   no-permission: "&cYou don't have permission to use this command!"
   player-not-found: "&cPlayer not found!"
   
-  # Help Messages
-  help:
-    header: "&6======= &eUniverseJobs Help &6======="
-    join: "&e/jobs join <job> &7- Join a job"
-    leave: "&e/jobs leave <job> &7- Leave a job"
-    info: "&e/jobs info <job/player> &7- Get information"
-    stats: "&e/jobs stats [player] &7- View stats"
-    list: "&e/jobs list &7- List all available jobs"
-    rewards: "&e/jobs rewards <job> &7- Open rewards menu"
-    menu: "&e/jobs menu &7- Open main menu"
-    admin: "&e/jobs admin &7- Admin commands"
-    
   # Join Command
   join:
     usage: "&cUsage: /jobs join <job>"
@@ -79,25 +67,8 @@ commands:
   list:
     no-jobs: "&cNo jobs are available!"
     header: "&6---- Available Jobs ----"
-    entry: "&e%job% &7- %status%"
     status-have: "&a✓"
     status-dont-have: "&c✗"
-    
-  # XP Bonus Commands
-  xpbonus:
-    usage:
-      header: "&6---- XP Bonus Commands ----"
-      global: "&e/job xpbonus <multiplier> <duration> &7- Give global XP bonus"
-      player: "&e/job xpbonus <player> <multiplier> <duration> &7- Give player XP bonus"
-      job: "&e/job xpbonus <player> <job> <multiplier> <duration> &7- Give job-specific bonus"
-      examples: "&7Examples: /job xpbonus 2.0 300, /job xpbonus Steve 1.5 600"
-    invalid-numbers: "&cInvalid multiplier or duration! Use numbers only."
-    invalid-multiplier: "&cMultiplier must be between 0.1 and 10.0!"
-    invalid-duration: "&cDuration must be between 1 second and 24 hours (86400 seconds)!"
-    job-not-exist: "&cJob '%job%' does not exist!"
-    gave-global: "&aGave %multiplier%x XP bonus to %playerCount% online players for %duration%"
-    player-offline: "&cPlayer '%player%' is not online!"
-    gave-player: "&aGave %player% %bonus%% XP bonus for %duration% (%job%)"
     
   # Menu Commands
   menu:
@@ -228,52 +199,6 @@ commands:
     reload-start: "&6Reloading UniverseJobs..."
     reload-success: "&aUniverseJobs reloaded successfully!"
     reload-failed: "&cFailed to reload: %error%"
-    
-    # Debug
-    debug-invalid-type: "&cInvalid debug type: %type%"
-    debug-available-types: "&7Available types: xp, cache, config"
-    debug-xp-header: "&6=== XP Debug Info ==="
-    debug-job-enabled: "&eJob Enabled: &a%enabled%"
-    debug-actions-break: "&eBreak Actions: &a%count%"
-    debug-cache-configured: "&aCache is configured"
-    debug-cache-not-configured: "&cCache is not configured"
-    debug-enabled: "&7Debug enabled: %enabled%"
-    debug-show-xp: "&7Show XP: %enabled%"
-    debug-cache-header: "&6=== Cache Statistics ==="
-    debug-cache-stats: "&eCache Stats: &a%stats%"
-    debug-stat-entry: "&7  %key%: &a%value%"
-    debug-config-header: "&6=== Configuration Debug ==="
-    cache-stats-hitrate: "&eHit Rate: &a%rate%%"
-    cache-reloaded: "&aCache reloaded successfully."
-
-# =============
-# XP & LEVELING
-# =============
-xp:
-  # Gain Messages
-  gain-message:
-    default: "&a+%xp% XP (&e%job%&a)"
-    with-bonus: "&a+%xp% XP (&e+%bonus%&a) for &e%job%"
-    
-  # Level Up
-  level-up: "&6&lLEVEL UP! &aYou reached level &6%level% &ain &e%job%&a!"
-  level-up-broadcast: "&e%player% &ahas reached level &6%level% &ain &e%job%&a!"
-    
-  # Action Bar
-  actionbar:
-    format: "&e%job%: &a%xp% XP"
-    
-  # Boss Bar
-  bossbar:
-    format: "&e%job% &7| &aLevel %level% &7| &b%currentXp%&7/&3%requiredXp% XP"
-
-# =============
-# BONUS SYSTEM
-# =============
-xp-bonus:
-  global-announced: "&6&lBONUS XP! &aAll players received &6%bonus%% &abonus XP for &e%duration%&a!"
-  added: "&a&lXP BOOST! &e+%bonus%% XP &afor &e%duration% &7(%reason%)"
-  expired: "&c&lXP BOOST EXPIRED! &7%bonus%% bonus ended (%reason%)"
 
 # =============
 # REWARDS SYSTEM
@@ -289,24 +214,12 @@ rewards:
     no-permission: "&cYou don't have the '%permission%' permission required for this reward!"
     requirements-not-met: "&cYou don't meet all requirements to claim this reward!"
     cooldown: "&cYou must wait %time% before claiming this reward again!"
+  
+  gui:
+    job-not-found: "&cJob '%job%' not found!"
+    no-rewards: "&cNo rewards available for job '%job%'!"
+    no-available-rewards: "&cNo rewards available for your level in job '%job%'!"
 
-# =============
-# GUI MESSAGES
-# =============
-gui:
-  rewards:
-    title: "&6%job% Rewards"
-    job-label: "&7Job: &e%job%"
-    total-label: "&7Total Rewards: &e%count%"
-    page-label: "&7Page: &e%current%/%total%"
-    required-level: "&7Required Level: &e%level%"
-    status-label: "&7Status: %status%"
-    repeatable-yes: "&7Repeatable: &aYes"
-    repeatable-no: "&7Repeatable: &cNo"
-    cooldown-label: "&7Cooldown: &e%cooldown%"
-    click-to-claim: "&a▶ Click to claim!"
-    claim-success: "&aReward claimed successfully!"
-    claim-failed: "&cFailed to claim reward."
 
 # =============
 # BOOST GUI
@@ -315,32 +228,3 @@ boost-gui:
   removed: "&aRemoved %type% boost: &e%boost_id%"
   no-permission: "&cYou don't have permission to do that!"
   refresh-clicked: "&bRefreshing boost list..."
-
-# =============
-# PROTECTION
-# =============
-protection:
-  block:
-    placed-recently: "&cThis block was placed recently and gives no rewards!"
-    protected: "&cThis block is protected!"
-    
-  entity:
-    spawned-recently: "&cThis entity was spawned recently and gives no rewards!"
-    protected: "&cThis entity is protected!"
-
-
-# =============
-# PLACEHOLDERS
-# =============
-placeholders:
-  no-job: "&7None"
-  no-data: "&7N/A"
-  unlimited: "&aUnlimited"
-  never: "&7Never"
-  now: "&aNow"
-  enabled: "&aEnabled"
-  disabled: "&cDisabled"
-  true: "&aTrue"
-  false: "&cFalse"
-  yes: "&aYes"
-  no: "&cNo"
