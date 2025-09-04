@@ -210,6 +210,10 @@ commands:
     boost-info-unknown-player: "Inconnu"
     boost-info-all-jobs: "Tous les métiers"
     boost-info-all-actions: "Toutes les actions"
+    boost-reason-admin: "Boost admin"
+    boost-sender-console: "Console"
+    boost-type-xp: "XP"
+    boost-type-money: "Money"
     boost-help: |
       &6=== Commandes Boost ===
       &e/jobs admin boost <action> <arguments...>
