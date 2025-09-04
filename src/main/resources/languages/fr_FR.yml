@@ -178,6 +178,10 @@ commands:
     cache-reloaded: "&aCache rechargé avec succès."
     cache-stats-hitrate: "&eTaux de réussite : &a{rate}%"
     
+    # Réponses reload
+    reload-start: "&6Rechargement d'UniverseJobs..."
+    reload-success: "&aUniverseJobs rechargé avec succès !"
+    
     # Réponses debug
     debug-job-line: "&7  {job} - Niveau {level} ({xp} XP)"
     debug-job-enabled: "&eMétier activé : &a{enabled}"
