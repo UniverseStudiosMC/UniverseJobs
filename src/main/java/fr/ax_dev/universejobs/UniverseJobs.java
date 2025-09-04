@@ -26,6 +26,7 @@ import fr.ax_dev.universejobs.menu.MenuManager;
 import fr.ax_dev.universejobs.menu.BoostManagerGui;
 import fr.ax_dev.universejobs.utils.AsyncXpMessageSender;
 import fr.ax_dev.universejobs.placeholder.PlaceholderManager;
+import fr.ax_dev.universejobs.update.UpdateChecker;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -59,6 +60,7 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
     private BukkitTask saveTask;
     private long startTime;
     private fr.ax_dev.universejobs.utils.PluginAccessor accessor;
+    private UpdateChecker updateChecker;
     
     // ========== ULTRA-FAST CACHE SYSTEM ==========
     private ConfigurationCache configCache;
@@ -227,7 +229,11 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         
         // Initialize accessor
         this.accessor = new fr.ax_dev.universejobs.utils.PluginAccessor(this);
-        
+
+        // Check for updates
+        this.updateChecker = new UpdateChecker(this);
+        updateChecker.checkForUpdates();
+
         // Plugin enabled successfully
     }
 
@@ -578,6 +584,15 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
      */
     public PlaceholderManager getPlaceholderManager() {
         return placeholderManager;
+    }
+
+    /**
+     * Get the update checker.
+     *
+     * @return The update checker
+     */
+    public UpdateChecker getUpdateChecker() {
+        return updateChecker;
     }
     
     /**
