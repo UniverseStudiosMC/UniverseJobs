@@ -22,6 +22,32 @@ commands:
   players-only: "&cThis command can only be used by players!"
   no-permission: "&cYou don't have permission to use this command!"
   player-not-found: "&cPlayer not found!"
+
+  help:
+    player: |
+      &6=== UniverseJobs Commands ===
+      &e/jobs &7- Open main jobs menu
+
+      &6⭐⭐⭐⭐ Most Used:
+      &e/jobs join <job> &7- Join a job
+      &e/jobs leave <job> &7- Leave a job
+
+      &6⭐⭐⭐ Information:
+      &e/jobs list &7- List all available jobs
+      &e/jobs stats [player] &7- Show job statistics
+      &e/jobs info [job/player] &7- Show job or player information
+
+      &6⭐⭐ Advanced:
+      &e/jobs menu <jobname> &7- Open job menu directly
+      &e/jobs menu rankings &7- View job leaderboards
+    rewards: "&e/jobs rewards open <job> &7- Access job rewards"
+    admin: |
+      &6⭐ Admin Commands:
+      &e/jobs admin &7- Show all admin commands
+    console: |
+      &6UniverseJobs Console Commands:
+      &e/jobs admin &7- Show all admin commands
+      &e/jobs actionlimit <restore|status> &7- Manage action limits
   
   # Join Command
   join:
@@ -124,7 +150,15 @@ commands:
     job-not-found: "&cJob '{job}' not found!"
     must-have-job: "&cYou must have the {job} job to view its rewards!"
     reward-not-found: "&cReward '{reward}' not found for job {job}!"
-    
+
+  bonus:
+    give-usage: "&cUsage: /jobs {type} give <player|*> <multiplier> <duration> [job] [reason]"
+    examples-header: "&7Examples:"
+    example-global: "&7  /jobs {type} give * 2.0 3600 - Give all players 2x {type} for 1 hour"
+    example-player: "&7  /jobs {type} give Player123 1.5 1800 miner Mining Event"
+    remove-usage: "&cUsage: /jobs {type} remove <player> [job]"
+    list-usage: "&cUsage: /jobs {type} list [player]"
+
   # Admin Commands
   admin:
     header: "&7---- UniverseJobs Admin Commands ----"
@@ -152,6 +186,42 @@ commands:
     invalid-amount: "&cInvalid amount: {amount}"
     
     # Boost messages
+    boost-invalid-type: "&cInvalid boost type! Use: xp or money"
+    boost-invalid-player: "&cInvalid player name!"
+    boost-invalid-job: "&cInvalid job ID!"
+    boost-invalid-action-type: "&cInvalid action type!"
+    boost-invalid-multiplier: "&cInvalid multiplier! Must be between 0.1 and 10.0"
+    boost-invalid-duration: "&cInvalid duration! Must be between 1 and 86400 seconds"
+    boost-invalid-action-id: "&cInvalid action ID for type {type}!"
+    boost-applied: "&aApplied {type} boost x{multiplier} for {duration}s to {target} ({job} - {action}{action_id})"
+    boost-remove-usage: "&cUsage: /jobs admin boost remove <boostId>"
+    boost-remove-info-tip: "&7Use &e/jobs admin boost info&7 to see active boosts"
+    boost-remove-success: "&aRemoved {type} boost: {id}"
+    boost-remove-not-found: "&cBoost ID not found: {id}"
+    boost-info-header: "&6=== Active Boosts ==="
+    boost-info-none: "&7No active boosts"
+    boost-info-xp-header: "&e&lXP Boosts:" 
+    boost-info-money-header: "&6&lMoney Boosts:" 
+    boost-info-entry: "&7  {id} &8- &f{player} &8| &a{multiplier}x &8| &e{job} &8| &b{action} &8| &c{time}"
+    boost-info-remove-tip: "&7Use &e/jobs admin boost remove <boostId>&7 to remove a specific boost"
+    boost-info-all-players: "All Players"
+    boost-info-unknown-player: "Unknown"
+    boost-info-all-jobs: "All Jobs"
+    boost-info-all-actions: "All Actions"
+    boost-help: |
+      &6=== Boost Commands ===
+      &e/jobs admin boost <action> <args...>
+
+      &6Actions:
+      &e  give <xp|money> <player/*> <job/*> <action_type> [id_in_action] <multiplier> <duration>
+      &e  remove <boostId>
+      &e  info
+
+      &7Examples:
+      &7  /jobs admin boost give xp * miner * 2.0 3600
+      &7  /jobs admin boost give money Player123 * BREAK simple_break 1.5 1800
+      &7  /jobs admin boost remove xp1
+      &7  /jobs admin boost info
     boost-action-id-required: "&cWhen using specific action type, id_in_action is required!"
     boost-usage-with-action: "&7Usage: /jobs admin boost give <xp|money> <player/*> <job/*> <action_type> <id_in_action> <multiplier> <duration>"
     boost-usage-general: "&cUsage: /jobs admin boost give <xp|money> <player/*> <job/*> <action_type> [id_in_action] <multiplier> <duration>"

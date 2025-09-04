@@ -317,25 +317,25 @@ public class BoostCommandHandler extends JobCommandHandler {
         
         String boostType = args[3].toLowerCase();
         if (!boostType.equals(TYPE_XP) && !boostType.equals(TYPE_MONEY)) {
-            sender.sendMessage("§cInvalid boost type! Use: xp or money");
+            sender.sendMessage(languageManager.getMessage("commands.admin.boost-invalid-type"));
             return;
         }
-        
+
         String target = sanitizeInputWithWildcard(args[4]);
         if (!target.equals("*") && !isValidPlayerName(target)) {
-            sender.sendMessage("§cInvalid player name!");
+            sender.sendMessage(languageManager.getMessage("commands.admin.boost-invalid-player"));
             return;
         }
-        
+
         String jobId = sanitizeInputWithWildcard(args[5]);
         if (!jobId.equals("*") && !isValidJobId(jobId)) {
-            sender.sendMessage("§cInvalid job ID!");
+            sender.sendMessage(languageManager.getMessage("commands.admin.boost-invalid-job"));
             return;
         }
-        
+
         String actionType = sanitizeInputWithWildcard(args[6]);
         if (!actionType.equals("*") && !isValidActionType(actionType)) {
-            sender.sendMessage("§cInvalid action type!");
+            sender.sendMessage(languageManager.getMessage("commands.admin.boost-invalid-action-type"));
             return;
         }
         
@@ -347,13 +347,13 @@ public class BoostCommandHandler extends JobCommandHandler {
             // Si action_type est *, pas besoin d'id_in_action
             multiplier = parseMultiplier(args[7]);
             if (multiplier <= 0) {
-                sender.sendMessage("§cInvalid multiplier! Must be between 0.1 and 10.0");
+                sender.sendMessage(languageManager.getMessage("commands.admin.boost-invalid-multiplier"));
                 return;
             }
-            
+
             duration = parseDuration(args[8]);
             if (duration <= 0) {
-                sender.sendMessage("§cInvalid duration! Must be between 1 and 86400 seconds");
+                sender.sendMessage(languageManager.getMessage("commands.admin.boost-invalid-duration"));
                 return;
             }
         } else {
@@ -366,19 +366,19 @@ public class BoostCommandHandler extends JobCommandHandler {
             
             actionId = sanitizeInputWithWildcard(args[7]);
             if (!actionId.equals("*") && !isValidActionId(actionType, actionId)) {
-                sender.sendMessage("§cInvalid action ID for type " + actionType + "!");
+                sender.sendMessage(languageManager.getMessage("commands.admin.boost-invalid-action-id", "type", actionType));
                 return;
             }
-            
+
             multiplier = parseMultiplier(args[8]);
             if (multiplier <= 0) {
-                sender.sendMessage("§cInvalid multiplier! Must be between 0.1 and 10.0");
+                sender.sendMessage(languageManager.getMessage("commands.admin.boost-invalid-multiplier"));
                 return;
             }
-            
+
             duration = parseDuration(args[9]);
             if (duration <= 0) {
-                sender.sendMessage("§cInvalid duration! Must be between 1 and 86400 seconds");
+                sender.sendMessage(languageManager.getMessage("commands.admin.boost-invalid-duration"));
                 return;
             }
         }
@@ -388,18 +388,25 @@ public class BoostCommandHandler extends JobCommandHandler {
         
         applyBoost(boostType, target, multiplier, duration, jobId, actionType, actionId, reason, senderName);
         
-        String targetDisplay = target.equals("*") ? "all players" : target;
-        String jobDisplay = jobId.equals("*") ? "all jobs" : jobId;
-        String actionDisplay = actionType.equals("*") ? "all actions" : actionType;
+        String targetDisplay = target.equals("*") ? languageManager.getMessage("commands.admin.boost-info-all-players") : target;
+        String jobDisplay = jobId.equals("*") ? languageManager.getMessage("commands.admin.boost-info-all-jobs") : jobId;
+        String actionDisplay = actionType.equals("*") ? languageManager.getMessage("commands.admin.boost-info-all-actions") : actionType;
         String actionIdDisplay = actionId.equals("*") ? "" : " (" + actionId + ")";
-        sender.sendMessage("§aApplied " + boostType + " boost x" + multiplier + " for " + duration + "s to " + targetDisplay + " (" + jobDisplay + " - " + actionDisplay + actionIdDisplay + ")");
+        sender.sendMessage(languageManager.getMessage("commands.admin.boost-applied",
+                "type", boostType,
+                "multiplier", String.valueOf(multiplier),
+                "duration", String.valueOf(duration),
+                "target", targetDisplay,
+                "job", jobDisplay,
+                "action", actionDisplay,
+                "action_id", actionIdDisplay));
     }
     
     private void handleRemoveBoost(CommandSender sender, String[] args) {
         // /jobs admin boost remove <boostId>
         if (args.length < 4) {
-            sender.sendMessage("§cUsage: /jobs admin boost remove <boostId>");
-            sender.sendMessage("§7Use §e/jobs admin boost info§7 to see active boosts");
+            sender.sendMessage(languageManager.getMessage("commands.admin.boost-remove-usage"));
+            sender.sendMessage(languageManager.getMessage("commands.admin.boost-remove-info-tip"));
             return;
         }
         
@@ -411,10 +418,10 @@ public class BoostCommandHandler extends JobCommandHandler {
         
         if (removedXp || removedMoney) {
             String type = removedXp ? "XP" : "Money";
-            sender.sendMessage("§aRemoved " + type + " boost: " + boostId);
+            sender.sendMessage(languageManager.getMessage("commands.admin.boost-remove-success", "type", type, "id", boostId));
         } else {
-            sender.sendMessage("§cBoost ID not found: " + boostId);
-            sender.sendMessage("§7Use §e/jobs admin boost info§7 to see active boosts");
+            sender.sendMessage(languageManager.getMessage("commands.admin.boost-remove-not-found", "id", boostId));
+            sender.sendMessage(languageManager.getMessage("commands.admin.boost-remove-info-tip"));
         }
     }
     
@@ -424,67 +431,75 @@ public class BoostCommandHandler extends JobCommandHandler {
             plugin.getBoostManagerGui().openGui(player);
         } else {
             // Affichage texte pour la console
-            sender.sendMessage("§6=== Active Boosts ===");
-            
+            sender.sendMessage(languageManager.getMessage("commands.admin.boost-info-header"));
+
             List<String> xpBoosts = plugin.getBonusManager().getAllActiveBoostIds();
             List<String> moneyBoosts = plugin.getMoneyBonusManager().getAllActiveBoostIds();
-            
+
             if (xpBoosts.isEmpty() && moneyBoosts.isEmpty()) {
-                sender.sendMessage("§7No active boosts");
+                sender.sendMessage(languageManager.getMessage("commands.admin.boost-info-none"));
                 return;
             }
-            
+
             if (!xpBoosts.isEmpty()) {
-                sender.sendMessage("§e§lXP Boosts:");
+                sender.sendMessage(languageManager.getMessage("commands.admin.boost-info-xp-header"));
                 for (String boostId : xpBoosts) {
                     var boost = plugin.getBonusManager().getBoostById(boostId);
                     if (boost != null && boost.isActive()) {
                         String playerName;
                         if (boost.isGlobal()) {
-                            playerName = "All Players";
+                            playerName = languageManager.getMessage("commands.admin.boost-info-all-players");
                         } else {
                             Player player = Bukkit.getPlayer(boost.getPlayerId());
-                            playerName = player != null ? player.getName() : "Unknown";
+                            playerName = player != null ? player.getName() : languageManager.getMessage("commands.admin.boost-info-unknown-player");
                         }
-                        
-                        String jobInfo = boost.getJobId() == null ? "All Jobs" : boost.getJobId();
+
+                        String jobInfo = boost.getJobId() == null ? languageManager.getMessage("commands.admin.boost-info-all-jobs") : boost.getJobId();
                         String actionInfo = formatActionInfo(boost.getActionType(), boost.getActionId());
-                        sender.sendMessage("§7  " + boostId + " §8- §f" + playerName + 
-                                         " §8| §a" + boost.getMultiplier() + "x §8| §e" + jobInfo + 
-                                         " §8| §b" + actionInfo + " §8| §c" + boost.getRemainingTimeFormatted());
+                        sender.sendMessage(languageManager.getMessage("commands.admin.boost-info-entry",
+                                "id", boostId,
+                                "player", playerName,
+                                "multiplier", String.valueOf(boost.getMultiplier()),
+                                "job", jobInfo,
+                                "action", actionInfo,
+                                "time", boost.getRemainingTimeFormatted()));
                     }
                 }
             }
-            
+
             if (!moneyBoosts.isEmpty()) {
-                sender.sendMessage("§6§lMoney Boosts:");
+                sender.sendMessage(languageManager.getMessage("commands.admin.boost-info-money-header"));
                 for (String boostId : moneyBoosts) {
                     var boost = plugin.getMoneyBonusManager().getBoostById(boostId);
                     if (boost != null && boost.isActive()) {
                         String playerName;
                         if (boost.isGlobal()) {
-                            playerName = "All Players";
+                            playerName = languageManager.getMessage("commands.admin.boost-info-all-players");
                         } else {
                             Player player = Bukkit.getPlayer(boost.getPlayerId());
-                            playerName = player != null ? player.getName() : "Unknown";
+                            playerName = player != null ? player.getName() : languageManager.getMessage("commands.admin.boost-info-unknown-player");
                         }
-                        
-                        String jobInfo = boost.getJobId() == null ? "All Jobs" : boost.getJobId();
+
+                        String jobInfo = boost.getJobId() == null ? languageManager.getMessage("commands.admin.boost-info-all-jobs") : boost.getJobId();
                         String actionInfo = formatActionInfo(boost.getActionType(), boost.getActionId());
-                        sender.sendMessage("§7  " + boostId + " §8- §f" + playerName + 
-                                         " §8| §a" + boost.getMultiplier() + "x §8| §e" + jobInfo + 
-                                         " §8| §b" + actionInfo + " §8| §c" + boost.getRemainingTimeFormatted());
+                        sender.sendMessage(languageManager.getMessage("commands.admin.boost-info-entry",
+                                "id", boostId,
+                                "player", playerName,
+                                "multiplier", String.valueOf(boost.getMultiplier()),
+                                "job", jobInfo,
+                                "action", actionInfo,
+                                "time", boost.getRemainingTimeFormatted()));
                     }
                 }
             }
-            
-            sender.sendMessage("§7Use §e/jobs admin boost remove <boostId>§7 to remove a specific boost");
+
+            sender.sendMessage(languageManager.getMessage("commands.admin.boost-info-remove-tip"));
         }
     }
     
     private String formatActionInfo(String actionType, String actionId) {
         if (actionType == null) {
-            return "All Actions";
+            return languageManager.getMessage("commands.admin.boost-info-all-actions");
         }
         
         if (actionId == null) {
@@ -598,18 +613,8 @@ public class BoostCommandHandler extends JobCommandHandler {
     }
     
     private void sendBoostHelp(CommandSender sender) {
-        sender.sendMessage("§6=== Boost Commands ===");
-        sender.sendMessage("§e/jobs admin boost <action> <args...>");
-        sender.sendMessage("");
-        sender.sendMessage("§6Actions:");
-        sender.sendMessage("§e  give <xp|money> <player/*> <job/*> <action_type> [id_in_action] <multiplier> <duration>");
-        sender.sendMessage("§e  remove <boostId>");
-        sender.sendMessage("§e  info");
-        sender.sendMessage("");
-        sender.sendMessage("§7Examples:");
-        sender.sendMessage("§7  /jobs admin boost give xp * miner * 2.0 3600");
-        sender.sendMessage("§7  /jobs admin boost give money Player123 * BREAK simple_break 1.5 1800");
-        sender.sendMessage("§7  /jobs admin boost remove xp1");
-        sender.sendMessage("§7  /jobs admin boost info");
+        for (String line : languageManager.getMessage("commands.admin.boost-help").split("\\n")) {
+            sender.sendMessage(line);
+        }
     }
 }

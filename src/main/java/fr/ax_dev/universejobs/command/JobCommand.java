@@ -262,30 +262,18 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      * @param player The player to send help to
      */
     private void sendHelp(Player player) {
-        player.sendMessage("§6=== UniverseJobs Commands ===");
-        player.sendMessage("§e/jobs §7- Open main jobs menu");
-        player.sendMessage("");
-        player.sendMessage("§6⭐⭐⭐⭐ Most Used:");
-        player.sendMessage("§e/jobs join <job> §7- Join a job");
-        player.sendMessage("§e/jobs leave <job> §7- Leave a job");
-        player.sendMessage("");
-        player.sendMessage("§6⭐⭐⭐ Information:");
-        player.sendMessage("§e/jobs list §7- List all available jobs");
-        player.sendMessage("§e/jobs stats [player] §7- Show job statistics");
-        player.sendMessage("§e/jobs info [job/player] §7- Show job or player information");
-        player.sendMessage("");
-        player.sendMessage("§6⭐⭐ Advanced:");
-        player.sendMessage("§e/jobs menu <jobname> §7- Open job menu directly");
-        player.sendMessage("§e/jobs menu rankings §7- View job leaderboards");
-        
-        if (player.hasPermission("universejobs.rewards.use")) {
-            player.sendMessage("§e/jobs rewards open <job> §7- Access job rewards");
+        for (String line : languageManager.getMessage("commands.help.player").split("\\n")) {
+            player.sendMessage(line);
         }
-        
+
+        if (player.hasPermission("universejobs.rewards.use")) {
+            player.sendMessage(languageManager.getMessage("commands.help.rewards"));
+        }
+
         if (player.hasPermission("universejobs.admin")) {
-            player.sendMessage("");
-            player.sendMessage("§6⭐ Admin Commands:");
-            player.sendMessage("§e/jobs admin §7- Show all admin commands");
+            for (String line : languageManager.getMessage("commands.help.admin").split("\\n")) {
+                player.sendMessage(line);
+            }
         }
     }
     
@@ -295,9 +283,9 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      * @param sender The console sender
      */
     private void sendConsoleHelp(CommandSender sender) {
-        sender.sendMessage("§6UniverseJobs Console Commands:");
-        sender.sendMessage("§e/jobs admin §7- Show all admin commands");
-        sender.sendMessage("§e/jobs actionlimit <restore|status> §7- Manage action limits");
+        for (String line : languageManager.getMessage("commands.help.console").split("\\n")) {
+            sender.sendMessage(line);
+        }
     }
     
     /**
