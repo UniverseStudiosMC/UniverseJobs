@@ -246,7 +246,6 @@ secrets/
 # ================================
 
 # General cache
-cache/
 .cache/
 tmp/
 temp/
