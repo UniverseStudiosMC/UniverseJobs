@@ -18,6 +18,7 @@ import fr.ax_dev.universejobs.protection.BlockProtectionManager;
 import fr.ax_dev.universejobs.reward.RewardManager;
 import fr.ax_dev.universejobs.reward.gui.RewardGuiManager;
 import fr.ax_dev.universejobs.compatibility.FoliaCompatibilityManager;
+import fr.ax_dev.universejobs.update.UpdateChecker;
 
 /**
  * Centralized accessor for all plugin managers and utilities.
@@ -57,9 +58,12 @@ public final class PluginAccessor {
     public AsyncXpMessageSender getMessageSender() { return plugin.getMessageSender(); }
     public BlockProtectionManager getProtectionManager() { return plugin.getProtectionManager(); }
     public PlaceholderManager getPlaceholderManager() { return plugin.getPlaceholderManager(); }
-    
+
     // Integration handlers
     public MythicMobsHandler getMythicMobsHandler() { return plugin.getMythicMobsHandler(); }
+
+    // Update system
+    public UpdateChecker getUpdateChecker() { return plugin.getUpdateChecker(); }
     
     // Level up system
     public SimpleLevelUpActionManager getLevelUpActionManager() { return plugin.getLevelUpActionManager(); }
