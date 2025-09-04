@@ -383,8 +383,9 @@ public class BoostCommandHandler extends JobCommandHandler {
             }
         }
         
-        String reason = "Admin boost";
-        String senderName = sender instanceof Player ? sender.getName() : "Console";
+        String reason = languageManager.getMessage("commands.admin.boost-reason-admin");
+        String senderName = sender instanceof Player ? sender.getName() :
+                languageManager.getMessage("commands.admin.boost-sender-console");
         
         applyBoost(boostType, target, multiplier, duration, jobId, actionType, actionId, reason, senderName);
         
@@ -417,7 +418,9 @@ public class BoostCommandHandler extends JobCommandHandler {
         boolean removedMoney = plugin.getMoneyBonusManager().removeBoostById(boostId);
         
         if (removedXp || removedMoney) {
-            String type = removedXp ? "XP" : "Money";
+            String type = removedXp
+                    ? languageManager.getMessage("commands.admin.boost-type-xp")
+                    : languageManager.getMessage("commands.admin.boost-type-money");
             sender.sendMessage(languageManager.getMessage("commands.admin.boost-remove-success", "type", type, "id", boostId));
         } else {
             sender.sendMessage(languageManager.getMessage("commands.admin.boost-remove-not-found", "id", boostId));
