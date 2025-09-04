@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -298,5 +299,63 @@ public class LanguageManager {
     public void sendMessage(Player player, String string, String jobId) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'sendMessage'");
+    }
+
+    /**
+     * Gets a message as a list of strings, useful for multi-line messages stored as YAML arrays.
+     *
+     * @param key The message key
+     * @param placeholders Key-value pairs for placeholder replacement
+     * @return List of message lines with placeholders replaced
+     */
+    public List<String> getMessageList(String key, Object... placeholders) {
+        List<String> messages = getRawMessageList(key);
+        
+        if (messages == null || messages.isEmpty()) {
+            return List.of(MISSING_MESSAGE_PREFIX + key + MISSING_MESSAGE_SUFFIX);
+        }
+        
+        // Replace placeholders in each line
+        if (placeholders.length > 0) {
+            return messages.stream().map(message -> {
+                String result = message;
+                for (int i = 0; i < placeholders.length - 1; i += 2) {
+                    String placeholder = "{" + placeholders[i] + "}";
+                    String value = String.valueOf(placeholders[i + 1]);
+                    result = result.replace(placeholder, value);
+                }
+                
+                // Parse the message and convert to legacy string for backward compatibility
+                Component component = MessageUtils.parseMessage(result);
+                return LegacyComponentSerializer.legacySection().serialize(component);
+            }).toList();
+        } else {
+            // Just parse colors without placeholders
+            return messages.stream().map(message -> {
+                Component component = MessageUtils.parseMessage(message);
+                return LegacyComponentSerializer.legacySection().serialize(component);
+            }).toList();
+        }
+    }
+
+    /**
+     * Gets a raw message list without color code translation.
+     *
+     * @param key The message key
+     * @return The raw message list or null if not found
+     */
+    private List<String> getRawMessageList(String key) {
+        // Try current language first
+        List<String> messages = currentLanguage.getStringList(key);
+        
+        // Fall back to English if not found or empty
+        if ((messages == null || messages.isEmpty()) && fallbackLanguage != null && !currentLocale.equals(DEFAULT_LOCALE)) {
+            messages = fallbackLanguage.getStringList(key);
+            if (messages != null && !messages.isEmpty()) {
+                plugin.getLogger().warning("Missing translation for key '" + key + "' in " + currentLocale + ", using English fallback");
+            }
+        }
+        
+        return messages;
     }
 }

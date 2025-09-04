@@ -1,10 +1,10 @@
-# =====================================
+# ------------------------------------------------=
 # UniverseJobs Language File - Français
-# =====================================
+# ------------------------------------------------=
 
-# =============
+# ----------------=
 # GÉNÉRAL
-# =============
+# ----------------=
 general:
   prefix: "&6[&eUniverseJobs&6]&r"
   no-permission: "&cVous n'avez pas la permission de faire cela !"
@@ -14,9 +14,9 @@ general:
   invalid-format: "&cFormat invalide !"
   must-be-player: "&cCette commande ne peut être exécutée que par des joueurs !"
 
-# =============
+# ----------------=
 # COMMANDES
-# =============
+# ----------------=
 commands:
   # Messages généraux des commandes
   players-only: "&cCette commande ne peut être utilisée que par les joueurs !"
@@ -24,30 +24,26 @@ commands:
   player-not-found: "&cJoueur introuvable !"
   
   help:
-    player: |
-      &6=== Commandes UniverseJobs ===
-      &e/jobs &7- Ouvre le menu principal des métiers
-
-      &6⭐⭐⭐⭐ Les plus utilisées :
-      &e/jobs join <métier> &7- Rejoindre un métier
-      &e/jobs leave <métier> &7- Quitter un métier
-
-      &6⭐⭐⭐ Informations :
-      &e/jobs list &7- Lister tous les métiers disponibles
-      &e/jobs stats [joueur] &7- Afficher les statistiques
-      &e/jobs info [métier/joueur] &7- Informations sur un métier ou un joueur
-
-      &6⭐⭐ Avancé :
-      &e/jobs menu <métier> &7- Ouvrir directement le menu du métier
-      &e/jobs menu rankings &7- Voir les classements
+    player:
+      - "&6---- Commandes UniverseJobs ----"
+      - "&e/jobs &7- Ouvre le menu principal des métiers"
+      - ""
+      - "&e/jobs join <métier> &7- Rejoindre un métier"
+      - "&e/jobs leave <métier> &7- Quitter un métier"
+      - ""
+      - "&e/jobs list &7- Lister tous les métiers disponibles"
+      - "&e/jobs stats [joueur] &7- Afficher les statistiques"
+      - "&e/jobs info [métier/joueur] &7- Informations sur un métier ou un joueur"
+      - ""
+      - "&e/jobs menu <métier> &7- Ouvrir directement le menu du métier"
+      - "&e/jobs menu rankings &7- Voir les classements"
     rewards: "&e/jobs rewards open <métier> &7- Accéder aux récompenses du métier"
-    admin: |
-      &6⭐ Commandes Admin :
-      &e/jobs admin &7- Afficher toutes les commandes admin
-    console: |
-      &6Commandes Console UniverseJobs :
-      &e/jobs admin &7- Afficher toutes les commandes admin
-      &e/jobs actionlimit <restore|status> &7- Gérer les limites d'actions
+    admin:
+      - "&e/jobs admin &7- Afficher toutes les commandes admin"
+    console:
+      - "&6Commandes Console UniverseJobs :"
+      - "&e/jobs admin &7- Afficher toutes les commandes admin"
+      - "&e/jobs actionlimit <restore|status> &7- Gérer les limites d'actions"
     
   # Commande join
   join:
@@ -118,7 +114,10 @@ commands:
   # Commandes de limite d'actions
   actionlimit:
     no-permission: "&cVous n'avez pas la permission d'utiliser cette commande !"
-    help: "&6---- Commandes de limites d'actions ----\n&e/jobs actionlimit restore [joueur] &7- Restaurer les limites\n&e/jobs actionlimit status <joueur> <métier> <cible> &7- Voir le statut"
+    help:
+      - "&6---- Commandes de limites d'actions ----"
+      - "&e/jobs actionlimit restore [joueur] &7- Restaurer les limites"
+      - "&e/jobs actionlimit status <joueur> <métier> <cible> &7- Voir le statut"
     player-not-found: "&cJoueur '{player}' introuvable !"
     restore:
       usage: "&cUtilisation : /jobs actionlimit restore [joueur]"
@@ -200,7 +199,7 @@ commands:
     boost-remove-info-tip: "&7Utilisez &e/jobs admin boost info&7 pour voir les boosts actifs"
     boost-remove-success: "&aBoost {type} supprimé : {id}"
     boost-remove-not-found: "&cBoost introuvable : {id}"
-    boost-info-header: "&6=== Boosts actifs ==="
+    boost-info-header: "&6---- Boosts actifs ----"
     boost-info-none: "&7Aucun boost actif"
     boost-info-xp-header: "&e&lBoosts XP :"
     boost-info-money-header: "&6&lBoosts Money :"
@@ -214,20 +213,20 @@ commands:
     boost-sender-console: "Console"
     boost-type-xp: "XP"
     boost-type-money: "Money"
-    boost-help: |
-      &6=== Commandes Boost ===
-      &e/jobs admin boost <action> <arguments...>
-
-      &6Actions :
-      &e  give <xp|money> <joueur/*> <métier/*> <type_action> [id_action] <multiplicateur> <durée>
-      &e  remove <boostId>
-      &e  info
-
-      &7Exemples :
-      &7  /jobs admin boost give xp * miner * 2.0 3600
-      &7  /jobs admin boost give money Player123 * BREAK simple_break 1.5 1800
-      &7  /jobs admin boost remove xp1
-      &7  /jobs admin boost info
+    boost-help:
+      - "&6---- Commandes Boost ----"
+      - "&e/jobs admin boost <action> <arguments...>"
+      - ""
+      - "&6Actions :"
+      - "&e  give <xp|money> <joueur/*> <métier/*> <type_action> [id_action] <multiplicateur> <durée>"
+      - "&e  remove <boostId>"
+      - "&e  info"
+      - ""
+      - "&7Exemples :"
+      - "&7  /jobs admin boost give xp * miner * 2.0 3600"
+      - "&7  /jobs admin boost give money Player123 * BREAK simple_break 1.5 1800"
+      - "&7  /jobs admin boost remove xp1"
+      - "&7  /jobs admin boost info"
     boost-action-id-required: "&cLors de l'utilisation d'un type d'action spécifique, id_in_action est requis !"
     boost-usage-with-action: "&7Usage : /jobs admin boost give <xp|money> <joueur/*> <métier/*> <type_action> <id_in_action> <multiplicateur> <durée>"
     boost-usage-general: "&cUsage : /jobs admin boost give <xp|money> <joueur/*> <métier/*> <type_action> [id_in_action] <multiplicateur> <durée>"
@@ -253,9 +252,9 @@ commands:
     reload-start: "&6Rechargement d'UniverseJobs..."
     reload-success: "&aUniverseJobs rechargé avec succès !"
 
-# =============
+# ----------------=
 # SYSTÈME DE RÉCOMPENSES
-# =============
+# ----------------=
 rewards:
   claim:
     usage: "&cUtilisation : /jobs rewards claim <métier> <idRécompense>"
@@ -274,17 +273,17 @@ rewards:
     no-available-rewards: "&cAucune récompense disponible pour votre niveau dans le métier '{job}' !"
 
 
-# =============
+# ----------------=
 # BOOST GUI
-# =============
+# ----------------=
 boost-gui:
   removed: "&aBoost {type} supprimé : &e{boost_id}"
   no-permission: "&cVous n'avez pas la permission de faire cela !"
   refresh-clicked: "&bActualisation de la liste des boosts..."
 
-# =============
+# ----------------=
 # PROTECTION
-# =============
+# ----------------=
 protection:
   block:
     placed-recently: "&cCe bloc a été placé récemment et ne donne aucune récompense !"

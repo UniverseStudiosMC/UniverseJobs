@@ -1,10 +1,10 @@
-# =====================================
+# ------------------------------------------------=
 # UniverseJobs Language File - English
-# =====================================
+# ------------------------------------------------=
 
-# =============
+# ----------------=
 # GENERAL
-# =============
+# ----------------=
 general:
   prefix: "&6[&eUniverseJobs&6]&r"
   no-permission: "&cYou don't have permission to do this!"
@@ -14,9 +14,9 @@ general:
   invalid-format: "&cInvalid format!"
   must-be-player: "&cThis command can only be executed by players!"
 
-# =============
+# ----------------=
 # COMMANDS
-# =============
+# ----------------=
 commands:
   # General command messages
   players-only: "&cThis command can only be used by players!"
@@ -24,30 +24,26 @@ commands:
   player-not-found: "&cPlayer not found!"
 
   help:
-    player: |
-      &6=== UniverseJobs Commands ===
-      &e/jobs &7- Open main jobs menu
-
-      &6⭐⭐⭐⭐ Most Used:
-      &e/jobs join <job> &7- Join a job
-      &e/jobs leave <job> &7- Leave a job
-
-      &6⭐⭐⭐ Information:
-      &e/jobs list &7- List all available jobs
-      &e/jobs stats [player] &7- Show job statistics
-      &e/jobs info [job/player] &7- Show job or player information
-
-      &6⭐⭐ Advanced:
-      &e/jobs menu <jobname> &7- Open job menu directly
-      &e/jobs menu rankings &7- View job leaderboards
+    player:
+      - "&6---- UniverseJobs Commands ----"
+      - "&e/jobs &7- Open main jobs menu"
+      - ""
+      - "&e/jobs join <job> &7- Join a job"
+      - "&e/jobs leave <job> &7- Leave a job"
+      - ""
+      - "&e/jobs list &7- List all available jobs"
+      - "&e/jobs stats [player] &7- Show job statistics"
+      - "&e/jobs info [job/player] &7- Show job or player information"
+      - ""
+      - "&e/jobs menu <jobname> &7- Open job menu directly"
+      - "&e/jobs menu rankings &7- View job leaderboards"
     rewards: "&e/jobs rewards open <job> &7- Access job rewards"
-    admin: |
-      &6⭐ Admin Commands:
-      &e/jobs admin &7- Show all admin commands
-    console: |
-      &6UniverseJobs Console Commands:
-      &e/jobs admin &7- Show all admin commands
-      &e/jobs actionlimit <restore|status> &7- Manage action limits
+    admin:
+      - "&e/jobs admin &7- Show all admin commands"
+    console:
+      - "&6UniverseJobs Console Commands:"
+      - "&e/jobs admin &7- Show all admin commands"
+      - "&e/jobs actionlimit <restore|status> &7- Manage action limits"
   
   # Join Command
   join:
@@ -116,7 +112,10 @@ commands:
   # Action Limit Commands
   actionlimit:
     no-permission: "&cYou don't have permission to use this command!"
-    help: "&6---- Action Limit Commands ----\n&e/jobs actionlimit restore [player] &7- Restore limits\n&e/jobs actionlimit status <player> <job> <target> &7- View status"
+    help:
+      - "&6---- Action Limit Commands ----"
+      - "&e/jobs actionlimit restore [player] &7- Restore limits"
+      - "&e/jobs actionlimit status <player> <job> <target> &7- View status"
     player-not-found: "&cPlayer '{player}' not found!"
     restore:
       usage: "&cUsage: /jobs actionlimit restore [player]"
@@ -198,7 +197,7 @@ commands:
     boost-remove-info-tip: "&7Use &e/jobs admin boost info&7 to see active boosts"
     boost-remove-success: "&aRemoved {type} boost: {id}"
     boost-remove-not-found: "&cBoost ID not found: {id}"
-    boost-info-header: "&6=== Active Boosts ==="
+    boost-info-header: "&6---- Active Boosts ----"
     boost-info-none: "&7No active boosts"
     boost-info-xp-header: "&e&lXP Boosts:" 
     boost-info-money-header: "&6&lMoney Boosts:" 
@@ -212,20 +211,20 @@ commands:
     boost-sender-console: "Console"
     boost-type-xp: "XP"
     boost-type-money: "Money"
-    boost-help: |
-      &6=== Boost Commands ===
-      &e/jobs admin boost <action> <args...>
-
-      &6Actions:
-      &e  give <xp|money> <player/*> <job/*> <action_type> [id_in_action] <multiplier> <duration>
-      &e  remove <boostId>
-      &e  info
-
-      &7Examples:
-      &7  /jobs admin boost give xp * miner * 2.0 3600
-      &7  /jobs admin boost give money Player123 * BREAK simple_break 1.5 1800
-      &7  /jobs admin boost remove xp1
-      &7  /jobs admin boost info
+    boost-help:
+      - "&6---- Boost Commands ----"
+      - "&e/jobs admin boost <action> <args...>"
+      - ""
+      - "&6Actions:"
+      - "&e  give <xp|money> <player/*> <job/*> <action_type> [id_in_action] <multiplier> <duration>"
+      - "&e  remove <boostId>"
+      - "&e  info"
+      - ""
+      - "&7Examples:"
+      - "&7  /jobs admin boost give xp * miner * 2.0 3600"
+      - "&7  /jobs admin boost give money Player123 * BREAK simple_break 1.5 1800"
+      - "&7  /jobs admin boost remove xp1"
+      - "&7  /jobs admin boost info"
     boost-action-id-required: "&cWhen using specific action type, id_in_action is required!"
     boost-usage-with-action: "&7Usage: /jobs admin boost give <xp|money> <player/*> <job/*> <action_type> <id_in_action> <multiplier> <duration>"
     boost-usage-general: "&cUsage: /jobs admin boost give <xp|money> <player/*> <job/*> <action_type> [id_in_action] <multiplier> <duration>"
@@ -251,9 +250,9 @@ commands:
     reload-start: "&6Reloading UniverseJobs..."
     reload-success: "&aUniverseJobs reloaded successfully!"
 
-# =============
+# ----------------=
 # REWARDS SYSTEM
-# =============
+# ----------------=
 rewards:
   claim:
     usage: "&cUsage: /jobs rewards claim <job> <rewardId>"
@@ -272,9 +271,9 @@ rewards:
     no-available-rewards: "&cNo rewards available for your level in job '{job}'!"
 
 
-# =============
+# ----------------=
 # BOOST GUI
-# =============
+# ----------------=
 boost-gui:
   removed: "&aRemoved {type} boost: &e{boost_id}"
   no-permission: "&cYou don't have permission to do that!"
