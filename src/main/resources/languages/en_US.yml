@@ -1,71 +1,89 @@
-# English (United States) language file for UniverseJobs - Clean version
-# This file contains only the messages actually used in the code
+# =====================================
+# UniverseJobs Language File - English
+# =====================================
 
-# XP and leveling messages
-xp:
-  gain-message:
-    default: "<#FFD700>+{xp} XP (</#FFD700><#32CD32>{job}</#32CD32><#FFD700>)"
-  level-up: "<#32CD32>Congratulations! You reached level </#32CD32><#FFD700>{level}</#FFD700><#32CD32> in </#32CD32><#FFD700>{job}</#FFD700><#32CD32>!"
+# =============
+# GENERAL
+# =============
+general:
+  prefix: "&6[&eUniverseJobs&6]&r"
+  no-permission: "&cYou don't have permission to do this!"
+  player-not-found: "&cPlayer &e%player% &cnot found!"
+  job-not-found: "&cJob &e%job% &cnot found!"
+  invalid-amount: "&cInvalid amount: &e%amount%"
+  invalid-format: "&cInvalid format!"
+  must-be-player: "&cThis command can only be executed by players!"
 
-# XP Bonus system messages
-xp-bonus:
-  global-announced: "<#FFD700><bold>BONUS XP!</bold> <#32CD32>All players received </#32CD32><#FFD700>{bonus}%</#FFD700><#32CD32> bonus XP for </#32CD32><#FFD700>{duration}</#FFD700><#32CD32>!"
-  added: "<#32CD32><bold>XP BOOST!</bold> </#32CD32><#FFD700>+{bonus}% XP</#FFD700><#32CD32> for </#32CD32><#FFD700>{duration} </#FFD700><#32CD32>({reason})"
-  expired: "<#FF6B6B><bold>XP BOOST EXPIRED!</bold> <gray>{bonus}% bonus ended ({reason})"
-
-# Command system messages
+# =============
+# COMMANDS
+# =============
 commands:
-  players-only: "<#FF6B6B>This command can only be used by players!"
-  no-permission: "<#FF6B6B>You don't have permission to use this command!"
-  player-not-found: "<#FF6B6B>Player not found!"
+  # General command messages
+  players-only: "&cThis command can only be used by players!"
+  no-permission: "&cYou don't have permission to use this command!"
+  player-not-found: "&cPlayer not found!"
   
-  # Join command
+  # Help Messages
+  help:
+    header: "&6======= &eUniverseJobs Help &6======="
+    join: "&e/jobs join <job> &7- Join a job"
+    leave: "&e/jobs leave <job> &7- Leave a job"
+    info: "&e/jobs info <job/player> &7- Get information"
+    stats: "&e/jobs stats [player] &7- View stats"
+    list: "&e/jobs list &7- List all available jobs"
+    rewards: "&e/jobs rewards <job> &7- Open rewards menu"
+    menu: "&e/jobs menu &7- Open main menu"
+    admin: "&e/jobs admin &7- Admin commands"
+    
+  # Join Command
   join:
-    usage: "<#FF6B6B>Usage: /job join <job>"
-    success: "<#32CD32>You joined the </#32CD32><#FFD700>{job}</#FFD700><#32CD32> job!"
-    already-have: "<#FF6B6B>You already have the </#FF6B6B><#FFD700>{job}</#FFD700><#FF6B6B> job!"
-    max-jobs-reached: "<#FF6B6B>You can only have </#FF6B6B><#FFD700>{max}</#FFD700><#FF6B6B> jobs at once!"
-    no-permission: "<#FF6B6B>You don't have permission to join the </#FF6B6B><#FFD700>{job}</#FFD700><#FF6B6B> job!"
-    failed: "<#FF6B6B>Failed to join the </#FF6B6B><#FFD700>{job}</#FFD700><#FF6B6B> job!"
-    job-not-found: "<#FF6B6B>Job '</#FF6B6B><#FFD700>{job}</#FFD700><#FF6B6B>' not found!"
+    usage: "&cUsage: /jobs join <job>"
+    success: "&aYou joined the &e%job% &ajob!"
+    already-have: "&cYou already have the &e%job% &cjob!"
+    max-jobs-reached: "&cYou can only have &e%max% &cjobs at once!"
+    no-permission: "&cYou don't have permission to join the &e%job% &cjob!"
+    failed: "&cFailed to join the &e%job% &cjob!"
+    job-not-found: "&cJob '&e%job%&c' not found!"
     
-  # Leave command
+  # Leave Command
   leave:
-    usage: "<#FF6B6B>Usage: /job leave <job>"
-    success: "<#FF6B6B>You left the </#FF6B6B><#FFD700>{job}</#FFD700><#FF6B6B> job!"
-    dont-have: "<#FF6B6B>You don't have the </#FF6B6B><#FFD700>{job}</#FFD700><#FF6B6B> job!"
-    failed: "<#FF6B6B>Failed to leave the </#FF6B6B><#FFD700>{job}</#FFD700><#FF6B6B> job!"
-    job-not-found: "<#FF6B6B>Job '</#FF6B6B><#FFD700>{job}</#FFD700><#FF6B6B>' not found!"
-    default-job: "<#FF6B6B>You cannot leave the </#FF6B6B><#FFD700>{job}</#FFD700><#FF6B6B> job as it is a default job!"
+    usage: "&cUsage: /jobs leave <job>"
+    success: "&cYou left the &e%job% &cjob!"
+    dont-have: "&cYou don't have the &e%job% &cjob!"
+    failed: "&cFailed to leave the &e%job% &cjob!"
+    job-not-found: "&cJob '&e%job%&c' not found!"
+    default-job: "&cYou cannot leave the &e%job% &cjob as it is a default job!"
     
-  # Info command
+  # Info Command
   info:
-    not-found: "&cJob or player '{target}' not found!"
+    usage: "&cUsage: /jobs info <job|player>"
+    not-found: "&cJob or player '%target%' not found!"
     job:
-      header: "&6---- {job} ----"
-      description: "&7Description: &f{description}"
-      max-level: "&7Max Level: &e{level}"
-      permission: "&7Permission: &f{permission}"
+      header: "&6---- %job% ----"
+      description: "&7Description: &f%description%"
+      max-level: "&7Max Level: &e%level%"
+      permission: "&7Permission: &f%permission%"
       lore-header: "&7Lore:"
-      lore-line: "&f  {line}"
-      action-types: "&7Action Types: &f{actionTypes}"
+      lore-line: "&f  %line%"
+      action-types: "&7Action Types: &f%actionTypes%"
     
-  # Stats command
+  # Stats Command
   stats:
-    no-jobs-self: "<#FF6B6B>You don't have any jobs!"
-    no-jobs-other: "<#FF6B6B>{player} doesn't have any jobs!"
-    header-self: "<#FFD700>---- Your Jobs ----"
-    header-other: "<#FFD700>---- {player} Jobs ----"
-    job-entry: "<#FFD700>{job} <gray>- Level </#gray><#32CD32>{level} </#32CD32><gray>({currentXp}/{requiredXp} XP)"
+    no-jobs-self: "&cYou don't have any jobs!"
+    no-jobs-other: "&c%player% doesn't have any jobs!"
+    header-self: "&6---- Your Jobs ----"
+    header-other: "&6---- %player% Jobs ----"
+    job-entry: "&e%job% &7- Level &a%level% &7(%currentXp%/%requiredXp% XP)"
     
-  # List command
+  # List Command
   list:
-    no-jobs: "<#FF6B6B>No jobs are available!"
-    header: "<#FFD700>---- Available Jobs ----"
-    status-have: "<#32CD32>✓"
-    status-dont-have: "<#FF6B6B>✗"
+    no-jobs: "&cNo jobs are available!"
+    header: "&6---- Available Jobs ----"
+    entry: "&e%job% &7- %status%"
+    status-have: "&a✓"
+    status-dont-have: "&c✗"
     
-  # XP Bonus commands
+  # XP Bonus Commands
   xpbonus:
     usage:
       header: "&6---- XP Bonus Commands ----"
@@ -73,57 +91,57 @@ commands:
       player: "&e/job xpbonus <player> <multiplier> <duration> &7- Give player XP bonus"
       job: "&e/job xpbonus <player> <job> <multiplier> <duration> &7- Give job-specific bonus"
       examples: "&7Examples: /job xpbonus 2.0 300, /job xpbonus Steve 1.5 600"
-    invalid-numbers: "§cInvalid multiplier or duration! Use numbers only."
-    invalid-multiplier: "§cMultiplier must be between 0.1 and 10.0!"
-    invalid-duration: "§cDuration must be between 1 second and 24 hours (86400 seconds)!"
-    job-not-exist: "§cJob '{job}' does not exist!"
-    gave-global: "§aGave {multiplier}x XP bonus to {playerCount} online players for {duration}"
-    player-offline: "§cPlayer '{player}' is not online!"
-    gave-player: "§aGave {player} {bonus}% XP bonus for {duration} ({job})"
+    invalid-numbers: "&cInvalid multiplier or duration! Use numbers only."
+    invalid-multiplier: "&cMultiplier must be between 0.1 and 10.0!"
+    invalid-duration: "&cDuration must be between 1 second and 24 hours (86400 seconds)!"
+    job-not-exist: "&cJob '%job%' does not exist!"
+    gave-global: "&aGave %multiplier%x XP bonus to %playerCount% online players for %duration%"
+    player-offline: "&cPlayer '%player%' is not online!"
+    gave-player: "&aGave %player% %bonus%% XP bonus for %duration% (%job%)"
     
-  # Menu commands
+  # Menu Commands
   menu:
     invalid-format: "&cInvalid format! Use /jobs menu <type> [args]"
-    unknown: "&cUnknown menu type: {type}"
+    unknown: "&cUnknown menu type: %type%"
     reload:
       success: "&aMenus reloaded successfully!"
     invalid-job-id: "&cInvalid job ID!"
-    job-not-found: "&cJob '{job}' not found!"
+    job-not-found: "&cJob '%job%' not found!"
     job-disabled: "&cThis job is disabled!"
     no-permission: "&cYou don't have permission to open this menu!"
-    failed-open: "&cFailed to open {type} menu!"
+    failed-open: "&cFailed to open %type% menu!"
     quick-help:
       header: "&7---- Quick Menu Help ----"
       main: "&e/jobs menu &7- Main menu"
-      job-example: "&e/jobs menu {job} &7- {job} job menu"
+      job-example: "&e/jobs menu %job% &7- %job% job menu"
       rankings: "&e/jobs menu rankings &7- Rankings"
     
-  # Action limit commands
+  # Action Limit Commands
   actionlimit:
     no-permission: "&cYou don't have permission to use this command!"
     help: "&6---- Action Limit Commands ----\n&e/jobs actionlimit restore [player] &7- Restore limits\n&e/jobs actionlimit status <player> <job> <target> &7- View status"
-    player-not-found: "&cPlayer '{player}' not found!"
+    player-not-found: "&cPlayer '%player%' not found!"
     restore:
       usage: "&cUsage: /jobs actionlimit restore [player]"
-      all-success: "&a{count} action limits restored for all players!"
-      player-success: "&a{count} action limits restored for {player}!"
+      all-success: "&a%count% action limits restored for all players!"
+      player-success: "&a%count% action limits restored for %player%!"
       player-notification: "&aYour action limits have been restored by an administrator!"
     status:
       usage: "&cUsage: /jobs actionlimit status <player> <job> <target>"
       header: "&7---- Action Limit Status ----"
-      player: "&7Player: &e{player}"
-      job: "&7Job: &e{job}"
-      target: "&7Target: &e{target}"
-      no-limits: "&7No limits configured for {job} -> {target} for {player}"
-      cooldown: "&cCooldown: &e{minutes}m {seconds}s"
+      player: "&7Player: &e%player%"
+      job: "&7Job: &e%job%"
+      target: "&7Target: &e%target%"
+      no-limits: "&7No limits configured for %job% -> %target% for %player%"
+      cooldown: "&cCooldown: &e%minutes%m %seconds%s"
       available: "&aAvailable now"
-      actions: "&7Actions: &e{current}/{max} &7(Limit: {limit})"
+      actions: "&7Actions: &e%current%/%max% &7(Limit: %limit%)"
       blocking-both: "&cBlocking: XP and Money"
       blocking-xp: "&cBlocking: XP only"
       blocking-money: "&cBlocking: Money only"
       blocking-none: "&aNo blocking"
     
-  # Rewards commands
+  # Rewards Commands
   rewards:
     no-permission: "&cYou don't have permission to use rewards!"
     help:
@@ -132,11 +150,11 @@ commands:
       claim: "&e/jobs rewards claim <job> <rewardId> &7- Claim a specific reward"
     open:
       usage: "&cUsage: /jobs rewards open <job>"
-    job-not-found: "&cJob '{job}' not found!"
-    must-have-job: "&cYou must have the {job} job to view its rewards!"
-    reward-not-found: "&cReward '{reward}' not found for job {job}!"
+    job-not-found: "&cJob '%job%' not found!"
+    must-have-job: "&cYou must have the %job% job to view its rewards!"
+    reward-not-found: "&cReward '%reward%' not found for job %job%!"
     
-  # Admin commands
+  # Admin Commands
   admin:
     header: "&7---- UniverseJobs Admin Commands ----"
     give: "&e/jobs admin give <xp|level|custom> <give|set|remove> <player> <job> <amount> &7- Give XP/levels/rewards"
@@ -150,86 +168,179 @@ commands:
     
     # Admin responses
     no-permission: "&cYou don't have permission to use this command."
-    player-not-found: "&cPlayer {player} not found."
-    job-not-found: "&cJob {job} not found."
-    invalid-action: "&cInvalid action. Use: {actions}"
-    invalid-amount: "&cInvalid amount: {amount}"
+    player-not-found: "&cPlayer %player% not found."
+    job-not-found: "&cJob %job% not found."
+    invalid-action: "&cInvalid action. Use: %actions%"
+    invalid-amount: "&cInvalid amount: %amount%"
     
-    # XP responses
-    xp-given: "&a{amount} XP added to {player} for job {job}"
-    xp-taken: "&a{amount} XP removed from {player} for job {job}"
-    xp-set: "&a{player}'s XP set to {amount} for job {job}"
-    xp-received: "&a{amount} XP received for {job} from {sender}"
-    xp-lost: "&c{amount} XP lost for {job} (Admin action)"
-    xp-set-notify: "&aYour XP for {job} has been set to {amount} by {sender}"
+    # XP management
+    usage:
+      xp: "&cUsage: /jobsadmin xp <give|take|set> <player> <job> <amount>"
+      level: "&cUsage: /jobsadmin level <give|take> <player> <job> <amount>"
+      forcejoin: "&cUsage: /jobsadmin forcejoin <player> <job>"
+      forceleave: "&cUsage: /jobsadmin forceleave <player> <job>"
+      reset: "&cUsage: /jobsadmin reset <player> [job]"
+      givecustom: "&cUsage: /jobsadmin givecustom <player> <job> <xp> <money>"
+      info: "&cUsage: /jobsadmin info <player>"
+      debug: "&cUsage: /jobsadmin debug <xp|cache|config>"
     
-    # Force join/leave responses
-    forcejoin-success: "&aPlayer &e{player}&a has been forced to join job &e{job}&a."
-    forcejoin-notify: "&aYou have been added to job &e{job}&a by an administrator."
-    forceleave-success: "&aPlayer &e{player}&a has been forced to leave job &e{job}&a."
-    forceleave-notify: "&cYou have been removed from job &e{job}&c by an administrator."
+    xp-given: "&a%amount% XP added to %player% for job %job%"
+    xp-taken: "&a%amount% XP removed from %player% for job %job%"
+    xp-set: "&a%player%'s XP set to %amount% for job %job%"
+    xp-received: "&a%amount% XP received for %job% from %sender%"
+    xp-lost: "&c%amount% XP lost for %job% (Admin action)"
+    xp-set-notify: "&aYour XP for %job% has been set to %amount% by %sender%"
+    xp-error: "&cError modifying XP: %error%"
     
-    # Reset responses
-    reset-success: "&aReset completed for {player}: {cleanedJobs} jobs, {totalJobs} total jobs"
+    # Level management
+    level-given: "&a%amount% levels added to %player% for job %job% (now level %level%)"
+    level-taken: "&a%amount% levels removed from %player% for job %job% (now level %level%)"
+    level-received: "&aYou received %amount% levels for %job%!"
+    level-lost: "&cYou lost %amount% levels for %job%!"
+    level-error: "&cError modifying level: %error%"
+    
+    # Force join/leave
+    forcejoin-success: "&aPlayer &e%player%&a has been forced to join job &e%job%&a."
+    forcejoin-notify: "&aYou have been added to job &e%job%&a by an administrator."
+    forcejoin-failed: "&cFailed to force join!"
+    forceleave-success: "&aPlayer &e%player%&a has been forced to leave job &e%job%&a."
+    forceleave-notify: "&cYou have been removed from job &e%job%&c by an administrator."
+    forceleave-failed: "&cFailed to force leave!"
+    
+    # Reset
+    reset-confirmation: "&eAre you sure you want to reset &c%player%&e? Type the command again to confirm."
+    reset-success: "&aReset completed for %player%: %cleanedJobs% jobs, %totalJobs% total jobs"
+    reset-job-success: "&aReset %job% for %player%!"
     reset-notify: "&cYour job data has been reset by an administrator."
-    reset-job-notify: "&cYour progress in job {job} has been reset by an administrator."
+    reset-job-notify: "&cYour progress in job %job% has been reset by an administrator."
+    reset-error: "&cError resetting player data!"
     
-    # Cache responses
-    cache-reloaded: "&aCache reloaded successfully."
-    cache-stats-hitrate: "&eHit Rate: &a{rate}%"
+    # Give custom
+    givecustom-success: "&aGave %player% custom rewards for %job%: %xp% XP and $%money%"
+    player-no-job: "&c%player% doesn't have the job %job%!"
     
-    # Reload responses
+    # Info
+    debug-header: "&7---- Debug Info for %player% ----"
+    debug-jobs: "&7Total jobs: &e%count%"
+    debug-job-line: "&7  %job% - Level %level% (%xp% XP)"
+    
+    # Reload
     reload-start: "&6Reloading UniverseJobs..."
     reload-success: "&aUniverseJobs reloaded successfully!"
+    reload-failed: "&cFailed to reload: %error%"
     
-    # Debug responses
-    debug-job-line: "&7  {job} - Level {level} ({xp} XP)"
-    debug-job-enabled: "&eJob Enabled: &a{enabled}"
-    debug-actions-break: "&eBreak Actions: &a{count}"
-    debug-cache-stats: "&eCache Stats: &a{stats}"
-    debug-stat-entry: "&7  {key}: &a{value}"
+    # Debug
+    debug-invalid-type: "&cInvalid debug type: %type%"
+    debug-available-types: "&7Available types: xp, cache, config"
+    debug-xp-header: "&6=== XP Debug Info ==="
+    debug-job-enabled: "&eJob Enabled: &a%enabled%"
+    debug-actions-break: "&eBreak Actions: &a%count%"
+    debug-cache-configured: "&aCache is configured"
+    debug-cache-not-configured: "&cCache is not configured"
+    debug-enabled: "&7Debug enabled: %enabled%"
+    debug-show-xp: "&7Show XP: %enabled%"
+    debug-cache-header: "&6=== Cache Statistics ==="
+    debug-cache-stats: "&eCache Stats: &a%stats%"
+    debug-stat-entry: "&7  %key%: &a%value%"
+    debug-config-header: "&6=== Configuration Debug ==="
+    cache-stats-hitrate: "&eHit Rate: &a%rate%%"
+    cache-reloaded: "&aCache reloaded successfully."
 
-# Rewards system
+# =============
+# XP & LEVELING
+# =============
+xp:
+  # Gain Messages
+  gain-message:
+    default: "&a+%xp% XP (&e%job%&a)"
+    with-bonus: "&a+%xp% XP (&e+%bonus%&a) for &e%job%"
+    
+  # Level Up
+  level-up: "&6&lLEVEL UP! &aYou reached level &6%level% &ain &e%job%&a!"
+  level-up-broadcast: "&e%player% &ahas reached level &6%level% &ain &e%job%&a!"
+    
+  # Action Bar
+  actionbar:
+    format: "&e%job%: &a%xp% XP"
+    
+  # Boss Bar
+  bossbar:
+    format: "&e%job% &7| &aLevel %level% &7| &b%currentXp%&7/&3%requiredXp% XP"
+
+# =============
+# BONUS SYSTEM
+# =============
+xp-bonus:
+  global-announced: "&6&lBONUS XP! &aAll players received &6%bonus%% &abonus XP for &e%duration%&a!"
+  added: "&a&lXP BOOST! &e+%bonus%% XP &afor &e%duration% &7(%reason%)"
+  expired: "&c&lXP BOOST EXPIRED! &7%bonus%% bonus ended (%reason%)"
+
+# =============
+# REWARDS SYSTEM
+# =============
 rewards:
   claim:
     usage: "&cUsage: /jobs rewards claim <job> <rewardId>"
-    success: "&aReward '{reward}' claimed successfully!"
-    failed: "&cFailed to claim reward '{reward}'!"
+    success: "&aReward '%reward%' claimed successfully!"
+    failed: "&cFailed to claim reward '%reward%'!"
     already-claimed: "&7You have already claimed this reward."
-    no-job: "&cYou must have the {job} job to claim this reward!"
-    level-requirement: "&cYou must be level {level} in the {job} job to claim this reward!"
-    no-permission: "&cYou don't have the '{permission}' permission required for this reward!"
+    no-job: "&cYou must have the %job% job to claim this reward!"
+    level-requirement: "&cYou must be level %level% in the %job% job to claim this reward!"
+    no-permission: "&cYou don't have the '%permission%' permission required for this reward!"
     requirements-not-met: "&cYou don't meet all requirements to claim this reward!"
-    cooldown: "&cYou must wait {time} before claiming this reward again!"
+    cooldown: "&cYou must wait %time% before claiming this reward again!"
 
-# GUI system messages
+# =============
+# GUI MESSAGES
+# =============
 gui:
   rewards:
-    title: "<#FFD700>{job} Rewards"
-    job-label: "<gray>Job: </#gray><#FFD700>{job}"
-    total-label: "<gray>Total Rewards: </#gray><#FFD700>{count}"
-    page-label: "<gray>Page: </#gray><#FFD700>{current}/{total}"
-    required-level: "<gray>Required Level: </#gray><#FFD700>{level}"
-    status-label: "<gray>Status: {status}"
-    repeatable-yes: "<gray>Repeatable: </#gray><#32CD32>Yes"
-    repeatable-no: "<gray>Repeatable: </#gray><#FF6B6B>No"
-    cooldown-label: "<gray>Cooldown: </#gray><#FFD700>{cooldown}"
-    click-to-claim: "<#32CD32>▶ Click to claim!"
-    claim-success: "<#32CD32>Reward claimed successfully!"
-    claim-failed: "<#FF6B6B>Failed to claim reward."
+    title: "&6%job% Rewards"
+    job-label: "&7Job: &e%job%"
+    total-label: "&7Total Rewards: &e%count%"
+    page-label: "&7Page: &e%current%/%total%"
+    required-level: "&7Required Level: &e%level%"
+    status-label: "&7Status: %status%"
+    repeatable-yes: "&7Repeatable: &aYes"
+    repeatable-no: "&7Repeatable: &cNo"
+    cooldown-label: "&7Cooldown: &e%cooldown%"
+    click-to-claim: "&a▶ Click to claim!"
+    claim-success: "&aReward claimed successfully!"
+    claim-failed: "&cFailed to claim reward."
 
-# Boost GUI messages
+# =============
+# BOOST GUI
+# =============
 boost-gui:
-  removed: "<green>Removed {type} boost: <gold>{boost_id}</gold></green>"
-  no-permission: "<red>You don't have permission to do that!</red>"
-  refresh-clicked: "<aqua>Refreshing boost list...</aqua>"
+  removed: "&aRemoved %type% boost: &e%boost_id%"
+  no-permission: "&cYou don't have permission to do that!"
+  refresh-clicked: "&bRefreshing boost list..."
 
-# System messages (console/logger)
-system:
-  config-loaded: "Configuration loaded successfully"
-  jobs-loaded: "Jobs loaded successfully"
-  rewards-initialized: "Reward system initialized successfully"
-  nexo-registered: "Nexo event listener registered for enhanced custom block support"
-  itemsadder-registered: "ItemsAdder event listener registered for enhanced custom block support"
-  plugin-enabled: "UniverseJobs has been enabled successfully!"
-  plugin-disabled: "UniverseJobs has been disabled"
+# =============
+# PROTECTION
+# =============
+protection:
+  block:
+    placed-recently: "&cThis block was placed recently and gives no rewards!"
+    protected: "&cThis block is protected!"
+    
+  entity:
+    spawned-recently: "&cThis entity was spawned recently and gives no rewards!"
+    protected: "&cThis entity is protected!"
+
+
+# =============
+# PLACEHOLDERS
+# =============
+placeholders:
+  no-job: "&7None"
+  no-data: "&7N/A"
+  unlimited: "&aUnlimited"
+  never: "&7Never"
+  now: "&aNow"
+  enabled: "&aEnabled"
+  disabled: "&cDisabled"
+  true: "&aTrue"
+  false: "&cFalse"
+  yes: "&aYes"
+  no: "&cNo"
