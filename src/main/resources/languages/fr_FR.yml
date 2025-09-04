@@ -23,17 +23,31 @@ commands:
   no-permission: "&cVous n'avez pas la permission d'utiliser cette commande !"
   player-not-found: "&cJoueur introuvable !"
   
-  # Messages d'aide
   help:
-    header: "&6======= &eAide UniverseJobs &6======="
-    join: "&e/jobs join <métier> &7- Rejoindre un métier"
-    leave: "&e/jobs leave <métier> &7- Quitter un métier"
-    info: "&e/jobs info <métier/joueur> &7- Obtenir des informations"
-    stats: "&e/jobs stats [joueur] &7- Voir les statistiques"
-    list: "&e/jobs list &7- Lister tous les métiers disponibles"
-    rewards: "&e/jobs rewards <métier> &7- Ouvrir le menu des récompenses"
-    menu: "&e/jobs menu &7- Ouvrir le menu principal"
-    admin: "&e/jobs admin &7- Commandes administrateur"
+    player: |
+      &6=== Commandes UniverseJobs ===
+      &e/jobs &7- Ouvre le menu principal des métiers
+
+      &6⭐⭐⭐⭐ Les plus utilisées :
+      &e/jobs join <métier> &7- Rejoindre un métier
+      &e/jobs leave <métier> &7- Quitter un métier
+
+      &6⭐⭐⭐ Informations :
+      &e/jobs list &7- Lister tous les métiers disponibles
+      &e/jobs stats [joueur] &7- Afficher les statistiques
+      &e/jobs info [métier/joueur] &7- Informations sur un métier ou un joueur
+
+      &6⭐⭐ Avancé :
+      &e/jobs menu <métier> &7- Ouvrir directement le menu du métier
+      &e/jobs menu rankings &7- Voir les classements
+    rewards: "&e/jobs rewards open <métier> &7- Accéder aux récompenses du métier"
+    admin: |
+      &6⭐ Commandes Admin :
+      &e/jobs admin &7- Afficher toutes les commandes admin
+    console: |
+      &6Commandes Console UniverseJobs :
+      &e/jobs admin &7- Afficher toutes les commandes admin
+      &e/jobs actionlimit <restore|status> &7- Gérer les limites d'actions
     
   # Commande join
   join:
@@ -138,7 +152,15 @@ commands:
     job-not-found: "&cMétier '{job}' introuvable !"
     must-have-job: "&cVous devez avoir le métier {job} pour voir ses récompenses !"
     reward-not-found: "&cRécompense '{reward}' introuvable pour le métier {job} !"
-    
+
+  bonus:
+    give-usage: "&cUtilisation : /jobs {type} give <joueur|*> <multiplicateur> <durée> [métier] [raison]"
+    examples-header: "&7Exemples :"
+    example-global: "&7  /jobs {type} give * 2.0 3600 - Donner 2x {type} à tous les joueurs pendant 1 heure"
+    example-player: "&7  /jobs {type} give Player123 1.5 1800 miner Événement Minage"
+    remove-usage: "&cUtilisation : /jobs {type} remove <joueur> [métier]"
+    list-usage: "&cUtilisation : /jobs {type} list [joueur]"
+
   # Commandes admin
   admin:
     header: "&7---- Commandes Admin UniverseJobs ----"
@@ -166,6 +188,42 @@ commands:
     invalid-amount: "&cMontant invalide : {amount}"
     
     # Messages boost
+    boost-invalid-type: "&cType de boost invalide ! Utilisez : xp ou money"
+    boost-invalid-player: "&cNom de joueur invalide !"
+    boost-invalid-job: "&cID de métier invalide !"
+    boost-invalid-action-type: "&cType d'action invalide !"
+    boost-invalid-multiplier: "&cMultiplicateur invalide ! Doit être entre 0.1 et 10.0"
+    boost-invalid-duration: "&cDurée invalide ! Doit être entre 1 et 86400 secondes"
+    boost-invalid-action-id: "&cID d'action invalide pour le type {type} !"
+    boost-applied: "&aBoost {type} x{multiplier} appliqué pendant {duration}s à {target} ({job} - {action}{action_id})"
+    boost-remove-usage: "&cUtilisation : /jobs admin boost remove <boostId>"
+    boost-remove-info-tip: "&7Utilisez &e/jobs admin boost info&7 pour voir les boosts actifs"
+    boost-remove-success: "&aBoost {type} supprimé : {id}"
+    boost-remove-not-found: "&cBoost introuvable : {id}"
+    boost-info-header: "&6=== Boosts actifs ==="
+    boost-info-none: "&7Aucun boost actif"
+    boost-info-xp-header: "&e&lBoosts XP :"
+    boost-info-money-header: "&6&lBoosts Money :"
+    boost-info-entry: "&7  {id} &8- &f{player} &8| &a{multiplier}x &8| &e{job} &8| &b{action} &8| &c{time}"
+    boost-info-remove-tip: "&7Utilisez &e/jobs admin boost remove <boostId>&7 pour supprimer un boost spécifique"
+    boost-info-all-players: "Tous les joueurs"
+    boost-info-unknown-player: "Inconnu"
+    boost-info-all-jobs: "Tous les métiers"
+    boost-info-all-actions: "Toutes les actions"
+    boost-help: |
+      &6=== Commandes Boost ===
+      &e/jobs admin boost <action> <arguments...>
+
+      &6Actions :
+      &e  give <xp|money> <joueur/*> <métier/*> <type_action> [id_action] <multiplicateur> <durée>
+      &e  remove <boostId>
+      &e  info
+
+      &7Exemples :
+      &7  /jobs admin boost give xp * miner * 2.0 3600
+      &7  /jobs admin boost give money Player123 * BREAK simple_break 1.5 1800
+      &7  /jobs admin boost remove xp1
+      &7  /jobs admin boost info
     boost-action-id-required: "&cLors de l'utilisation d'un type d'action spécifique, id_in_action est requis !"
     boost-usage-with-action: "&7Usage : /jobs admin boost give <xp|money> <joueur/*> <métier/*> <type_action> <id_in_action> <multiplicateur> <durée>"
     boost-usage-general: "&cUsage : /jobs admin boost give <xp|money> <joueur/*> <métier/*> <type_action> [id_in_action] <multiplicateur> <durée>"
