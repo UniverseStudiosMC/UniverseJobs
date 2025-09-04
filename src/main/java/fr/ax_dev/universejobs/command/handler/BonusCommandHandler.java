@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 public abstract class BonusCommandHandler<T, M extends BonusManager<T>> extends JobCommandHandler {
     
     private static final String CMD_REMOVE = "remove";
-    private static final String USAGE_PREFIX = "§cUsage: /jobs ";
     
     protected final M specificBonusManager;
     private final String bonusType;
@@ -80,10 +79,10 @@ public abstract class BonusCommandHandler<T, M extends BonusManager<T>> extends 
     
     private void handleBonusGive(CommandSender sender, String[] args) {
         if (args.length < 5) {
-            sender.sendMessage(USAGE_PREFIX + bonusType + " give <player|*> <multiplier> <duration> [job] [reason]");
-            sender.sendMessage("§7Examples:");
-            sender.sendMessage("§7  /jobs " + bonusType + " give * 2.0 3600 - Give all players 2x " + bonusType + " for 1 hour");
-            sender.sendMessage("§7  /jobs " + bonusType + " give Player123 1.5 1800 miner Mining Event");
+            sender.sendMessage(languageManager.getMessage("commands.bonus.give-usage", "type", bonusType));
+            sender.sendMessage(languageManager.getMessage("commands.bonus.examples-header"));
+            sender.sendMessage(languageManager.getMessage("commands.bonus.example-global", "type", bonusType));
+            sender.sendMessage(languageManager.getMessage("commands.bonus.example-player", "type", bonusType));
             return;
         }
         
@@ -130,7 +129,7 @@ public abstract class BonusCommandHandler<T, M extends BonusManager<T>> extends 
     
     private void handleBonusRemove(CommandSender sender, String[] args) {
         if (args.length < 3) {
-            sender.sendMessage(USAGE_PREFIX + bonusType + " remove <player> [job]");
+            sender.sendMessage(languageManager.getMessage("commands.bonus.remove-usage", "type", bonusType));
             return;
         }
         
@@ -155,7 +154,7 @@ public abstract class BonusCommandHandler<T, M extends BonusManager<T>> extends 
         String playerName = args.length > 2 ? args[2] : (sender instanceof Player ? sender.getName() : null);
         
         if (playerName == null) {
-            sender.sendMessage(USAGE_PREFIX + bonusType + " list [player]");
+            sender.sendMessage(languageManager.getMessage("commands.bonus.list-usage", "type", bonusType));
             return;
         }
         
