@@ -8,9 +8,9 @@
 general:
   prefix: "&6[&eUniverseJobs&6]&r"
   no-permission: "&cVous n'avez pas la permission de faire cela !"
-  player-not-found: "&cJoueur &e%player% &cintrouvable !"
-  job-not-found: "&cMétier &e%job% &cintrouvable !"
-  invalid-amount: "&cMontant invalide : &e%amount%"
+  player-not-found: "&cJoueur &e{player} &cintrouvable !"
+  job-not-found: "&cMétier &e{job} &cintrouvable !"
+  invalid-amount: "&cMontant invalide : &e{amount}"
   invalid-format: "&cFormat invalide !"
   must-be-player: "&cCette commande ne peut être exécutée que par des joueurs !"
 
@@ -38,104 +38,89 @@ commands:
   # Commande join
   join:
     usage: "&cUtilisation : /jobs join <métier>"
-    success: "&aVous avez rejoint le métier &e%job% &a!"
-    already-have: "&cVous avez déjà le métier &e%job% &c!"
-    max-jobs-reached: "&cVous ne pouvez avoir que &e%max% &cmétiers à la fois !"
-    no-permission: "&cVous n'avez pas la permission de rejoindre le métier &e%job% &c!"
-    failed: "&cÉchec lors de l'adhésion au métier &e%job% &c!"
-    job-not-found: "&cMétier '&e%job%&c' introuvable !"
+    success: "&aVous avez rejoint le métier &e{job} &a!"
+    already-have: "&cVous avez déjà le métier &e{job} &c!"
+    max-jobs-reached: "&cVous ne pouvez avoir que &e{max} &cmétiers à la fois !"
+    no-permission: "&cVous n'avez pas la permission de rejoindre le métier &e{job} &c!"
+    failed: "&cÉchec lors de l'adhésion au métier &e{job} &c!"
+    job-not-found: "&cMétier '&e{job}&c' introuvable !"
     
   # Commande leave
   leave:
     usage: "&cUtilisation : /jobs leave <métier>"
-    success: "&cVous avez quitté le métier &e%job% &c!"
-    dont-have: "&cVous n'avez pas le métier &e%job% &c!"
-    failed: "&cÉchec lors de l'abandon du métier &e%job% &c!"
-    job-not-found: "&cMétier '&e%job%&c' introuvable !"
-    default-job: "&cVous ne pouvez pas quitter le métier &e%job% &ccar c'est un métier par défaut !"
+    success: "&cVous avez quitté le métier &e{job} &c!"
+    dont-have: "&cVous n'avez pas le métier &e{job} &c!"
+    failed: "&cÉchec lors de l'abandon du métier &e{job} &c!"
+    job-not-found: "&cMétier '&e{job}&c' introuvable !"
+    default-job: "&cVous ne pouvez pas quitter le métier &e{job} &ccar c'est un métier par défaut !"
     
   # Commande info
   info:
     usage: "&cUtilisation : /jobs info <métier|joueur>"
-    not-found: "&cMétier ou joueur '%target%' introuvable !"
+    not-found: "&cMétier ou joueur '{target}' introuvable !"
     job:
-      header: "&6---- %job% ----"
-      description: "&7Description : &f%description%"
-      max-level: "&7Niveau max : &e%level%"
-      permission: "&7Permission : &f%permission%"
+      header: "&6---- {job} ----"
+      description: "&7Description : &f{description}"
+      max-level: "&7Niveau max : &e{level}"
+      permission: "&7Permission : &f{permission}"
       lore-header: "&7Histoire :"
-      lore-line: "&f  %line%"
-      action-types: "&7Types d'actions : &f%actionTypes%"
+      lore-line: "&f  {line}"
+      action-types: "&7Types d'actions : &f{types}"
     
   # Commande stats
   stats:
     no-jobs-self: "&cVous n'avez aucun métier !"
-    no-jobs-other: "&c%player% n'a aucun métier !"
+    no-jobs-other: "&c{player} n'a aucun métier !"
     header-self: "&6---- Vos métiers ----"
-    header-other: "&6---- Métiers de %player% ----"
-    job-entry: "&e%job% &7- Niveau &a%level% &7(%currentXp%/%requiredXp% XP)"
+    header-other: "&6---- Métiers de {player} ----"
+    job-entry: "&e{job} &7- Niveau &a{level} &7({current_xp}/{required_xp} XP)"
     
   # Commande list
   list:
     no-jobs: "&cAucun métier disponible !"
     header: "&6---- Métiers disponibles ----"
-    entry: "&e%job% &7- %status%"
+    entry: "&e{job} &7- %status%"
     status-have: "&a✓"
     status-dont-have: "&c✗"
     
-  # Commandes Bonus XP
-  xpbonus:
-    usage:
-      header: "&6---- Commandes de bonus XP ----"
-      global: "&e/job xpbonus <multiplicateur> <durée> &7- Donner un bonus XP global"
-      player: "&e/job xpbonus <joueur> <multiplicateur> <durée> &7- Donner un bonus XP à un joueur"
-      job: "&e/job xpbonus <joueur> <métier> <multiplicateur> <durée> &7- Donner un bonus spécifique au métier"
-      examples: "&7Exemples : /job xpbonus 2.0 300, /job xpbonus Steve 1.5 600"
-    invalid-numbers: "&cMultiplicateur ou durée invalide ! Utilisez uniquement des nombres."
-    invalid-multiplier: "&cLe multiplicateur doit être entre 0.1 et 10.0 !"
-    invalid-duration: "&cLa durée doit être entre 1 seconde et 24 heures (86400 secondes) !"
-    job-not-exist: "&cLe métier '%job%' n'existe pas !"
-    gave-global: "&aDonné %multiplier%x bonus XP à %playerCount% joueurs en ligne pendant %duration%"
-    player-offline: "&cLe joueur '%player%' n'est pas en ligne !"
-    gave-player: "&aDonné à %player% %bonus%% de bonus XP pendant %duration% (%job%)"
     
   # Commandes menu
   menu:
     invalid-format: "&cFormat invalide ! Utilisez /jobs menu <type> [args]"
-    unknown: "&cType de menu inconnu : %type%"
+    unknown: "&cType de menu inconnu : {type}"
     reload:
       success: "&aMenus rechargés avec succès !"
     invalid-job-id: "&cID de métier invalide !"
-    job-not-found: "&cMétier '%job%' introuvable !"
+    job-not-found: "&cMétier '{job}' introuvable !"
     job-disabled: "&cCe métier est désactivé !"
     no-permission: "&cVous n'avez pas la permission d'ouvrir ce menu !"
-    failed-open: "&cÉchec de l'ouverture du menu %type% !"
+    failed-open: "&cÉchec de l'ouverture du menu {type} !"
     quick-help:
       header: "&7---- Aide rapide des menus ----"
       main: "&e/jobs menu &7- Menu principal"
-      job-example: "&e/jobs menu %job% &7- Menu du métier %job%"
+      job-example: "&e/jobs menu {job} &7- Menu du métier {job}"
       rankings: "&e/jobs menu rankings &7- Classements"
     
   # Commandes de limite d'actions
   actionlimit:
     no-permission: "&cVous n'avez pas la permission d'utiliser cette commande !"
     help: "&6---- Commandes de limites d'actions ----\n&e/jobs actionlimit restore [joueur] &7- Restaurer les limites\n&e/jobs actionlimit status <joueur> <métier> <cible> &7- Voir le statut"
-    player-not-found: "&cJoueur '%player%' introuvable !"
+    player-not-found: "&cJoueur '{player}' introuvable !"
     restore:
       usage: "&cUtilisation : /jobs actionlimit restore [joueur]"
-      all-success: "&a%count% limites d'actions restaurées pour tous les joueurs !"
-      player-success: "&a%count% limites d'actions restaurées pour %player% !"
+      all-success: "&a{count} limites d'actions restaurées pour tous les joueurs !"
+      player-success: "&a{count} limites d'actions restaurées pour {player} !"
       player-notification: "&aVos limites d'actions ont été restaurées par un administrateur !"
     status:
       usage: "&cUtilisation : /jobs actionlimit status <joueur> <métier> <cible>"
       header: "&7---- Statut des limites d'actions ----"
-      player: "&7Joueur : &e%player%"
-      job: "&7Métier : &e%job%"
-      target: "&7Cible : &e%target%"
-      no-limits: "&7Aucune limite configurée pour %job% -> %target% pour %player%"
-      cooldown: "&cTemps de recharge : &e%minutes%m %seconds%s"
+      player: "&7Joueur : &e{player}"
+      job: "&7Métier : &e{job}"
+      target: "&7Cible : &e{target}"
+      no-limits: "&7Aucune limite configurée pour {job} -> {target} pour {player}"
+      cooldown: "&cTemps de recharge : &e{minutes}m {seconds}s"
       available: "&aDisponible maintenant"
-      actions: "&7Actions : &e%current%/%max% &7(Limite : %limit%)"
+      actions: "&7Actions : &e{current}/{max} &7(Limite : {limit})"
       blocking-both: "&cBloque : XP et Argent"
       blocking-xp: "&cBloque : XP seulement"
       blocking-money: "&cBloque : Argent seulement"
@@ -150,9 +135,9 @@ commands:
       claim: "&e/jobs rewards claim <métier> <idRécompense> &7- Réclamer une récompense"
     open:
       usage: "&cUtilisation : /jobs rewards open <métier>"
-    job-not-found: "&cMétier '%job%' introuvable !"
-    must-have-job: "&cVous devez avoir le métier %job% pour voir ses récompenses !"
-    reward-not-found: "&cRécompense '%reward%' introuvable pour le métier %job% !"
+    job-not-found: "&cMétier '{job}' introuvable !"
+    must-have-job: "&cVous devez avoir le métier {job} pour voir ses récompenses !"
+    reward-not-found: "&cRécompense '{reward}' introuvable pour le métier {job} !"
     
   # Commandes admin
   admin:
@@ -166,68 +151,45 @@ commands:
     reload: "&e/jobs admin reload &7- Recharger la configuration et les métiers"
     debug: "&e/jobs admin debug <xp|cache|config> &7- Déboguer le système XP/cache/config"
     
-    # Réponses admin
-    no-permission: "&cVous n'avez pas la permission d'utiliser cette commande."
-    player-not-found: "&cJoueur %player% introuvable."
-    job-not-found: "&cMétier %job% introuvable."
-    invalid-action: "&cAction invalide. Utilisez : %actions%"
-    invalid-amount: "&cMontant invalide : %amount%"
+    # Messages d'aide give
+    give-help-header: "&6---- Aide Commandes Give ----"
+    give-help-xp: "&e/jobsadmin give xp <give|set|remove> <joueur> <métier> <montant> &7- Gérer l'XP"
+    give-help-level: "&e/jobsadmin give level <give|remove> <joueur> <métier> <montant> &7- Gérer les niveaux"
+    give-help-custom: "&e/jobsadmin give custom <joueur> <métier> <xp> <argent> &7- Donner des récompenses personnalisées"
     
-    # Gestion XP
-    usage:
-      xp: "&cUtilisation : /jobsadmin xp <give|take|set> <joueur> <métier> <montant>"
-      level: "&cUtilisation : /jobsadmin level <give|take> <joueur> <métier> <montant>"
-      forcejoin: "&cUtilisation : /jobsadmin forcejoin <joueur> <métier>"
-      forceleave: "&cUtilisation : /jobsadmin forceleave <joueur> <métier>"
-      reset: "&cUtilisation : /jobsadmin reset <joueur> [métier]"
-      givecustom: "&cUtilisation : /jobsadmin givecustom <joueur> <métier> <xp> <argent>"
-      info: "&cUtilisation : /jobsadmin info <joueur>"
-      debug: "&cUtilisation : /jobsadmin debug <xp|cache|config>"
+    # Messages admin communs
+    no-permission: "&cVous n'avez pas la permission d'utiliser cette commande !"
+    player-not-found: "&cJoueur &e{player} &cintrouvable !"
+    job-not-found: "&cMétier &e{job} &cintrouvable !"
+    player-no-job: "&c{player} n'a pas le métier {job} !"
+    invalid-action: "&cAction invalide ! Utilisez : {actions}"
+    invalid-amount: "&cMontant invalide : {amount}"
     
-    xp-given: "&a%amount% XP ajoutés à %player% pour le métier %job%"
-    xp-taken: "&a%amount% XP retirés de %player% pour le métier %job%"
-    xp-set: "&aXP de %player% défini à %amount% pour le métier %job%"
-    xp-received: "&a%amount% XP reçus pour %job% de %sender%"
-    xp-lost: "&c%amount% XP perdus pour %job% (Action admin)"
-    xp-set-notify: "&aVotre XP pour %job% a été défini à %amount% par %sender%"
-    xp-error: "&cErreur lors de la modification de l'XP : %error%"
+    # Messages boost
+    boost-action-id-required: "&cLors de l'utilisation d'un type d'action spécifique, id_in_action est requis !"
+    boost-usage-with-action: "&7Usage : /jobs admin boost give <xp|money> <joueur/*> <métier/*> <type_action> <id_in_action> <multiplicateur> <durée>"
+    boost-usage-general: "&cUsage : /jobs admin boost give <xp|money> <joueur/*> <métier/*> <type_action> [id_in_action] <multiplicateur> <durée>"
     
-    # Gestion des niveaux
-    level-given: "&a%amount% niveaux ajoutés à %player% pour le métier %job% (maintenant niveau %level%)"
-    level-taken: "&a%amount% niveaux retirés de %player% pour le métier %job% (maintenant niveau %level%)"
-    level-received: "&aVous avez reçu %amount% niveaux pour %job% !"
-    level-lost: "&cVous avez perdu %amount% niveaux pour %job% !"
-    level-error: "&cErreur lors de la modification du niveau : %error%"
+    # Messages de succès Give/Set/Remove
+    give-success: "&aDonné des récompenses à &e{player} &apour le métier &e{job}"
+    set-success: "&aDéfini les récompenses pour &e{player} &adans le métier &e{job}"
+    remove-success: "&aRetiré les récompenses de &e{player} &apour le métier &e{job}"
+    give-failed: "&cÉchec du don de récompenses à {player}"
+    set-failed: "&cÉchec de la définition des récompenses pour {player}"
+    remove-failed: "&cÉchec du retrait des récompenses de {player}"
     
-    # Force join/leave
-    forcejoin-success: "&aLe joueur &e%player%&a a été forcé à rejoindre le métier &e%job%&a."
-    forcejoin-notify: "&aVous avez été ajouté au métier &e%job%&a par un administrateur."
-    forcejoin-failed: "&cÉchec du force join !"
-    forceleave-success: "&aLe joueur &e%player%&a a été forcé à quitter le métier &e%job%&a."
-    forceleave-notify: "&cVous avez été retiré du métier &e%job%&c par un administrateur."
-    forceleave-failed: "&cÉchec du force leave !"
-    
-    # Reset
-    reset-confirmation: "&eÊtes-vous sûr de vouloir réinitialiser &c%player%&e ? Retapez la commande pour confirmer."
-    reset-success: "&aRéinitialisation terminée pour %player% : %cleanedJobs% métiers, %totalJobs% métiers au total"
-    reset-job-success: "&aRéinitialisation de %job% pour %player% !"
-    reset-notify: "&cVos données de métiers ont été réinitialisées par un administrateur."
-    reset-job-notify: "&cVotre progression dans le métier %job% a été réinitialisée par un administrateur."
+    # Messages de reset
+    reset-confirmation: "&eÊtes-vous sûr de vouloir réinitialiser &c{player}&e ? Relancez la commande pour confirmer."
+    reset-success: "&aRéinitialisation de &e{player} &aterminée ! Nettoyé &e{cleanedJobs}&a/&e{totalJobs} &amétiers."
+    reset-job-success: "&aRéinitialisation de &e{job} &apour &e{player} !"
     reset-error: "&cErreur lors de la réinitialisation des données du joueur !"
     
     # Give custom
-    givecustom-success: "&aDonné à %player% des récompenses personnalisées pour %job% : %xp% XP et %money%€"
-    player-no-job: "&c%player% n'a pas le métier %job% !"
-    
-    # Info
-    debug-header: "&7---- Info Debug pour %player% ----"
-    debug-jobs: "&7Total métiers : &e%count%"
-    debug-job-line: "&7  %job% - Niveau %level% (%xp% XP)"
+    givecustom-success: "&aDonné à &e{player} &ades récompenses personnalisées pour &e{job}&a : &b{xp} XP &aet &6{money}€"
     
     # Reload
     reload-start: "&6Rechargement d'UniverseJobs..."
     reload-success: "&aUniverseJobs rechargé avec succès !"
-    reload-failed: "&cÉchec du rechargement : %error%"
 
 # =============
 # SYSTÈME DE RÉCOMPENSES
@@ -235,26 +197,26 @@ commands:
 rewards:
   claim:
     usage: "&cUtilisation : /jobs rewards claim <métier> <idRécompense>"
-    success: "&aRécompense '%reward%' réclamée avec succès !"
-    failed: "&cÉchec de réclamation de la récompense '%reward%' !"
+    success: "&aRécompense '{reward}' réclamée avec succès !"
+    failed: "&cÉchec de réclamation de la récompense '{reward}' !"
     already-claimed: "&7Vous avez déjà réclamé cette récompense."
-    no-job: "&cVous devez avoir le métier %job% pour réclamer cette récompense !"
-    level-requirement: "&cVous devez être niveau %level% dans le métier %job% pour réclamer cette récompense !"
-    no-permission: "&cVous n'avez pas la permission '%permission%' requise pour cette récompense !"
+    no-job: "&cVous devez avoir le métier {job} pour réclamer cette récompense !"
+    level-requirement: "&cVous devez être niveau {level} dans le métier {job} pour réclamer cette récompense !"
+    no-permission: "&cVous n'avez pas la permission '{permission}' requise pour cette récompense !"
     requirements-not-met: "&cVous ne remplissez pas toutes les conditions pour réclamer cette récompense !"
-    cooldown: "&cVous devez attendre %time% avant de pouvoir réclamer cette récompense à nouveau !"
+    cooldown: "&cVous devez attendre {time} avant de pouvoir réclamer cette récompense à nouveau !"
   
   gui:
-    job-not-found: "&cMétier '%job%' introuvable !"
-    no-rewards: "&cAucune récompense disponible pour le métier '%job%' !"
-    no-available-rewards: "&cAucune récompense disponible pour votre niveau dans le métier '%job%' !"
+    job-not-found: "&cMétier '{job}' introuvable !"
+    no-rewards: "&cAucune récompense disponible pour le métier '{job}' !"
+    no-available-rewards: "&cAucune récompense disponible pour votre niveau dans le métier '{job}' !"
 
 
 # =============
 # BOOST GUI
 # =============
 boost-gui:
-  removed: "&aBoost %type% supprimé : &e%boost_id%"
+  removed: "&aBoost {type} supprimé : &e{boost_id}"
   no-permission: "&cVous n'avez pas la permission de faire cela !"
   refresh-clicked: "&bActualisation de la liste des boosts..."
 

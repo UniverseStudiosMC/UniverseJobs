@@ -36,8 +36,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     private static final String CMD_LIST = "list";
     private static final String CMD_STATS = "stats";
     private static final String CMD_REWARDS = "rewards";
-    private static final String CMD_XP_BONUS = "xpbonus";
-    private static final String CMD_MONEY_BONUS = "moneybonus";
     private static final String CMD_ACTION_LIMIT = "actionlimit";
     private static final String CMD_MENU = "menu";
     private static final String CMD_ADMIN = "admin";
@@ -147,12 +145,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             if (sender.hasPermission("universejobs.admin")) {
                 subCommands.add(CMD_ADMIN); // All admin commands under /jobs admin
             }
-            if (sender.hasPermission("universejobs.admin.xpbonus")) {
-                subCommands.add(CMD_XP_BONUS);
-            }
-            if (sender.hasPermission("universejobs.admin.moneybonus")) {
-                subCommands.add(CMD_MONEY_BONUS);
-            }
             if (sender.hasPermission("universejobs.admin.actionlimits")) {
                 subCommands.add(CMD_ACTION_LIMIT);
             }
@@ -249,7 +241,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      * @return true if valid
      */
     private boolean isValidSubCommand(String subCommand) {
-        Set<String> validCommands = Set.of(CMD_JOIN, CMD_LEAVE, CMD_INFO, CMD_LIST, CMD_STATS, CMD_REWARDS, CMD_XP_BONUS, CMD_MONEY_BONUS, CMD_ACTION_LIMIT, CMD_MENU, CMD_ADMIN);
+        Set<String> validCommands = Set.of(CMD_JOIN, CMD_LEAVE, CMD_INFO, CMD_LIST, CMD_STATS, CMD_REWARDS, CMD_ACTION_LIMIT, CMD_MENU, CMD_ADMIN);
         return validCommands.contains(subCommand);
     }
     
@@ -305,7 +297,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     private void sendConsoleHelp(CommandSender sender) {
         sender.sendMessage("§6UniverseJobs Console Commands:");
         sender.sendMessage("§e/jobs admin §7- Show all admin commands");
-        sender.sendMessage("§e/jobs xpbonus <give|remove|list> §7- Manage XP bonuses");
         sender.sendMessage("§e/jobs actionlimit <restore|status> §7- Manage action limits");
     }
     

@@ -1,6 +1,8 @@
 package fr.ax_dev.universejobs.action;
 
 import fr.ax_dev.universejobs.UniverseJobs;
+import fr.ax_dev.universejobs.cache.ConfigurationCache;
+
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -19,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ActionLimitManager {
     
     private final UniverseJobs plugin;
+    private final ConfigurationCache configCache;
     
     // Map: Player UUID -> Job ID -> Action Target -> ActionLimitData
     private final Map<UUID, Map<String, Map<String, ActionLimitData>>> playerLimits = new ConcurrentHashMap<>();
@@ -29,8 +32,9 @@ public class ActionLimitManager {
     // Map: Job ID -> Auto-restore configuration
     private final Map<String, AutoRestoreConfig> autoRestoreConfigs = new ConcurrentHashMap<>();
     
-    public ActionLimitManager(UniverseJobs plugin) {
+    public ActionLimitManager(UniverseJobs plugin, ConfigurationCache configCache) {
         this.plugin = plugin;
+        this.configCache = configCache;
         startAutoRestoreTask();
     }
     
@@ -345,7 +349,9 @@ public class ActionLimitManager {
         }
         
         if (totalRestored > 0) {
-            plugin.getLogger().info("Auto-restored " + totalRestored + " action limits for job: " + jobId);
+            if (configCache.isDebugEnabled()) {
+                plugin.getLogger().info("Auto-restored " + totalRestored + " action limits for job: " + jobId);
+            }
         }
     }
     

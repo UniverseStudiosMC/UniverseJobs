@@ -5,6 +5,8 @@ import fr.ax_dev.universejobs.job.Job;
 import fr.ax_dev.universejobs.job.JobManager;
 import fr.ax_dev.universejobs.job.PlayerJobData;
 import fr.ax_dev.universejobs.utils.MessageUtils;
+import net.milkbowl.vault.economy.Economy;
+
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -117,7 +119,7 @@ public class AdminJobCommandHandler extends JobCommandHandler {
             xp = Double.parseDouble(args[4]);
             money = Double.parseDouble(args[5]);
         } catch (NumberFormatException e) {
-            MessageUtils.sendMessage(sender, "&cMontants invalides. Utilisez des nombres.");
+            MessageUtils.sendMessage(sender, "&cInvalid amounts. Use numbers.");
             return true;
         }
         
@@ -165,9 +167,9 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                 });
                 
             } catch (Exception e) {
-                plugin.getLogger().warning("Erreur lors du givecustom: " + e.getMessage());
+                plugin.getLogger().warning("Error during givecustom: " + e.getMessage());
                 plugin.getFoliaManager().runNextTick(() -> 
-                    MessageUtils.sendMessage(sender, "&cErreur lors de l'attribution des récompenses."));
+                    MessageUtils.sendMessage(sender, "&cError while giving rewards."));
             }
         });
         
@@ -186,14 +188,9 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                 plugin.getLogger().warning("Failed to use Vault for money reward: " + e.getMessage());
             }
         }
-        
-        if (player.isOnline()) {
-            String command = "eco give " + player.getName() + " " + amount;
-            plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), command);
-        }
     }
     
-    private net.milkbowl.vault.economy.Economy getVaultEconomy() {
+    private Economy getVaultEconomy() {
         try {
             if (plugin.getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class) != null) {
                 return plugin.getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class).getProvider();

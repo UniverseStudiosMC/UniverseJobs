@@ -6,6 +6,8 @@ import fr.ax_dev.universejobs.action.JobAction;
 import fr.ax_dev.universejobs.bonus.MoneyBonus;
 import fr.ax_dev.universejobs.bonus.XpBonus;
 import fr.ax_dev.universejobs.job.Job;
+import fr.ax_dev.universejobs.utils.MessageUtils;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -309,10 +311,7 @@ public class BoostCommandHandler extends JobCommandHandler {
     private void handleGiveBoost(CommandSender sender, String[] args) {
         // /jobs admin boost give <xp|money> <player/*> <job/*> <action_type> [id_in_action] <multiplier> <duration>
         if (args.length < 9) {
-            sender.sendMessage("§cUsage: /jobs admin boost give <xp|money> <player/*> <job/*> <action_type> [id_in_action] <multiplier> <duration>");
-            sender.sendMessage("§7Examples:");
-            sender.sendMessage("§7  /jobs admin boost give xp * miner * 2.0 3600");
-            sender.sendMessage("§7  /jobs admin boost give money Player123 * BREAK simple_break 1.5 1800");
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.boost-usage-general"));
             return;
         }
         
@@ -360,8 +359,8 @@ public class BoostCommandHandler extends JobCommandHandler {
         } else {
             // Action type spécifique, id_in_action requis
             if (args.length < 10) {
-                sender.sendMessage("§cWhen using specific action type, id_in_action is required!");
-                sender.sendMessage("§7Usage: /jobs admin boost give <xp|money> <player/*> <job/*> <action_type> <id_in_action> <multiplier> <duration>");
+                MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.boost-action-id-required"));
+                MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.boost-usage-with-action"));
                 return;
             }
             
