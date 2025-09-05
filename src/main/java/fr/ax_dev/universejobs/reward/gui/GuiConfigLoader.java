@@ -16,7 +16,6 @@ public class GuiConfigLoader {
     
     private final UniverseJobs plugin;
     private final Map<String, GuiConfig> guiConfigs;
-    private GuiConfig.DefaultGuiConfig defaultGuiConfig;
     
     /**
      * Create a new GuiConfigLoader.
