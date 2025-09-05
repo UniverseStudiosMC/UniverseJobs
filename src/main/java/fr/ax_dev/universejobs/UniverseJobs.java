@@ -678,7 +678,8 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
      * Initialize the storage system based on configuration.
      */
     private void initializeStorageSystem() {
-        boolean databaseEnabled = getConfig().getBoolean("database.enabled", false);
+        String databaseType = getConfig().getString("database.type", "");
+        boolean databaseEnabled = !databaseType.isEmpty() && (databaseType.equals("sqlite") || databaseType.equals("mysql"));
         
         if (databaseEnabled) {
             getLogger().info("Initializing database storage system...");

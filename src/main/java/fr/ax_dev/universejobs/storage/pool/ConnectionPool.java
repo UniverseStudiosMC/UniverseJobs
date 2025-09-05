@@ -48,7 +48,8 @@ public class ConnectionPool {
         this.plugin = plugin;
         
         // Read database configuration
-        this.enabled = config.getBoolean("database.enabled", false);
+        String databaseType = config.getString("database.type", "");
+        this.enabled = !databaseType.isEmpty() && (databaseType.equals("sqlite") || databaseType.equals("mysql"));
         
         // Build JDBC URL from host, port and prefix
         String host = config.getString("database.host", "localhost");
