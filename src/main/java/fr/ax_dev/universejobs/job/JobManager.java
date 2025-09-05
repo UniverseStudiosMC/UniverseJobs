@@ -285,7 +285,12 @@ public class JobManager {
         
         PlayerJobData data = getPlayerData(playerUuid);
         synchronized (data) {
-            return data.joinJob(jobId);
+            boolean result = data.joinJob(jobId);
+            if (result) {
+                updateLeaderboardCache(playerUuid, jobId, data);
+                plugin.getPlayerCache().addPlayerJob(playerUuid, jobId);
+            }
+            return result;
         }
     }
     
@@ -308,7 +313,12 @@ public class JobManager {
         
         PlayerJobData data = getPlayerData(playerUuid);
         synchronized (data) {
-            return data.leaveJob(jobId);
+            boolean result = data.leaveJob(jobId);
+            if (result) {
+                updateLeaderboardCache(playerUuid, jobId, data);
+                plugin.getPlayerCache().removePlayerJob(playerUuid, jobId);
+            }
+            return result;
         }
     }
     
@@ -379,6 +389,9 @@ public class JobManager {
         PlayerJobData data = getPlayerData(player);
         synchronized (data) {
             data.addXp(jobId, xp);
+            updateLeaderboardCache(player.getUniqueId(), jobId, data);
+            // Update XP cache
+            plugin.getPlayerCache().preloadPlayer(player.getUniqueId());
         }
     }
     
@@ -1053,5 +1066,23 @@ public class JobManager {
      */
     public UniverseJobs getPlugin() {
         return plugin;
+    }
+    
+    private void updateLeaderboardCache(UUID playerUuid, String jobId, PlayerJobData data) {
+        if (plugin.isDatabaseEnabled()) {
+            try {
+                String playerName = plugin.getServer().getOfflinePlayer(playerUuid).getName();
+                if (playerName == null) playerName = "Unknown";
+                
+                double xp = data.getXp(jobId);
+                int level = data.getLevel(jobId);
+                
+                fr.ax_dev.universejobs.storage.database.DatabaseDataStorage storage = 
+                    (fr.ax_dev.universejobs.storage.database.DatabaseDataStorage) plugin.getDataStorage();
+                storage.getLeaderboardDao().updatePlayerLeaderboardEntry(playerUuid, playerName, jobId, xp, level);
+            } catch (Exception e) {
+                plugin.getLogger().warning("Failed to update leaderboard cache: " + e.getMessage());
+            }
+        }
     }
 }

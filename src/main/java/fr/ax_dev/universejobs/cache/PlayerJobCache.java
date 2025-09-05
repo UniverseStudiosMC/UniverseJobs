@@ -186,11 +186,9 @@ public class PlayerJobCache {
      * Ajout d'un job dans le cache.
      */
     public void addPlayerJob(UUID playerUuid, String jobId) {
-        playerJobsCache.computeIfAbsent(playerUuid, k -> ConcurrentHashMap.newKeySet())
-            .add(jobId);
-            
-        // Initialize avec 0 XP/level
-        updatePlayerXp(playerUuid, jobId, 0.0, 0);
+        playerJobsCache.computeIfAbsent(playerUuid, k -> ConcurrentHashMap.newKeySet()).add(jobId);
+        // Reload player data to ensure cache is fresh
+        preloadPlayer(playerUuid);
     }
     
     /**
