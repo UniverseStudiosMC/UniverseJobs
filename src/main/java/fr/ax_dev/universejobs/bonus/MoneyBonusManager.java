@@ -27,5 +27,10 @@ public class MoneyBonusManager extends BaseBonusManager<MoneyBonus> {
     protected String getBonusTypeName() {
         return "Money";
     }
+
+    @Override
+    protected String getMultiplierPermissionType() {
+        return "money";
+    }
     
 }
