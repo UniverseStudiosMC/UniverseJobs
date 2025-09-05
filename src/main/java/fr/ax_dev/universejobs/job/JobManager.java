@@ -58,9 +58,6 @@ public class JobManager {
         if (!jobsFolder.exists()) {
             jobsFolder.mkdirs();
         }
-        if (!dataFolder.exists()) {
-            dataFolder.mkdirs();
-        }
         
         // Initialize XP curve manager
         this.xpCurveManager = new XpCurveManager(plugin);
