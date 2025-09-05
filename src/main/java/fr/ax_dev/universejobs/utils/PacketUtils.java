@@ -30,6 +30,7 @@ public class PacketUtils {
     // BossBar management - no scheduler tasks needed
     private static final Map<UUID, BossBar> ACTIVE_BOSSBARS = new ConcurrentHashMap<>();
     private static final Map<UUID, CompletableFuture<Void>> BOSSBAR_CLEANUPS = new ConcurrentHashMap<>();
+    private static final Object BOSSBAR_LOCK = new Object();
     
     static {
         initializeReflection();
@@ -115,22 +116,25 @@ public class PacketUtils {
         if (!player.isOnline()) return;
         
         UUID playerId = player.getUniqueId();
+        BossBar bossBar;
         
-        // Cancel any existing cleanup for this player
-        CompletableFuture<Void> existingCleanup = BOSSBAR_CLEANUPS.remove(playerId);
-        if (existingCleanup != null) {
-            existingCleanup.cancel(false);
-        }
-        
-        BossBar bossBar = ACTIVE_BOSSBARS.get(playerId);
-        
-        if (bossBar != null) {
-            // Reuse existing bossbar - just update properties
-            bossBar.setTitle(MessageUtils.stripFormatting(message));
-            bossBar.setColor(color);
-            bossBar.setStyle(style);
-            bossBar.setProgress(Math.max(0.0, Math.min(1.0, progress)));
-        } else {
+        synchronized (BOSSBAR_LOCK) {
+            // Cancel any existing cleanup for this player
+            CompletableFuture<Void> existingCleanup = BOSSBAR_CLEANUPS.remove(playerId);
+            if (existingCleanup != null) {
+                existingCleanup.cancel(true);
+            }
+            
+            // Clean up any existing bossbar first
+            BossBar existingBar = ACTIVE_BOSSBARS.remove(playerId);
+            if (existingBar != null) {
+                try {
+                    existingBar.removePlayer(player);
+                } catch (Exception e) {
+                    // Ignore cleanup errors
+                }
+            }
+            
             // Create new bossbar
             bossBar = Bukkit.createBossBar(
                 MessageUtils.stripFormatting(message),
@@ -172,13 +176,20 @@ public class PacketUtils {
                             }
                         }
                         
-                        // Final cleanup
-                        BossBar currentBar = ACTIVE_BOSSBARS.get(playerId);
-                        if (currentBar == finalBossBar) {
-                            currentBar.removePlayer(player);
-                            ACTIVE_BOSSBARS.remove(playerId);
+                        // Final cleanup with synchronization
+                        synchronized (BOSSBAR_LOCK) {
+                            BossBar currentBar = ACTIVE_BOSSBARS.get(playerId);
+                            if (currentBar == finalBossBar) {
+                                try {
+                                    currentBar.removePlayer(player);
+                                    ACTIVE_BOSSBARS.remove(playerId);
+                                } catch (Exception e) {
+                                    // Force remove even if cleanup fails
+                                    ACTIVE_BOSSBARS.remove(playerId);
+                                }
+                            }
+                            BOSSBAR_CLEANUPS.remove(playerId);
                         }
-                        BOSSBAR_CLEANUPS.remove(playerId);
                         
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
@@ -192,13 +203,20 @@ public class PacketUtils {
                     try {
                         Thread.sleep(delayMs);
                         
-                        // Remove bossbar if it's still the same instance
-                        BossBar currentBar = ACTIVE_BOSSBARS.get(playerId);
-                        if (currentBar == finalBossBar) {
-                            currentBar.removePlayer(player);
-                            ACTIVE_BOSSBARS.remove(playerId);
+                        // Remove bossbar if it's still the same instance with synchronization
+                        synchronized (BOSSBAR_LOCK) {
+                            BossBar currentBar = ACTIVE_BOSSBARS.get(playerId);
+                            if (currentBar == finalBossBar) {
+                                try {
+                                    currentBar.removePlayer(player);
+                                    ACTIVE_BOSSBARS.remove(playerId);
+                                } catch (Exception e) {
+                                    // Force remove even if cleanup fails
+                                    ACTIVE_BOSSBARS.remove(playerId);
+                                }
+                            }
+                            BOSSBAR_CLEANUPS.remove(playerId);
                         }
-                        BOSSBAR_CLEANUPS.remove(playerId);
                         
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
@@ -300,19 +318,57 @@ public class PacketUtils {
      * Called when player disconnects.
      */
     public static void cleanupPlayer(UUID playerId) {
-        // Cancel any pending cleanup
-        CompletableFuture<Void> cleanup = BOSSBAR_CLEANUPS.remove(playerId);
-        if (cleanup != null) {
-            cleanup.cancel(false);
+        synchronized (BOSSBAR_LOCK) {
+            // Cancel any pending cleanup
+            CompletableFuture<Void> cleanup = BOSSBAR_CLEANUPS.remove(playerId);
+            if (cleanup != null) {
+                cleanup.cancel(true);
+            }
+            
+            // Remove and cleanup bossbar
+            BossBar bossBar = ACTIVE_BOSSBARS.remove(playerId);
+            if (bossBar != null) {
+                try {
+                    bossBar.removeAll();
+                } catch (Exception e) {
+                    // Ignore cleanup errors but log for debugging
+                }
+            }
         }
+    }
+    
+    /**
+     * Force cleanup all bossbars for a player.
+     * Use this if player experiences stuck bossbars.
+     */
+    public static void forceCleanupPlayerBossbars(Player player) {
+        if (player == null || !player.isOnline()) return;
         
-        // Remove and cleanup bossbar
-        BossBar bossBar = ACTIVE_BOSSBARS.remove(playerId);
-        if (bossBar != null) {
+        UUID playerId = player.getUniqueId();
+        synchronized (BOSSBAR_LOCK) {
+            // Cancel cleanup tasks
+            CompletableFuture<Void> cleanup = BOSSBAR_CLEANUPS.remove(playerId);
+            if (cleanup != null) {
+                cleanup.cancel(true);
+            }
+            
+            // Remove from our tracking
+            BossBar bossBar = ACTIVE_BOSSBARS.remove(playerId);
+            if (bossBar != null) {
+                try {
+                    bossBar.removePlayer(player);
+                } catch (Exception e) {
+                    // Ignore
+                }
+            }
+            
+            // Force clear any remaining bossbars by sending empty one with immediate cleanup
             try {
-                bossBar.removeAll();
+                BossBar clearBar = Bukkit.createBossBar("", BarColor.WHITE, BarStyle.SOLID);
+                clearBar.addPlayer(player);
+                clearBar.removePlayer(player);
             } catch (Exception e) {
-                // Ignore cleanup errors
+                // Ignore
             }
         }
     }
