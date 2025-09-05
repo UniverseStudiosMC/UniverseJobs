@@ -11,6 +11,7 @@ import fr.ax_dev.universejobs.reward.gui.ItemBuilder;
 import fr.ax_dev.universejobs.reward.storage.RewardStorage;
 import fr.ax_dev.universejobs.storage.DataStorage;
 import fr.ax_dev.universejobs.utils.MessageUtils;
+import fr.ax_dev.universejobs.menu.MenuUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -364,7 +365,11 @@ public class RewardManager {
             for (String command : reward.getCommands()) {
                 String processedCommand = command.replace("{player}", player.getName())
                                                 .replace("{job}", reward.getJobId())
-                                                .replace("{reward}", reward.getId());
+                                                .replace("{reward}", reward.getId())
+                                                .replace("%player_name%", player.getName());
+                
+                // Process PlaceholderAPI placeholders
+                processedCommand = MenuUtils.processPlaceholders(player, processedCommand);
                 
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), processedCommand);
             }

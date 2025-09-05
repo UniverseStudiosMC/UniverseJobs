@@ -291,12 +291,6 @@ public class CustomRewardGui implements InventoryHolder {
             if (line.contains("{description}")) {
                 String desc = MenuUtils.processPlaceholders(player, reward.getDescription());
                 lore.add(desc);
-            } else if (line.contains("{level}")) {
-                String levelLine = line.replace("{level}", String.valueOf(reward.getRequiredLevel()));
-                lore.add(MenuUtils.processPlaceholders(player, levelLine));
-            } else if (line.contains("{status_description}")) {
-                String statusLine = line.replace("{status_description}", status.getDescription());
-                lore.add(MenuUtils.processPlaceholders(player, statusLine));
             } else if (line.contains("{repeatable_info}")) {
                 if (reward.isRepeatable()) {
                     lore.add(MenuUtils.processPlaceholders(player, rewardConfig.getText("repeatable_yes")));
@@ -308,14 +302,33 @@ public class CustomRewardGui implements InventoryHolder {
                 } else {
                     lore.add(MenuUtils.processPlaceholders(player, rewardConfig.getText("repeatable_no")));
                 }
+            } else if (line.contains("{cooldown}")) {
+                addCooldownLore(reward, status, lore, line, rewardConfig);
+            } else if (line.contains("{reward_items}")) {
+                addRewardItemsLore(reward, lore, rewardConfig);
             } else if (line.contains("{click_instruction}")) {
                 if (status == RewardStatus.RETRIEVABLE) {
                     lore.add("");
                     String instruction = MenuUtils.processPlaceholders(player, rewardConfig.getClickInstruction());
                     lore.add(instruction);
                 }
-            } else if (!line.isEmpty()) {
-                lore.add(MenuUtils.processPlaceholders(player, line));
+            } else if (!line.trim().isEmpty()) {
+                // Process ALL placeholders in any line
+                String processedLine = line;
+                
+                // Replace all possible placeholders
+                processedLine = processedLine.replace("{level}", String.valueOf(reward.getRequiredLevel()));
+                processedLine = processedLine.replace("{status_description}", status.getDescription());
+                
+                if (processedLine.contains("{economy_reward}") && reward.hasEconomyReward()) {
+                    processedLine = processedLine.replace("{economy_reward}", String.valueOf(reward.getEconomyReward()));
+                }
+                
+                if (processedLine.contains("{commands}") && reward.hasCommands()) {
+                    processedLine = processedLine.replace("{commands}", rewardConfig.getText("special_rewards"));
+                }
+                
+                lore.add(MenuUtils.processPlaceholders(player, processedLine));
             } else {
                 lore.add("");
             }
@@ -356,6 +369,59 @@ public class CustomRewardGui implements InventoryHolder {
         }
         
         return result;
+    }
+    
+    /**
+     * Add cooldown information to lore.
+     */
+    private void addCooldownLore(Reward reward, RewardStatus status, List<String> lore, String line, GuiConfig.RewardItemConfig rewardConfig) {
+        if (reward.getCooldownHours() > 0) {
+            if (status == RewardStatus.RETRIEVED) {
+                long lastClaim = rewardManager.getLastClaimTime(player, reward);
+                long nextClaim = lastClaim + (reward.getCooldownHours() * 3600000L);
+                long timeLeft = nextClaim - System.currentTimeMillis();
+                
+                if (timeLeft > 0) {
+                    // Use timeLeft in milliseconds directly for formatTime
+                    String timeString = formatTime(timeLeft / 3600000L, rewardConfig.getTimeFormat());
+                    String cooldownLine = line.replace("{cooldown}", rewardConfig.getText("cooldown_prefix") + timeString);
+                    lore.add(MenuUtils.processPlaceholders(player, cooldownLine));
+                }
+            } else if (reward.isRepeatable()) {
+                // Show cooldown info even if not yet claimed for repeatable rewards
+                String timeStr = formatTime(reward.getCooldownHours(), rewardConfig.getTimeFormat());
+                String cooldownLine = line.replace("{cooldown}", rewardConfig.getText("cooldown_prefix") + timeStr);
+                lore.add(MenuUtils.processPlaceholders(player, cooldownLine));
+            }
+        }
+    }
+    
+    /**
+     * Add reward items information to lore.
+     */
+    private void addRewardItemsLore(Reward reward, List<String> lore, GuiConfig.RewardItemConfig rewardConfig) {
+        if (!reward.getItems().isEmpty()) {
+            lore.add("");
+            lore.add(MenuUtils.processPlaceholders(player, rewardConfig.getText("rewards_title")));
+            
+            int itemsShown = 0;
+            for (Reward.RewardItem rewardItem : reward.getItems()) {
+                if (itemsShown >= 3) {
+                    String moreLine = rewardConfig.getText("more_items")
+                        .replace("{count}", String.valueOf(reward.getItems().size() - 3));
+                    lore.add(MenuUtils.processPlaceholders(player, moreLine));
+                    break;
+                }
+                
+                String itemName = rewardItem.getDisplayName() != null ? 
+                        rewardItem.getDisplayName() : rewardItem.getMaterial();
+                String itemLine = rewardConfig.getText("item_format")
+                    .replace("{amount}", String.valueOf(rewardItem.getAmount()))
+                    .replace("{name}", itemName);
+                lore.add(MenuUtils.processPlaceholders(player, itemLine));
+                itemsShown++;
+            }
+        }
     }
     
     /**

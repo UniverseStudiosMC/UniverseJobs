@@ -117,7 +117,8 @@ public class ItemBuilder {
      */
     public ItemBuilder name(String name) {
         if (meta != null && name != null) {
-            meta.setDisplayName(MessageUtils.colorize(name));
+            String finalName = name.startsWith("<!italic>") ? name : "<!italic><white>" + name;
+            meta.setDisplayName(MessageUtils.colorize(finalName));
         }
         return this;
     }
@@ -132,7 +133,8 @@ public class ItemBuilder {
         if (meta != null && lore != null) {
             List<String> colorizedLore = new ArrayList<>();
             for (String line : lore) {
-                colorizedLore.add(MessageUtils.colorize(line));
+                String finalLine = line.startsWith("<!italic>") ? line : "<!italic><white>" + line;
+                colorizedLore.add(MessageUtils.colorize(finalLine));
             }
             meta.setLore(colorizedLore);
         }
@@ -151,7 +153,8 @@ public class ItemBuilder {
             if (lore == null) {
                 lore = new ArrayList<>();
             }
-            lore.add(MessageUtils.colorize(line));
+            String finalLine = line.startsWith("<!italic>") ? line : "<!italic><white>" + line;
+            lore.add(MessageUtils.colorize(finalLine));
             meta.setLore(lore);
         }
         return this;
