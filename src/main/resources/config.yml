@@ -12,15 +12,17 @@ create-example-jobs: true  # Set to false to prevent automatic creation of examp
 
 
 # Database Configuration
-# Set enabled to true to use database instead of files
+# Choose type: "sqlite" or "mysql"
 database:
-  enabled: true
-  type: "mysql"
-  host: "localhost"
-  port: 3306
-  database: "universejobs"
-  username: "your_username"
-  password: "your_password"
+  type: "sqlite"
+  
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "universejobs"
+    username: "your_username"
+    password: "your_password"
+    
   prefix: "universejobs_"
   
   pool:
