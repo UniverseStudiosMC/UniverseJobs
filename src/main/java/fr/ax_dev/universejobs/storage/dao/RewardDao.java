@@ -2,6 +2,7 @@ package fr.ax_dev.universejobs.storage.dao;
 
 import fr.ax_dev.universejobs.storage.database.DatabaseConfig;
 import fr.ax_dev.universejobs.storage.database.HikariConnectionPool;
+import fr.ax_dev.universejobs.storage.SqlIdentifierValidator;
 
 import java.sql.*;
 import java.util.*;
@@ -22,7 +23,7 @@ public class RewardDao {
 
     public RewardDao(HikariConnectionPool connectionPool, DatabaseConfig config) {
         this.connectionPool = connectionPool;
-        this.tableName = config.getPrefix() + "reward_claims";
+        this.tableName = SqlIdentifierValidator.buildSafeTableName(config.getPrefix(), "reward_claims");
         
         this.insertSql = "INSERT INTO " + tableName + " (player_uuid, job_id, reward_id, claim_time) VALUES (?, ?, ?, ?)";
         this.selectByPlayerAndJobAndRewardSql = "SELECT claim_time FROM " + tableName + " WHERE player_uuid = ? AND job_id = ? AND reward_id = ?";

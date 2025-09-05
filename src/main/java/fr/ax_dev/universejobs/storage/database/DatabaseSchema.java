@@ -1,6 +1,7 @@
 package fr.ax_dev.universejobs.storage.database;
 
 import fr.ax_dev.universejobs.UniverseJobs;
+import fr.ax_dev.universejobs.storage.SqlIdentifierValidator;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -122,16 +123,20 @@ public class DatabaseSchema {
 
     private void createIndexes(Connection connection) throws SQLException {
         if (config.getType() == DatabaseType.SQLITE) {
-            String prefix = config.getPrefix();
+            String prefix = SqlIdentifierValidator.validateAndSanitizeIdentifier(config.getPrefix(), "Database prefix");
             
             try (Statement stmt = connection.createStatement()) {
-                stmt.execute("CREATE INDEX IF NOT EXISTS idx_" + prefix + "player_data_player ON " + prefix + "player_data (player_uuid)");
-                stmt.execute("CREATE INDEX IF NOT EXISTS idx_" + prefix + "player_data_job ON " + prefix + "player_data (job_id)");
-                stmt.execute("CREATE INDEX IF NOT EXISTS idx_" + prefix + "reward_claims_player ON " + prefix + "reward_claims (player_uuid)");
-                stmt.execute("CREATE INDEX IF NOT EXISTS idx_" + prefix + "reward_claims_job ON " + prefix + "reward_claims (job_id)");
-                stmt.execute("CREATE INDEX IF NOT EXISTS idx_" + prefix + "leaderboard_cache_job ON " + prefix + "leaderboard_cache (job_id)");
-                stmt.execute("CREATE INDEX IF NOT EXISTS idx_" + prefix + "leaderboard_cache_xp ON " + prefix + "leaderboard_cache (xp DESC)");
-                stmt.execute("CREATE INDEX IF NOT EXISTS idx_" + prefix + "leaderboard_cache_level ON " + prefix + "leaderboard_cache (level DESC)");
+                String playerDataTable = SqlIdentifierValidator.buildSafeTableName(prefix, "player_data");
+                String rewardClaimsTable = SqlIdentifierValidator.buildSafeTableName(prefix, "reward_claims");
+                String leaderboardCacheTable = SqlIdentifierValidator.buildSafeTableName(prefix, "leaderboard_cache");
+                
+                stmt.execute("CREATE INDEX IF NOT EXISTS " + SqlIdentifierValidator.buildSafeIndexName(prefix, "player_data_player") + " ON " + playerDataTable + " (player_uuid)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS " + SqlIdentifierValidator.buildSafeIndexName(prefix, "player_data_job") + " ON " + playerDataTable + " (job_id)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS " + SqlIdentifierValidator.buildSafeIndexName(prefix, "reward_claims_player") + " ON " + rewardClaimsTable + " (player_uuid)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS " + SqlIdentifierValidator.buildSafeIndexName(prefix, "reward_claims_job") + " ON " + rewardClaimsTable + " (job_id)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS " + SqlIdentifierValidator.buildSafeIndexName(prefix, "leaderboard_cache_job") + " ON " + leaderboardCacheTable + " (job_id)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS " + SqlIdentifierValidator.buildSafeIndexName(prefix, "leaderboard_cache_xp") + " ON " + leaderboardCacheTable + " (xp DESC)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS " + SqlIdentifierValidator.buildSafeIndexName(prefix, "leaderboard_cache_level") + " ON " + leaderboardCacheTable + " (level DESC)");
             }
         }
     }

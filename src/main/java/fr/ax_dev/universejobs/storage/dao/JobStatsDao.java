@@ -2,6 +2,7 @@ package fr.ax_dev.universejobs.storage.dao;
 
 import fr.ax_dev.universejobs.storage.database.DatabaseConfig;
 import fr.ax_dev.universejobs.storage.database.HikariConnectionPool;
+import fr.ax_dev.universejobs.storage.SqlIdentifierValidator;
 
 import java.sql.*;
 import java.util.HashMap;
@@ -21,7 +22,7 @@ public class JobStatsDao {
 
     public JobStatsDao(HikariConnectionPool connectionPool, DatabaseConfig config) {
         this.connectionPool = connectionPool;
-        this.tableName = config.getPrefix() + "job_stats";
+        this.tableName = SqlIdentifierValidator.buildSafeTableName(config.getPrefix(), "job_stats");
         
         if (config.getType().getName().equals("mysql")) {
             this.insertOrUpdateSql = "INSERT INTO " + tableName + " (job_id, stat_name, stat_value, last_updated) VALUES (?, ?, ?, ?) " +
