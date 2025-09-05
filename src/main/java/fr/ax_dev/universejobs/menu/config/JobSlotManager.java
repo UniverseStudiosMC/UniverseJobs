@@ -3,11 +3,8 @@ package fr.ax_dev.universejobs.menu.config;
 import fr.ax_dev.universejobs.UniverseJobs;
 import fr.ax_dev.universejobs.job.Job;
 import fr.ax_dev.universejobs.menu.MenuConfig;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;

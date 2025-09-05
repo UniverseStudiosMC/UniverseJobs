@@ -36,6 +36,7 @@ public class DatabaseSchema {
         createPlayerDataTable(connection, prefix);
         createRewardClaimsTable(connection, prefix);
         createJobStatsTable(connection, prefix);
+        createLeaderboardCacheTable(connection, prefix);
     }
 
     private void createPlayerDataTable(Connection connection, String prefix) throws SQLException {
@@ -128,7 +129,43 @@ public class DatabaseSchema {
                 stmt.execute("CREATE INDEX IF NOT EXISTS idx_" + prefix + "player_data_job ON " + prefix + "player_data (job_id)");
                 stmt.execute("CREATE INDEX IF NOT EXISTS idx_" + prefix + "reward_claims_player ON " + prefix + "reward_claims (player_uuid)");
                 stmt.execute("CREATE INDEX IF NOT EXISTS idx_" + prefix + "reward_claims_job ON " + prefix + "reward_claims (job_id)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS idx_" + prefix + "leaderboard_cache_job ON " + prefix + "leaderboard_cache (job_id)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS idx_" + prefix + "leaderboard_cache_xp ON " + prefix + "leaderboard_cache (xp DESC)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS idx_" + prefix + "leaderboard_cache_level ON " + prefix + "leaderboard_cache (level DESC)");
             }
+        }
+    }
+
+    private void createLeaderboardCacheTable(Connection connection, String prefix) throws SQLException {
+        String sql;
+        if (config.getType() == DatabaseType.MYSQL) {
+            sql = "CREATE TABLE IF NOT EXISTS " + prefix + "leaderboard_cache (" +
+                    "player_uuid VARCHAR(36) NOT NULL, " +
+                    "player_name VARCHAR(16) NOT NULL, " +
+                    "job_id VARCHAR(64) NOT NULL, " +
+                    "xp DOUBLE NOT NULL DEFAULT 0, " +
+                    "level INT NOT NULL DEFAULT 1, " +
+                    "last_updated BIGINT NOT NULL DEFAULT 0, " +
+                    "PRIMARY KEY (player_uuid, job_id), " +
+                    "INDEX idx_job_xp (job_id, xp DESC), " +
+                    "INDEX idx_job_level (job_id, level DESC), " +
+                    "INDEX idx_global_xp (xp DESC), " +
+                    "INDEX idx_global_level (level DESC)" +
+                    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+        } else {
+            sql = "CREATE TABLE IF NOT EXISTS " + prefix + "leaderboard_cache (" +
+                    "player_uuid TEXT NOT NULL, " +
+                    "player_name TEXT NOT NULL, " +
+                    "job_id TEXT NOT NULL, " +
+                    "xp REAL NOT NULL DEFAULT 0, " +
+                    "level INTEGER NOT NULL DEFAULT 1, " +
+                    "last_updated INTEGER NOT NULL DEFAULT 0, " +
+                    "PRIMARY KEY (player_uuid, job_id)" +
+                    ")";
+        }
+        
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute(sql);
         }
     }
 }
