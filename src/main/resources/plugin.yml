@@ -59,6 +59,9 @@ permissions:
   universejobs.admin.actionlimits:
     description: Allows managing action limits (restore, check status)
     default: op
-  universejobs.bonusmultiplier.*:
-    description: Applies an additional multiplier to bonuses (use universejobs.bonusmultiplier.<amount>)
+  universejobs.multiplier.money.*:
+    description: Applies an additional money multiplier (use universejobs.multiplier.money.<amount>)
+    default: false
+  universejobs.multiplier.exp.*:
+    description: Applies an additional XP multiplier (use universejobs.multiplier.exp.<amount>)
     default: false

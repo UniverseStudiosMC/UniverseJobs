@@ -170,10 +170,13 @@ public class ConfigurationCache {
         validPermissionNodes.add("*");
         validPermissionNodes.add("universejobs.*");
         validPermissionNodes.add("universejobs.multiplier.*");
-        
+        validPermissionNodes.add("universejobs.multiplier.money.*");
+        validPermissionNodes.add("universejobs.multiplier.exp.*");
+
         // Multiplier permissions
         for (int i = 1; i <= 10; i++) {
-            validPermissionNodes.add("universejobs.multiplier." + i);
+            validPermissionNodes.add("universejobs.multiplier.money." + i);
+            validPermissionNodes.add("universejobs.multiplier.exp." + i);
         }
         
         // Job permissions
