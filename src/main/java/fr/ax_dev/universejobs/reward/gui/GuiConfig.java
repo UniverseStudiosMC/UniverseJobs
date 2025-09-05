@@ -18,6 +18,7 @@ public class GuiConfig {
     private final List<Integer> rewardSlots;
     private final NavigationConfig navigation;
     private final Map<String, Object> fillItems;
+    private final RewardItemConfig rewardItemConfig;
     
     /**
      * Create a new GuiConfig from configuration.
@@ -31,6 +32,7 @@ public class GuiConfig {
         this.rewardSlots = new ArrayList<>();
         this.navigation = new NavigationConfig(config.getConfigurationSection("navigation"));
         this.fillItems = new HashMap<>();
+        this.rewardItemConfig = new RewardItemConfig(config.getConfigurationSection("reward-item"));
         
         loadItems(config);
         loadRewardSlots(config);
@@ -93,6 +95,7 @@ public class GuiConfig {
     public List<Integer> getRewardSlots() { return rewardSlots; }
     public NavigationConfig getNavigation() { return navigation; }
     public Map<String, Object> getFillItems() { return fillItems; }
+    public RewardItemConfig getRewardItemConfig() { return rewardItemConfig; }
     
     /**
      * Represents a custom GUI item.
@@ -188,5 +191,253 @@ public class GuiConfig {
         public GuiItem getClose() { return close; }
         public GuiItem getRefresh() { return refresh; }
         public GuiItem getInfo() { return info; }
+    }
+    
+    public static class RewardItemConfig {
+        private final Map<String, String> materials;
+        private final List<String> loreFormat;
+        private final String nameFormat;
+        private final Map<String, String> statusIndicators;
+        private final String clickInstruction;
+        private final String timeFormat;
+        private final List<String> infoButtonLore;
+        private final Map<String, String> texts;
+        
+        public RewardItemConfig(ConfigurationSection config) {
+            this.materials = new HashMap<>();
+            this.statusIndicators = new HashMap<>();
+            
+            if (config != null) {
+                ConfigurationSection materialsSection = config.getConfigurationSection("materials");
+                if (materialsSection != null) {
+                    this.materials.put("retrievable", materialsSection.getString("retrievable", "LIME_SHULKER_BOX"));
+                    this.materials.put("blocked", materialsSection.getString("blocked", "RED_SHULKER_BOX"));
+                    this.materials.put("retrieved", materialsSection.getString("retrieved", "GRAY_SHULKER_BOX"));
+                } else {
+                    this.materials.put("retrievable", "LIME_SHULKER_BOX");
+                    this.materials.put("blocked", "RED_SHULKER_BOX");
+                    this.materials.put("retrieved", "GRAY_SHULKER_BOX");
+                }
+                
+                ConfigurationSection statusSection = config.getConfigurationSection("status-indicators");
+                if (statusSection != null) {
+                    this.statusIndicators.put("retrievable", statusSection.getString("retrievable", "&a✓"));
+                    this.statusIndicators.put("blocked", statusSection.getString("blocked", "&c✗"));
+                    this.statusIndicators.put("retrieved", statusSection.getString("retrieved", "&7✓"));
+                } else {
+                    this.statusIndicators.put("retrievable", "&a✓");
+                    this.statusIndicators.put("blocked", "&c✗");
+                    this.statusIndicators.put("retrieved", "&7✓");
+                }
+                
+                this.loreFormat = config.getStringList("lore-format");
+                this.nameFormat = config.getString("name-format", "{status} {name}");
+                this.clickInstruction = config.getString("click-instruction", "&a▶ Click to claim!");
+                this.timeFormat = config.getString("time-format", "{hours}h");
+                this.infoButtonLore = config.getStringList("info-button-lore");
+                
+                // Load custom texts
+                this.texts = new HashMap<>();
+                ConfigurationSection textsSection = config.getConfigurationSection("texts");
+                if (textsSection != null) {
+                    this.texts.put("repeatable_yes", textsSection.getString("repeatable-yes", "&7Repeatable: &aYes"));
+                    this.texts.put("repeatable_no", textsSection.getString("repeatable-no", "&7Repeatable: &cNo"));
+                    this.texts.put("cooldown_prefix", textsSection.getString("cooldown-prefix", "&7Cooldown: &e"));
+                    this.texts.put("rewards_title", textsSection.getString("rewards-title", "&6Rewards:"));
+                    this.texts.put("more_items", textsSection.getString("more-items", "&7... and {count} more"));
+                    this.texts.put("item_format", textsSection.getString("item-format", "&7- &f{amount}x {name}"));
+                    this.texts.put("special_rewards", textsSection.getString("special-rewards", "Special rewards"));
+                } else {
+                    this.texts.put("repeatable_yes", "&7Repeatable: &aYes");
+                    this.texts.put("repeatable_no", "&7Repeatable: &cNo");
+                    this.texts.put("cooldown_prefix", "&7Cooldown: &e");
+                    this.texts.put("rewards_title", "&6Rewards:");
+                    this.texts.put("more_items", "&7... and {count} more");
+                    this.texts.put("item_format", "&7- &f{amount}x {name}");
+                    this.texts.put("special_rewards", "Special rewards");
+                }
+            } else {
+                this.materials.put("retrievable", "LIME_SHULKER_BOX");
+                this.materials.put("blocked", "RED_SHULKER_BOX");
+                this.materials.put("retrieved", "GRAY_SHULKER_BOX");
+                this.statusIndicators.put("retrievable", "&a✓");
+                this.statusIndicators.put("blocked", "&c✗");
+                this.statusIndicators.put("retrieved", "&7✓");
+                this.loreFormat = Arrays.asList(
+                    "{description}",
+                    "",
+                    "&7Required Level: &e{level}",
+                    "&7Status: {status_description}",
+                    "{repeatable_info}",
+                    "{cooldown}",
+                    "{reward_items}",
+                    "{economy_reward}",
+                    "{commands}",
+                    "{click_instruction}"
+                );
+                this.nameFormat = "{status} {name}";
+                this.clickInstruction = "&a▶ Click to claim!";
+                this.timeFormat = "{hours}h";
+                this.infoButtonLore = new ArrayList<>();
+                
+                // Default texts
+                this.texts = new HashMap<>();
+                this.texts.put("repeatable_yes", "&7Repeatable: &aYes");
+                this.texts.put("repeatable_no", "&7Repeatable: &cNo");
+                this.texts.put("cooldown_prefix", "&7Cooldown: &e");
+                this.texts.put("rewards_title", "&6Rewards:");
+                this.texts.put("more_items", "&7... and {count} more");
+                this.texts.put("item_format", "&7- &f{amount}x {name}");
+                this.texts.put("special_rewards", "Special rewards");
+            }
+        }
+        
+        public String getMaterial(String status) { return materials.get(status); }
+        public String getStatusIndicator(String status) { return statusIndicators.get(status); }
+        public List<String> getLoreFormat() { return loreFormat; }
+        public String getNameFormat() { return nameFormat; }
+        public String getClickInstruction() { return clickInstruction; }
+        public String getTimeFormat() { return timeFormat; }
+        public List<String> getInfoButtonLore() { return infoButtonLore; }
+        public String getText(String key) { return texts.getOrDefault(key, ""); }
+    }
+    
+    public static class DefaultGuiConfig {
+        private final int size;
+        private final int rewardsPerPage;
+        private final String titleFormat;
+        private final Map<String, Object> navigationSlots;
+        private final Map<String, String> navigationMaterials;
+        private final Map<String, String> navigationNames;
+        private final Map<String, List<String>> navigationLore;
+        private final String fillerMaterial;
+        private final String fillerName;
+        private final RewardItemConfig rewardItemConfig;
+        
+        public DefaultGuiConfig(ConfigurationSection config) {
+            if (config != null) {
+                this.size = config.getInt("size", 54);
+                this.rewardsPerPage = config.getInt("rewards-per-page", 45);
+                this.titleFormat = config.getString("title-format", "&6{job} Rewards");
+                this.fillerMaterial = config.getString("filler.material", "GRAY_STAINED_GLASS_PANE");
+                this.fillerName = config.getString("filler.name", " ");
+                
+                this.navigationSlots = new HashMap<>();
+                ConfigurationSection navSection = config.getConfigurationSection("navigation-slots");
+                if (navSection != null) {
+                    this.navigationSlots.put("previous", navSection.getInt("previous", 45));
+                    this.navigationSlots.put("close", navSection.getInt("close", 48));
+                    this.navigationSlots.put("info", navSection.getInt("info", 49));
+                    this.navigationSlots.put("refresh", navSection.getInt("refresh", 50));
+                    this.navigationSlots.put("next", navSection.getInt("next", 53));
+                } else {
+                    this.navigationSlots.put("previous", 45);
+                    this.navigationSlots.put("close", 48);
+                    this.navigationSlots.put("info", 49);
+                    this.navigationSlots.put("refresh", 50);
+                    this.navigationSlots.put("next", 53);
+                }
+                
+                // Load navigation materials
+                this.navigationMaterials = new HashMap<>();
+                ConfigurationSection matSection = config.getConfigurationSection("navigation-materials");
+                if (matSection != null) {
+                    this.navigationMaterials.put("previous", matSection.getString("previous", "ARROW"));
+                    this.navigationMaterials.put("next", matSection.getString("next", "ARROW"));
+                    this.navigationMaterials.put("close", matSection.getString("close", "BARRIER"));
+                    this.navigationMaterials.put("refresh", matSection.getString("refresh", "EMERALD"));
+                    this.navigationMaterials.put("info", matSection.getString("info", "BOOK"));
+                } else {
+                    this.navigationMaterials.put("previous", "ARROW");
+                    this.navigationMaterials.put("next", "ARROW");
+                    this.navigationMaterials.put("close", "BARRIER");
+                    this.navigationMaterials.put("refresh", "EMERALD");
+                    this.navigationMaterials.put("info", "BOOK");
+                }
+                
+                // Load navigation names
+                this.navigationNames = new HashMap<>();
+                ConfigurationSection nameSection = config.getConfigurationSection("navigation-names");
+                if (nameSection != null) {
+                    this.navigationNames.put("previous", nameSection.getString("previous", "&aPrevious Page"));
+                    this.navigationNames.put("next", nameSection.getString("next", "&aNext Page"));
+                    this.navigationNames.put("close", nameSection.getString("close", "&cClose"));
+                    this.navigationNames.put("refresh", nameSection.getString("refresh", "&aRefresh"));
+                    this.navigationNames.put("info", nameSection.getString("info", "&6Page {current_page}/{total_pages}"));
+                } else {
+                    this.navigationNames.put("previous", "&aPrevious Page");
+                    this.navigationNames.put("next", "&aNext Page");
+                    this.navigationNames.put("close", "&cClose");
+                    this.navigationNames.put("refresh", "&aRefresh");
+                    this.navigationNames.put("info", "&6Page {current_page}/{total_pages}");
+                }
+                
+                // Load navigation lore
+                this.navigationLore = new HashMap<>();
+                ConfigurationSection loreSection = config.getConfigurationSection("navigation-lore");
+                if (loreSection != null) {
+                    this.navigationLore.put("previous", loreSection.getStringList("previous"));
+                    this.navigationLore.put("next", loreSection.getStringList("next"));
+                    this.navigationLore.put("close", loreSection.getStringList("close"));
+                    this.navigationLore.put("refresh", loreSection.getStringList("refresh"));
+                    this.navigationLore.put("info", loreSection.getStringList("info"));
+                } else {
+                    this.navigationLore.put("previous", Arrays.asList("&6Click to go to page {target_page}"));
+                    this.navigationLore.put("next", Arrays.asList("&6Click to go to page {target_page}"));
+                    this.navigationLore.put("close", Arrays.asList("&6Click to close this menu"));
+                    this.navigationLore.put("refresh", Arrays.asList("&6Click to refresh rewards"));
+                    this.navigationLore.put("info", Arrays.asList("&7Showing rewards for {job}"));
+                }
+                
+                this.rewardItemConfig = new RewardItemConfig(config.getConfigurationSection("reward-item"));
+            } else {
+                this.size = 54;
+                this.rewardsPerPage = 45;
+                this.titleFormat = "&6{job} Rewards";
+                this.fillerMaterial = "GRAY_STAINED_GLASS_PANE";
+                this.fillerName = " ";
+                
+                this.navigationSlots = new HashMap<>();
+                this.navigationSlots.put("previous", 45);
+                this.navigationSlots.put("close", 48);
+                this.navigationSlots.put("info", 49);
+                this.navigationSlots.put("refresh", 50);
+                this.navigationSlots.put("next", 53);
+                
+                this.navigationMaterials = new HashMap<>();
+                this.navigationMaterials.put("previous", "ARROW");
+                this.navigationMaterials.put("next", "ARROW");
+                this.navigationMaterials.put("close", "BARRIER");
+                this.navigationMaterials.put("refresh", "EMERALD");
+                this.navigationMaterials.put("info", "BOOK");
+                
+                this.navigationNames = new HashMap<>();
+                this.navigationNames.put("previous", "&aPrevious Page");
+                this.navigationNames.put("next", "&aNext Page");
+                this.navigationNames.put("close", "&cClose");
+                this.navigationNames.put("refresh", "&aRefresh");
+                this.navigationNames.put("info", "&6Page {current_page}/{total_pages}");
+                
+                this.navigationLore = new HashMap<>();
+                this.navigationLore.put("previous", Arrays.asList("&6Click to go to page {target_page}"));
+                this.navigationLore.put("next", Arrays.asList("&6Click to go to page {target_page}"));
+                this.navigationLore.put("close", Arrays.asList("&6Click to close this menu"));
+                this.navigationLore.put("refresh", Arrays.asList("&6Click to refresh rewards"));
+                this.navigationLore.put("info", Arrays.asList("&7Showing rewards for {job}"));
+                
+                this.rewardItemConfig = new RewardItemConfig(null);
+            }
+        }
+        
+        public int getSize() { return size; }
+        public int getRewardsPerPage() { return rewardsPerPage; }
+        public String getTitleFormat() { return titleFormat; }
+        public int getNavigationSlot(String type) { return (Integer) navigationSlots.getOrDefault(type, -1); }
+        public String getNavigationMaterial(String type) { return navigationMaterials.getOrDefault(type, "STONE"); }
+        public String getNavigationName(String type) { return navigationNames.getOrDefault(type, ""); }
+        public List<String> getNavigationLore(String type) { return navigationLore.getOrDefault(type, new ArrayList<>()); }
+        public String getFillerMaterial() { return fillerMaterial; }
+        public String getFillerName() { return fillerName; }
+        public RewardItemConfig getRewardItemConfig() { return rewardItemConfig; }
     }
 }

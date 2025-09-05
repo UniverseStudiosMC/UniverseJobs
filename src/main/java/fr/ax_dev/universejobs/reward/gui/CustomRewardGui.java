@@ -3,6 +3,7 @@ package fr.ax_dev.universejobs.reward.gui;
 import fr.ax_dev.universejobs.UniverseJobs;
 import fr.ax_dev.universejobs.config.LanguageManager;
 import fr.ax_dev.universejobs.job.Job;
+import fr.ax_dev.universejobs.menu.MenuUtils;
 import fr.ax_dev.universejobs.reward.Reward;
 import fr.ax_dev.universejobs.reward.RewardManager;
 import fr.ax_dev.universejobs.reward.RewardStatus;
@@ -66,8 +67,9 @@ public class CustomRewardGui implements InventoryHolder {
      * Create the inventory with the configured size and title.
      */
     private void createInventory() {
-        String title = MessageUtils.colorize(config.getTitle().replace("{job}", job.getName()));
-        this.inventory = Bukkit.createInventory(this, config.getSize(), title);
+        String title = config.getTitle().replace("{job}", job.getName());
+        title = MenuUtils.processPlaceholders(player, title);
+        this.inventory = Bukkit.createInventory(this, config.getSize(), MessageUtils.colorize(title));
     }
     
     /**
@@ -187,17 +189,6 @@ public class CustomRewardGui implements InventoryHolder {
         // Info button
         if (nav.getInfo() != null) {
             ItemStack item = createItemFromConfig(nav.getInfo());
-            // Add job info to lore
-            ItemMeta meta = item.getItemMeta();
-            if (meta != null) {
-                List<String> lore = new ArrayList<>(meta.getLore() != null ? meta.getLore() : new ArrayList<>());
-                lore.add("");
-                lore.add(MessageUtils.colorize("&7Job: &e" + job.getName()));
-                lore.add(MessageUtils.colorize("&7Total Rewards: &e" + rewards.size()));
-                lore.add(MessageUtils.colorize("&7Page: &e" + (currentPage + 1) + "/" + getTotalPages()));
-                meta.setLore(lore);
-                item.setItemMeta(meta);
-            }
             
             for (int slot : nav.getInfo().getSlots()) {
                 if (slot >= 0 && slot < inventory.getSize()) {
@@ -275,69 +266,96 @@ public class CustomRewardGui implements InventoryHolder {
      */
     private ItemStack createRewardItem(Reward reward) {
         RewardStatus status = rewardManager.getRewardStatus(player, reward);
+        GuiConfig.RewardItemConfig rewardConfig = config.getRewardItemConfig();
         
-        // Use ItemBuilder to create the reward item
-        ItemBuilder builder = new ItemBuilder(plugin, Material.CHEST)
-            .name(MessageUtils.colorize(reward.getName()));
+        String statusKey = status.name().toLowerCase();
+        String materialName = rewardConfig.getMaterial(statusKey);
+        String statusIndicator = rewardConfig.getStatusIndicator(statusKey);
         
-        // Add status indicator to name
-        String statusIndicator = status.getIndicator();
-        builder.name(statusIndicator + " " + MessageUtils.colorize(reward.getName()));
-        
-        // Add status information to lore
-        List<String> lore = new ArrayList<>();
-        lore.add(MessageUtils.colorize(reward.getDescription()));
-        lore.add("");
-        lore.add(MessageUtils.colorize("&7Required Level: &e" + reward.getRequiredLevel()));
-        lore.add(MessageUtils.colorize("&7Status: " + status.getDescription()));
-        
-        if (reward.isRepeatable()) {
-            lore.add(MessageUtils.colorize("&7Repeatable: &aYes"));
-            if (reward.getCooldownHours() > 0) {
-                lore.add(MessageUtils.colorize("&7Cooldown: &e" + formatTimeHours(reward.getCooldownHours())));
-            }
-        } else {
-            lore.add(MessageUtils.colorize("&7Repeatable: &cNo"));
+        // Create item with configured material
+        ItemBuilder builder = ItemBuilder.fromMaterialName(plugin, materialName);
+        if (builder == null) {
+            builder = new ItemBuilder(plugin, Material.CHEST);
         }
         
-        // Add click instruction
-        if (status == RewardStatus.RETRIEVABLE) {
-            lore.add("");
-            lore.add(MessageUtils.colorize("&a▶ Click to claim!"));
+        // Format display name
+        String displayName = rewardConfig.getNameFormat()
+            .replace("{status}", statusIndicator)
+            .replace("{name}", reward.getName());
+        displayName = MenuUtils.processPlaceholders(player, displayName);
+        builder.name(displayName);
+        
+        // Create lore from configured format
+        List<String> lore = new ArrayList<>();
+        for (String line : rewardConfig.getLoreFormat()) {
+            if (line.contains("{description}")) {
+                String desc = MenuUtils.processPlaceholders(player, reward.getDescription());
+                lore.add(desc);
+            } else if (line.contains("{level}")) {
+                String levelLine = line.replace("{level}", String.valueOf(reward.getRequiredLevel()));
+                lore.add(MenuUtils.processPlaceholders(player, levelLine));
+            } else if (line.contains("{status_description}")) {
+                String statusLine = line.replace("{status_description}", status.getDescription());
+                lore.add(MenuUtils.processPlaceholders(player, statusLine));
+            } else if (line.contains("{repeatable_info}")) {
+                if (reward.isRepeatable()) {
+                    lore.add(MenuUtils.processPlaceholders(player, rewardConfig.getText("repeatable_yes")));
+                    if (reward.getCooldownHours() > 0) {
+                        String timeStr = formatTime(reward.getCooldownHours(), rewardConfig.getTimeFormat());
+                        String cooldownLine = rewardConfig.getText("cooldown_prefix") + timeStr;
+                        lore.add(MenuUtils.processPlaceholders(player, cooldownLine));
+                    }
+                } else {
+                    lore.add(MenuUtils.processPlaceholders(player, rewardConfig.getText("repeatable_no")));
+                }
+            } else if (line.contains("{click_instruction}")) {
+                if (status == RewardStatus.RETRIEVABLE) {
+                    lore.add("");
+                    String instruction = MenuUtils.processPlaceholders(player, rewardConfig.getClickInstruction());
+                    lore.add(instruction);
+                }
+            } else if (!line.isEmpty()) {
+                lore.add(MenuUtils.processPlaceholders(player, line));
+            } else {
+                lore.add("");
+            }
         }
         
         builder.lore(lore);
-        
-        // Set material based on status
-        Material material = switch (status) {
-            case RETRIEVABLE -> Material.LIME_SHULKER_BOX;
-            case BLOCKED -> Material.RED_SHULKER_BOX;
-            case RETRIEVED -> Material.GRAY_SHULKER_BOX;
-        };
-        
-        // Create final item with correct material
-        ItemStack finalItem = new ItemStack(material);
-        ItemMeta finalMeta = finalItem.getItemMeta();
-        if (finalMeta != null) {
-            finalMeta.setDisplayName(statusIndicator + " " + MessageUtils.colorize(reward.getName()));
-            finalMeta.setLore(lore);
-            finalItem.setItemMeta(finalMeta);
-        }
-        
-        return finalItem;
+        return builder.build();
     }
     
     /**
-     * Format time in hours to a readable string.
+     * Format time using the configured format.
      */
-    private String formatTimeHours(long hours) {
+    private String formatTime(long hours, String format) {
+        String result = format;
+        
         if (hours < 24) {
-            return hours + "h";
-        } else if (hours < 168) { // 7 days
-            return (hours / 24) + "d";
+            result = result.replace("{hours}", String.valueOf(hours))
+                          .replace("{days}", "0")
+                          .replace("{weeks}", "0");
+        } else if (hours < 168) {
+            result = result.replace("{hours}", String.valueOf(hours % 24))
+                          .replace("{days}", String.valueOf(hours / 24))
+                          .replace("{weeks}", "0");
         } else {
-            return (hours / 168) + "w";
+            result = result.replace("{hours}", String.valueOf(hours % 24))
+                          .replace("{days}", String.valueOf((hours % 168) / 24))
+                          .replace("{weeks}", String.valueOf(hours / 168));
         }
+        
+        if (format.equals("{hours}h")) {
+            if (hours < 24) {
+                return hours + "h";
+            } else if (hours < 168) {
+                return (hours / 24) + "d";
+            } else {
+                return (hours / 168) + "w";
+            }
+        }
+        
+        return result;
     }
     
     /**
