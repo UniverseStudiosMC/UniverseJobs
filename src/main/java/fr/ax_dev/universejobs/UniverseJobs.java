@@ -262,6 +262,14 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
             stopSaveTask();
             savePlayerData();
             shutdownManagers();
+            
+            // Wait a bit for async tasks to complete before shutting down storage
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            
             shutdownStorageSystem();
             getLogger().info("UniverseJobs plugin shutdown completed successfully");
             
@@ -340,7 +348,17 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
     private void shutdownManagerSafely(String managerName, Object manager, Runnable shutdownAction) {
         if (manager != null) {
             try {
+                getLogger().info("Shutting down " + managerName + "...");
                 shutdownAction.run();
+                
+                // Give time for async operations to complete for critical managers
+                if ("job manager".equals(managerName) || "reward manager".equals(managerName)) {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
             } catch (Exception e) {
                 getLogger().log(Level.WARNING, "Error shutting down " + managerName, e);
             }

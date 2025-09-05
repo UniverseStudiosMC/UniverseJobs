@@ -1003,7 +1003,19 @@ public class JobManager {
         try {
             if (plugin.isDatabaseEnabled()) {
                 DataStorage dataStorage = plugin.getDataStorage();
-                dataStorage.savePlayerDataAsync(playerUuid, data).join();
+                if (dataStorage != null) {
+                    try {
+                        dataStorage.savePlayerDataAsync(playerUuid, data).join();
+                    } catch (Exception e) {
+                        if (e.getMessage() != null && e.getMessage().contains("Storage is shutdown")) {
+                            plugin.getLogger().warning("Cannot save player data for " + playerUuid + " - storage is shutdown");
+                        } else {
+                            throw e;
+                        }
+                    }
+                } else {
+                    plugin.getLogger().warning("DataStorage is null, cannot save player data for " + playerUuid);
+                }
             } else {
                 File dataFile = new File(dataFolder, playerUuid.toString() + ".yml");
                 FileConfiguration config = new YamlConfiguration();

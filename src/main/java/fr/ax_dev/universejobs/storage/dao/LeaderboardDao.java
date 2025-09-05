@@ -121,6 +121,10 @@ public class LeaderboardDao {
     
     public CompletableFuture<Void> updatePlayerLeaderboardEntry(UUID playerId, String playerName, String jobId, double xp, int level) {
         return CompletableFuture.runAsync(() -> {
+            // Skip if connection pool is shutdown
+            if (connectionPool == null) {
+                return;
+            }
             String sql = "INSERT OR REPLACE INTO " + prefix + "leaderboard_cache " +
                         "(player_uuid, player_name, job_id, xp, level, last_updated) " +
                         "VALUES (?, ?, ?, ?, ?, ?)";
@@ -149,6 +153,10 @@ public class LeaderboardDao {
                 invalidateCache();
                 
             } catch (SQLException e) {
+                if (e.getMessage() != null && e.getMessage().contains("has been closed")) {
+                    // Database connection pool is shutdown, ignore silently
+                    return;
+                }
                 plugin.getLogger().log(Level.SEVERE, "Failed to update leaderboard entry", e);
             }
         });
