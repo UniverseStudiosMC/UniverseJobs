@@ -87,12 +87,6 @@ public class RewardGuiManager implements Listener {
             CustomRewardGui customGui = new CustomRewardGui(plugin, player, job, availableRewards, guiConfig, 0);
             openGuis.put(player.getUniqueId(), customGui);
             customGui.open();
-        } else {
-            // Fall back to default GUI with configuration
-            GuiConfig.DefaultGuiConfig defaultConfig = rewardManager.getDefaultGuiConfig();
-            RewardGui gui = new RewardGui(player, job, availableRewards, 0, defaultConfig);
-            openGuis.put(player.getUniqueId(), gui);
-            gui.open();
         }
     }
     

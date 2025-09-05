@@ -479,10 +479,6 @@ public class RewardManager {
         return guiConfigLoader.getGuiConfig(jobId);
     }
     
-    public GuiConfig.DefaultGuiConfig getDefaultGuiConfig() {
-        return guiConfigLoader.getDefaultGuiConfig();
-    }
-    
     /**
      * Get all rewards across all jobs.
      * 
