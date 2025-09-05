@@ -15,24 +15,238 @@ rewards:
         material: STONE_PICKAXE
         amount: 1
 
+  # EXAMPLE 2: Level-based tool upgrade
   tool_upgrade:
     name: "<#FFD700>Tool Upgrade"
-    description: "<gray>Give 200 money when levelup 10 and your nickname is STEVE"
+    description: "<gray>Better tools for better work!"
     required-level: 10
     repeatable: false
+    items:
+      pickaxe:
+        material: IRON_PICKAXE
+        amount: 1
+        display-name: "<#FFD700>Upgraded Pickaxe"
+        lore:
+          - "<gray>A better tool for mining"
+          - "<#32CD32>+15% Mining Speed"
+
+  # EXAMPLE 3: Economic reward with conditions
+  level_bonus:
+    name: "<#FFD700>Level 20 Bonus"
+    description: "<gray>Economic reward for reaching level 20"
+    required-level: 20
+    repeatable: false
+    economy-reward: 1000
     requirements:
       logic: "AND"
-      multiple_condition:
-        placeholder:
+      level_check:
+        placeholder: "%universejobs_player_level%"
+        operator: "greater_equal"
+        value: "20"
+      deny:
+        message: "<#FF6B6B>❌ You need to be level 20+"
+        sound: "ENTITY_VILLAGER_NO"
+      accept:
+        message: "<#32CD32>✓ Level requirement met!"
+        sound: "ENTITY_PLAYER_LEVELUP"
+
+  # EXAMPLE 4: Repeatable weekly bonus with GUI positioning
+  weekly_bonus:
+    name: "<#9370DB>Weekly Bonus"
+    description: "<gray>Special weekly reward with cooldown"
+    required-level: 15
+    repeatable: true
+    cooldown-hours: 168  # 1 week
+    gui-slot: 15  # Custom position in GUI
+    items:
+      bonus_chest:
+        material: CHEST
+        amount: 5
+        display-name: "<#9370DB>Bonus Chest"
+        lore:
+          - "<gray>Contains valuable items"
+          - "<#FFD700>Weekly special!"
+    economy-reward: 500
+    commands:
+      - "give %player_name% diamond 2"
+      - "tellraw %player_name% {\"text\":\"Weekly bonus claimed!\",\"color\":\"gold\"}"
+
+  # EXAMPLE 5: Advanced reward with Nexo/ItemsAdder support
+  master_reward:
+    name: "<#FF6B6B>Master Craftsman"
+    description: "<gray>Ultimate reward for dedicated players"
+    required-level: 50
+    repeatable: false
+    gui-slot: 22  # Center position in GUI
+    permission: "jobs.master"
+    requirements:
+      logic: "AND"
+      multiple_conditions:
+        level_check:
           placeholder: "%universejobs_player_level%"
           operator: "greater_equal"
-          value: "10"
-        placeholder2:
-          placeholder: "%player_name%"
-          operator: "equals"
-          value: "STEVE"
-        deny:
-          message: "<#FF6B6B>❌ NOT STEVE"
-        accept:
-          commands:
-          - "eco give 200 %player_name%"
+          value: "50"
+        time_played:
+          placeholder: "%statistic_time_played%"
+          operator: "greater_equal"
+          value: "720000"  # 10 hours in ticks
+      deny:
+        message: "<#FF6B6B>❌ Requirements not met"
+        sound: "ENTITY_VILLAGER_NO"
+        feedback:
+          - "<gray>• Level 50+ required"
+          - "<gray>• 10+ hours played required"
+      accept:
+        message: "<#32CD32>✓ Master level achieved!"
+        sound: "UI_TOAST_CHALLENGE_COMPLETE"
+    items:
+      nexo_item:
+        nexo-id: "custom_hammer"  # Nexo item
+        amount: 1
+      itemsadder_item:
+        itemsadder-id: "magic_sword"  # ItemsAdder item
+        amount: 1
+      regular_item:
+        material: NETHERITE_PICKAXE
+        amount: 1
+        display-name: "<#FF6B6B>Master's Pickaxe"
+        lore:
+          - "<gray>A legendary tool"
+          - "<#FFD700>Unbreakable"
+          - "<#32CD32>Fortune V"
+        enchantments:
+          fortune: 5
+          unbreaking: 10
+        custom-model-data: 1001
+    economy-reward: 10000
+    commands:
+      - "lp user %player_name% permission set jobs.master.bonus true"
+      - "broadcast <#FFD700>%player_name% <gray>achieved Master Craftsman!"
+
+  # EXAMPLE 6: Daily reward with PlaceholderAPI and enhanced customization
+  daily_reward:
+    name: "<#FFA500>Daily Bonus"
+    description: "<gray>Come back every day for rewards!"
+    required-level: 5
+    repeatable: true
+    cooldown-hours: 24
+    gui-slot: 31  # Center-bottom position
+    requirements:
+      logic: "AND"
+      daily_check:
+        placeholder: "%server_time_HH%"
+        operator: "greater_equal"
+        value: "6"  # After 6 AM
+      deny:
+        message: "<#FF6B6B>❌ Daily rewards available from 6 AM"
+        sound: "BLOCK_NOTE_BLOCK_BASS"
+        feedback:
+          - "<gray>Current server time: <#FFD700>%server_time_HH:mm%"
+          - "<gray>Daily rewards reset at <#32CD32>6:00 AM"
+      accept:
+        message: "<#32CD32>✓ Daily reward ready!"
+        sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+    items:
+      daily_box:
+        material: SHULKER_BOX
+        amount: 1
+        display-name: "<#FFA500>Daily Reward Box"
+        lore:
+          - "<gray>Collected on: <#FFD700>%server_time_dd/MM/yyyy%"
+          - "<gray>Player: <#32CD32>%player_name%"
+          - "<gray>Server: <#9370DB>%server_name%"
+        custom-model-data: 1002
+    economy-reward: 100
+    commands:
+      - "give %player_name% bread 10"
+      - "tellraw %player_name% {\"text\":\"Daily reward collected at %server_time_HH:mm%!\",\"color\":\"green\"}"
+
+  # EXAMPLE 7: Complex milestone reward with multiple conditions
+  milestone_100:
+    name: "<gradient:#FFD700:#FFA500>Century Milestone</gradient>"
+    description: "<gray>Celebrate reaching level 100!"
+    required-level: 100
+    repeatable: false
+    gui-slot: 4  # Top center position
+    requirements:
+      logic: "AND"
+      multiple_checks:
+        level_requirement:
+          placeholder: "%universejobs_player_level%"
+          operator: "greater_equal"
+          value: "100"
+        playtime_check:
+          placeholder: "%statistic_time_played%"
+          operator: "greater_equal"
+          value: "1440000"  # 20 hours in ticks
+        money_check:
+          placeholder: "%vault_eco_balance%"
+          operator: "greater_equal"
+          value: "50000"
+      deny:
+        message: "<#FF6B6B>❌ Milestone requirements not met"
+        sound: "BLOCK_ANVIL_LAND"
+        feedback:
+          - "<gray>Requirements:"
+          - "<gray>• Level 100+ <#32CD32>(%universejobs_player_level%/100)"
+          - "<gray>• 20+ hours played"
+          - "<gray>• $50,000+ balance <#FFD700>(%vault_eco_balance_formatted%)"
+      accept:
+        message: "<gradient:#32CD32:#FFD700>🎉 MILESTONE ACHIEVED! 🎉</gradient>"
+        sound: "UI_TOAST_CHALLENGE_COMPLETE"
+    items:
+      milestone_trophy:
+        material: GOLDEN_APPLE
+        amount: 1
+        display-name: "<gradient:#FFD700:#FFA500>Century Trophy</gradient>"
+        lore:
+          - "<gray>Commemorating your dedication"
+          - "<#FFD700>Level 100 Achievement"
+          - "<gray>Awarded to: <#32CD32>%player_name%"
+          - "<gray>Date: <#9370DB>%server_time_dd/MM/yyyy%"
+        enchantments:
+          unbreaking: 1
+        custom-model-data: 2000
+      bonus_items:
+        material: DIAMOND
+        amount: 64
+        display-name: "<#B9F2FF>Milestone Diamonds"
+      experience_bottle:
+        material: EXPERIENCE_BOTTLE
+        amount: 32
+    economy-reward: 25000
+    commands:
+      - "give %player_name% nether_star 5"
+      - "lp user %player_name% permission set jobs.milestone.century true"
+      - "broadcast <gradient:#FFD700:#FFA500>🎉 %player_name% reached the Century Milestone! 🎉</gradient>"
+      - "firework %player_name% 5"
+
+  # EXAMPLE 8: Nexo/ItemsAdder integration showcase
+  custom_items_reward:
+    name: "<#FF69B4>Custom Items Collection"
+    description: "<gray>Exclusive custom items from Nexo and ItemsAdder"
+    required-level: 25
+    repeatable: true
+    cooldown-hours: 72  # 3 days
+    gui-slot: 13  # Top row center
+    items:
+      nexo_custom_tool:
+        nexo-id: "mining_drill"  # Nexo item ID
+        amount: 1
+      itemsadder_weapon:
+        itemsadder-id: "special_sword"  # ItemsAdder namespace:item
+        amount: 1
+      hybrid_item:
+        material: IRON_SWORD
+        amount: 1
+        display-name: "<gradient:#FF1493:#00BFFF>Hybrid Blade</gradient>"
+        lore:
+          - "<gray>A blade infused with custom power"
+          - "<#FFD700>Works with both Nexo and vanilla"
+        enchantments:
+          sharpness: 7
+          fire_aspect: 3
+        custom-model-data: 5001
+    commands:
+      - "ia give %player_name% magic_dust 10"  # ItemsAdder command
+      - "nexo give %player_name% crystal_shard 5"  # Nexo command

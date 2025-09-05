@@ -28,8 +28,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     private final ActionLimitCommandHandler actionLimitHandler;
     private final AdminJobCommandHandler adminJobHandler;
     private final MenuCommandHandler menuHandler;
-    private final DatabaseCommandHandler databaseHandler;
-    
     // Command constants
     private static final String CMD_JOIN = "join";
     private static final String CMD_LEAVE = "leave";
@@ -66,7 +64,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         this.actionLimitHandler = new ActionLimitCommandHandler(plugin);
         this.adminJobHandler = new AdminJobCommandHandler(plugin, jobManager);
         this.menuHandler = new MenuCommandHandler(plugin);
-        this.databaseHandler = new DatabaseCommandHandler(plugin);
+        new DatabaseCommandHandler(plugin);
     }
     
     @Override

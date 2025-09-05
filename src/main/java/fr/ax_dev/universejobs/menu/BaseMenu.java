@@ -111,96 +111,14 @@ public abstract class BaseMenu implements InventoryHolder {
      * Create an ItemStack from a MenuItemConfig using the existing ItemBuilder.
      */
     protected ItemStack createMenuItem(MenuItemConfig itemConfig) {
-        return createMenuItem(itemConfig, null);
+        return MenuUtils.createMenuItem(plugin, player, itemConfig);
     }
     
     /**
      * Create an ItemStack from a MenuItemConfig with custom placeholders using existing ItemBuilder.
      */
     protected ItemStack createMenuItem(MenuItemConfig itemConfig, Map<String, String> customPlaceholders) {
-        // Use existing ItemBuilder instead of duplicating functionality
-        ItemBuilder builder = ItemBuilder.fromMaterialName(plugin, itemConfig.getMaterial())
-                .amount(itemConfig.getAmount());
-        
-        // Process display name
-        String displayName = itemConfig.getDisplayName();
-        if (customPlaceholders != null) {
-            displayName = replacePlaceholders(displayName, customPlaceholders);
-        }
-        displayName = processPlaceholders(displayName);
-        builder.name(displayName);
-        
-        // Process lore
-        List<String> lore = new ArrayList<>();
-        for (String loreLine : itemConfig.getLore()) {
-            String processedLore = loreLine;
-            if (customPlaceholders != null) {
-                processedLore = replacePlaceholders(processedLore, customPlaceholders);
-            }
-            processedLore = processPlaceholders(processedLore);
-            lore.add(processedLore);
-        }
-        builder.lore(lore);
-        
-        // Custom model data
-        if (itemConfig.getCustomModelData() > 0) {
-            builder.customModelData(itemConfig.getCustomModelData());
-        }
-        
-        // Item flags
-        if (itemConfig.isHideAttributes() || itemConfig.isHideEnchants()) {
-            builder.hideAttributes();
-        }
-        
-        ItemStack item = builder.build();
-        
-        // Add enchantments, glow effect, and skull owner after building
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            // Handle skull owner for player heads
-            if (item.getType() == Material.PLAYER_HEAD && !itemConfig.getSkullOwner().isEmpty()) {
-                if (meta instanceof SkullMeta) {
-                    SkullMeta skullMeta = (SkullMeta) meta;
-                    String skullOwner = itemConfig.getSkullOwner();
-                    if (customPlaceholders != null) {
-                        skullOwner = replacePlaceholders(skullOwner, customPlaceholders);
-                    }
-                    skullOwner = processPlaceholders(skullOwner);
-                    try {
-                        skullMeta.setOwningPlayer(plugin.getServer().getOfflinePlayer(skullOwner));
-                    } catch (Exception e) {
-                        plugin.getLogger().warning("Failed to set skull owner: " + skullOwner);
-                    }
-                }
-            }
-            
-            // Enchantments
-            for (Map.Entry<String, Integer> entry : itemConfig.getEnchantments().entrySet()) {
-                try {
-                    Enchantment enchantment = Enchantment.getByKey(org.bukkit.NamespacedKey.minecraft(entry.getKey().toLowerCase()));
-                    if (enchantment != null) {
-                        meta.addEnchant(enchantment, entry.getValue(), true);
-                    }
-                } catch (Exception e) {
-                    plugin.getLogger().warning("Invalid enchantment: " + entry.getKey());
-                }
-            }
-            
-            // Glow effect
-            if (itemConfig.isGlow() && itemConfig.getEnchantments().isEmpty()) {
-                meta.addEnchant(Enchantment.LURE, 1, true);
-                meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-            }
-            
-            // Hide tooltip (all item information)
-            if (itemConfig.isHideToolTip()) {
-                meta.setHideTooltip(true);
-            }
-            
-            item.setItemMeta(meta);
-        }
-        
-        return item;
+        return MenuUtils.createMenuItem(plugin, player, itemConfig, customPlaceholders);
     }
     
     /**
@@ -230,38 +148,14 @@ public abstract class BaseMenu implements InventoryHolder {
      * Process PlaceholderAPI placeholders in a string.
      */
     protected String processPlaceholders(String text) {
-        if (text == null) return "";
-        
-        // Process PlaceholderAPI placeholders
-        try {
-            if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-                text = PlaceholderAPI.setPlaceholders(player, text);
-            }
-        } catch (Exception e) {
-            // Ignore if PlaceholderAPI is not available or fails
-        }
-        
-        return text;
+        return MenuUtils.processPlaceholders(player, text);
     }
     
     /**
      * Replace custom placeholders in a string.
      */
     protected String replacePlaceholders(String text, Map<String, String> placeholders) {
-        if (text == null || placeholders == null) return text;
-        
-        String result = text;
-        for (Map.Entry<String, String> entry : placeholders.entrySet()) {
-            // Handle placeholders that already include braces or don't
-            String key = entry.getKey();
-            if (key.startsWith("{") && key.endsWith("}")) {
-                result = result.replace(key, entry.getValue());
-            } else {
-                result = result.replace("{" + key + "}", entry.getValue());
-            }
-        }
-        
-        return result;
+        return MenuUtils.replacePlaceholders(text, placeholders);
     }
     
     /**

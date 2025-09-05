@@ -92,3 +92,49 @@ navigation:
     lore:
       - "<gray>View reward information"
     slots: [4]
+
+# Reward item configuration
+reward-item:
+  # Materials for different reward statuses
+  materials:
+    retrievable: LIME_SHULKER_BOX      # Can be claimed
+    blocked: RED_SHULKER_BOX           # Requirements not met
+    retrieved: GRAY_SHULKER_BOX        # Already claimed
+  
+  # Status indicators shown in item name
+  status-indicators:
+    retrievable: "<#32CD32>✓"          # Green checkmark
+    blocked: "<#FF6B6B>✗"              # Red X
+    retrieved: "<#808080>✓"            # Gray checkmark
+  
+  # Format for reward item names - supports PlaceholderAPI
+  name-format: "{status} <#FFD700>{name}"
+  
+  # Complete lore format with all available placeholders
+  lore-format:
+    - "{description}"
+    - ""
+    - "<gray>Required Level: <#FFD700>{level}"
+    - "<gray>Status: {status_description}"
+    - "{repeatable_info}"
+    - "{cooldown}"
+    - "{reward_items}"
+    - "{economy_reward}"
+    - "{commands}"
+    - "{click_instruction}"
+  
+  # Click instruction when reward is available
+  click-instruction: "<#32CD32>▶ Click to claim!"
+  
+  # Time format - supports {hours}, {days}, {weeks} or custom format
+  time-format: "{hours}h"
+  
+  # Custom texts for various elements
+  texts:
+    repeatable-yes: "<gray>Repeatable: <#32CD32>Yes"
+    repeatable-no: "<gray>Repeatable: <#FF6B6B>No"
+    cooldown-prefix: "<gray>Cooldown: <#FFD700>"
+    rewards-title: "<#FFD700>Rewards:"
+    more-items: "<gray>... and <#FFD700>{count}<gray> more"
+    item-format: "<gray>- <white>{amount}x {name}"
+    special-rewards: "<#9370DB>Special rewards"

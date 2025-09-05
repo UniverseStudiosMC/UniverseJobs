@@ -243,14 +243,11 @@ public class ItemBuilder {
         }
         
         try {
-            // Use reflection to access Nexo API
-            Class<?> nexoItemsClass = Class.forName("com.nexomc.nexo.api.NexoItems");
-            Object itemBuilder = nexoItemsClass.getMethod("itemFromId", String.class).invoke(null, nexoId);
-            
+            com.nexomc.nexo.items.ItemBuilder itemBuilder = com.nexomc.nexo.api.NexoItems.itemFromId(nexoId);
             if (itemBuilder != null) {
-                return (ItemStack) itemBuilder.getClass().getMethod("build").invoke(itemBuilder);
+                return itemBuilder.build();
             }
-        } catch (Exception e) {
+        } catch (NoClassDefFoundError | Exception e) {
             // Nexo not available or API changed
         }
         
@@ -269,14 +266,11 @@ public class ItemBuilder {
         }
         
         try {
-            // Use reflection to access ItemsAdder API
-            Class<?> customStackClass = Class.forName("dev.lone.itemsadder.api.CustomStack");
-            Object customStack = customStackClass.getMethod("getInstance", String.class).invoke(null, itemsAdderId);
-            
+            dev.lone.itemsadder.api.CustomStack customStack = dev.lone.itemsadder.api.CustomStack.getInstance(itemsAdderId);
             if (customStack != null) {
-                return (ItemStack) customStack.getClass().getMethod("getItemStack").invoke(customStack);
+                return customStack.getItemStack();
             }
-        } catch (Exception e) {
+        } catch (NoClassDefFoundError | Exception e) {
             // ItemsAdder not available or API changed
         }
         
