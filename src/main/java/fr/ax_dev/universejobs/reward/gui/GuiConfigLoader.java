@@ -44,8 +44,6 @@ public class GuiConfigLoader {
             }
         }
         
-        // Load default GUI configuration
-        loadDefaultGuiConfig();
         
         // Always try to create example files if they don't exist
         createExampleGuiFiles();
@@ -91,7 +89,11 @@ public class GuiConfigLoader {
      * @return The GUI configuration, or null if not found
      */
     public GuiConfig getGuiConfig(String name) {
-        return guiConfigs.get(name);
+        GuiConfig config = guiConfigs.get(name);
+        if (config == null) {
+            plugin.getLogger().warning("GUI configuration '" + name + "' not found");
+        }
+        return config;
     }
     
     /**
@@ -125,34 +127,6 @@ public class GuiConfigLoader {
         }
     }
     
-    private void loadDefaultGuiConfig() {
-        File configFile = new File(plugin.getDataFolder(), "gui/default.yml");
-        if (configFile.exists()) {
-            try {
-                FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
-                this.defaultGuiConfig = new GuiConfig.DefaultGuiConfig(config);
-            } catch (Exception e) {
-                plugin.getLogger().log(Level.WARNING, "Failed to load default GUI configuration", e);
-                this.defaultGuiConfig = new GuiConfig.DefaultGuiConfig(null);
-            }
-        } else {
-            this.defaultGuiConfig = new GuiConfig.DefaultGuiConfig(null);
-            createDefaultGuiFile();
-        }
-    }
-    
-    private void createDefaultGuiFile() {
-        File defaultFile = new File(plugin.getDataFolder(), "gui/default.yml");
-        try {
-            plugin.saveResource("gui/default.yml", false);
-        } catch (Exception e) {
-            plugin.getLogger().log(Level.WARNING, "Failed to create default GUI file from resources", e);
-        }
-    }
-    
-    public GuiConfig.DefaultGuiConfig getDefaultGuiConfig() {
-        return defaultGuiConfig != null ? defaultGuiConfig : new GuiConfig.DefaultGuiConfig(null);
-    }
     
     /**
      * Reload all GUI configurations.
