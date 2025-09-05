@@ -4,6 +4,7 @@ import fr.ax_dev.universejobs.UniverseJobs;
 import fr.ax_dev.universejobs.job.Job;
 import fr.ax_dev.universejobs.job.JobManager;
 import fr.ax_dev.universejobs.job.PlayerJobData;
+import fr.ax_dev.universejobs.storage.dao.LeaderboardDao;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -155,6 +156,19 @@ public class JobsLeaderboardPlaceholder extends PlaceholderExpansion {
     }
 
     private List<LeaderboardEntry> calculateJobLeaderboard(String jobId) {
+        if (plugin.isDatabaseEnabled()) {
+            try {
+                LeaderboardDao leaderboardDao = ((fr.ax_dev.universejobs.storage.database.DatabaseDataStorage) plugin.getDataStorage()).getLeaderboardDao();
+                List<LeaderboardDao.LeaderboardEntry> dbEntries = leaderboardDao.getJobLeaderboard(jobId, 100).join();
+                
+                return dbEntries.stream()
+                    .map(entry -> new LeaderboardEntry(entry.getPlayerId(), entry.getPlayerName(), entry.getXp(), entry.getLevel()))
+                    .toList();
+            } catch (Exception e) {
+                plugin.getLogger().warning("Failed to fetch job leaderboard from database, falling back to file system");
+            }
+        }
+        
         List<LeaderboardEntry> entries = new ArrayList<>();
         File dataFolder = new File(plugin.getDataFolder(), "data");
 

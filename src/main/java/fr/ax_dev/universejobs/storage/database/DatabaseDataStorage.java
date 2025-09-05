@@ -6,6 +6,7 @@ import fr.ax_dev.universejobs.storage.DataStorage;
 import fr.ax_dev.universejobs.storage.dao.PlayerDataDao;
 import fr.ax_dev.universejobs.storage.dao.RewardDao;
 import fr.ax_dev.universejobs.storage.dao.JobStatsDao;
+import fr.ax_dev.universejobs.storage.dao.LeaderboardDao;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -22,6 +23,7 @@ public class DatabaseDataStorage implements DataStorage {
     private final PlayerDataDao playerDataDao;
     private final RewardDao rewardDao;
     private final JobStatsDao jobStatsDao;
+    private final LeaderboardDao leaderboardDao;
     
     private final Map<UUID, PlayerJobData> cache = new ConcurrentHashMap<>();
     private final Map<UUID, Set<String>> rewardCache = new ConcurrentHashMap<>();
@@ -40,6 +42,7 @@ public class DatabaseDataStorage implements DataStorage {
         this.playerDataDao = new PlayerDataDao(connectionPool, config);
         this.rewardDao = new RewardDao(connectionPool, config);
         this.jobStatsDao = new JobStatsDao(connectionPool, config);
+        this.leaderboardDao = new LeaderboardDao(plugin, connectionPool, config);
     }
 
     @Override
@@ -84,7 +87,20 @@ public class DatabaseDataStorage implements DataStorage {
         totalOperations++;
         cache.put(playerId, data);
         
-        return playerDataDao.savePlayerData(playerId, data);
+        CompletableFuture<Void> saveFuture = playerDataDao.savePlayerData(playerId, data);
+        
+        saveFuture.thenRun(() -> {
+            String playerName = plugin.getServer().getOfflinePlayer(playerId).getName();
+            if (playerName == null) playerName = "Unknown";
+            
+            for (String jobId : data.getJobs()) {
+                double xp = data.getXp(jobId);
+                int level = data.getLevel(jobId);
+                leaderboardDao.updatePlayerLeaderboardEntry(playerId, playerName, jobId, xp, level);
+            }
+        });
+        
+        return saveFuture;
     }
 
     @Override
@@ -345,6 +361,10 @@ public class DatabaseDataStorage implements DataStorage {
     
     public RewardDao getRewardDao() {
         return rewardDao;
+    }
+    
+    public LeaderboardDao getLeaderboardDao() {
+        return leaderboardDao;
     }
     
     public JobStatsDao getJobStatsDao() {
