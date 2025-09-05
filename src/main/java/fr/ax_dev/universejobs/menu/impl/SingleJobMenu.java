@@ -10,23 +10,19 @@ import fr.ax_dev.universejobs.menu.config.SingleMenuConfig;
 import fr.ax_dev.universejobs.menu.config.SimpleConfigurationSection;
 import fr.ax_dev.universejobs.menu.utils.MenuItemUtils;
 import fr.ax_dev.universejobs.utils.MessageUtils;
-import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
+import java.util.UUID;
 
 /**
  * Menu for an individual job showing job information and action buttons.
  * Implements InventoryHolder for better integration.
  */
-public class SingleJobMenu extends BaseMenu implements InventoryHolder {
+public class SingleJobMenu extends BaseMenu {
     
     private static final int DEFAULT_PROGRESS_BARS = 20;
-    private static final String JOB_PLACEHOLDER_PREFIX = "{job_";
-    private static final String PLAYER_PLACEHOLDER_PREFIX = "{player_";
-    
     private final Job job;
     private final PlayerJobData playerData;
     private final Map<String, String> cachedPlaceholders;
@@ -519,6 +515,104 @@ public class SingleJobMenu extends BaseMenu implements InventoryHolder {
     }
     
     /**
+     * Calculate player rank for the current job.
+     */
+    private String calculatePlayerRank() {
+        if (!hasJob) {
+            return "N/A";
+        }
+        
+        List<RankingEntry> rankings = getJobRankings();
+        for (int i = 0; i < rankings.size(); i++) {
+            if (rankings.get(i).playerUuid.equals(player.getUniqueId())) {
+                return "" + (i + 1);
+            }
+        }
+        return "N/A";
+    }
+    
+    /**
+     * Get top player for the current job.
+     */
+    private String getTopPlayerForJob() {
+        List<RankingEntry> rankings = getJobRankings();
+        if (!rankings.isEmpty()) {
+            return rankings.get(0).playerName;
+        }
+        return "N/A";
+    }
+    
+    /**
+     * Get job rankings (cached for performance).
+     */
+    private List<RankingEntry> getJobRankings() {
+        List<RankingEntry> entries = new ArrayList<>();
+        java.io.File dataFolder = new java.io.File(plugin.getDataFolder(), "data");
+        
+        if (!dataFolder.exists()) {
+            return entries;
+        }
+        
+        java.io.File[] dataFiles = dataFolder.listFiles((dir, name) -> name.endsWith(".yml"));
+        if (dataFiles == null) {
+            return entries;
+        }
+        
+        for (java.io.File dataFile : dataFiles) {
+            try {
+                String uuidString = dataFile.getName().replace(".yml", "");
+                UUID playerUuid = UUID.fromString(uuidString);
+                
+                PlayerJobData data = plugin.getJobManager().getPlayerData(playerUuid);
+                
+                if (data.hasJob(job.getId())) {
+                    org.bukkit.OfflinePlayer offlinePlayer = org.bukkit.Bukkit.getOfflinePlayer(playerUuid);
+                    String playerName = offlinePlayer.getName();
+                    
+                    if (playerName == null) {
+                        playerName = "Unknown";
+                    }
+                    
+                    double xp = data.getXp(job.getId());
+                    int level = data.getLevel(job.getId());
+                    
+                    entries.add(new RankingEntry(playerUuid, playerName, level, xp));
+                }
+            } catch (Exception e) {
+                // Skip invalid entries
+            }
+        }
+        
+        // Sort by level desc, then by XP desc
+        entries.sort((a, b) -> {
+            int levelCompare = Integer.compare(b.level, a.level);
+            if (levelCompare != 0) {
+                return levelCompare;
+            }
+            return Double.compare(b.xp, a.xp);
+        });
+        
+        return entries;
+    }
+    
+    /**
+     * Simple ranking entry class.
+     */
+    private static class RankingEntry {
+        final UUID playerUuid;
+        final String playerName;
+        final int level;
+        final double xp;
+        
+        RankingEntry(UUID playerUuid, String playerName, int level, double xp) {
+            this.playerUuid = playerUuid;
+            this.playerName = playerName;
+            this.level = level;
+            this.xp = xp;
+        }
+    }
+    
+    /**
      * Add statistics-related placeholders efficiently.
      */
     private void addStatisticsPlaceholders(Map<String, String> placeholders) {
@@ -533,8 +627,12 @@ public class SingleJobMenu extends BaseMenu implements InventoryHolder {
             plugin.getRewardManager().getJobRewards(job.getId()).size() : 0;
         placeholders.put("{total_rewards}", String.valueOf(totalRewards));
         
-        // Ranking placeholders - would need proper calculation implementation
-        placeholders.put("{player_rank}", "N/A");
-        placeholders.put("{top_player}", "N/A");
+        // Get player rank for this specific job
+        String playerRank = calculatePlayerRank();
+        placeholders.put("{player_rank}", playerRank);
+        
+        // Get top player for this specific job
+        String topPlayer = getTopPlayerForJob();
+        placeholders.put("{top_player}", topPlayer);
     }
 }

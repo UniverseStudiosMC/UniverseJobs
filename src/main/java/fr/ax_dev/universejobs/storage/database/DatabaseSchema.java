@@ -1,0 +1,134 @@
+package fr.ax_dev.universejobs.storage.database;
+
+import fr.ax_dev.universejobs.UniverseJobs;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.logging.Level;
+
+public class DatabaseSchema {
+    
+    private final UniverseJobs plugin;
+    private final DatabaseConfig config;
+    private final HikariConnectionPool connectionPool;
+
+    public DatabaseSchema(UniverseJobs plugin, DatabaseConfig config, HikariConnectionPool connectionPool) {
+        this.plugin = plugin;
+        this.config = config;
+        this.connectionPool = connectionPool;
+    }
+
+    public void initializeSchema() throws SQLException {
+        try (Connection connection = connectionPool.getConnection()) {
+            createTables(connection);
+            createIndexes(connection);
+            plugin.getLogger().info("Database schema initialized successfully");
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.SEVERE, "Failed to initialize database schema", e);
+            throw e;
+        }
+    }
+
+    private void createTables(Connection connection) throws SQLException {
+        String prefix = config.getPrefix();
+        
+        createPlayerDataTable(connection, prefix);
+        createRewardClaimsTable(connection, prefix);
+        createJobStatsTable(connection, prefix);
+    }
+
+    private void createPlayerDataTable(Connection connection, String prefix) throws SQLException {
+        String sql;
+        if (config.getType() == DatabaseType.MYSQL) {
+            sql = "CREATE TABLE IF NOT EXISTS " + prefix + "player_data (" +
+                    "player_uuid VARCHAR(36) NOT NULL, " +
+                    "job_id VARCHAR(64) NOT NULL, " +
+                    "xp DOUBLE NOT NULL DEFAULT 0, " +
+                    "level INT NOT NULL DEFAULT 1, " +
+                    "last_modified BIGINT NOT NULL DEFAULT 0, " +
+                    "PRIMARY KEY (player_uuid, job_id), " +
+                    "INDEX idx_player (player_uuid), " +
+                    "INDEX idx_job (job_id)" +
+                    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+        } else {
+            sql = "CREATE TABLE IF NOT EXISTS " + prefix + "player_data (" +
+                    "player_uuid TEXT NOT NULL, " +
+                    "job_id TEXT NOT NULL, " +
+                    "xp REAL NOT NULL DEFAULT 0, " +
+                    "level INTEGER NOT NULL DEFAULT 1, " +
+                    "last_modified INTEGER NOT NULL DEFAULT 0, " +
+                    "PRIMARY KEY (player_uuid, job_id)" +
+                    ")";
+        }
+        
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute(sql);
+        }
+    }
+
+    private void createRewardClaimsTable(Connection connection, String prefix) throws SQLException {
+        String sql;
+        if (config.getType() == DatabaseType.MYSQL) {
+            sql = "CREATE TABLE IF NOT EXISTS " + prefix + "reward_claims (" +
+                    "player_uuid VARCHAR(36) NOT NULL, " +
+                    "job_id VARCHAR(64) NOT NULL, " +
+                    "reward_id VARCHAR(64) NOT NULL, " +
+                    "claim_time BIGINT NOT NULL, " +
+                    "PRIMARY KEY (player_uuid, job_id, reward_id), " +
+                    "INDEX idx_player_rewards (player_uuid), " +
+                    "INDEX idx_job_rewards (job_id)" +
+                    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+        } else {
+            sql = "CREATE TABLE IF NOT EXISTS " + prefix + "reward_claims (" +
+                    "player_uuid TEXT NOT NULL, " +
+                    "job_id TEXT NOT NULL, " +
+                    "reward_id TEXT NOT NULL, " +
+                    "claim_time INTEGER NOT NULL, " +
+                    "PRIMARY KEY (player_uuid, job_id, reward_id)" +
+                    ")";
+        }
+        
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute(sql);
+        }
+    }
+
+    private void createJobStatsTable(Connection connection, String prefix) throws SQLException {
+        String sql;
+        if (config.getType() == DatabaseType.MYSQL) {
+            sql = "CREATE TABLE IF NOT EXISTS " + prefix + "job_stats (" +
+                    "job_id VARCHAR(64) NOT NULL, " +
+                    "stat_name VARCHAR(64) NOT NULL, " +
+                    "stat_value TEXT, " +
+                    "last_updated BIGINT NOT NULL DEFAULT 0, " +
+                    "PRIMARY KEY (job_id, stat_name)" +
+                    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+        } else {
+            sql = "CREATE TABLE IF NOT EXISTS " + prefix + "job_stats (" +
+                    "job_id TEXT NOT NULL, " +
+                    "stat_name TEXT NOT NULL, " +
+                    "stat_value TEXT, " +
+                    "last_updated INTEGER NOT NULL DEFAULT 0, " +
+                    "PRIMARY KEY (job_id, stat_name)" +
+                    ")";
+        }
+        
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute(sql);
+        }
+    }
+
+    private void createIndexes(Connection connection) throws SQLException {
+        if (config.getType() == DatabaseType.SQLITE) {
+            String prefix = config.getPrefix();
+            
+            try (Statement stmt = connection.createStatement()) {
+                stmt.execute("CREATE INDEX IF NOT EXISTS idx_" + prefix + "player_data_player ON " + prefix + "player_data (player_uuid)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS idx_" + prefix + "player_data_job ON " + prefix + "player_data (job_id)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS idx_" + prefix + "reward_claims_player ON " + prefix + "reward_claims (player_uuid)");
+                stmt.execute("CREATE INDEX IF NOT EXISTS idx_" + prefix + "reward_claims_job ON " + prefix + "reward_claims (job_id)");
+            }
+        }
+    }
+}

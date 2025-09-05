@@ -3,6 +3,7 @@ package fr.ax_dev.universejobs.job;
 import fr.ax_dev.universejobs.UniverseJobs;
 import fr.ax_dev.universejobs.action.ActionLimitManager;
 import fr.ax_dev.universejobs.config.ConfigManager;
+import fr.ax_dev.universejobs.storage.DataStorage;
 import fr.ax_dev.universejobs.xp.XpCurve;
 import fr.ax_dev.universejobs.xp.XpCurveManager;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -514,24 +515,26 @@ public class JobManager {
         }
         
         try {
-            File dataFile = new File(dataFolder, playerUuid.toString() + ".yml");
             PlayerJobData data;
             
-            if (!dataFile.exists()) {
-                // Create new player data
-                data = new PlayerJobData(playerUuid);
-                data.setJobManager(this);
+            if (plugin.isDatabaseEnabled()) {
+                DataStorage dataStorage = plugin.getDataStorage();
+                data = dataStorage.loadPlayerDataAsync(playerUuid).join();
             } else {
-                FileConfiguration config = YamlConfiguration.loadConfiguration(dataFile);
-                data = new PlayerJobData(playerUuid);
-                data.setJobManager(this); // Set JobManager reference for XP curve calculations
-                data.load(config);
+                File dataFile = new File(dataFolder, playerUuid.toString() + ".yml");
+                
+                if (!dataFile.exists()) {
+                    data = new PlayerJobData(playerUuid);
+                } else {
+                    FileConfiguration config = YamlConfiguration.loadConfiguration(dataFile);
+                    data = new PlayerJobData(playerUuid);
+                    data.load(config);
+                }
             }
             
-            // Auto-assign default jobs
+            data.setJobManager(this);
             assignDefaultJobs(data);
             
-            // Store with thread safety
             dataLock.writeLock().lock();
             try {
                 playerData.put(playerUuid, data);
@@ -541,7 +544,6 @@ public class JobManager {
             }
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load player data for " + playerUuid, e);
-            // Create new player data as fallback
             PlayerJobData fallbackData = new PlayerJobData(playerUuid);
             fallbackData.setJobManager(this);
             assignDefaultJobs(fallbackData);
@@ -989,10 +991,15 @@ public class JobManager {
         }
         
         try {
-            File dataFile = new File(dataFolder, playerUuid.toString() + ".yml");
-            FileConfiguration config = new YamlConfiguration();
-            data.save(config);
-            config.save(dataFile);
+            if (plugin.isDatabaseEnabled()) {
+                DataStorage dataStorage = plugin.getDataStorage();
+                dataStorage.savePlayerDataAsync(playerUuid, data).join();
+            } else {
+                File dataFile = new File(dataFolder, playerUuid.toString() + ".yml");
+                FileConfiguration config = new YamlConfiguration();
+                data.save(config);
+                config.save(dataFile);
+            }
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to save player data for " + playerUuid, e);
         }
