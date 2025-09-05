@@ -19,6 +19,15 @@ public class LeaderboardDao {
     private final UniverseJobs plugin;
     private final HikariConnectionPool connectionPool;
     private final String prefix;
+    private final String leaderboardCacheTable;
+    
+    // Pre-built SQL queries
+    private final String insertOrReplaceSql;
+    private final String insertOnDuplicateKeySql;
+    private final String selectJobLeaderboardSql;
+    private final String selectGlobalLeaderboardSql;
+    private final String selectPlayerRankSql;
+    private final String selectGlobalPlayerRankSql;
     
     private final Map<String, List<LeaderboardEntry>> jobLeaderboardCache;
     private final List<LeaderboardEntry> globalLeaderboardCache;
@@ -29,6 +38,49 @@ public class LeaderboardDao {
         this.plugin = plugin;
         this.connectionPool = connectionPool;
         this.prefix = SqlIdentifierValidator.validateAndSanitizeIdentifier(config.getPrefix(), "Database prefix");
+        this.leaderboardCacheTable = SqlIdentifierValidator.buildSafeTableName(config.getPrefix(), "leaderboard_cache");
+        
+        // Pre-build all SQL queries with validated table names
+        this.insertOrReplaceSql = "INSERT OR REPLACE INTO " + leaderboardCacheTable + " " +
+                "(player_uuid, player_name, job_id, xp, level, last_updated) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
+                
+        this.insertOnDuplicateKeySql = "INSERT INTO " + leaderboardCacheTable + " " +
+                "(player_uuid, player_name, job_id, xp, level, last_updated) " +
+                "VALUES (?, ?, ?, ?, ?, ?) " +
+                "ON DUPLICATE KEY UPDATE " +
+                "player_name = VALUES(player_name), xp = VALUES(xp), level = VALUES(level), " +
+                "last_updated = VALUES(last_updated)";
+                
+        this.selectJobLeaderboardSql = "SELECT lc.player_uuid, lc.player_name, lc.xp, lc.level " +
+                "FROM " + leaderboardCacheTable + " lc " +
+                "WHERE lc.job_id = ? " +
+                "ORDER BY lc.xp DESC, lc.level DESC " +
+                "LIMIT ?";
+                
+        this.selectGlobalLeaderboardSql = "SELECT lc.player_uuid, lc.player_name, " +
+                "SUM(lc.xp) as total_xp, SUM(lc.level) as total_levels " +
+                "FROM " + leaderboardCacheTable + " lc " +
+                "GROUP BY lc.player_uuid, lc.player_name " +
+                "ORDER BY total_xp DESC, total_levels DESC " +
+                "LIMIT ?";
+                
+        this.selectPlayerRankSql = "SELECT COUNT(*) + 1 as rank FROM " + leaderboardCacheTable + " lc1 " +
+                "WHERE lc1.job_id = ? AND " +
+                "(lc1.xp > (SELECT xp FROM " + leaderboardCacheTable + " lc2 " +
+                "WHERE lc2.player_uuid = ? AND lc2.job_id = ?) " +
+                "OR (lc1.xp = (SELECT xp FROM " + leaderboardCacheTable + " lc3 " +
+                "WHERE lc3.player_uuid = ? AND lc3.job_id = ?) " +
+                "AND lc1.level > (SELECT level FROM " + leaderboardCacheTable + " lc4 " +
+                "WHERE lc4.player_uuid = ? AND lc4.job_id = ?)))";
+                
+        this.selectGlobalPlayerRankSql = "SELECT COUNT(*) + 1 as rank FROM (" +
+                "SELECT player_uuid, SUM(xp) as total_xp FROM " + leaderboardCacheTable + " " +
+                "GROUP BY player_uuid" +
+                ") rankings WHERE total_xp > (" +
+                "SELECT SUM(xp) FROM " + leaderboardCacheTable + " " +
+                "WHERE player_uuid = ?)";
+        
         this.jobLeaderboardCache = new ConcurrentHashMap<>();
         this.globalLeaderboardCache = new ArrayList<>();
     }
@@ -42,16 +94,10 @@ public class LeaderboardDao {
                 }
             }
             
-            String sql = "SELECT lc.player_uuid, lc.player_name, lc.xp, lc.level " +
-                        "FROM " + prefix + "leaderboard_cache lc " +
-                        "WHERE lc.job_id = ? " +
-                        "ORDER BY lc.xp DESC, lc.level DESC " +
-                        "LIMIT ?";
-            
             List<LeaderboardEntry> entries = new ArrayList<>();
             
             try (Connection connection = connectionPool.getConnection();
-                 PreparedStatement stmt = connection.prepareStatement(sql)) {
+                 PreparedStatement stmt = connection.prepareStatement(selectJobLeaderboardSql)) {
                 
                 stmt.setString(1, jobId);
                 stmt.setInt(2, limit);
@@ -85,7 +131,7 @@ public class LeaderboardDao {
             
             String sql = "SELECT lc.player_uuid, lc.player_name, " +
                         "SUM(lc.xp) as total_xp, SUM(lc.level) as total_levels " +
-                        "FROM " + prefix + "leaderboard_cache lc " +
+                        "FROM " + leaderboardCacheTable + " lc " +
                         "GROUP BY lc.player_uuid, lc.player_name " +
                         "ORDER BY total_xp DESC, total_levels DESC " +
                         "LIMIT ?";
@@ -126,12 +172,12 @@ public class LeaderboardDao {
             if (connectionPool == null) {
                 return;
             }
-            String sql = "INSERT OR REPLACE INTO " + prefix + "leaderboard_cache " +
+            String sql = "INSERT OR REPLACE INTO " + leaderboardCacheTable + " " +
                         "(player_uuid, player_name, job_id, xp, level, last_updated) " +
                         "VALUES (?, ?, ?, ?, ?, ?)";
             
             if (plugin.getConfig().getString("database.type", "sqlite").equals("mysql")) {
-                sql = "INSERT INTO " + prefix + "leaderboard_cache " +
+                sql = "INSERT INTO " + leaderboardCacheTable + " " +
                      "(player_uuid, player_name, job_id, xp, level, last_updated) " +
                      "VALUES (?, ?, ?, ?, ?, ?) " +
                      "ON DUPLICATE KEY UPDATE " +
@@ -165,13 +211,13 @@ public class LeaderboardDao {
     
     public CompletableFuture<Integer> getPlayerRank(UUID playerId, String jobId) {
         return CompletableFuture.supplyAsync(() -> {
-            String sql = "SELECT COUNT(*) + 1 as rank FROM " + prefix + "leaderboard_cache lc1 " +
+            String sql = "SELECT COUNT(*) + 1 as rank FROM " + leaderboardCacheTable + " lc1 " +
                         "WHERE lc1.job_id = ? AND " +
-                        "(lc1.xp > (SELECT xp FROM " + prefix + "leaderboard_cache lc2 " +
+                        "(lc1.xp > (SELECT xp FROM " + leaderboardCacheTable + " lc2 " +
                         "WHERE lc2.player_uuid = ? AND lc2.job_id = ?) " +
-                        "OR (lc1.xp = (SELECT xp FROM " + prefix + "leaderboard_cache lc3 " +
+                        "OR (lc1.xp = (SELECT xp FROM " + leaderboardCacheTable + " lc3 " +
                         "WHERE lc3.player_uuid = ? AND lc3.job_id = ?) " +
-                        "AND lc1.level > (SELECT level FROM " + prefix + "leaderboard_cache lc4 " +
+                        "AND lc1.level > (SELECT level FROM " + leaderboardCacheTable + " lc4 " +
                         "WHERE lc4.player_uuid = ? AND lc4.job_id = ?)))";
             
             try (Connection connection = connectionPool.getConnection();
@@ -203,10 +249,10 @@ public class LeaderboardDao {
     public CompletableFuture<Integer> getGlobalPlayerRank(UUID playerId) {
         return CompletableFuture.supplyAsync(() -> {
             String sql = "SELECT COUNT(*) + 1 as rank FROM (" +
-                        "SELECT player_uuid, SUM(xp) as total_xp FROM " + prefix + "leaderboard_cache " +
+                        "SELECT player_uuid, SUM(xp) as total_xp FROM " + leaderboardCacheTable + " " +
                         "GROUP BY player_uuid" +
                         ") rankings WHERE total_xp > (" +
-                        "SELECT SUM(xp) FROM " + prefix + "leaderboard_cache " +
+                        "SELECT SUM(xp) FROM " + leaderboardCacheTable + " " +
                         "WHERE player_uuid = ?)";
             
             try (Connection connection = connectionPool.getConnection();
