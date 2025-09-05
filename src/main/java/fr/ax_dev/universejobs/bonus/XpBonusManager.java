@@ -26,4 +26,9 @@ public class XpBonusManager extends BaseBonusManager<XpBonus> {
     protected String getBonusTypeName() {
         return "XP";
     }
+
+    @Override
+    protected String getMultiplierPermissionType() {
+        return "exp";
+    }
 }

@@ -32,11 +32,16 @@ public abstract class BaseBonusManager<T extends BaseBonus> implements BonusMana
      * Create a new bonus instance (factory method).
      */
     protected abstract T createBonus(UUID playerId, String jobId, double multiplier, long duration, String reason, String grantedBy, String boostId, boolean isGlobal, String actionType, String actionId);
-    
+
     /**
      * Get the bonus type name for logging.
      */
     protected abstract String getBonusTypeName();
+
+    /**
+     * Get the permission type used for multipliers (e.g., "money" or "exp").
+     */
+    protected abstract String getMultiplierPermissionType();
     
     /**
      * Generate a unique boost ID.
@@ -276,8 +281,9 @@ public abstract class BaseBonusManager<T extends BaseBonus> implements BonusMana
         double permissionMultiplier = 1.0;
         Player player = Bukkit.getPlayer(playerId);
         if (player != null && !player.isOp() && !hasWildcardPermission(player)) {
+            String type = getMultiplierPermissionType();
             for (int i = 10; i >= 1; i--) {
-                String permission = "universejobs.bonusmultiplier." + i;
+                String permission = "universejobs.multiplier." + type + "." + i;
                 if (player.hasPermission(permission)) {
                     permissionMultiplier = i;
                     break;
@@ -289,9 +295,10 @@ public abstract class BaseBonusManager<T extends BaseBonus> implements BonusMana
     }
 
     private boolean hasWildcardPermission(Player player) {
+        String type = getMultiplierPermissionType();
         return player.hasPermission("*") ||
                player.hasPermission("universejobs.*") ||
-               player.hasPermission("universejobs.bonusmultiplier.*");
+               player.hasPermission("universejobs.multiplier." + type + ".*");
     }
     
     private void startCleanupTask() {
