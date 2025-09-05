@@ -221,50 +221,77 @@ public abstract class BaseBonusManager<T extends BaseBonus> implements BonusMana
     
     public double getTotalMultiplier(UUID playerId, String jobId) {
         List<T> activeBonuses = getActiveBonuses(playerId, jobId);
-        
+
+        // Calculate base multiplier from active bonuses
+        double baseMultiplier;
         if (activeBonuses.isEmpty()) {
-            return 1.0;
-        }
-        
-        // Récupérer le mode de calcul depuis la configuration
-        fr.ax_dev.universejobs.config.ConfigManager.BoostCalculationMode mode = 
-            plugin.getConfigManager().getBoostCalculationMode();
-        
-        switch (mode) {
-            case ADDITIVE:
-                // Mode 1: Additionner les multiplicateurs (2.5x + 2.5x = 5.0x)
-                double sum = 0.0;
-                for (T bonus : activeBonuses) {
-                    sum += (bonus.getMultiplier() - 1.0); // Soustraire 1 pour éviter de compter la base plusieurs fois
-                }
-                return 1.0 + sum;
-                
-            case MULTIPLICATIVE:
-                // Mode 2: Multiplier les multiplicateurs (2.5x * 2.5x = 6.25x)
-                double product = 1.0;
-                for (T bonus : activeBonuses) {
-                    product *= bonus.getMultiplier();
-                }
-                return product;
-                
-            case HIGHEST:
-                // Mode 3: Utiliser uniquement le multiplicateur le plus élevé
-                double highest = 1.0;
-                for (T bonus : activeBonuses) {
-                    if (bonus.getMultiplier() > highest) {
-                        highest = bonus.getMultiplier();
+            baseMultiplier = 1.0;
+        } else {
+            // Récupérer le mode de calcul depuis la configuration
+            fr.ax_dev.universejobs.config.ConfigManager.BoostCalculationMode mode =
+                plugin.getConfigManager().getBoostCalculationMode();
+
+            switch (mode) {
+                case ADDITIVE:
+                    // Mode 1: Additionner les multiplicateurs (2.5x + 2.5x = 5.0x)
+                    double sum = 0.0;
+                    for (T bonus : activeBonuses) {
+                        sum += (bonus.getMultiplier() - 1.0); // Soustraire 1 pour éviter de compter la base plusieurs fois
                     }
-                }
-                return highest;
-                
-            default:
-                // Par défaut, utiliser le mode multiplicatif
-                double defaultProduct = 1.0;
-                for (T bonus : activeBonuses) {
-                    defaultProduct *= bonus.getMultiplier();
-                }
-                return defaultProduct;
+                    baseMultiplier = 1.0 + sum;
+                    break;
+
+                case MULTIPLICATIVE:
+                    // Mode 2: Multiplier les multiplicateurs (2.5x * 2.5x = 6.25x)
+                    double product = 1.0;
+                    for (T bonus : activeBonuses) {
+                        product *= bonus.getMultiplier();
+                    }
+                    baseMultiplier = product;
+                    break;
+
+                case HIGHEST:
+                    // Mode 3: Utiliser uniquement le multiplicateur le plus élevé
+                    double highest = 1.0;
+                    for (T bonus : activeBonuses) {
+                        if (bonus.getMultiplier() > highest) {
+                            highest = bonus.getMultiplier();
+                        }
+                    }
+                    baseMultiplier = highest;
+                    break;
+
+                default:
+                    // Par défaut, utiliser le mode multiplicatif
+                    double defaultProduct = 1.0;
+                    for (T bonus : activeBonuses) {
+                        defaultProduct *= bonus.getMultiplier();
+                    }
+                    baseMultiplier = defaultProduct;
+                    break;
+            }
         }
+
+        // Apply permission-based bonus multiplier
+        double permissionMultiplier = 1.0;
+        Player player = Bukkit.getPlayer(playerId);
+        if (player != null && !player.isOp() && !hasWildcardPermission(player)) {
+            for (int i = 10; i >= 1; i--) {
+                String permission = "universejobs.bonusmultiplier." + i;
+                if (player.hasPermission(permission)) {
+                    permissionMultiplier = i;
+                    break;
+                }
+            }
+        }
+
+        return baseMultiplier * permissionMultiplier;
+    }
+
+    private boolean hasWildcardPermission(Player player) {
+        return player.hasPermission("*") ||
+               player.hasPermission("universejobs.*") ||
+               player.hasPermission("universejobs.bonusmultiplier.*");
     }
     
     private void startCleanupTask() {
