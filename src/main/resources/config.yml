@@ -14,20 +14,27 @@ create-example-jobs: true  # Set to false to prevent automatic creation of examp
 # Database Configuration
 # Set enabled to true to use database instead of files
 database:
-  enabled: false
-  # Database connection settings
+  enabled: true
+  type: "mysql"
   host: "localhost"
-  port: "3306"
-  prefix: "UniverseJobs_"
-  username: "UniverseJobs"
-  password: "your_password_here"
+  port: 3306
+  database: "universejobs"
+  username: "your_username"
+  password: "your_password"
+  prefix: "universejobs_"
   
-  # Connection pool settings
   pool:
     min-connections: 2
     max-connections: 10
     connection-timeout-ms: 30000
     validation-interval-ms: 300000
+
+# Commands for testing:
+# /jobs database health - Check database health
+# /jobs database stats - View database statistics  
+# /jobs database test - Run integration tests
+# /jobs database test performance - Run performance tests
+# /jobs database migrate - Manually trigger data migration
 
 # Job Settings
 jobs:

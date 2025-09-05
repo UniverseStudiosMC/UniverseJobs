@@ -3,8 +3,6 @@ package fr.ax_dev.universejobs.command.handler;
 import fr.ax_dev.universejobs.UniverseJobs;
 import fr.ax_dev.universejobs.action.ActionType;
 import fr.ax_dev.universejobs.action.JobAction;
-import fr.ax_dev.universejobs.bonus.MoneyBonus;
-import fr.ax_dev.universejobs.bonus.XpBonus;
 import fr.ax_dev.universejobs.job.Job;
 import fr.ax_dev.universejobs.utils.MessageUtils;
 
@@ -566,26 +564,6 @@ public class BoostCommandHandler extends JobCommandHandler {
                 plugin.getBonusManager().addActionBonus(targetPlayer.getUniqueId(), finalJobId, finalActionType, finalActionId, multiplier, duration, reason, senderName, false);
             } else if (boostType.equals(TYPE_MONEY)) {
                 plugin.getMoneyBonusManager().addActionBonus(targetPlayer.getUniqueId(), finalJobId, finalActionType, finalActionId, multiplier, duration, reason, senderName, false);
-            }
-        }
-    }
-    
-    private void removeBoost(String boostType, Player targetPlayer, String jobId) {
-        if (jobId == null || jobId.equals("*")) {
-            // Remove all bonuses
-            if (boostType.equals(TYPE_XP)) {
-                plugin.getBonusManager().removeAllBonuses(targetPlayer.getUniqueId());
-            } else if (boostType.equals(TYPE_MONEY)) {
-                plugin.getMoneyBonusManager().removeAllBonuses(targetPlayer.getUniqueId());
-            }
-        } else {
-            // Remove job-specific bonuses
-            if (boostType.equals(TYPE_XP)) {
-                List<XpBonus> bonuses = plugin.getBonusManager().getActiveBonuses(targetPlayer.getUniqueId(), jobId);
-                bonuses.forEach(plugin.getBonusManager()::removeBonus);
-            } else if (boostType.equals(TYPE_MONEY)) {
-                List<MoneyBonus> bonuses = plugin.getMoneyBonusManager().getActiveBonuses(targetPlayer.getUniqueId(), jobId);
-                bonuses.forEach(plugin.getMoneyBonusManager()::removeBonus);
             }
         }
     }

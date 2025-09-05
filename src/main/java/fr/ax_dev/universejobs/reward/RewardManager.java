@@ -10,6 +10,7 @@ import fr.ax_dev.universejobs.reward.gui.GuiConfigLoader;
 import fr.ax_dev.universejobs.reward.gui.ItemBuilder;
 import fr.ax_dev.universejobs.reward.storage.FileRewardStorage;
 import fr.ax_dev.universejobs.reward.storage.RewardStorage;
+import fr.ax_dev.universejobs.storage.DataStorage;
 import fr.ax_dev.universejobs.utils.MessageUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -44,10 +45,15 @@ public class RewardManager {
     public RewardManager(UniverseJobs plugin) {
         this.plugin = plugin;
         this.languageManager = plugin.getLanguageManager();
-        this.storage = new FileRewardStorage(plugin);
         this.jobRewards = new ConcurrentHashMap<>();
         this.allRewards = new ConcurrentHashMap<>();
         this.guiConfigLoader = new GuiConfigLoader(plugin);
+        
+        if (plugin.isDatabaseEnabled()) {
+            this.storage = plugin.getDataStorage();
+        } else {
+            this.storage = new FileRewardStorage(plugin);
+        }
     }
     
     /**

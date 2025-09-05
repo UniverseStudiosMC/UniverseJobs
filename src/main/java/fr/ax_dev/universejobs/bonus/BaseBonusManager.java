@@ -188,7 +188,6 @@ public abstract class BaseBonusManager<T extends BaseBonus> implements BonusMana
                 Map.Entry<UUID, List<T>> entry = iterator.next();
                 List<T> bonuses = entry.getValue();
                 
-                int sizeBefore = bonuses.size();
                 Iterator<T> bonusIterator = bonuses.iterator();
                 while (bonusIterator.hasNext()) {
                     T bonus = bonusIterator.next();
@@ -280,25 +279,44 @@ public abstract class BaseBonusManager<T extends BaseBonus> implements BonusMana
         // Apply permission-based bonus multiplier
         double permissionMultiplier = 1.0;
         Player player = Bukkit.getPlayer(playerId);
-        if (player != null && !player.isOp() && !hasWildcardPermission(player)) {
+        if (player != null) {
             String type = getMultiplierPermissionType();
-            for (int i = 10; i >= 1; i--) {
-                String permission = "universejobs.multiplier." + type + "." + i;
-                if (player.hasPermission(permission)) {
-                    permissionMultiplier = i;
-                    break;
+            
+            // Check if player has wildcard permission
+            boolean hasWildcard = player.hasPermission("*") || 
+                                 player.hasPermission("universejobs.*") || 
+                                 player.hasPermission("universejobs.multiplier.*") ||
+                                 player.hasPermission("universejobs.multiplier." + type + ".*");
+            
+            // If player has wildcard, only use explicitly defined permissions
+            if (hasWildcard) {
+                // Check effective permissions to find explicitly set ones
+                for (org.bukkit.permissions.PermissionAttachmentInfo info : player.getEffectivePermissions()) {
+                    String perm = info.getPermission();
+                    if (perm.startsWith("universejobs.multiplier." + type + ".") && !perm.endsWith("*")) {
+                        try {
+                            String numberStr = perm.substring(("universejobs.multiplier." + type + ".").length());
+                            int value = Integer.parseInt(numberStr);
+                            if (value >= 1 && value <= 100 && value > permissionMultiplier) {
+                                permissionMultiplier = value;
+                            }
+                        } catch (NumberFormatException ignored) {
+                        }
+                    }
+                }
+            } else {
+                // Normal permission check for players without wildcard
+                for (int i = 100; i >= 1; i--) {
+                    String permission = "universejobs.multiplier." + type + "." + i;
+                    if (player.hasPermission(permission)) {
+                        permissionMultiplier = i;
+                        break;
+                    }
                 }
             }
         }
 
         return baseMultiplier * permissionMultiplier;
-    }
-
-    private boolean hasWildcardPermission(Player player) {
-        String type = getMultiplierPermissionType();
-        return player.hasPermission("*") ||
-               player.hasPermission("universejobs.*") ||
-               player.hasPermission("universejobs.multiplier." + type + ".*");
     }
     
     private void startCleanupTask() {

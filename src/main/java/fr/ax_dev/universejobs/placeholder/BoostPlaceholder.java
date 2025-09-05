@@ -61,6 +61,8 @@ public class BoostPlaceholder extends PlaceholderExpansion {
                 return handlePlayerBoostPlaceholder(player, args);
             case "global":
                 return handleGlobalBoostPlaceholder(args);
+            case "current":
+                return handleCurrentMultiplierPlaceholder(player, args);
             default:
                 return null;
         }
@@ -302,5 +304,23 @@ public class BoostPlaceholder extends PlaceholderExpansion {
             .map(id -> plugin.getMoneyBonusManager().getBoostById(id))
             .filter(boost -> boost != null && boost.isActive() && boost.isGlobal())
             .count();
+    }
+
+    private String handleCurrentMultiplierPlaceholder(OfflinePlayer player, String[] args) {
+        if (player == null || args.length < 3) return "1.0";
+
+        String multiplierType = args[2];
+        String jobId = args.length > 3 ? args[3] : null;
+        
+        switch (multiplierType.toLowerCase()) {
+            case "exp":
+                double xpMultiplier = plugin.getBonusManager().getTotalMultiplier(player.getUniqueId(), jobId);
+                return String.format("%.1f", xpMultiplier);
+            case "money":
+                double moneyMultiplier = plugin.getMoneyBonusManager().getTotalMultiplier(player.getUniqueId(), jobId);
+                return String.format("%.1f", moneyMultiplier);
+            default:
+                return "1.0";
+        }
     }
 }

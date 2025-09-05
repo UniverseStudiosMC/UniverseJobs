@@ -6,6 +6,9 @@ import fr.ax_dev.universejobs.bonus.XpBonusManager;
 import fr.ax_dev.universejobs.bonus.MoneyBonusManager;
 import fr.ax_dev.universejobs.cache.ConfigurationCache;
 import fr.ax_dev.universejobs.cache.PlayerJobCache;
+import fr.ax_dev.universejobs.storage.DataStorage;
+import fr.ax_dev.universejobs.storage.database.DatabaseDataStorage;
+import fr.ax_dev.universejobs.storage.migration.DataMigrator;
 import fr.ax_dev.universejobs.command.JobCommand;
 import fr.ax_dev.universejobs.compatibility.FoliaCompatibilityManager;
 import fr.ax_dev.universejobs.config.ConfigManager;
@@ -62,6 +65,10 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
     private fr.ax_dev.universejobs.utils.PluginAccessor accessor;
     private UpdateChecker updateChecker;
     
+    // ========== STORAGE SYSTEM ==========
+    private DataStorage dataStorage;
+    private DataMigrator dataMigrator;
+    
     // ========== ULTRA-FAST CACHE SYSTEM ==========
     private ConfigurationCache configCache;
     private PlayerJobCache playerCache;
@@ -94,6 +101,15 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
             // Configuration loaded successfully
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Failed to load configuration", e);
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        
+        // Initialize storage system
+        try {
+            initializeStorageSystem();
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Failed to initialize storage system", e);
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -244,6 +260,7 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
             stopSaveTask();
             savePlayerData();
             shutdownManagers();
+            shutdownStorageSystem();
             getLogger().info("UniverseJobs plugin shutdown completed successfully");
             
         } catch (Exception e) {
@@ -655,6 +672,78 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
      */
     public Object getPerformanceManager() {
         return null; // Performance manager feature removed
+    }
+    
+    /**
+     * Initialize the storage system based on configuration.
+     */
+    private void initializeStorageSystem() {
+        boolean databaseEnabled = getConfig().getBoolean("database.enabled", false);
+        
+        if (databaseEnabled) {
+            getLogger().info("Initializing database storage system...");
+            DatabaseDataStorage databaseStorage = new DatabaseDataStorage(this);
+            
+            try {
+                databaseStorage.initializeAsync().join();
+                this.dataStorage = databaseStorage;
+                this.dataMigrator = new DataMigrator(this, databaseStorage);
+                
+                if (dataMigrator.shouldMigrate()) {
+                    getLogger().info("Legacy YML data detected - starting migration process...");
+                    DataMigrator.MigrationResult result = dataMigrator.migrateAllData().join();
+                    
+                    if (result.isSuccessful()) {
+                        getLogger().info("Data migration completed successfully!");
+                        getLogger().info("Total records migrated: " + result.getTotalMigrated());
+                        dataMigrator.markMigrationComplete();
+                    } else {
+                        getLogger().severe("Data migration failed: " + result.error);
+                        throw new RuntimeException("Migration failed: " + result.error);
+                    }
+                }
+                
+                getLogger().info("Database storage system initialized successfully");
+            } catch (Exception e) {
+                getLogger().log(Level.SEVERE, "Failed to initialize database storage", e);
+                throw new RuntimeException("Database initialization failed", e);
+            }
+        } else {
+            getLogger().info("Using file-based storage system");
+            this.dataStorage = null;
+        }
+    }
+    
+    /**
+     * Shutdown the storage system.
+     */
+    private void shutdownStorageSystem() {
+        if (dataStorage != null) {
+            try {
+                dataStorage.shutdownAsync().join();
+                getLogger().info("Storage system shut down successfully");
+            } catch (Exception e) {
+                getLogger().log(Level.WARNING, "Error shutting down storage system", e);
+            }
+        }
+    }
+    
+    /**
+     * Get the data storage instance.
+     * 
+     * @return The data storage instance, or null if using file-based storage
+     */
+    public DataStorage getDataStorage() {
+        return dataStorage;
+    }
+    
+    /**
+     * Check if database storage is enabled.
+     * 
+     * @return true if database storage is enabled
+     */
+    public boolean isDatabaseEnabled() {
+        return dataStorage != null;
     }
     
     /**
