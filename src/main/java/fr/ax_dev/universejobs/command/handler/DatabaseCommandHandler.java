@@ -8,6 +8,7 @@ import org.bukkit.command.CommandSender;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 
 public class DatabaseCommandHandler {
 
