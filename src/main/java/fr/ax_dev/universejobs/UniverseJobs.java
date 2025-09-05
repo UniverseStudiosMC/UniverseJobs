@@ -88,8 +88,6 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         this.moneyBonusManager = new MoneyBonusManager(this);
         this.messageSender = new AsyncXpMessageSender(this);
         this.protectionManager = new BlockProtectionManager(this);
-        this.rewardManager = new RewardManager(this);
-        this.rewardGuiManager = new RewardGuiManager(this, rewardManager);
         this.menuManager = new MenuManager(this);
         this.boostManagerGui = new BoostManagerGui(this);
         this.placeholderManager = new PlaceholderManager(this);
@@ -138,6 +136,10 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
+        
+        // Initialize reward system after database is ready
+        this.rewardManager = new RewardManager(this);
+        this.rewardGuiManager = new RewardGuiManager(this, rewardManager);
         
         // Initialize action processor with loaded cache
         this.actionProcessor = new ActionProcessor(this, jobManager, bonusManager, moneyBonusManager, 
