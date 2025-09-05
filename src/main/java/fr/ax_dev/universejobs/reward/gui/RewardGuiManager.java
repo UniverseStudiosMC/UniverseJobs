@@ -288,11 +288,21 @@ public class RewardGuiManager implements Listener {
                     if (reward.hasEconomyReward()) {
                         String economyLine = line.replace("{economy_reward}", String.valueOf(reward.getEconomyReward()));
                         lore.add(MenuUtils.processPlaceholders(player, economyLine));
+                    } else {
+                        String economyLine = line.replace("{economy_reward}", "");
+                        if (!economyLine.trim().isEmpty()) {
+                            lore.add(MenuUtils.processPlaceholders(player, economyLine));
+                        }
                     }
                 } else if (line.contains("{commands}")) {
                     if (reward.hasCommands()) {
                         String commandLine = line.replace("{commands}", rewardConfig.getText("special_rewards"));
                         lore.add(MenuUtils.processPlaceholders(player, commandLine));
+                    } else {
+                        String commandLine = line.replace("{commands}", "");
+                        if (!commandLine.trim().isEmpty()) {
+                            lore.add(MenuUtils.processPlaceholders(player, commandLine));
+                        }
                     }
                 } else if (line.contains("{cooldown}")) {
                     addCooldownLore(reward, status, lore, line, rewardConfig);
@@ -310,11 +320,6 @@ public class RewardGuiManager implements Listener {
         private void handleRepeatableInfo(Reward reward, List<String> lore, GuiConfig.RewardItemConfig rewardConfig) {
             if (reward.isRepeatable()) {
                 lore.add(MenuUtils.processPlaceholders(player, rewardConfig.getText("repeatable_yes")));
-                if (reward.getCooldownHours() > 0) {
-                    String timeStr = formatTime(reward.getCooldownHours() * 3600000L, rewardConfig.getTimeFormat());
-                    String cooldownLine = rewardConfig.getText("cooldown_prefix") + timeStr;
-                    lore.add(MenuUtils.processPlaceholders(player, cooldownLine));
-                }
             } else {
                 lore.add(MenuUtils.processPlaceholders(player, rewardConfig.getText("repeatable_no")));
             }

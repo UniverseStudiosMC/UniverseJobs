@@ -3,6 +3,7 @@ package fr.ax_dev.universejobs.storage.dao;
 import fr.ax_dev.universejobs.job.PlayerJobData;
 import fr.ax_dev.universejobs.storage.database.DatabaseConfig;
 import fr.ax_dev.universejobs.storage.database.HikariConnectionPool;
+import fr.ax_dev.universejobs.storage.SqlIdentifierValidator;
 
 import java.sql.*;
 import java.util.*;
@@ -18,17 +19,19 @@ public class PlayerDataDao {
     private final String selectByPlayerSql;
     private final String selectByPlayerAndJobSql;
     private final String deleteByPlayerAndJobSql;
+    private final String deleteByPlayerSql;
     private final String selectAllByPlayersSql;
 
     public PlayerDataDao(HikariConnectionPool connectionPool, DatabaseConfig config) {
         this.connectionPool = connectionPool;
-        this.tableName = config.getPrefix() + "player_data";
+        this.tableName = SqlIdentifierValidator.buildSafeTableName(config.getPrefix(), "player_data");
         
         this.insertSql = "INSERT INTO " + tableName + " (player_uuid, job_id, xp, level, last_modified) VALUES (?, ?, ?, ?, ?)";
         this.updateSql = "UPDATE " + tableName + " SET xp = ?, level = ?, last_modified = ? WHERE player_uuid = ? AND job_id = ?";
         this.selectByPlayerSql = "SELECT job_id, xp, level, last_modified FROM " + tableName + " WHERE player_uuid = ?";
         this.selectByPlayerAndJobSql = "SELECT xp, level, last_modified FROM " + tableName + " WHERE player_uuid = ? AND job_id = ?";
         this.deleteByPlayerAndJobSql = "DELETE FROM " + tableName + " WHERE player_uuid = ? AND job_id = ?";
+        this.deleteByPlayerSql = "DELETE FROM " + tableName + " WHERE player_uuid = ?";
         this.selectAllByPlayersSql = "SELECT player_uuid, job_id, xp, level, last_modified FROM " + tableName + " WHERE player_uuid IN ";
     }
 
@@ -37,7 +40,7 @@ public class PlayerDataDao {
             try (Connection conn = connectionPool.getConnection()) {
                 conn.setAutoCommit(false);
                 
-                try (PreparedStatement deleteStmt = conn.prepareStatement("DELETE FROM " + tableName + " WHERE player_uuid = ?")) {
+                try (PreparedStatement deleteStmt = conn.prepareStatement(deleteByPlayerSql)) {
                     deleteStmt.setString(1, playerId.toString());
                     deleteStmt.executeUpdate();
                 }

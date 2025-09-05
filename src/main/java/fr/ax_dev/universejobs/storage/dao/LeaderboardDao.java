@@ -3,6 +3,7 @@ package fr.ax_dev.universejobs.storage.dao;
 import fr.ax_dev.universejobs.UniverseJobs;
 import fr.ax_dev.universejobs.storage.database.DatabaseConfig;
 import fr.ax_dev.universejobs.storage.database.HikariConnectionPool;
+import fr.ax_dev.universejobs.storage.SqlIdentifierValidator;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,7 +28,7 @@ public class LeaderboardDao {
     public LeaderboardDao(UniverseJobs plugin, HikariConnectionPool connectionPool, DatabaseConfig config) {
         this.plugin = plugin;
         this.connectionPool = connectionPool;
-        this.prefix = config.getPrefix();
+        this.prefix = SqlIdentifierValidator.validateAndSanitizeIdentifier(config.getPrefix(), "Database prefix");
         this.jobLeaderboardCache = new ConcurrentHashMap<>();
         this.globalLeaderboardCache = new ArrayList<>();
     }

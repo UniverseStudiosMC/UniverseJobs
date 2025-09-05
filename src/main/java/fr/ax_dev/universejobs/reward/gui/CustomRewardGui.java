@@ -294,11 +294,6 @@ public class CustomRewardGui implements InventoryHolder {
             } else if (line.contains("{repeatable_info}")) {
                 if (reward.isRepeatable()) {
                     lore.add(MenuUtils.processPlaceholders(player, rewardConfig.getText("repeatable_yes")));
-                    if (reward.getCooldownHours() > 0) {
-                        String timeStr = formatTime(reward.getCooldownHours(), rewardConfig.getTimeFormat());
-                        String cooldownLine = rewardConfig.getText("cooldown_prefix") + timeStr;
-                        lore.add(MenuUtils.processPlaceholders(player, cooldownLine));
-                    }
                 } else {
                     lore.add(MenuUtils.processPlaceholders(player, rewardConfig.getText("repeatable_no")));
                 }
@@ -320,12 +315,20 @@ public class CustomRewardGui implements InventoryHolder {
                 processedLine = processedLine.replace("{level}", String.valueOf(reward.getRequiredLevel()));
                 processedLine = processedLine.replace("{status_description}", status.getDescription());
                 
-                if (processedLine.contains("{economy_reward}") && reward.hasEconomyReward()) {
-                    processedLine = processedLine.replace("{economy_reward}", String.valueOf(reward.getEconomyReward()));
+                if (processedLine.contains("{economy_reward}")) {
+                    if (reward.hasEconomyReward()) {
+                        processedLine = processedLine.replace("{economy_reward}", String.valueOf(reward.getEconomyReward()));
+                    } else {
+                        processedLine = processedLine.replace("{economy_reward}", "");
+                    }
                 }
                 
-                if (processedLine.contains("{commands}") && reward.hasCommands()) {
-                    processedLine = processedLine.replace("{commands}", rewardConfig.getText("special_rewards"));
+                if (processedLine.contains("{commands}")) {
+                    if (reward.hasCommands()) {
+                        processedLine = processedLine.replace("{commands}", rewardConfig.getText("special_rewards"));
+                    } else {
+                        processedLine = processedLine.replace("{commands}", "");
+                    }
                 }
                 
                 lore.add(MenuUtils.processPlaceholders(player, processedLine));
