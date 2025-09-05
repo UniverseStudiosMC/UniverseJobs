@@ -4,6 +4,8 @@ import fr.ax_dev.universejobs.UniverseJobs;
 import fr.ax_dev.universejobs.job.Job;
 import fr.ax_dev.universejobs.job.JobManager;
 import fr.ax_dev.universejobs.job.PlayerJobData;
+import fr.ax_dev.universejobs.storage.database.DatabaseDataStorage;
+import fr.ax_dev.universejobs.storage.migration.DataMigrator;
 import fr.ax_dev.universejobs.utils.MessageUtils;
 import net.milkbowl.vault.economy.Economy;
 
@@ -67,6 +69,7 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                 boostHandler.handleCommand(sender, args);
                 yield true;
             }
+            case "migrate" -> handleMigrate(sender, args);
             default -> {
                 sendAdminHelp(sender);
                 yield true;
@@ -877,7 +880,7 @@ public class AdminJobCommandHandler extends JobCommandHandler {
     
     public List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 2) {
-            return Arrays.asList("give", "boost", "forcejoin", "forceleave", "reset", "info", "reload", "debug");
+            return Arrays.asList("give", "boost", "forcejoin", "forceleave", "reset", "info", "reload", "debug", "migrate");
         }
         
         if (args.length == 3) {
@@ -894,6 +897,10 @@ public class AdminJobCommandHandler extends JobCommandHandler {
             
             if ("debug".equals(subCommand)) {
                 return Arrays.asList("xp", "cache", "config");
+            }
+            
+            if ("migrate".equals(subCommand)) {
+                return Arrays.asList("sqlite", "mysql");
             }
             
             if ("boost".equals(subCommand)) {
@@ -979,8 +986,76 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                     return Arrays.asList("0", "10", "50", "100", "500", "1000");
                 }
             }
+            
+            if ("migrate".equals(subCommand)) {
+                return Arrays.asList("sqlite", "mysql");
+            }
         }
         
         return new ArrayList<>();
+    }
+    
+    private boolean handleMigrate(CommandSender sender, String[] args) {
+        if (args.length < 4) {
+            sender.sendMessage("§cUsage: /jobs admin migrate <old> <new>");
+            sender.sendMessage("§cExample: /jobs admin migrate sqlite mysql");
+            return true;
+        }
+
+        String oldType = args[2].toLowerCase();
+        String newType = args[3].toLowerCase();
+
+        if (!oldType.equals("sqlite") && !oldType.equals("mysql")) {
+            sender.sendMessage("§cInvalid old database type. Use: sqlite or mysql");
+            return true;
+        }
+
+        if (!newType.equals("sqlite") && !newType.equals("mysql")) {
+            sender.sendMessage("§cInvalid new database type. Use: sqlite or mysql");
+            return true;
+        }
+
+        if (oldType.equals(newType)) {
+            sender.sendMessage("§cOld and new database types cannot be the same");
+            return true;
+        }
+
+        sender.sendMessage("§aStarting database migration from " + oldType + " to " + newType + "...");
+        
+        plugin.getFoliaManager().runAsync(() -> {
+            try {
+                if (plugin.isDatabaseEnabled()) {
+                    DatabaseDataStorage storage = (DatabaseDataStorage) plugin.getDataStorage();
+                    DataMigrator migrator = new DataMigrator(plugin, storage);
+                    
+                    DataMigrator.MigrationResult result = migrator.migrateAllData().join();
+                    
+                    plugin.getFoliaManager().runNextTick(() -> {
+                        if (result.isSuccessful()) {
+                            sender.sendMessage("§aMigration completed successfully!");
+                            sender.sendMessage("§aPlayer data migrated: " + result.playerDataMigrated);
+                            sender.sendMessage("§aReward data migrated: " + result.rewardDataMigrated);
+                            sender.sendMessage("§aTotal records migrated: " + result.getTotalMigrated());
+                            migrator.markMigrationComplete();
+                        } else {
+                            sender.sendMessage("§cMigration failed: " + result.error);
+                        }
+                    });
+                } else {
+                    plugin.getFoliaManager().runNextTick(() -> {
+                        sender.sendMessage("§cDatabase is not enabled in configuration");
+                    });
+                }
+                
+            } catch (Exception e) {
+                plugin.getFoliaManager().runNextTick(() -> {
+                    sender.sendMessage("§cMigration failed: " + e.getMessage());
+                });
+                plugin.getLogger().severe("Migration failed: " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
+        
+        return true;
     }
 }

@@ -3,7 +3,6 @@ package fr.ax_dev.universejobs.storage.migration;
 import fr.ax_dev.universejobs.UniverseJobs;
 import fr.ax_dev.universejobs.job.PlayerJobData;
 import fr.ax_dev.universejobs.storage.database.DatabaseDataStorage;
-import fr.ax_dev.universejobs.reward.storage.FileRewardStorage;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -114,32 +113,37 @@ public class DataMigrator {
         AtomicInteger migratedCount = new AtomicInteger(0);
         
         try {
-            FileRewardStorage fileRewardStorage = new FileRewardStorage(plugin);
-            fileRewardStorage.initialize();
-            
-            Set<UUID> allPlayerIds = getAllPlayerIds();
-            
-            for (UUID playerId : allPlayerIds) {
-                Set<String> allClaimedRewards = fileRewardStorage.getAllClaimedRewards(playerId);
-                
-                for (String rewardKey : allClaimedRewards) {
-                    String[] parts = rewardKey.split(":", 2);
-                    if (parts.length == 2) {
-                        String jobId = parts[0];
-                        String rewardId = parts[1];
-                        
-                        long claimTime = fileRewardStorage.getClaimTime(playerId, jobId, rewardId);
-                        if (claimTime == -1) {
-                            claimTime = System.currentTimeMillis();
-                        }
-                        
-                        databaseStorage.claimReward(playerId, jobId, rewardId, claimTime);
-                        migratedCount.incrementAndGet();
-                    }
-                }
+            File rewardDataFolder = new File(plugin.getDataFolder(), "reward-data");
+            if (!rewardDataFolder.exists()) {
+                return 0;
             }
             
-            fileRewardStorage.shutdown();
+            File[] rewardFiles = rewardDataFolder.listFiles((dir, name) -> name.endsWith(".yml"));
+            if (rewardFiles == null) {
+                return 0;
+            }
+            
+            for (File rewardFile : rewardFiles) {
+                try {
+                    String uuidString = rewardFile.getName().replace(".yml", "");
+                    UUID playerId = UUID.fromString(uuidString);
+                    
+                    FileConfiguration config = YamlConfiguration.loadConfiguration(rewardFile);
+                    
+                    for (String jobId : config.getKeys(false)) {
+                        if (config.isConfigurationSection(jobId)) {
+                            for (String rewardId : config.getConfigurationSection(jobId).getKeys(false)) {
+                                long claimTime = config.getLong(jobId + "." + rewardId, System.currentTimeMillis());
+                                
+                                databaseStorage.claimReward(playerId, jobId, rewardId, claimTime);
+                                migratedCount.incrementAndGet();
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    plugin.getLogger().warning("Failed to migrate reward file: " + rewardFile.getName());
+                }
+            }
             
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Failed to migrate reward data", e);

@@ -32,7 +32,7 @@ database:
     validation-interval-ms: 300000
 
 # Migration command:
-# /jobs database migrate <old> <new> - Migrate between sqlite/mysql
+# /jobs admin migrate <old> <new> - Migrate between sqlite/mysql
 
 # Job Settings
 jobs:

@@ -8,7 +8,6 @@ import fr.ax_dev.universejobs.job.Job;
 import fr.ax_dev.universejobs.reward.gui.GuiConfig;
 import fr.ax_dev.universejobs.reward.gui.GuiConfigLoader;
 import fr.ax_dev.universejobs.reward.gui.ItemBuilder;
-import fr.ax_dev.universejobs.reward.storage.FileRewardStorage;
 import fr.ax_dev.universejobs.reward.storage.RewardStorage;
 import fr.ax_dev.universejobs.storage.DataStorage;
 import fr.ax_dev.universejobs.utils.MessageUtils;
@@ -49,11 +48,7 @@ public class RewardManager {
         this.allRewards = new ConcurrentHashMap<>();
         this.guiConfigLoader = new GuiConfigLoader(plugin);
         
-        if (plugin.isDatabaseEnabled()) {
-            this.storage = plugin.getDataStorage();
-        } else {
-            this.storage = new FileRewardStorage(plugin);
-        }
+        this.storage = plugin.getDataStorage();
     }
     
     /**

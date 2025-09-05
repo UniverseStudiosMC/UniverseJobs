@@ -110,7 +110,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 case CMD_ACTION_LIMIT -> handled = actionLimitHandler.handleCommand(sender, args);
                 case CMD_ADMIN -> handled = adminJobHandler.handleAdminCommand(sender, args);
                 case CMD_MENU -> handled = menuHandler.handleCommand(sender, Arrays.copyOfRange(args, 1, args.length));
-                case CMD_DATABASE -> handled = databaseHandler.handleDatabaseCommand(sender, args);
                 default -> handled = false;
             }
             
@@ -171,7 +170,6 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 case CMD_ACTION_LIMIT -> completions.addAll(actionLimitHandler.getTabCompletions(sender, args));
                 case CMD_ADMIN -> completions.addAll(adminJobHandler.getTabCompletions(sender, args));
                 case CMD_MENU -> completions.addAll(menuHandler.getTabCompletions(sender, Arrays.copyOfRange(args, 1, args.length)));
-                case CMD_DATABASE -> completions.addAll(databaseHandler.getTabComplete(args));
                 default -> {
                     // Unknown subcommand - no additional completions
                 }
@@ -247,7 +245,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      * @return true if valid
      */
     private boolean isValidSubCommand(String subCommand) {
-        Set<String> validCommands = Set.of(CMD_JOIN, CMD_LEAVE, CMD_INFO, CMD_LIST, CMD_STATS, CMD_REWARDS, CMD_ACTION_LIMIT, CMD_MENU, CMD_ADMIN, CMD_DATABASE);
+        Set<String> validCommands = Set.of(CMD_JOIN, CMD_LEAVE, CMD_INFO, CMD_LIST, CMD_STATS, CMD_REWARDS, CMD_ACTION_LIMIT, CMD_MENU, CMD_ADMIN);
         return validCommands.contains(subCommand);
     }
     
