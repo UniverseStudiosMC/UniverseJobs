@@ -246,9 +246,10 @@ public class PlayerJobCache {
             return 1.0; // Évite les bonus OP
         }
         
-        // Check multipliers 10 -> 1
+        // Check multipliers 10 -> 1 for money and exp
         for (int i = 10; i >= 1; i--) {
-            if (player.hasPermission("universejobs.multiplier." + i)) {
+            if (player.hasPermission("universejobs.multiplier.money." + i) ||
+                player.hasPermission("universejobs.multiplier.exp." + i)) {
                 return i;
             }
         }

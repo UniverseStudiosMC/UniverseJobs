@@ -873,7 +873,7 @@ public class ActionProcessor {
         // Skip if player is OP or has wildcard permission to avoid overpowered bonuses
         if (!player.isOp() && !player.hasPermission("*")) {
             for (int i = 10; i >= 1; i--) {
-                String permission = "universejobs.multiplier." + i;
+                String permission = "universejobs.multiplier.exp." + i;
                 // Check if player has the specific permission (not through wildcard)
                 if (player.hasPermission(permission) && !hasWildcardPermission(player)) {
                     multiplier = i;
@@ -906,7 +906,7 @@ public class ActionProcessor {
         // Skip if player is OP or has wildcard permission to avoid overpowered bonuses
         if (!player.isOp() && !player.hasPermission("*")) {
             for (int i = 10; i >= 1; i--) {
-                String permission = "universejobs.multiplier." + i;
+                String permission = "universejobs.multiplier.money." + i;
                 // Check if player has the specific permission (not through wildcard)
                 if (player.hasPermission(permission) && !hasWildcardPermission(player)) {
                     multiplier = i;
@@ -1024,7 +1024,9 @@ public class ActionProcessor {
         // Check for common wildcard permissions
         return player.hasPermission("*") || 
                player.hasPermission("universejobs.*") ||
-               player.hasPermission("universejobs.multiplier.*");
+               player.hasPermission("universejobs.multiplier.*") ||
+               player.hasPermission("universejobs.multiplier.money.*") ||
+               player.hasPermission("universejobs.multiplier.exp.*");
     }
     
     /**
