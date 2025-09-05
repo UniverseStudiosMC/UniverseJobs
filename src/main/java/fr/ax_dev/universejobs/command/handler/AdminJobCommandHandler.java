@@ -1051,8 +1051,7 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                 plugin.getFoliaManager().runNextTick(() -> {
                     sender.sendMessage("§cMigration failed: " + e.getMessage());
                 });
-                plugin.getLogger().severe("Migration failed: " + e.getMessage());
-                e.printStackTrace();
+                plugin.getLogger().log(Level.SEVERE, "Migration failed: " + e.getMessage(), e);
             }
         });
         
