@@ -8,6 +8,7 @@ icon:
   custom-model-data: ""         
   
 rewards: "example_rewards"  # Link to the rewards file
+gui-reward: "example_rewards_gui" #Template
 
 action-limits:
     auto-restore:
