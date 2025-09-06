@@ -1,19 +1,15 @@
 # UniverseJobs Configuration
 debug: false
 language:
-  locale: "en_US"
+  locale: en_US
 
 # Auto-save settings  
 settings:
-  save-interval: 300  # Auto-save interval in seconds
+  save-interval: 300 # Auto-save interval in seconds
 
 # Job Settings
-create-example-jobs: true  # Set to false to prevent automatic creation of example job files
+create-example-jobs: false # Set to false to prevent automatic creation of example job files
 
-performance:  ##disable with 0
-  batching-xp: 60 # XP batched every 60 ticks (3 seconds)
-  batching-money: 60 # Money batched every 60 ticks
-  batching-others: 40 # Commands every 40 ticks (2 seconds)
 
 # Database Configuration
 # Choose type: "sqlite" or "mysql"
@@ -28,15 +24,12 @@ database:
     password: "your_password"
     
   prefix: "universejobs_"
-  
+  # Connection pool settings
   pool:
     min-connections: 2
     max-connections: 10
     connection-timeout-ms: 30000
     validation-interval-ms: 300000
-
-# Migration command:
-# /jobs admin migrate <old> <new> - Migrate between sqlite/mysql
 
 # Job Settings
 jobs:
@@ -58,73 +51,71 @@ jobs:
   # MULTIPLICATIVE: Multipliers are multiplied (2.5x * 2.5x = 6.25x) - Current default
   # HIGHEST: Only the highest multiplier is used (3.0x, 2.5x = 3.0x)
   boost-calculation-mode: MULTIPLICATIVE
-  
+
+performance:
+  batching-xp: 40 # XP batched every 60 ticks (3 seconds)
+  batching-money: 60 # Money batched every 60 ticks
+  batching-others: 40 # Commands every 40 ticks (2 seconds)
 
 # Progress Bar Configuration
 # Customize how XP progress bars appear in menus and messages
 progress-bar:
   # Length of the progress bar (number of characters)
-  length: 20
+  length: 10
   # Characters used for the progress bar
   characters:
-    completed: "█"    # Character for completed progress
-    remaining: "░"    # Character for remaining progress
+    completed: ■ # Character for completed progress
+    remaining: □ # Character for remaining progress
   # Colors (MiniMessage HEX format)
   colors:
-    completed: "<#32CD32>"     # Color for completed portion
-    remaining: "<#404040>"     # Color for remaining portion
-    percentage: "<#FFD700>"    # Color for percentage text
+    completed: <#32CD32> # Color for completed portion
+    remaining: <#404040> # Color for remaining portion
+    percentage: <#FFD700> # Color for percentage text
   # Format templates
   format:
     # Progress bar with percentage: [████░░░░░░] 40%
-    with-percentage: "{completed_bar}{remaining_bar} {percentage_color}{percentage}%"
+    with-percentage: '{completed_bar}{remaining_bar} {percentage_color}{percentage}%'
     # Progress bar only: [████░░░░░░]
-    bar-only: "{completed_bar}{remaining_bar}"
+    bar-only: '{completed_bar}{remaining_bar}'
     # Percentage only: 40%
-    percentage-only: "{percentage_color}{percentage}%"
+    percentage-only: '{percentage_color}{percentage}%'
 
 # Block Protection Settings
 # Prevents XP farming by tracking player-placed blocks
 block-protection:
   enabled: true
 
-# Global GUI default settings
-# These settings will be applied to all GUI items unless overridden
 gui-default-settings:
   enabled: true
   amount: 1
   display-name: ""
-  material: "GRAY_STAINED_GLASS_PANE"
+  material: GRAY_STAINED_GLASS_PANE
   lore: []
   glow: false
   hide-attributes: true
   hide-enchants: true
   sound: "UI_BUTTON_CLICK"
   custom-model-data: 0
-  action: "none"
+  action: none
+
 
 placeholders:
   # Action placeholders - customize how action information is displayed
   action_type:
     # Default format for all action types
     default: "<white>{value}"
-    # Specific formats per action type using MiniMessage
-    EAT: "<gradient:#FF6B6B:#FF8E53><bold>🍎 EAT</bold></gradient>"
-    BREAK: "<gradient:#8B4513:#D2691E><bold>⛏️ BREAK</bold></gradient>"
-    KILL: "<gradient:#DC143C:#B22222><bold>⚔️ KILL</bold></gradient>"
-    PLACE: "<gradient:#32CD32:#228B22><bold>🧱 PLACE</bold></gradient>"
-    ENCHANT: "<gradient:#9370DB:#8A2BE2><bold>✨ ENCHANT</bold></gradient>"
-    BREW: "<gradient:#FFD700:#FFA500><bold>🧪 BREW</bold></gradient>"
-    CRAFT: "<gradient:#4169E1:#1E90FF><bold>🔨 CRAFT</bold></gradient>"
-    SMELT: "<gradient:#FF4500:#FF6347><bold>🔥 SMELT</bold></gradient>"
-    BLOCK_INTERACT: "<gradient:#00CED1:#20B2AA><bold>👆 INTERACT</bold></gradient>"
-    ENTITY_INTERACT: "<gradient:#FF69B4:#DA70D6><bold>🤝 INTERACT</bold></gradient>"
-    HARVEST: "<gradient:#ADFF2F:#7CFC00><bold>🌾 HARVEST</bold></gradient>"
-    FISH: "<gradient:#4682B4:#5F9EA0><bold>🎣 FISH</bold></gradient>"
-    TRADE: "<gradient:#DAA520:#B8860B><bold>💰 TRADE</bold></gradient>"
-    SHEAR: "<gradient:#F0E68C:#BDB76B><bold>✂️ SHEAR</bold></gradient>"
-    POTION: "<gradient:#9932CC:#8B008B><bold>🍵 POTION</bold></gradient>"
-    
+    # Specific formats per action type
+    EAT: "<red><bold>EAT"
+    BREAK: "<#b5b5b5><bold>BREAK"
+    KILL: "<dark_red><bold>KILL"
+    PLACE: "<#cbe8a5><bold>PLACE"
+    ENCHANT: "<purple><bold>ENCHANT"
+    BREW: "<yellow><bold>BREW"
+    CRAFT: "<blue><bold>CRAFT"
+    SMELT: "<orange><bold>SMELT"
+    BLOCK_INTERACT: "<cyan><bold>INTERACT"
+    ENTITY_INTERACT: "<pink><bold>INTERACT"
+    HARVEST: "<pink><bold>HARVEST"
   action_target: "<white>{value}"
   action_name: "<white>{value}"
   action_display_name: "<white>{value}"
@@ -132,12 +123,11 @@ placeholders:
   action_xp_base: "<#abffb3>{value}"
   action_xp: "<#abffb3>{value}"
   action_xp_multiplier: "<gray>(<white>x{value}<gray>)"
-  
-  # Job status placeholders - customize how job status is displayed in menus
-  job_status:
-    joined: "<#abffb3>✓ Active"
-    not_joined: "<#ff6b6b>○ Not Joined"
   action_money_base: "<#FFD700>{value}"
   action_money: "<#FFD700>{value}"
   action_money_multiplier: "<gray>(<white>x{value}<gray>)"
   action_cooldown: "<gray>Cooldown: {value}s"
+  # Job status placeholders - customize how job status is displayed in menus
+  job_status:
+    joined: "<#abffb3>✓ Active"
+    not_joined: "<#ff6b6b>○ Not Joined"
