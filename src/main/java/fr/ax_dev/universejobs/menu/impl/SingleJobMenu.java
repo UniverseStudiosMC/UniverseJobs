@@ -218,7 +218,7 @@ public class SingleJobMenu extends BaseMenu {
         event.setCancelled(true);
         
         // Handle navigation items first
-        if (handleNavigationClick(slot)) {
+        if (handleNavigationClickWithSound(slot)) {
             return;
         }
         

@@ -48,6 +48,14 @@ public class MenuCommandHandler extends JobCommandHandler {
                 openRankingsMenu(player);
                 return true;
                 
+            // Actions menu - requires job id as second argument
+            case "actions":
+                if (args.length < 2) {
+                    MessageUtils.sendMessage(player, languageManager.getMessage("commands.menu.actions.usage"));
+                    return false;
+                }
+                return openActionsMenu(player, args[1]);
+                
             // Admin commands
             case "reload":
                 if (!hasPermission(player, "universejobs.admin.menu.reload")) {
@@ -105,6 +113,21 @@ public class MenuCommandHandler extends JobCommandHandler {
     }
     
     /**
+     * Open a specific job actions menu.
+     */
+    private boolean openActionsMenu(Player player, String jobId) {
+        Job job = validateJobAccess(player, jobId);
+        if (job == null) return false;
+        
+        try {
+            menuManager.openJobActionsMenu(player, jobId);
+            return true;
+        } catch (Exception e) {
+            return handleMenuError(player, "actions menu", e);
+        }
+    }
+    
+    /**
      * Reload menu configurations.
      */
     private boolean reloadMenus(Player player) {
@@ -127,7 +150,8 @@ public class MenuCommandHandler extends JobCommandHandler {
         if (args.length == 1) {
             // Base commands + all job names for direct access
             List<String> completions = new ArrayList<>(Arrays.asList(
-                "rankings" // Rankings only
+                "rankings", // Rankings only
+                "actions"   // Actions menu
             ));
             
             // Add admin commands if player has permission
@@ -146,6 +170,17 @@ public class MenuCommandHandler extends JobCommandHandler {
             
             return completions.stream()
                 .filter(cmd -> cmd.toLowerCase().startsWith(args[0].toLowerCase()))
+                .sorted()
+                .collect(Collectors.toList());
+        }
+        
+        // For actions command, show job completions as second argument
+        if (args.length == 2 && args[0].equalsIgnoreCase("actions")) {
+            return jobManager.getJobs().values().stream()
+                .filter(Job::isEnabled)
+                .filter(job -> job.getPermission() == null || sender.hasPermission(job.getPermission()))
+                .map(Job::getId)
+                .filter(jobId -> jobId.toLowerCase().startsWith(args[1].toLowerCase()))
                 .sorted()
                 .collect(Collectors.toList());
         }

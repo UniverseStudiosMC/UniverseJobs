@@ -12,6 +12,12 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.profile.PlayerProfile;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Base64;
+import java.util.UUID;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,18 +114,40 @@ public class MenuUtils {
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             // Handle skull owner for player heads
-            if (item.getType() == Material.PLAYER_HEAD && !itemConfig.getSkullOwner().isEmpty()) {
+            if (item.getType() == Material.PLAYER_HEAD) {
                 if (meta instanceof SkullMeta) {
                     SkullMeta skullMeta = (SkullMeta) meta;
-                    String skullOwner = itemConfig.getSkullOwner();
-                    if (customPlaceholders != null) {
-                        skullOwner = replacePlaceholders(skullOwner, customPlaceholders);
-                    }
-                    skullOwner = processPlaceholders(player, skullOwner);
-                    try {
-                        skullMeta.setOwningPlayer(plugin.getServer().getOfflinePlayer(skullOwner));
-                    } catch (Exception e) {
-                        plugin.getLogger().warning("Failed to set skull owner: " + skullOwner);
+                    
+                    // Priority to player-head over skull-owner
+                    if (!itemConfig.getPlayerHead().isEmpty()) {
+                        String playerHead = itemConfig.getPlayerHead();
+                        if (customPlaceholders != null) {
+                            playerHead = replacePlaceholders(playerHead, customPlaceholders);
+                        }
+                        playerHead = processPlaceholders(player, playerHead);
+                        
+                        try {
+                            // Check if it's a texture value (base64)
+                            if (playerHead.length() > 20 && isValidBase64(playerHead)) {
+                                setSkullTexture(skullMeta, playerHead);
+                            } else {
+                                // It's a player name
+                                skullMeta.setOwningPlayer(plugin.getServer().getOfflinePlayer(playerHead));
+                            }
+                        } catch (Exception e) {
+                            plugin.getLogger().warning("Failed to set player head: " + playerHead);
+                        }
+                    } else if (!itemConfig.getSkullOwner().isEmpty()) {
+                        String skullOwner = itemConfig.getSkullOwner();
+                        if (customPlaceholders != null) {
+                            skullOwner = replacePlaceholders(skullOwner, customPlaceholders);
+                        }
+                        skullOwner = processPlaceholders(player, skullOwner);
+                        try {
+                            skullMeta.setOwningPlayer(plugin.getServer().getOfflinePlayer(skullOwner));
+                        } catch (Exception e) {
+                            plugin.getLogger().warning("Failed to set skull owner: " + skullOwner);
+                        }
                     }
                 }
             }
@@ -151,5 +179,39 @@ public class MenuUtils {
         }
         
         return item;
+    }
+    
+    private static boolean isValidBase64(String str) {
+        try {
+            Base64.getDecoder().decode(str);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+    
+    private static void setSkullTexture(SkullMeta skullMeta, String textureValue) {
+        try {
+            String decodedTexture = new String(Base64.getDecoder().decode(textureValue));
+            if (decodedTexture.contains("\"url\":\"")) {
+                String textureUrl = decodedTexture.split("\"url\":\"")[1].split("\"")[0];
+                
+                PlayerProfile profile = Bukkit.createPlayerProfile(UUID.randomUUID(), "");
+                profile.getTextures().setSkin(new URL(textureUrl));
+                skullMeta.setOwnerProfile(profile);
+            }
+        } catch (Exception e) {
+            // Fallback: set texture directly without decoding
+            try {
+                PlayerProfile profile = Bukkit.createPlayerProfile(UUID.randomUUID(), "");
+                // Create URL from texture value - assuming it's already a valid texture URL
+                String textureUrl = "http://textures.minecraft.net/texture/" + textureValue;
+                profile.getTextures().setSkin(new URL(textureUrl));
+                skullMeta.setOwnerProfile(profile);
+            } catch (Exception ex) {
+                // If all fails, log the error
+                throw new RuntimeException("Failed to set skull texture", ex);
+            }
+        }
     }
 }

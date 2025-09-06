@@ -24,9 +24,7 @@ Three calculation modes available in `config.yml`:
 
 ### 🗄️ **Database Storage System**  
 - **MySQL and SQLite support** with HikariCP connection pooling
-- **Async database operations** to prevent main thread blocking
 - **Database migration system** with admin commands
-- **Leaderboard caching** with automatic invalidation
 
 ### 🔄 **Auto-Update System**
 - **GitHub integration** for automatic update checking
@@ -36,7 +34,6 @@ Three calculation modes available in `config.yml`:
 - **Customizable job menus** with `menus/` configuration
 - **Display name and lore support** for job actions
 - **Menu configuration reload** via admin commands
-- **Improved security** in menu click handling
 
 ## 🎮 **Reward GUI System**
 
@@ -216,8 +213,6 @@ database:
 - **Corrected GUI navigation** and status display
 
 ### ⚡ **Performance Improvements**
-- **Ultra-fast caching system** for job actions
-- **Async XP message processing** to prevent lag
 - **Optimized BossBar management** with synchronization
 - **Enhanced connection pooling** for database operations
 
@@ -292,10 +287,7 @@ jobs:
 |------------|-------------|
 | `universejobs.admin.boost` | Full access to boost system (GUI + commands) |
 | `universejobs.admin.boost.*` | Access to all admin boost features |
-| `universejobs.rewards.view` | View reward GUIs |
-| `universejobs.rewards.claim` | Claim rewards |
-| `universejobs.admin.database` | Database management commands |
 | `universejobs.admin.reload` | Reload configurations |
-| `universejobs.bonus.multiplier.*` | Bonus multiplier permissions (hierarchical) |
+| `universejobs.multiplier.<exp/money/others>.<number>` | Bonus multiplier permissions (hierarchical) |
 
 ## Thank you for using UniverseJobs!

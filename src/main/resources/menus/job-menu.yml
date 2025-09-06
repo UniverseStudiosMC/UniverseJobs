@@ -78,6 +78,8 @@ navigation-items:
     hide-attributes: true
     hide-enchants: false
     action: close
+    commands:
+      - "[console] say {player} clicked on close button"
 
 # Main menu items
 menu-items:

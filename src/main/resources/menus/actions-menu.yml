@@ -10,7 +10,6 @@ size: 54
 # Pagination settings
 pagination:
   enabled: true
-  items-per-page: 35
 
 # Fill item configuration
 fill-item:
@@ -30,15 +29,8 @@ fill-item:
 fill-slots: []
 
 # Content slots where action items will be placed
-content-slots: [10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43]
+content-slots: [10, 11, 12, 19, 20, 21]
 
-# Navigation slot configuration
-navigation-slots:
-  previous: [45]
-  next: [53]
-  back: [48]
-  close: [49]
-  info: [50]
 
 # Static items
 static-items:
@@ -77,6 +69,7 @@ navigation-items:
     hide-attributes: true
     hide-enchants: false
     action: previous_page
+    sound: "UI_BUTTON_CLICK"
     
   next:
     enabled: true
@@ -94,6 +87,7 @@ navigation-items:
     hide-attributes: true
     hide-enchants: false
     action: next_page
+    sound: "UI_BUTTON_CLICK"
     
   back:
     enabled: true
@@ -108,6 +102,7 @@ navigation-items:
     hide-attributes: true
     hide-enchants: false
     action: back
+    sound: "UI_BUTTON_CLICK"
     
   close:
     enabled: true
@@ -116,12 +111,13 @@ navigation-items:
     lore:
       - "<#FFD700>Click to close this menu"
     amount: 1
-    slots: [49]
+    slots: [50]
     custom-model-data: 0
     glow: false
     hide-attributes: true
     hide-enchants: false
     action: close
+    sound: "BLOCK_CHEST_CLOSE"
     
   info:
     enabled: true
@@ -132,7 +128,7 @@ navigation-items:
       - "<gray>Total Actions: <#FFD700>{total_actions}"
       - "<gray>Page: <#FFD700>{current_page}<gray>/<#FFD700>{total_pages}"
     amount: 1
-    slots: [50]
+    slots: [49]
     custom-model-data: 0
     glow: false
     hide-attributes: true
@@ -147,19 +143,28 @@ navigation-items:
 # - {action_name} - Internal action name
 # - {action_display_name} - Custom display name from config
 # - {action_lore} - Custom lore lines from config
-# - {action_xp} - XP reward for this action
+# - {action_xp_base} - XP reward for this action without boost
+# - {action_xp} - XP reward for this action with boost
+# - {action_xp_multiplier} - current XP multiplier for this action
+# - {action_money_multiplier} - current MONEY multiplier for this action
 # - {action_money} - Money reward for this action
 # - {action_interact_type} - Interaction type (for BLOCK_INTERACT)
 # - {action_requirements} - Requirements summary
 # - {action_cooldown} - Cooldown information
 action-item-format:
+  display_name_bonus: ""
+  hide_line:
+    when_no_money: 6
+    when_no_xp: 5
   lore_bonus:
+    - "{action_display_name}"
+    - "{action_lore}"
     - ""
     - "<gray>Rewards:"
-    - "<gray>├ <gray>XP: <#abffb3>+{action_xp}"
-    - "<gray>└ <gray>Money: <#FFD700>${action_money}"
+    - "<gray>├ <gray>XP: <#abffb3>+{action_xp} {action_xp_multiplier}"
+    - "<gray>└ <gray>Money: <#FFD700>${action_money} {action_money_multiplier}"
+    - "{action_requirements}"
     - ""
-    - "<gray>Requirements: {action_requirements}"
   # Item settings
   amount: 1
   glow: false

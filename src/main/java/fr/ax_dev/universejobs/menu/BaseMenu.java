@@ -159,44 +159,90 @@ public abstract class BaseMenu implements InventoryHolder {
     }
     
     /**
-     * Handle navigation button clicks.
+     * Handle navigation button clicks based on action property.
      */
     protected boolean handleNavigationClick(int slot) {
-        // Previous page
-        if (config.getNavigationSlots().containsKey("previous") && 
-            config.getNavigationSlots().get("previous").contains(slot)) {
-            if (currentPage > 0) {
-                currentPage--;
-                refresh();
-                return true;
+        // Check navigation items for this slot
+        for (MenuItemConfig navItem : config.getNavigationItems().values()) {
+            if (navItem.getSlots().contains(slot)) {
+                String action = navItem.getAction();
+                return handleActionClick(action);
             }
-        }
-        
-        // Next page  
-        if (config.getNavigationSlots().containsKey("next") && 
-            config.getNavigationSlots().get("next").contains(slot)) {
-            if (hasNextPage()) {
-                currentPage++;
-                refresh();
-                return true;
-            }
-        }
-        
-        // Close button
-        if (config.getNavigationSlots().containsKey("close") && 
-            config.getNavigationSlots().get("close").contains(slot)) {
-            close();
-            return true;
-        }
-        
-        // Back button
-        if (config.getNavigationSlots().containsKey("back") && 
-            config.getNavigationSlots().get("back").contains(slot)) {
-            handleBackButton();
-            return true;
         }
         
         return false;
+    }
+    
+    /**
+     * Handle specific action clicks.
+     */
+    protected boolean handleActionClick(String action) {
+        switch (action) {
+            case "previous_page":
+                if (currentPage > 0) {
+                    currentPage--;
+                    refresh();
+                    return true;
+                }
+                break;
+            case "next_page":
+                if (hasNextPage()) {
+                    currentPage++;
+                    refresh();
+                    return true;
+                }
+                break;
+            case "close":
+                close();
+                return true;
+            case "back":
+                handleBackButton();
+                return true;
+            case "none":
+                return true; // Consume click but do nothing
+        }
+        return false;
+    }
+    
+    /**
+     * Handle navigation button clicks based on action property with sound support.
+     */
+    protected boolean handleNavigationClickWithSound(int slot) {
+        // Check navigation items for this slot
+        for (MenuItemConfig navItem : config.getNavigationItems().values()) {
+            if (navItem.getSlots().contains(slot)) {
+                String action = navItem.getAction();
+                String sound = navItem.getSound();
+                
+                // Play sound if specified
+                if (sound != null && !sound.isEmpty()) {
+                    playSound(sound);
+                }
+                
+                return handleActionClick(action);
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Play a sound for the player.
+     */
+    protected void playSound(String soundName) {
+        if (soundName == null || soundName.isEmpty()) return;
+        
+        try {
+            org.bukkit.Sound sound = org.bukkit.Sound.valueOf(soundName.toUpperCase().replace(".", "_"));
+            player.playSound(player.getLocation(), sound, 1.0f, 1.0f);
+        } catch (IllegalArgumentException e) {
+            // Try with the sound name as-is for custom sounds
+            try {
+                player.playSound(player.getLocation(), soundName, 1.0f, 1.0f);
+            } catch (Exception ex) {
+                plugin.getLogger().warning("Invalid sound: " + soundName);
+            }
+        }
     }
     
     /**
