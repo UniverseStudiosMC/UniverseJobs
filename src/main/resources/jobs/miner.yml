@@ -26,11 +26,9 @@ xp:
     options:
       color: "GREEN"
       style: "SEGMENTED_0"
-      duration: "8"
       fade-in: 10
       fade-out: 20
       duration: 40
-      update-rating: 2
       show-progress: true
 
 actions:

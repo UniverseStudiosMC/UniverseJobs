@@ -12,8 +12,8 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -1080,21 +1080,67 @@ public class JobManager {
         return plugin;
     }
     
+    // Leaderboard batch system for performance (update every 10 seconds)
+    private static final Map<String, LeaderboardBatchData> LEADERBOARD_BATCH = new ConcurrentHashMap<>();
+    private static final long LEADERBOARD_BATCH_INTERVAL = 10000L; // 10 seconds
+    private static long lastLeaderboardUpdate = 0L;
+    
     private void updateLeaderboardCache(UUID playerUuid, String jobId, PlayerJobData data) {
-        if (plugin.isDatabaseEnabled()) {
+        if (!plugin.isDatabaseEnabled()) return;
+        
+        // Add to batch instead of immediate update
+        String key = playerUuid + ":" + jobId;
+        String playerName = plugin.getServer().getOfflinePlayer(playerUuid).getName();
+        if (playerName == null) playerName = "Unknown";
+        
+        LEADERBOARD_BATCH.put(key, new LeaderboardBatchData(
+            playerUuid, playerName, jobId, data.getXp(jobId), data.getLevel(jobId)
+        ));
+        
+        // Process batch if enough time has passed
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastLeaderboardUpdate >= LEADERBOARD_BATCH_INTERVAL) {
+            flushLeaderboardBatch();
+            lastLeaderboardUpdate = currentTime;
+        }
+    }
+    
+    private void flushLeaderboardBatch() {
+        if (LEADERBOARD_BATCH.isEmpty()) return;
+        
+        // Process batch async to not block main thread
+        CompletableFuture.runAsync(() -> {
             try {
-                String playerName = plugin.getServer().getOfflinePlayer(playerUuid).getName();
-                if (playerName == null) playerName = "Unknown";
-                
-                double xp = data.getXp(jobId);
-                int level = data.getLevel(jobId);
-                
                 fr.ax_dev.universejobs.storage.database.DatabaseDataStorage storage = 
                     (fr.ax_dev.universejobs.storage.database.DatabaseDataStorage) plugin.getDataStorage();
-                storage.getLeaderboardDao().updatePlayerLeaderboardEntry(playerUuid, playerName, jobId, xp, level);
+                
+                Map<String, LeaderboardBatchData> batchToProcess = new HashMap<>(LEADERBOARD_BATCH);
+                LEADERBOARD_BATCH.clear();
+                
+                for (LeaderboardBatchData data : batchToProcess.values()) {
+                    storage.getLeaderboardDao().updatePlayerLeaderboardEntry(
+                        data.playerUuid, data.playerName, data.jobId, data.xp, data.level
+                    );
+                }
             } catch (Exception e) {
-                plugin.getLogger().warning("Failed to update leaderboard cache: " + e.getMessage());
+                plugin.getLogger().warning("Failed to flush leaderboard batch: " + e.getMessage());
             }
+        });
+    }
+    
+    private static class LeaderboardBatchData {
+        final UUID playerUuid;
+        final String playerName;
+        final String jobId;
+        final double xp;
+        final int level;
+        
+        LeaderboardBatchData(UUID playerUuid, String playerName, String jobId, double xp, int level) {
+            this.playerUuid = playerUuid;
+            this.playerName = playerName;
+            this.jobId = jobId;
+            this.xp = xp;
+            this.level = level;
         }
     }
 }

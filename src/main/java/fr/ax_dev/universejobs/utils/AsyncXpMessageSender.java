@@ -31,17 +31,28 @@ public class AsyncXpMessageSender {
             return;
         }
         
-        // Execute all processing async to avoid blocking main thread
-        CompletableFuture.runAsync(() -> {
+        // For BossBar, execute immediately for instant response
+        XpMessageSettings settings = job.getXpMessageSettings();
+        if (settings.getMessageType() == XpMessageSettings.MessageType.BOSSBAR) {
             try {
                 sendXpMessageInternal(player, job, xp, money, playerData);
             } catch (Exception e) {
-                // Silent fail to avoid spam - XP messages are non-critical
                 if (plugin.getConfigManager().isDebugEnabled()) {
                     plugin.getLogger().warning("Failed to send XP message: " + e.getMessage());
                 }
             }
-        }, PacketUtils.getAsyncExecutor());
+        } else {
+            // Execute other message types async to avoid blocking main thread
+            CompletableFuture.runAsync(() -> {
+                try {
+                    sendXpMessageInternal(player, job, xp, money, playerData);
+                } catch (Exception e) {
+                    if (plugin.getConfigManager().isDebugEnabled()) {
+                        plugin.getLogger().warning("Failed to send XP message: " + e.getMessage());
+                    }
+                }
+            }, PacketUtils.getAsyncExecutor());
+        }
     }
     
     /**
@@ -52,7 +63,7 @@ public class AsyncXpMessageSender {
         
         XpMessageSettings settings = job.getXpMessageSettings();
         
-        // Handle cumulative gains for BossBar messages
+        // Simple cumulative gains for BossBar messages
         double[] cumulativeGains = null;
         boolean useCumulativeTracking = settings.getMessageType() == XpMessageSettings.MessageType.BOSSBAR;
         
@@ -101,25 +112,12 @@ public class AsyncXpMessageSender {
         switch (settings.getMessageType()) {
             case CHAT -> {
                 PacketUtils.sendChatAsync(player, message);
-                // Clear cumulative gains for chat messages (immediate display)
-                if (useCumulativeTracking) {
-                    CumulativeGainTracker.clearGains(player);
-                }
             }
             case ACTIONBAR -> {
-                PacketUtils.sendActionBarAsync(player, message, settings.getActionbarDuration(), settings.getTickUpdateInterval());
-                // Clear after duration for actionbar
-                if (useCumulativeTracking) {
-                    PacketUtils.runDelayed(() -> CumulativeGainTracker.clearGains(player), 
-                                         settings.getActionbarDuration() * 50L);
-                }
+                PacketUtils.sendActionBarAsync(player, message, settings.getActionbarDuration());
             }
             case BOSSBAR -> {
                 double finalProgress = settings.shouldShowProgress() ? bossbarProgress : 1.0;
-                long bossbarDurationMs = settings.getBossbarDuration() * 50L;
-                
-                // Check if there's already a recent BossBar to prevent duration multiplication
-                boolean hasRecentBossBar = CumulativeGainTracker.hasRecentGains(player, bossbarDurationMs);
                 
                 PacketUtils.sendBossBarAsync(
                     player,
@@ -127,26 +125,14 @@ public class AsyncXpMessageSender {
                     settings.toBukkitBarColor(),
                     settings.toBukkitBarStyle(),
                     finalProgress,
-                    settings.getBossbarDuration(),
-                    settings.getUpdateRating(),
-                    // Callback to clear gains when BossBar is removed
-                    p -> CumulativeGainTracker.clearGains(p)
+                    settings.getBossbarDuration()
                 );
             }
             case TITLE -> {
-                PacketUtils.sendTitleAsync(player, message, settings.getTitleFadeIn(), settings.getTitleStay(), settings.getTitleFadeOut(), settings.getTickUpdateInterval());
-                // Clear after title duration
-                if (useCumulativeTracking) {
-                    long totalDuration = (settings.getTitleFadeIn() + settings.getTitleStay() + settings.getTitleFadeOut()) * 50L;
-                    PacketUtils.runDelayed(() -> CumulativeGainTracker.clearGains(player), totalDuration);
-                }
+                PacketUtils.sendTitleAsync(player, message, settings.getTitleFadeIn(), settings.getTitleStay(), settings.getTitleFadeOut());
             }
             default -> {
-                PacketUtils.sendActionBarAsync(player, message, settings.getActionbarDuration(), settings.getTickUpdateInterval());
-                if (useCumulativeTracking) {
-                    PacketUtils.runDelayed(() -> CumulativeGainTracker.clearGains(player), 
-                                         settings.getActionbarDuration() * 50L);
-                }
+                PacketUtils.sendActionBarAsync(player, message, settings.getActionbarDuration());
             }
         }
     }
