@@ -31,9 +31,10 @@ public class AsyncXpMessageSender {
             return;
         }
         
-        // For BossBar, execute immediately for instant response
+        // For BossBar and ActionBar, execute immediately for instant response
         XpMessageSettings settings = job.getXpMessageSettings();
-        if (settings.getMessageType() == XpMessageSettings.MessageType.BOSSBAR) {
+        if (settings.getMessageType() == XpMessageSettings.MessageType.BOSSBAR || 
+            settings.getMessageType() == XpMessageSettings.MessageType.ACTIONBAR) {
             try {
                 sendXpMessageInternal(player, job, xp, money, playerData);
             } catch (Exception e) {
@@ -56,16 +57,18 @@ public class AsyncXpMessageSender {
     }
     
     /**
-     * Internal message processing - runs fully async.\n     * Supports cumulative gain tracking for BossBar messages.
+     * Internal message processing - runs fully async.
+     * Supports cumulative gain tracking for BossBar and ActionBar messages.
      */
     private void sendXpMessageInternal(Player player, Job job, double xp, double money, PlayerJobData playerData) {
         if (!player.isOnline()) return;
         
         XpMessageSettings settings = job.getXpMessageSettings();
         
-        // Simple cumulative gains for BossBar messages
+        // Simple cumulative gains for BossBar and ActionBar messages
         double[] cumulativeGains = null;
-        boolean useCumulativeTracking = settings.getMessageType() == XpMessageSettings.MessageType.BOSSBAR;
+        boolean useCumulativeTracking = settings.getMessageType() == XpMessageSettings.MessageType.BOSSBAR || 
+                                       settings.getMessageType() == XpMessageSettings.MessageType.ACTIONBAR;
         
         if (useCumulativeTracking) {
             cumulativeGains = CumulativeGainTracker.addGains(player, xp, money);
