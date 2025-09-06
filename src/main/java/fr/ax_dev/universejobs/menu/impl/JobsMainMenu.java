@@ -166,8 +166,9 @@ public class JobsMainMenu extends BaseMenu {
         
         // Get player job status efficiently
         boolean hasJob = playerData.hasJob(job.getId());
-        int playerLevel = hasJob ? playerData.getLevel(job.getId()) : 0;
-        long playerXp = hasJob ? (long) playerData.getXp(job.getId()) : 0;
+        // Always get saved stats, even if player left the job
+        int playerLevel = playerData.getLevel(job.getId());
+        long playerXp = (long) playerData.getXp(job.getId());
         
         // Create comprehensive placeholders for this specific job
         Map<String, String> jobPlaceholders = createJobPlaceholdersOptimized(job, hasJob, playerLevel, playerXp);
@@ -447,7 +448,8 @@ public class JobsMainMenu extends BaseMenu {
      * Add progress placeholders with efficient calculations.
      */
     private void addProgressPlaceholders(Map<String, String> placeholders, Job job, boolean hasJob, int playerLevel, long playerXp) {
-        if (hasJob && job.getXpCurve() != null && playerLevel < job.getMaxLevel()) {
+        // Calculate progress based on saved stats, regardless of current job status
+        if (job.getXpCurve() != null && playerLevel > 0 && playerLevel < job.getMaxLevel()) {
             calculateAndAddProgressValues(placeholders, job, playerLevel, playerXp);
         } else {
             addDefaultProgressValues(placeholders, job, playerLevel);
