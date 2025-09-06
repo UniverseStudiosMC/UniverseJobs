@@ -18,6 +18,11 @@ public abstract class BaseBonusManager<T extends BaseBonus> implements BonusMana
     protected final UniverseJobs plugin;
     protected final FoliaCompatibilityManager foliaManager;
     protected final Map<UUID, List<T>> playerBonuses = new ConcurrentHashMap<>();
+    
+    // Multiplier cache for performance (5 second cache)
+    private final Map<String, Double> multiplierCache = new ConcurrentHashMap<>();
+    private final Map<String, Long> multiplierCacheTimestamps = new ConcurrentHashMap<>();
+    private static final long MULTIPLIER_CACHE_DURATION = 5000L; // 5 seconds
     protected final Map<String, T> boostIdMap = new ConcurrentHashMap<>();
     protected boolean cleanupRunning = false;
     protected int nextBoostCounter = 1;
@@ -224,6 +229,19 @@ public abstract class BaseBonusManager<T extends BaseBonus> implements BonusMana
     }
     
     public double getTotalMultiplier(UUID playerId, String jobId) {
+        // Check cache first
+        String cacheKey = playerId + ":" + jobId;
+        long currentTime = System.currentTimeMillis();
+        
+        Long cacheTime = multiplierCacheTimestamps.get(cacheKey);
+        if (cacheTime != null && (currentTime - cacheTime) < MULTIPLIER_CACHE_DURATION) {
+            Double cachedMultiplier = multiplierCache.get(cacheKey);
+            if (cachedMultiplier != null) {
+                return cachedMultiplier;
+            }
+        }
+        
+        // Calculate multiplier
         List<T> activeBonuses = getActiveBonuses(playerId, jobId);
 
         // Calculate base multiplier from active bonuses
@@ -316,7 +334,13 @@ public abstract class BaseBonusManager<T extends BaseBonus> implements BonusMana
             }
         }
 
-        return baseMultiplier * permissionMultiplier;
+        double finalMultiplier = baseMultiplier * permissionMultiplier;
+        
+        // Cache the result
+        multiplierCache.put(cacheKey, finalMultiplier);
+        multiplierCacheTimestamps.put(cacheKey, currentTime);
+        
+        return finalMultiplier;
     }
     
     private void startCleanupTask() {

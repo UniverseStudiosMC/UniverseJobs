@@ -6,6 +6,9 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -13,7 +16,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.UUID;
 import java.util.Map;
-import java.util.function.Consumer;
 
 /**
  * High-performance packet-based message sender.
@@ -28,11 +30,24 @@ public class PacketUtils {
         return thread;
     });
     
-    // BossBar management - no scheduler tasks needed
+    // BossBar management - ultra simple
     private static final Map<UUID, BossBar> ACTIVE_BOSSBARS = new ConcurrentHashMap<>();
     private static final Map<UUID, CompletableFuture<Void>> BOSSBAR_CLEANUPS = new ConcurrentHashMap<>();
-    private static final Map<UUID, Consumer<Player>> BOSSBAR_CLEANUP_CALLBACKS = new ConcurrentHashMap<>();
+    private static final Map<UUID, UUID> PACKET_BOSSBAR_IDS = new ConcurrentHashMap<>();
     private static final Object BOSSBAR_LOCK = new Object();
+    
+    // Packet reflection cache
+    private static Class<?> CLIENTBOUND_BOSS_EVENT_PACKET_CLASS;
+    private static Constructor<?> BOSS_EVENT_PACKET_CONSTRUCTOR;
+    private static Method SEND_PACKET_METHOD;
+    private static Method GET_HANDLE_METHOD;
+    private static Field CONNECTION_FIELD;
+    private static Object ADD_ACTION;
+    private static Object REMOVE_ACTION;
+    private static Object UPDATE_HEALTH_ACTION;
+    private static Object UPDATE_TITLE_ACTION;
+    private static Object UPDATE_STYLE_ACTION;
+    private static boolean PACKET_REFLECTION_AVAILABLE = false;
     
     static {
         initializeReflection();
@@ -102,184 +117,435 @@ public class PacketUtils {
     
     /**
      * Send bossbar message using pure async approach.
-     * Reuses existing bossbars, minimal object creation.
+     * Uses direct packets when available, falls back to Bukkit API.
      */
     public static void sendBossBarAsync(Player player, String message, BarColor color, 
                                       BarStyle style, double progress, int durationTicks) {
-        sendBossBarAsync(player, message, color, style, progress, durationTicks, 20); // Default tick interval
+        if (PACKET_REFLECTION_AVAILABLE) {
+            sendBossBarPacketAsync(player, message, color, style, progress, durationTicks);
+        } else {
+            sendBossBarAsyncInternal(player, message, color, style, progress, durationTicks);
+        }
     }
     
     /**
-     * Send bossbar message with cleanup callback.
+     * Send bossbar using direct packet approach for maximum performance.
+     * Bypasses Bukkit API completely when reflection is available.
      */
-    public static void sendBossBarAsync(Player player, String message, BarColor color, 
-                                      BarStyle style, double progress, int durationTicks, 
-                                      int tickUpdateInterval, Consumer<Player> cleanupCallback) {
-        sendBossBarAsyncInternal(player, message, color, style, progress, durationTicks, tickUpdateInterval, cleanupCallback);
-    }
-    
-    /**
-     * Send bossbar message with custom tick update interval.
-     * Allows control over how often the bossbar updates.
-     */
-    public static void sendBossBarAsync(Player player, String message, BarColor color, 
-                                      BarStyle style, double progress, int durationTicks, int tickUpdateInterval) {
-        sendBossBarAsyncInternal(player, message, color, style, progress, durationTicks, tickUpdateInterval, null);
-    }
-    
-    /**
-     * Internal method for sending bossbar messages with optional cleanup callback.
-     */
-    private static void sendBossBarAsyncInternal(Player player, String message, BarColor color, 
-                                      BarStyle style, double progress, int durationTicks, int tickUpdateInterval, 
-                                      Consumer<Player> cleanupCallback) {
+    private static void sendBossBarPacketAsync(Player player, String message, BarColor color, 
+                                             BarStyle style, double progress, int durationTicks) {
         if (!player.isOnline()) return;
         
         UUID playerId = player.getUniqueId();
-        BossBar bossBar;
+        UUID bossBarId = PACKET_BOSSBAR_IDS.get(playerId);
+        boolean isNewBossBar = (bossBarId == null);
         
-        synchronized (BOSSBAR_LOCK) {
-            // Cancel any existing cleanup for this player
-            CompletableFuture<Void> existingCleanup = BOSSBAR_CLEANUPS.remove(playerId);
-            if (existingCleanup != null) {
-                existingCleanup.cancel(true);
-            }
-            
-            // Execute existing cleanup callback if any
-            Consumer<Player> existingCallback = BOSSBAR_CLEANUP_CALLBACKS.remove(playerId);
-            if (existingCallback != null) {
-                try {
-                    existingCallback.accept(player);
-                } catch (Exception e) {
-                    // Ignore callback errors
-                }
-            }
-            
-            // Clean up any existing bossbar first
-            BossBar existingBar = ACTIVE_BOSSBARS.remove(playerId);
-            if (existingBar != null) {
-                try {
-                    existingBar.removePlayer(player);
-                } catch (Exception e) {
-                    // Ignore cleanup errors
-                }
-            }
-            
-            // Store new cleanup callback
-            if (cleanupCallback != null) {
-                BOSSBAR_CLEANUP_CALLBACKS.put(playerId, cleanupCallback);
-            }
-            
-            // Create new bossbar
-            bossBar = Bukkit.createBossBar(
-                MessageUtils.stripFormatting(message),
-                color,
-                style
-            );
-            bossBar.setProgress(Math.max(0.0, Math.min(1.0, progress)));
-            bossBar.addPlayer(player);
-            ACTIVE_BOSSBARS.put(playerId, bossBar);
+        if (isNewBossBar) {
+            bossBarId = UUID.randomUUID();
+            PACKET_BOSSBAR_IDS.put(playerId, bossBarId);
         }
         
-        // Schedule cleanup using async executor with custom tick interval
-        if (durationTicks > 0) {
-            long delayMs = durationTicks * 50L;
-            long tickIntervalMs = tickUpdateInterval * 50L; // Convert ticks to milliseconds
-            final BossBar finalBossBar = bossBar;
-            
-            // If tick interval is different from default, set up periodic updates
-            CompletableFuture<Void> cleanup;
-            if (tickUpdateInterval != 20 && tickIntervalMs < delayMs) {
-                // Create a task that updates the bossbar at specified intervals
-                cleanup = CompletableFuture.runAsync(() -> {
-                    try {
-                        long endTime = System.currentTimeMillis() + delayMs;
-                        
-                        while (System.currentTimeMillis() < endTime && player.isOnline()) {
-                            Thread.sleep(tickIntervalMs);
-                            
-                            // Update bossbar if still active
-                            BossBar currentBar = ACTIVE_BOSSBARS.get(playerId);
-                            if (currentBar == finalBossBar && player.isOnline()) {
-                                // Refresh the bossbar (this allows dynamic progress updates)
-                                currentBar.setTitle(MessageUtils.stripFormatting(message));
-                                currentBar.setColor(color);
-                                currentBar.setStyle(style);
-                                currentBar.setProgress(Math.max(0.0, Math.min(1.0, progress)));
-                            } else {
-                                break; // Bossbar was replaced or player disconnected
-                            }
-                        }
-                        
-                        // Final cleanup with synchronization
-                        synchronized (BOSSBAR_LOCK) {
-                            BossBar currentBar = ACTIVE_BOSSBARS.get(playerId);
-                            if (currentBar == finalBossBar) {
-                                try {
-                                    currentBar.removePlayer(player);
-                                    ACTIVE_BOSSBARS.remove(playerId);
-                                } catch (Exception e) {
-                                    // Force remove even if cleanup fails
-                                    ACTIVE_BOSSBARS.remove(playerId);
-                                }
-                                
-                                // Execute cleanup callback
-                                Consumer<Player> callback = BOSSBAR_CLEANUP_CALLBACKS.remove(playerId);
-                                if (callback != null) {
-                                    try {
-                                        callback.accept(player);
-                                    } catch (Exception e) {
-                                        // Ignore callback errors
-                                    }
-                                }
-                            }
-                            BOSSBAR_CLEANUPS.remove(playerId);
-                        }
-                        
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    } catch (Exception e) {
-                        // Ignore cleanup errors
-                    }
-                }, ASYNC_EXECUTOR);
+        try {
+            if (isNewBossBar) {
+                sendAddBossBarPacket(player, bossBarId, message, color, style, progress);
             } else {
-                // Standard cleanup without intervals (same as before)
-                cleanup = CompletableFuture.runAsync(() -> {
+                // Update existing bossbar
+                sendUpdateBossBarTitlePacket(player, bossBarId, message);
+                sendUpdateBossBarHealthPacket(player, bossBarId, progress);
+                sendUpdateBossBarStylePacket(player, bossBarId, color, style);
+                
+                // Cancel old cleanup
+                CompletableFuture<Void> oldCleanup = BOSSBAR_CLEANUPS.remove(playerId);
+                if (oldCleanup != null) {
+                    oldCleanup.cancel(true);
+                }
+            }
+            
+            // Schedule cleanup
+            if (durationTicks > 0) {
+                long delayMs = durationTicks * 50L;
+                final UUID finalBossBarId = bossBarId;
+                
+                CompletableFuture<Void> cleanup = CompletableFuture.runAsync(() -> {
                     try {
                         Thread.sleep(delayMs);
                         
-                        // Remove bossbar if it's still the same instance with synchronization
-                        synchronized (BOSSBAR_LOCK) {
-                            BossBar currentBar = ACTIVE_BOSSBARS.get(playerId);
-                            if (currentBar == finalBossBar) {
-                                try {
-                                    currentBar.removePlayer(player);
-                                    ACTIVE_BOSSBARS.remove(playerId);
-                                } catch (Exception e) {
-                                    // Force remove even if cleanup fails
-                                    ACTIVE_BOSSBARS.remove(playerId);
-                                }
-                                
-                                // Execute cleanup callback
-                                Consumer<Player> callback = BOSSBAR_CLEANUP_CALLBACKS.remove(playerId);
-                                if (callback != null) {
-                                    try {
-                                        callback.accept(player);
-                                    } catch (Exception e) {
-                                        // Ignore callback errors
-                                    }
-                                }
-                            }
-                            BOSSBAR_CLEANUPS.remove(playerId);
+                        if (PACKET_BOSSBAR_IDS.get(playerId) == finalBossBarId) {
+                            sendRemoveBossBarPacket(player, finalBossBarId);
+                            PACKET_BOSSBAR_IDS.remove(playerId);
+                            CumulativeGainTracker.clearGains(player);
                         }
+                        BOSSBAR_CLEANUPS.remove(playerId);
                         
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                    } catch (Exception e) {
-                        // Ignore cleanup errors
                     }
                 }, ASYNC_EXECUTOR);
+                
+                BOSSBAR_CLEANUPS.put(playerId, cleanup);
             }
+            
+        } catch (Exception e) {
+            // Fallback to Bukkit API if packet sending fails
+            sendBossBarAsyncInternal(player, message, color, style, progress, durationTicks);
+        }
+    }
+    
+    /**
+     * Send ADD bossbar packet directly.
+     */
+    private static void sendAddBossBarPacket(Player player, UUID bossBarId, String message, 
+                                           BarColor color, BarStyle style, double progress) throws Exception {
+        if (ADD_ACTION == null || CLIENTBOUND_BOSS_EVENT_PACKET_CLASS == null) return;
+        
+        // Create packet components
+        Object titleComponent = createChatComponent(message);
+        Object bossBarColor = convertBukkitColorToNms(color);
+        Object bossBarStyle = convertBukkitStyleToNms(style);
+        
+        // Try different constructor signatures
+        Constructor<?>[] constructors = CLIENTBOUND_BOSS_EVENT_PACKET_CLASS.getConstructors();
+        Object packet = null;
+        
+        for (Constructor<?> constructor : constructors) {
+            try {
+                Class<?>[] paramTypes = constructor.getParameterTypes();
+                if (paramTypes.length >= 3) {
+                    // Try UUID, Action, additional params
+                    if (paramTypes[0] == UUID.class) {
+                        packet = constructor.newInstance(bossBarId, ADD_ACTION, titleComponent, 
+                                                       (float) progress, bossBarColor, bossBarStyle, false, false, false);
+                        break;
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+        
+        if (packet != null) {
+            sendPacketToPlayer(player, packet);
+        }
+    }
+    
+    /**
+     * Send REMOVE bossbar packet directly.
+     */
+    private static void sendRemoveBossBarPacket(Player player, UUID bossBarId) {
+        try {
+            if (REMOVE_ACTION == null || CLIENTBOUND_BOSS_EVENT_PACKET_CLASS == null) return;
+            
+            Constructor<?>[] constructors = CLIENTBOUND_BOSS_EVENT_PACKET_CLASS.getConstructors();
+            Object packet = null;
+            
+            for (Constructor<?> constructor : constructors) {
+                try {
+                    Class<?>[] paramTypes = constructor.getParameterTypes();
+                    if (paramTypes.length >= 2 && paramTypes[0] == UUID.class) {
+                        packet = constructor.newInstance(bossBarId, REMOVE_ACTION);
+                        break;
+                    }
+                } catch (Exception ignored) {}
+            }
+            
+            if (packet != null) {
+                sendPacketToPlayer(player, packet);
+            }
+        } catch (Exception ignored) {}
+    }
+    
+    /**
+     * Send UPDATE_TITLE bossbar packet directly.
+     */
+    private static void sendUpdateBossBarTitlePacket(Player player, UUID bossBarId, String message) {
+        try {
+            if (UPDATE_TITLE_ACTION == null) return;
+            
+            Object titleComponent = createChatComponent(message);
+            Constructor<?>[] constructors = CLIENTBOUND_BOSS_EVENT_PACKET_CLASS.getConstructors();
+            Object packet = null;
+            
+            for (Constructor<?> constructor : constructors) {
+                try {
+                    Class<?>[] paramTypes = constructor.getParameterTypes();
+                    if (paramTypes.length >= 3 && paramTypes[0] == UUID.class) {
+                        packet = constructor.newInstance(bossBarId, UPDATE_TITLE_ACTION, titleComponent);
+                        break;
+                    }
+                } catch (Exception ignored) {}
+            }
+            
+            if (packet != null) {
+                sendPacketToPlayer(player, packet);
+            }
+        } catch (Exception ignored) {}
+    }
+    
+    /**
+     * Send UPDATE_HEALTH bossbar packet directly.
+     */
+    private static void sendUpdateBossBarHealthPacket(Player player, UUID bossBarId, double progress) {
+        try {
+            if (UPDATE_HEALTH_ACTION == null) return;
+            
+            Constructor<?>[] constructors = CLIENTBOUND_BOSS_EVENT_PACKET_CLASS.getConstructors();
+            Object packet = null;
+            
+            for (Constructor<?> constructor : constructors) {
+                try {
+                    Class<?>[] paramTypes = constructor.getParameterTypes();
+                    if (paramTypes.length >= 3 && paramTypes[0] == UUID.class) {
+                        packet = constructor.newInstance(bossBarId, UPDATE_HEALTH_ACTION, (float) progress);
+                        break;
+                    }
+                } catch (Exception ignored) {}
+            }
+            
+            if (packet != null) {
+                sendPacketToPlayer(player, packet);
+            }
+        } catch (Exception ignored) {}
+    }
+    
+    /**
+     * Send UPDATE_STYLE bossbar packet directly.
+     */
+    private static void sendUpdateBossBarStylePacket(Player player, UUID bossBarId, BarColor color, BarStyle style) {
+        try {
+            if (UPDATE_STYLE_ACTION == null) return;
+            
+            Object bossBarColor = convertBukkitColorToNms(color);
+            Object bossBarStyle = convertBukkitStyleToNms(style);
+            
+            Constructor<?>[] constructors = CLIENTBOUND_BOSS_EVENT_PACKET_CLASS.getConstructors();
+            Object packet = null;
+            
+            for (Constructor<?> constructor : constructors) {
+                try {
+                    Class<?>[] paramTypes = constructor.getParameterTypes();
+                    if (paramTypes.length >= 4 && paramTypes[0] == UUID.class) {
+                        packet = constructor.newInstance(bossBarId, UPDATE_STYLE_ACTION, bossBarColor, bossBarStyle);
+                        break;
+                    }
+                } catch (Exception ignored) {}
+            }
+            
+            if (packet != null) {
+                sendPacketToPlayer(player, packet);
+            }
+        } catch (Exception ignored) {}
+    }
+    
+    /**
+     * Send packet to player using reflection.
+     */
+    private static void sendPacketToPlayer(Player player, Object packet) throws Exception {
+        if (GET_HANDLE_METHOD == null || SEND_PACKET_METHOD == null) {
+            // Try to lazy-initialize the connection method
+            Object nmsPlayer = GET_HANDLE_METHOD.invoke(player);
+            
+            if (CONNECTION_FIELD == null) {
+                // Try common field names for the connection
+                String[] connectionFieldNames = {"connection", "playerConnection", "b"};
+                for (String fieldName : connectionFieldNames) {
+                    try {
+                        Field field = nmsPlayer.getClass().getDeclaredField(fieldName);
+                        field.setAccessible(true);
+                        CONNECTION_FIELD = field;
+                        break;
+                    } catch (Exception ignored) {}
+                }
+            }
+            
+            if (SEND_PACKET_METHOD == null && CONNECTION_FIELD != null) {
+                Object connection = CONNECTION_FIELD.get(nmsPlayer);
+                // Try common method names for sending packets
+                String[] methodNames = {"sendPacket", "send", "a"};
+                for (String methodName : methodNames) {
+                    try {
+                        Method method = connection.getClass().getMethod(methodName, packet.getClass().getSuperclass());
+                        SEND_PACKET_METHOD = method;
+                        break;
+                    } catch (Exception ignored) {}
+                }
+            }
+        }
+        
+        if (GET_HANDLE_METHOD != null && CONNECTION_FIELD != null && SEND_PACKET_METHOD != null) {
+            Object nmsPlayer = GET_HANDLE_METHOD.invoke(player);
+            Object connection = CONNECTION_FIELD.get(nmsPlayer);
+            SEND_PACKET_METHOD.invoke(connection, packet);
+        }
+    }
+    
+    /**
+     * Create chat component from string for modern versions.
+     */
+    private static Object createChatComponent(String message) throws Exception {
+        // Try Paper's Component API first
+        try {
+            return MessageUtils.parseMessage(message);
+        } catch (Exception e) {
+            // Fallback to NMS component creation
+            try {
+                Class<?> componentClass = Class.forName("net.minecraft.network.chat.Component");
+                Method literalMethod = componentClass.getMethod("literal", String.class);
+                return literalMethod.invoke(null, MessageUtils.colorize(message));
+            } catch (Exception fallback) {
+                // Last resort: return string
+                return MessageUtils.colorize(message);
+            }
+        }
+    }
+    
+    /**
+     * Convert Bukkit BarColor to NMS equivalent.
+     */
+    private static Object convertBukkitColorToNms(BarColor bukkitColor) {
+        try {
+            // Try to find BossEvent.BossBarColor enum
+            Class<?> colorClass = Class.forName("net.minecraft.world.BossEvent$BossBarColor");
+            Object[] colors = colorClass.getEnumConstants();
+            
+            for (Object color : colors) {
+                if (color.toString().equalsIgnoreCase(bukkitColor.name())) {
+                    return color;
+                }
+            }
+            
+            // Default to YELLOW if not found
+            for (Object color : colors) {
+                if (color.toString().equalsIgnoreCase("YELLOW")) {
+                    return color;
+                }
+            }
+            
+            return colors[0]; // Fallback to first available
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    /**
+     * Convert Bukkit BarStyle to NMS equivalent.
+     */
+    private static Object convertBukkitStyleToNms(BarStyle bukkitStyle) {
+        try {
+            // Try to find BossEvent.BossBarOverlay enum
+            Class<?> styleClass = Class.forName("net.minecraft.world.BossEvent$BossBarOverlay");
+            Object[] styles = styleClass.getEnumConstants();
+            
+            String styleName = bukkitStyle.name();
+            if (styleName.equals("SOLID")) styleName = "PROGRESS";
+            
+            for (Object style : styles) {
+                if (style.toString().equalsIgnoreCase(styleName)) {
+                    return style;
+                }
+            }
+            
+            return styles[0]; // Fallback to first available
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    
+    /**
+     * Ultra performance BossBar system - packet-based with Bukkit fallback.
+     */
+    private static void sendBossBarAsyncInternal(Player player, String message, BarColor color, 
+                                      BarStyle style, double progress, int durationTicks) {
+        if (!player.isOnline()) return;
+        
+        UUID playerId = player.getUniqueId();
+        
+        // Try packet-based approach first for maximum performance
+        if (isPacketBossBarAvailable()) {
+            UUID bossBarId = PACKET_BOSSBAR_IDS.get(playerId);
+            
+            if (bossBarId != null) {
+                // Update existing packet BossBar
+                try {
+                    sendUpdateBossBarTitlePacket(player, bossBarId, message);
+                    sendUpdateBossBarHealthPacket(player, bossBarId, (float) Math.max(0.0, Math.min(1.0, progress)));
+                    sendUpdateBossBarStylePacket(player, bossBarId, color, style);
+                } catch (Exception ignored) {}
+                
+                // Cancel old timer
+                CompletableFuture<Void> oldCleanup = BOSSBAR_CLEANUPS.remove(playerId);
+                if (oldCleanup != null) {
+                    oldCleanup.cancel(true);
+                }
+            } else {
+                // Create new packet BossBar
+                bossBarId = UUID.randomUUID();
+                try {
+                    sendAddBossBarPacket(player, bossBarId, message, color, style, (float) Math.max(0.0, Math.min(1.0, progress)));
+                    PACKET_BOSSBAR_IDS.put(playerId, bossBarId);
+                } catch (Exception ignored) {
+                    // Fallback to Bukkit API on packet failure
+                    BossBar bossBar = Bukkit.createBossBar(MessageUtils.colorize(message), color, style);
+                    bossBar.setProgress(Math.max(0.0, Math.min(1.0, progress)));
+                    bossBar.addPlayer(player);
+                    ACTIVE_BOSSBARS.put(playerId, bossBar);
+                }
+            }
+        } else {
+            // Fallback to optimized Bukkit API
+            BossBar bossBar = ACTIVE_BOSSBARS.get(playerId);
+            
+            if (bossBar != null) {
+                // Update existing BossBar
+                bossBar.setTitle(MessageUtils.colorize(message));
+                bossBar.setColor(color);
+                bossBar.setStyle(style);
+                bossBar.setProgress(Math.max(0.0, Math.min(1.0, progress)));
+                
+                // Cancel old timer
+                CompletableFuture<Void> oldCleanup = BOSSBAR_CLEANUPS.remove(playerId);
+                if (oldCleanup != null) {
+                    oldCleanup.cancel(true);
+                }
+            } else {
+                // Create new BossBar
+                bossBar = Bukkit.createBossBar(MessageUtils.colorize(message), color, style);
+                bossBar.setProgress(Math.max(0.0, Math.min(1.0, progress)));
+                bossBar.addPlayer(player);
+                ACTIVE_BOSSBARS.put(playerId, bossBar);
+            }
+        }
+        
+        // Smart cleanup timer for both packet and Bukkit BossBars
+        if (durationTicks > 0) {
+            long delayMs = durationTicks * 50L;
+            final UUID finalBossBarId = PACKET_BOSSBAR_IDS.get(playerId);
+            final BossBar finalBossBar = ACTIVE_BOSSBARS.get(playerId);
+            
+            CompletableFuture<Void> cleanup = CompletableFuture.runAsync(() -> {
+                try {
+                    Thread.sleep(delayMs);
+                    
+                    // Clean up packet BossBar if exists
+                    if (finalBossBarId != null && PACKET_BOSSBAR_IDS.get(playerId) == finalBossBarId) {
+                        sendRemoveBossBarPacket(player, finalBossBarId);
+                        PACKET_BOSSBAR_IDS.remove(playerId);
+                    }
+                    
+                    // Clean up Bukkit BossBar if exists
+                    if (finalBossBar != null && ACTIVE_BOSSBARS.get(playerId) == finalBossBar) {
+                        try {
+                            finalBossBar.removePlayer(player);
+                        } catch (Exception ignored) {}
+                        ACTIVE_BOSSBARS.remove(playerId);
+                    }
+                    
+                    // Clear cumulative gains
+                    CumulativeGainTracker.clearGains(player);
+                    BOSSBAR_CLEANUPS.remove(playerId);
+                    
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }, ASYNC_EXECUTOR);
             
             BOSSBAR_CLEANUPS.put(playerId, cleanup);
         }
@@ -370,29 +636,31 @@ public class PacketUtils {
     
     /**
      * Clean up all resources for a player.
-     * Called when player disconnects.
      */
     public static void cleanupPlayer(UUID playerId) {
-        synchronized (BOSSBAR_LOCK) {
-            // Cancel any pending cleanup
-            CompletableFuture<Void> cleanup = BOSSBAR_CLEANUPS.remove(playerId);
-            if (cleanup != null) {
-                cleanup.cancel(true);
-            }
-            
-            // Remove cleanup callback without executing it (player disconnected)
-            BOSSBAR_CLEANUP_CALLBACKS.remove(playerId);
-            
-            // Remove and cleanup bossbar
-            BossBar bossBar = ACTIVE_BOSSBARS.remove(playerId);
-            if (bossBar != null) {
-                try {
-                    bossBar.removeAll();
-                } catch (Exception e) {
-                    // Ignore cleanup errors but log for debugging
-                }
+        CompletableFuture<Void> cleanup = BOSSBAR_CLEANUPS.remove(playerId);
+        if (cleanup != null) {
+            cleanup.cancel(true);
+        }
+        
+        // Clean up packet-based BossBar
+        UUID packetBossBarId = PACKET_BOSSBAR_IDS.remove(playerId);
+        if (packetBossBarId != null) {
+            Player player = Bukkit.getPlayer(playerId);
+            if (player != null && player.isOnline()) {
+                sendRemoveBossBarPacket(player, packetBossBarId);
             }
         }
+        
+        // Clean up Bukkit API BossBar
+        BossBar bossBar = ACTIVE_BOSSBARS.remove(playerId);
+        if (bossBar != null) {
+            try {
+                bossBar.removeAll();
+            } catch (Exception ignored) {}
+        }
+        
+        CumulativeGainTracker.clearGains(Bukkit.getPlayer(playerId));
     }
     
     /**
@@ -410,7 +678,13 @@ public class PacketUtils {
                 cleanup.cancel(true);
             }
             
-            // Remove from our tracking
+            // Clean up packet-based BossBar
+            UUID packetBossBarId = PACKET_BOSSBAR_IDS.remove(playerId);
+            if (packetBossBarId != null) {
+                sendRemoveBossBarPacket(player, packetBossBarId);
+            }
+            
+            // Remove from Bukkit API tracking
             BossBar bossBar = ACTIVE_BOSSBARS.remove(playerId);
             if (bossBar != null) {
                 try {
@@ -435,24 +709,28 @@ public class PacketUtils {
      * Shutdown all async operations.
      */
     public static void shutdown() {
-        // Cancel all pending cleanups
         BOSSBAR_CLEANUPS.values().forEach(future -> future.cancel(false));
         BOSSBAR_CLEANUPS.clear();
         
-        // Clear all cleanup callbacks
-        BOSSBAR_CLEANUP_CALLBACKS.clear();
+        // Clean up packet-based bossbars
+        PACKET_BOSSBAR_IDS.entrySet().forEach(entry -> {
+            Player player = Bukkit.getPlayer(entry.getKey());
+            if (player != null && player.isOnline()) {
+                sendRemoveBossBarPacket(player, entry.getValue());
+            }
+        });
+        PACKET_BOSSBAR_IDS.clear();
         
-        // Clean up all bossbars
+        // Clean up Bukkit API bossbars
         ACTIVE_BOSSBARS.values().forEach(bar -> {
             try {
                 bar.removeAll();
-            } catch (Exception e) {
-                // Ignore cleanup errors
-            }
+            } catch (Exception ignored) {}
         });
         ACTIVE_BOSSBARS.clear();
         
-        // Shutdown executor
+        CumulativeGainTracker.clearAllGains();
+        
         ASYNC_EXECUTOR.shutdown();
         try {
             if (!ASYNC_EXECUTOR.awaitTermination(2, TimeUnit.SECONDS)) {
@@ -465,14 +743,129 @@ public class PacketUtils {
     }
     
     /**
-     * Initialize reflection for potential packet optimizations.
-     * Currently using Bukkit API which is already efficient.
+     * Initialize reflection for packet-based BossBar implementation.
+     * Attempts to setup direct packet sending for maximum performance.
      */
     private static void initializeReflection() {
         try {
+            String version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
+            boolean isModern = version.contains("1_20") || version.contains("1_21") || version.contains("1_19");
+            
+            if (isModern) {
+                initializeModernReflection();
+            } else {
+                initializeLegacyReflection(version);
+            }
+        } catch (Exception e) {
+            PACKET_REFLECTION_AVAILABLE = false;
+        }
+    }
+    
+    /**
+     * Initialize reflection for Paper 1.19+ with mapped names.
+     */
+    private static void initializeModernReflection() {
+        try {
+            // Try Paper/Modern approach first
+            Class<?> craftPlayerClass = Class.forName("org.bukkit.craftbukkit." + getServerVersion() + ".entity.CraftPlayer");
+            GET_HANDLE_METHOD = craftPlayerClass.getMethod("getHandle");
+            
+            // Try to get connection field from ServerPlayer
+            Object dummyPlayer = null; // We'll need a real player to test this
+            
+            // Try common Paper/Spigot class names for BossEvent packet
+            String[] packetNames = {
+                "net.minecraft.network.protocol.game.ClientboundBossEventPacket",
+                "net.minecraft.server." + getServerVersion() + ".PacketPlayOutBoss",
+                "net.minecraft.server.network.protocol.game.PacketPlayOutBoss"
+            };
+            
+            for (String packetName : packetNames) {
+                try {
+                    CLIENTBOUND_BOSS_EVENT_PACKET_CLASS = Class.forName(packetName);
+                    break;
+                } catch (ClassNotFoundException ignored) {}
+            }
+            
+            if (CLIENTBOUND_BOSS_EVENT_PACKET_CLASS != null) {
+                // Try to find constructor and action enums
+                initializePacketActions();
+                PACKET_REFLECTION_AVAILABLE = true;
+            }
             
         } catch (Exception e) {
+            PACKET_REFLECTION_AVAILABLE = false;
         }
+    }
+    
+    /**
+     * Initialize reflection for older versions.
+     */
+    private static void initializeLegacyReflection(String version) {
+        try {
+            Class<?> craftPlayerClass = Class.forName("org.bukkit.craftbukkit." + version + ".entity.CraftPlayer");
+            GET_HANDLE_METHOD = craftPlayerClass.getMethod("getHandle");
+            
+            CLIENTBOUND_BOSS_EVENT_PACKET_CLASS = Class.forName("net.minecraft.server." + version + ".PacketPlayOutBoss");
+            
+            if (CLIENTBOUND_BOSS_EVENT_PACKET_CLASS != null) {
+                initializePacketActions();
+                PACKET_REFLECTION_AVAILABLE = true;
+            }
+            
+        } catch (Exception e) {
+            PACKET_REFLECTION_AVAILABLE = false;
+        }
+    }
+    
+    /**
+     * Initialize packet actions and constructor.
+     */
+    private static void initializePacketActions() throws Exception {
+        // Try to find action enums within the packet class or separate enum
+        Class<?>[] innerClasses = CLIENTBOUND_BOSS_EVENT_PACKET_CLASS.getDeclaredClasses();
+        Class<?> actionClass = null;
+        
+        for (Class<?> innerClass : innerClasses) {
+            if (innerClass.isEnum() && innerClass.getSimpleName().contains("Action")) {
+                actionClass = innerClass;
+                break;
+            }
+        }
+        
+        if (actionClass != null) {
+            Object[] actions = actionClass.getEnumConstants();
+            for (Object action : actions) {
+                String name = action.toString();
+                switch (name) {
+                    case "ADD":
+                        ADD_ACTION = action;
+                        break;
+                    case "REMOVE":
+                        REMOVE_ACTION = action;
+                        break;
+                    case "UPDATE_HEALTH":
+                    case "UPDATE_PCT":
+                        UPDATE_HEALTH_ACTION = action;
+                        break;
+                    case "UPDATE_TITLE":
+                    case "UPDATE_NAME":
+                        UPDATE_TITLE_ACTION = action;
+                        break;
+                    case "UPDATE_STYLE":
+                    case "UPDATE_PROPERTIES":
+                        UPDATE_STYLE_ACTION = action;
+                        break;
+                }
+            }
+        }
+    }
+    
+    /**
+     * Get current server version string.
+     */
+    private static String getServerVersion() {
+        return Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
     }
     
     /**
@@ -494,5 +887,33 @@ public class PacketUtils {
                 Thread.currentThread().interrupt();
             }
         }, ASYNC_EXECUTOR);
+    }
+    
+    /**
+     * Check if packet-based BossBar is available and working.
+     */
+    public static boolean isPacketBossBarAvailable() {
+        return PACKET_REFLECTION_AVAILABLE && 
+               ADD_ACTION != null && 
+               REMOVE_ACTION != null && 
+               CLIENTBOUND_BOSS_EVENT_PACKET_CLASS != null;
+    }
+    
+    /**
+     * Get BossBar implementation status for debugging.
+     */
+    public static String getBossBarImplementationStatus() {
+        StringBuilder status = new StringBuilder();
+        status.append("BossBar Implementation Status:\n");
+        status.append("- Packet Reflection Available: ").append(PACKET_REFLECTION_AVAILABLE).append("\n");
+        status.append("- Server Version: ").append(getServerVersion()).append("\n");
+        status.append("- ClientboundBossEventPacket: ").append(CLIENTBOUND_BOSS_EVENT_PACKET_CLASS != null ? "Found" : "Not Found").append("\n");
+        status.append("- ADD Action: ").append(ADD_ACTION != null ? "Found" : "Not Found").append("\n");
+        status.append("- REMOVE Action: ").append(REMOVE_ACTION != null ? "Found" : "Not Found").append("\n");
+        status.append("- UPDATE_HEALTH Action: ").append(UPDATE_HEALTH_ACTION != null ? "Found" : "Not Found").append("\n");
+        status.append("- UPDATE_TITLE Action: ").append(UPDATE_TITLE_ACTION != null ? "Found" : "Not Found").append("\n");
+        status.append("- Active Packet BossBars: ").append(PACKET_BOSSBAR_IDS.size()).append("\n");
+        status.append("- Active Bukkit BossBars: ").append(ACTIVE_BOSSBARS.size());
+        return status.toString();
     }
 }
