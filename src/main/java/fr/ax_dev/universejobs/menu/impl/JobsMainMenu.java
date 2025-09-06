@@ -276,7 +276,7 @@ public class JobsMainMenu extends BaseMenu {
         if (clickedJob == null) return;
         
         // Handle different click types
-        if (event.getClick() == ClickType.SHIFT_LEFT || event.getClick() == ClickType.SHIFT_RIGHT) {
+        if (event.getClick() == ClickType.RIGHT) {
             handleQuickJobToggle(clickedJob);
         } else {
             plugin.getMenuManager().openJobMenu(player, clickedJob.getId());
