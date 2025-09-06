@@ -15,10 +15,7 @@ import fr.ax_dev.universejobs.utils.MessageUtils;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,7 +24,7 @@ import java.util.stream.Collectors;
  * Players can click on jobs to open individual job menus or quick join/leave.
  * Implements InventoryHolder for better integration and uses centralized approach.
  */
-public class JobsMainMenu extends BaseMenu implements InventoryHolder {
+public class JobsMainMenu extends BaseMenu {
     
     private static final int DEFAULT_PROGRESS_BARS = 20;
     private static final char PROGRESS_FILLED = '▰';
@@ -37,7 +34,6 @@ public class JobsMainMenu extends BaseMenu implements InventoryHolder {
     
     private final List<Job> availableJobs;
     private final PlayerJobData playerData;
-    private final JobSlotManager jobSlotManager;
     private final Map<String, String> cachedPlaceholders;
     private final LanguageManager languageManager;
     
@@ -45,7 +41,6 @@ public class JobsMainMenu extends BaseMenu implements InventoryHolder {
         super(plugin, player, config);
         
         this.playerData = plugin.getJobManager().getPlayerData(player.getUniqueId());
-        this.jobSlotManager = jobSlotManager;
         this.languageManager = plugin.getLanguageManager();
         
         // Load available jobs efficiently using streams with proper filtering
@@ -216,7 +211,7 @@ public class JobsMainMenu extends BaseMenu implements InventoryHolder {
         jobConfigMap.put("display-name", format.getDisplayName());
         jobConfigMap.put("lore", hasJob ? format.getLore() : format.getLoreWithoutJob());
         jobConfigMap.put("amount", format.getAmount());
-        jobConfigMap.put("glow", hasJob ? format.isGlowWhenJoined() : format.isGlowWhenNotJoined());
+        jobConfigMap.put("glow", format.shouldGlow(hasJob));
         jobConfigMap.put("hide-attributes", format.isHideAttributes());
         jobConfigMap.put("hide-enchants", format.isHideEnchants());
         
@@ -533,24 +528,5 @@ public class JobsMainMenu extends BaseMenu implements InventoryHolder {
             .count();
         
         return (currentPage + 1) * availableSlots < remainingJobs.size();
-    }
-    
-    /**
-     * Get total number of pages efficiently.
-     */
-    private int getTotalPages() {
-        Map<String, Integer> configuredJobSlots = config.getJobSlots();
-        List<Job> remainingJobs = availableJobs.stream()
-            .filter(job -> !configuredJobSlots.containsKey(job.getId()))
-            .collect(Collectors.toList());
-        
-        List<Integer> contentSlots = config.getContentSlots();
-        Set<Integer> usedSlots = new HashSet<>(configuredJobSlots.values());
-        int availableSlots = (int) contentSlots.stream()
-            .filter(slot -> !usedSlots.contains(slot))
-            .count();
-        
-        if (availableSlots == 0) return 1;
-        return (int) Math.ceil((double) remainingJobs.size() / availableSlots);
     }
 }
