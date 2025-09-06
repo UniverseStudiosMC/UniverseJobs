@@ -82,7 +82,12 @@ public class BlockProtectionManager {
      * @param block The block that was placed
      */
     public void recordBlockPlacement(Player player, Block block) {
-        if (!enabled) return;
+        if (!enabled) {
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("Block protection disabled - not tracking block placement by " + player.getName() + " at " + block.getLocation());
+            }
+            return;
+        }
         
         try {
             // Add NBT tag to mark this block as player-placed
@@ -103,7 +108,7 @@ public class BlockProtectionManager {
             block.getChunk().getPersistentDataContainer().set(blockKey, PersistentDataType.STRING, playerData);
             
             if (plugin.getConfigManager().isDebugEnabled()) {
-                plugin.getLogger().info("Marked block at " + block.getLocation() + " as player-placed by " + player.getName());
+                plugin.getLogger().info("✅ TRACKED block placement by " + player.getName() + " at " + block.getLocation());
             }
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Failed to mark block as player-placed", e);
@@ -129,7 +134,17 @@ public class BlockProtectionManager {
             NamespacedKey blockKey = new NamespacedKey(plugin, BLOCK_PREFIX + block.getX() + "_" + block.getY() + "_" + block.getZ());
             String placedBy = block.getChunk().getPersistentDataContainer().get(blockKey, PersistentDataType.STRING);
             
-            return placedBy != null;
+            if (placedBy != null) {
+                if (plugin.getConfigManager().isDebugEnabled()) {
+                    plugin.getLogger().info("Block at " + block.getLocation() + " was placed by: " + placedBy + " - blocking XP");
+                }
+                return true;
+            } else {
+                if (plugin.getConfigManager().isDebugEnabled()) {
+                    plugin.getLogger().info("Block at " + block.getLocation() + " is natural - allowing XP");
+                }
+                return false;
+            }
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Failed to check if block is player-placed", e);
             return false;

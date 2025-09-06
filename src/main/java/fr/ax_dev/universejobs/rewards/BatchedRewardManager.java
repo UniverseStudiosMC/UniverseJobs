@@ -30,7 +30,7 @@ public class BatchedRewardManager {
     private final Map<String, BatchedCommand> commandBatch = new ConcurrentHashMap<>();
     
     // Batch timers
-    private final ScheduledExecutorService batchExecutor = Executors.newScheduledThreadPool(1, r -> {
+    private ScheduledExecutorService batchExecutor = Executors.newScheduledThreadPool(1, r -> {
         Thread thread = new Thread(r, "UniverseJobs-BatchProcessor");
         thread.setDaemon(true);
         return thread;
@@ -339,6 +339,13 @@ public class BatchedRewardManager {
             batchExecutor.shutdownNow();
             Thread.currentThread().interrupt();
         }
+        
+        // Create new executor service
+        batchExecutor = Executors.newScheduledThreadPool(1, r -> {
+            Thread thread = new Thread(r, "UniverseJobs-BatchProcessor");
+            thread.setDaemon(true);
+            return thread;
+        });
         
         // Update configuration values via reflection
         try {
