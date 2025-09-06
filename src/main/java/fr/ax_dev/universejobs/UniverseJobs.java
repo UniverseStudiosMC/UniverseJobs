@@ -25,6 +25,7 @@ import fr.ax_dev.universejobs.listener.EnchantEventListener;
 import fr.ax_dev.universejobs.protection.BlockProtectionManager;
 import fr.ax_dev.universejobs.reward.RewardManager;
 import fr.ax_dev.universejobs.reward.gui.RewardGuiManager;
+import fr.ax_dev.universejobs.rewards.BatchedRewardManager;
 import fr.ax_dev.universejobs.menu.MenuManager;
 import fr.ax_dev.universejobs.menu.BoostManagerGui;
 import fr.ax_dev.universejobs.utils.AsyncXpMessageSender;
@@ -56,6 +57,7 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
     private BlockProtectionManager protectionManager;
     private RewardManager rewardManager;
     private RewardGuiManager rewardGuiManager;
+    private BatchedRewardManager batchedRewardManager;
     private MenuManager menuManager;
     private BoostManagerGui boostManagerGui;
     private PlaceholderManager placeholderManager;
@@ -140,6 +142,7 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         // Initialize reward system after database is ready
         this.rewardManager = new RewardManager(this);
         this.rewardGuiManager = new RewardGuiManager(this, rewardManager);
+        this.batchedRewardManager = new BatchedRewardManager(this);
         
         // Initialize action processor with loaded cache
         this.actionProcessor = new ActionProcessor(this, jobManager, bonusManager, moneyBonusManager, 
@@ -309,6 +312,7 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         shutdownRewardGuiManager();
         shutdownManagerSafely("menu manager", menuManager, () -> menuManager.closeAllMenus());
         shutdownManagerSafely("reward manager", rewardManager, () -> rewardManager.shutdown());
+        shutdownManagerSafely("batched reward manager", batchedRewardManager, () -> batchedRewardManager.shutdown());
         shutdownManagerSafely("message sender", messageSender, () -> messageSender.shutdown());
         shutdownManagerSafely("bonus manager", bonusManager, () -> bonusManager.shutdown());
         shutdownManagerSafely("money bonus manager", moneyBonusManager, () -> moneyBonusManager.shutdown());
@@ -580,6 +584,15 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
      */
     public RewardGuiManager getRewardGuiManager() {
         return rewardGuiManager;
+    }
+    
+    /**
+     * Get the batched reward manager.
+     * 
+     * @return The batched reward manager
+     */
+    public BatchedRewardManager getBatchedRewardManager() {
+        return batchedRewardManager;
     }
     
     /**
