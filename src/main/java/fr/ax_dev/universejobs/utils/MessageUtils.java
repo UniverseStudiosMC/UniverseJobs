@@ -22,11 +22,26 @@ public class MessageUtils {
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{([^}]+)}");
     
     // Ultra-fast cache for parsed messages (cleared every 5 minutes)
-    private static final Map<String, Component> COMPONENT_CACHE = new ConcurrentHashMap<>();
-    private static final Map<String, String> COLORIZE_CACHE = new ConcurrentHashMap<>();
-    private static final Map<String, Long> CACHE_TIMESTAMPS = new ConcurrentHashMap<>();
+    private static final Map<String, Component> COMPONENT_CACHE = new ConcurrentHashMap<>(256);
+    private static final Map<String, String> COLORIZE_CACHE = new ConcurrentHashMap<>(256);
+    private static final Map<String, String> LEGACY_CONVERTED_CACHE = new ConcurrentHashMap<>(256);
+    private static final Map<String, Long> CACHE_TIMESTAMPS = new ConcurrentHashMap<>(256);
     private static final long CACHE_DURATION = 300000L; // 5 minutes
     private static long lastCleanup = System.currentTimeMillis();
+    
+    // Pre-compile common patterns for ultra-fast lookup
+    private static final Map<String, String> COMMON_PATTERNS = new ConcurrentHashMap<>();
+    static {
+        // Pre-cache most common XP message patterns
+        COMMON_PATTERNS.put("&a+", "<green>+");
+        COMMON_PATTERNS.put("&e$", "<yellow>$");
+        COMMON_PATTERNS.put("&b[", "<aqua>[");
+        COMMON_PATTERNS.put("&6{job}", "<gold>{job}");
+        COMMON_PATTERNS.put("&7(", "<gray>(");
+        COMMON_PATTERNS.put("&f)", "<white>)");
+        COMMON_PATTERNS.put("&c-", "<red>-");
+        COMMON_PATTERNS.put("&d{level}", "<light_purple>{level}");
+    }
     
     /**
      * Parse a message string with MiniMessage and legacy color code support.
@@ -47,11 +62,16 @@ public class MessageUtils {
         }
         
         // Check if the message contains legacy codes and convert if needed
-        String processedMessage;
-        if (LegacyToMiniMessageConverter.containsLegacyCodes(message)) {
-            processedMessage = LegacyToMiniMessageConverter.convert(message);
-        } else {
-            processedMessage = message;
+        String processedMessage = LEGACY_CONVERTED_CACHE.get(message);
+        if (processedMessage == null) {
+            if (LegacyToMiniMessageConverter.containsLegacyCodes(message)) {
+                processedMessage = fastLegacyConvert(message);
+                LEGACY_CONVERTED_CACHE.put(message, processedMessage);
+                CACHE_TIMESTAMPS.put(message + ":legacy", System.currentTimeMillis());
+            } else {
+                processedMessage = message;
+                LEGACY_CONVERTED_CACHE.put(message, processedMessage);
+            }
         }
         
         // Parse as MiniMessage (it handles plain text gracefully)
@@ -160,8 +180,36 @@ public class MessageUtils {
             return message;
         }
         
-        // Use the efficient regex-based converter
-        return LegacyToMiniMessageConverter.convert(message);
+        // Use fast cached conversion
+        String cached = LEGACY_CONVERTED_CACHE.get(message);
+        if (cached != null) {
+            return cached;
+        }
+        
+        String result = fastLegacyConvert(message);
+        LEGACY_CONVERTED_CACHE.put(message, result);
+        CACHE_TIMESTAMPS.put(message + ":legacy", System.currentTimeMillis());
+        
+        return result;
+    }
+    
+    /**
+     * Ultra-fast legacy conversion with common pattern optimization.
+     */
+    private static String fastLegacyConvert(String message) {
+        // Check for pre-compiled common patterns first
+        for (Map.Entry<String, String> entry : COMMON_PATTERNS.entrySet()) {
+            if (message.contains(entry.getKey())) {
+                message = message.replace(entry.getKey(), entry.getValue());
+            }
+        }
+        
+        // Only use full regex conversion if needed
+        if (LegacyToMiniMessageConverter.containsLegacyCodes(message)) {
+            return LegacyToMiniMessageConverter.convert(message);
+        }
+        
+        return message;
     }
     
     
@@ -177,6 +225,8 @@ public class MessageUtils {
                     String key = entry.getKey();
                     if (key.endsWith(":colorize")) {
                         COLORIZE_CACHE.remove(key.substring(0, key.length() - 9));
+                    } else if (key.endsWith(":legacy")) {
+                        LEGACY_CONVERTED_CACHE.remove(key.substring(0, key.length() - 7));
                     } else {
                         COMPONENT_CACHE.remove(key);
                     }

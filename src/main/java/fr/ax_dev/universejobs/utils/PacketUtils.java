@@ -34,6 +34,7 @@ public class PacketUtils {
     private static final Map<UUID, BossBar> ACTIVE_BOSSBARS = new ConcurrentHashMap<>();
     private static final Map<UUID, CompletableFuture<Void>> BOSSBAR_CLEANUPS = new ConcurrentHashMap<>();
     private static final Map<UUID, UUID> PACKET_BOSSBAR_IDS = new ConcurrentHashMap<>();
+    private static final Map<UUID, Long> BOSSBAR_CREATION_TIMES = new ConcurrentHashMap<>();
     private static final Object BOSSBAR_LOCK = new Object();
     
     // Packet reflection cache
@@ -154,28 +155,32 @@ public class PacketUtils {
                 sendUpdateBossBarHealthPacket(player, bossBarId, progress);
                 sendUpdateBossBarStylePacket(player, bossBarId, color, style);
                 
-                // Cancel old cleanup
-                CompletableFuture<Void> oldCleanup = BOSSBAR_CLEANUPS.remove(playerId);
-                if (oldCleanup != null) {
-                    oldCleanup.cancel(true);
-                }
+                // Cancel old cleanup safely
+                cancelOldCleanupSafely(playerId);
             }
             
-            // Schedule cleanup
+            // Schedule cleanup with timestamp tracking
             if (durationTicks > 0) {
                 long delayMs = durationTicks * 50L;
                 final UUID finalBossBarId = bossBarId;
+                final long creationTime = System.currentTimeMillis();
+                BOSSBAR_CREATION_TIMES.put(playerId, creationTime);
                 
                 CompletableFuture<Void> cleanup = CompletableFuture.runAsync(() -> {
                     try {
                         Thread.sleep(delayMs);
                         
-                        if (PACKET_BOSSBAR_IDS.get(playerId) == finalBossBarId) {
-                            sendRemoveBossBarPacket(player, finalBossBarId);
-                            PACKET_BOSSBAR_IDS.remove(playerId);
-                            CumulativeGainTracker.clearGains(player);
+                        // Check if this cleanup is still valid
+                        Long currentCreationTime = BOSSBAR_CREATION_TIMES.get(playerId);
+                        if (currentCreationTime != null && currentCreationTime.equals(creationTime)) {
+                            if (PACKET_BOSSBAR_IDS.get(playerId) == finalBossBarId) {
+                                sendRemoveBossBarPacket(player, finalBossBarId);
+                                PACKET_BOSSBAR_IDS.remove(playerId);
+                                CumulativeGainTracker.clearGains(player);
+                            }
+                            BOSSBAR_CLEANUPS.remove(playerId);
+                            BOSSBAR_CREATION_TIMES.remove(playerId);
                         }
-                        BOSSBAR_CLEANUPS.remove(playerId);
                         
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
@@ -377,6 +382,21 @@ public class PacketUtils {
     }
     
     /**
+     * Cancel old cleanup task safely without causing CancellationException.
+     */
+    private static void cancelOldCleanupSafely(UUID playerId) {
+        CompletableFuture<Void> oldCleanup = BOSSBAR_CLEANUPS.remove(playerId);
+        if (oldCleanup != null && !oldCleanup.isDone()) {
+            try {
+                oldCleanup.cancel(false); // Use cancel(false) instead of cancel(true) to avoid interrupting
+            } catch (Exception ignored) {
+                // If cancellation fails, just update the timestamp to invalidate it
+                BOSSBAR_CREATION_TIMES.put(playerId, System.currentTimeMillis());
+            }
+        }
+    }
+    
+    /**
      * Create chat component from string for modern versions.
      */
     private static Object createChatComponent(String message) throws Exception {
@@ -470,11 +490,8 @@ public class PacketUtils {
                     sendUpdateBossBarStylePacket(player, bossBarId, color, style);
                 } catch (Exception ignored) {}
                 
-                // Cancel old timer
-                CompletableFuture<Void> oldCleanup = BOSSBAR_CLEANUPS.remove(playerId);
-                if (oldCleanup != null) {
-                    oldCleanup.cancel(true);
-                }
+                // Cancel old timer safely
+                cancelOldCleanupSafely(playerId);
             } else {
                 // Create new packet BossBar
                 bossBarId = UUID.randomUUID();
@@ -500,11 +517,8 @@ public class PacketUtils {
                 bossBar.setStyle(style);
                 bossBar.setProgress(Math.max(0.0, Math.min(1.0, progress)));
                 
-                // Cancel old timer
-                CompletableFuture<Void> oldCleanup = BOSSBAR_CLEANUPS.remove(playerId);
-                if (oldCleanup != null) {
-                    oldCleanup.cancel(true);
-                }
+                // Cancel old timer safely
+                cancelOldCleanupSafely(playerId);
             } else {
                 // Create new BossBar
                 bossBar = Bukkit.createBossBar(MessageUtils.colorize(message), color, style);
@@ -518,15 +532,15 @@ public class PacketUtils {
         if (durationTicks > 0) {
             long delayMs = durationTicks * 50L;
             final long creationTime = System.currentTimeMillis();
+            BOSSBAR_CREATION_TIMES.put(playerId, creationTime);
             
-            final CompletableFuture<Void>[] cleanupHolder = new CompletableFuture[1];
             CompletableFuture<Void> cleanup = CompletableFuture.runAsync(() -> {
                 try {
                     Thread.sleep(delayMs);
                     
-                    // Check if this cleanup is still valid (no new BossBar created after this one)
-                    CompletableFuture<Void> currentCleanup = BOSSBAR_CLEANUPS.get(playerId);
-                    if (currentCleanup != cleanupHolder[0]) {
+                    // Check if this cleanup is still valid using creation time
+                    Long currentCreationTime = BOSSBAR_CREATION_TIMES.get(playerId);
+                    if (currentCreationTime == null || !currentCreationTime.equals(creationTime)) {
                         // A newer cleanup was scheduled, this one is obsolete
                         return;
                     }
@@ -550,13 +564,13 @@ public class PacketUtils {
                     // Clear cumulative gains
                     CumulativeGainTracker.clearGains(player);
                     BOSSBAR_CLEANUPS.remove(playerId);
+                    BOSSBAR_CREATION_TIMES.remove(playerId);
                     
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
             }, ASYNC_EXECUTOR);
             
-            cleanupHolder[0] = cleanup;
             BOSSBAR_CLEANUPS.put(playerId, cleanup);
         }
     }
@@ -648,10 +662,8 @@ public class PacketUtils {
      * Clean up all resources for a player.
      */
     public static void cleanupPlayer(UUID playerId) {
-        CompletableFuture<Void> cleanup = BOSSBAR_CLEANUPS.remove(playerId);
-        if (cleanup != null) {
-            cleanup.cancel(true);
-        }
+        // Use safe cancellation method
+        cancelOldCleanupSafely(playerId);
         
         // Clean up packet-based BossBar
         UUID packetBossBarId = PACKET_BOSSBAR_IDS.remove(playerId);
@@ -671,6 +683,7 @@ public class PacketUtils {
         }
         
         CumulativeGainTracker.clearGains(Bukkit.getPlayer(playerId));
+        BOSSBAR_CREATION_TIMES.remove(playerId);
     }
     
     /**
@@ -682,11 +695,8 @@ public class PacketUtils {
         
         UUID playerId = player.getUniqueId();
         synchronized (BOSSBAR_LOCK) {
-            // Cancel cleanup tasks
-            CompletableFuture<Void> cleanup = BOSSBAR_CLEANUPS.remove(playerId);
-            if (cleanup != null) {
-                cleanup.cancel(true);
-            }
+            // Cancel cleanup tasks safely
+            cancelOldCleanupSafely(playerId);
             
             // Clean up packet-based BossBar
             UUID packetBossBarId = PACKET_BOSSBAR_IDS.remove(playerId);
@@ -719,8 +729,9 @@ public class PacketUtils {
      * Shutdown all async operations.
      */
     public static void shutdown() {
-        BOSSBAR_CLEANUPS.values().forEach(future -> future.cancel(false));
+        // Don't cancel futures to avoid CancellationException, just clear
         BOSSBAR_CLEANUPS.clear();
+        BOSSBAR_CREATION_TIMES.clear();
         
         // Clean up packet-based bossbars
         PACKET_BOSSBAR_IDS.entrySet().forEach(entry -> {
