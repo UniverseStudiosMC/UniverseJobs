@@ -12,6 +12,7 @@ import fr.ax_dev.universejobs.utils.MessageUtils;
 import fr.ax_dev.universejobs.utils.AsyncXpMessageSender;
 import fr.ax_dev.universejobs.cache.ConfigurationCache;
 import fr.ax_dev.universejobs.cache.PlayerJobCache;
+import fr.ax_dev.universejobs.rewards.BatchedRewardManager;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.NamespacedKey;
@@ -41,6 +42,7 @@ public class ActionProcessor {
     private final ActionLimitManager limitManager;
     private final ConfigurationCache configCache;
     private final PlayerJobCache playerCache;
+    private final BatchedRewardManager batchManager;
     
     // Permission cache for performance (cleared every 30 seconds)
     private static final Map<UUID, Integer> PERMISSION_MULTIPLIER_CACHE = new ConcurrentHashMap<>();
@@ -71,6 +73,7 @@ public class ActionProcessor {
         this.limitManager = limitManager;
         this.configCache = configCache;
         this.playerCache = playerCache;
+        this.batchManager = new BatchedRewardManager(plugin);
     }
     
     /**
@@ -440,8 +443,8 @@ public class ActionProcessor {
                 double bonusMultiplier = bonusManager.getTotalMultiplier(player.getUniqueId(), job.getId());
                 finalXp *= bonusMultiplier;
                 
-                // Add XP to the player
-                jobManager.addXp(player, job.getId(), finalXp);
+                // Add XP to batch for optimized processing
+                batchManager.batchXp(player, job.getId(), finalXp);
                 
                 // Check for level up
                 int newLevel = jobManager.getLevel(player, job.getId());
@@ -739,11 +742,9 @@ public class ActionProcessor {
         if (plugin.getServer().getPluginManager().isPluginEnabled("Vault")) {
             try {
                 // Try to get Vault integration
-                net.milkbowl.vault.economy.Economy economy = getVaultEconomy();
-                if (economy != null) {
-                    economy.depositPlayer(player, amount);
-                    return;
-                }
+                // Add money to batch for optimized processing
+                batchManager.batchMoney(player, amount);
+                return;
             } catch (Exception e) {
                 // Vault integration failed, log and continue to fallback
                 plugin.getLogger().warning("Failed to use Vault for money reward: " + e.getMessage());
@@ -897,6 +898,31 @@ public class ActionProcessor {
         PERMISSION_CACHE_TIMESTAMPS.entrySet().removeIf(entry -> 
             (currentTime - entry.getValue()) >= PERMISSION_CACHE_DURATION);
         PERMISSION_MULTIPLIER_CACHE.keySet().retainAll(PERMISSION_CACHE_TIMESTAMPS.keySet());
+    }
+    
+    /**
+     * Shutdown the ActionProcessor and flush all pending batches.
+     */
+    public void shutdown() {
+        if (batchManager != null) {
+            batchManager.shutdown();
+        }
+    }
+    
+    /**
+     * Get current batch statistics for monitoring.
+     */
+    public BatchedRewardManager.BatchStatistics getBatchStatistics() {
+        return batchManager != null ? batchManager.getStatistics() : null;
+    }
+    
+    /**
+     * Force flush all pending batches immediately.
+     */
+    public void forceFlushBatches() {
+        if (batchManager != null) {
+            batchManager.forceFlushAll();
+        }
     }
     
     /**

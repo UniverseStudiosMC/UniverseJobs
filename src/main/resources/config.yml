@@ -10,6 +10,10 @@ settings:
 # Job Settings
 create-example-jobs: true  # Set to false to prevent automatic creation of example job files
 
+performance:
+  batching-xp: 60 # XP batched every 60 ticks (3 seconds)
+  batching-money: 60 # Money batched every 60 ticks
+  batching-others: 40 # Commands every 40 ticks (2 seconds)
 
 # Database Configuration
 # Choose type: "sqlite" or "mysql"
