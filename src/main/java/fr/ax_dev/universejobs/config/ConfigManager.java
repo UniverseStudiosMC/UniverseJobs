@@ -200,6 +200,18 @@ public class ConfigManager {
     }
     
     /**
+     * Get the configured job status text.
+     * 
+     * @param hasJob Whether the player has the job or not
+     * @return The formatted status text
+     */
+    public String getJobStatus(boolean hasJob) {
+        String key = hasJob ? "placeholders.job_status.joined" : "placeholders.job_status.not_joined";
+        String defaultValue = hasJob ? "<#abffb3>✓ Active" : "<#ff6b6b>○ Not Joined";
+        return plugin.getConfig().getString(key, defaultValue);
+    }
+    
+    /**
      * Enum for boost calculation modes.
      */
     public enum BoostCalculationMode {
