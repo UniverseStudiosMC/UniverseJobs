@@ -67,6 +67,9 @@ public class ConfigManager {
         // Reload level up actions
         plugin.getLevelUpActionManager().reload(); // Reload batched reward manager
         plugin.getBatchedRewardManager().reloadConfig();
+        
+        // Reload block protection settings
+        plugin.getProtectionManager().reloadConfig();
     }
     
     /**

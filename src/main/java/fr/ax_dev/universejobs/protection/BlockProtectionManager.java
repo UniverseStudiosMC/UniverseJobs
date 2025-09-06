@@ -48,6 +48,14 @@ public class BlockProtectionManager {
     }
     
     /**
+     * Reload configuration settings.
+     */
+    public void reloadConfig() {
+        loadConfiguration();
+        checkNexoCompatibility();
+    }
+    
+    /**
      * Check if Nexo plugin is available for custom block compatibility.
      */
     private void checkNexoCompatibility() {
