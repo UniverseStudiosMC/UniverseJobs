@@ -84,6 +84,16 @@ progress-bar:
 block-protection:
   enabled: true
 
+# Global GUI default settings
+# These settings will be applied to all GUI items unless overridden
+gui-default-settings:
+  amount: 1
+  glow: false
+  hide-attributes: true
+  hide-enchants: true
+  sound: "UI_BUTTON_CLICK"  
+  custom-model-data: []
+
 placeholders:
   # Action placeholders - customize how action information is displayed
   action_type:
@@ -105,6 +115,7 @@ placeholders:
     TRADE: "<gradient:#DAA520:#B8860B><bold>💰 TRADE</bold></gradient>"
     SHEAR: "<gradient:#F0E68C:#BDB76B><bold>✂️ SHEAR</bold></gradient>"
     POTION: "<gradient:#9932CC:#8B008B><bold>🍵 POTION</bold></gradient>"
+    
   action_target: "<white>{value}"
   action_name: "<white>{value}"
   action_display_name: "<white>{value}"

@@ -274,6 +274,23 @@ public class JobActionsMenu extends BaseMenu {
                     line = replacePlaceholder(line, "action_xp", String.format("%.1f", boostedXp));
                     line = replacePlaceholder(line, "action_money", String.format("%.2f", boostedMoney));
                     
+                    // Add {+-} placeholder for positive/negative indication
+                    String xpSign = boostedXp >= 0 ? "+" : "";
+                    String moneySign = boostedMoney >= 0 ? "+" : "";
+                    
+                    // Replace {+-} with appropriate sign based on context
+                    if (line.contains("{+-}")) {
+                        // Determine which value this line is about
+                        if (line.contains("{action_xp}") || line.contains("XP") || line.toLowerCase().contains("xp")) {
+                            line = line.replace("{+-}", xpSign);
+                        } else if (line.contains("{action_money}") || line.contains("Money") || line.toLowerCase().contains("money") || line.contains("$")) {
+                            line = line.replace("{+-}", moneySign);
+                        } else {
+                            // Default to positive sign if context is unclear
+                            line = line.replace("{+-}", "+");
+                        }
+                    }
+                    
                     // Handle cooldown placeholder if exists
                     if (line.contains("{action_cooldown}")) {
                         // For now, using a placeholder value - you can implement actual cooldown logic

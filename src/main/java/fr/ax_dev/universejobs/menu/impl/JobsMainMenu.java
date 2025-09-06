@@ -94,16 +94,47 @@ public class JobsMainMenu extends BaseMenu implements InventoryHolder {
      */
     private void populateJobItems() {
         List<Integer> contentSlots = config.getContentSlots();
-        int itemsPerPage = contentSlots.size();
+        Map<String, Integer> configuredJobSlots = config.getJobSlots();
+        Set<Integer> usedSlots = new HashSet<>();
+        
+        // First, place jobs with specific slot configurations
+        for (Job job : availableJobs) {
+            if (configuredJobSlots.containsKey(job.getId())) {
+                int slot = configuredJobSlots.get(job.getId());
+                if (contentSlots.contains(slot) && !usedSlots.contains(slot)) {
+                    try {
+                        ItemStack jobItem = createJobItemOptimized(job);
+                        if (jobItem != null) {
+                            inventory.setItem(slot, jobItem);
+                            usedSlots.add(slot);
+                            logDebugPlacement(job, slot);
+                        }
+                    } catch (Exception e) {
+                        plugin.getLogger().warning("Failed to create job item for " + job.getId() + ": " + e.getMessage());
+                    }
+                }
+            }
+        }
+        
+        // Then, place remaining jobs in available content slots with pagination
+        List<Job> remainingJobs = availableJobs.stream()
+            .filter(job -> !configuredJobSlots.containsKey(job.getId()))
+            .collect(Collectors.toList());
+        
+        List<Integer> availableContentSlots = contentSlots.stream()
+            .filter(slot -> !usedSlots.contains(slot))
+            .collect(Collectors.toList());
+        
+        int itemsPerPage = availableContentSlots.size();
         int startIndex = currentPage * itemsPerPage;
-        int endIndex = Math.min(startIndex + itemsPerPage, availableJobs.size());
+        int endIndex = Math.min(startIndex + itemsPerPage, remainingJobs.size());
         
         for (int i = startIndex; i < endIndex; i++) {
-            Job job = availableJobs.get(i);
+            Job job = remainingJobs.get(i);
             int slotIndex = i - startIndex;
             
-            if (slotIndex < contentSlots.size()) {
-                int slot = contentSlots.get(slotIndex);
+            if (slotIndex < availableContentSlots.size()) {
+                int slot = availableContentSlots.get(slotIndex);
                 try {
                     ItemStack jobItem = createJobItemOptimized(job);
                     if (jobItem != null) {
@@ -261,14 +292,36 @@ public class JobsMainMenu extends BaseMenu implements InventoryHolder {
      * Find job from clicked slot efficiently.
      */
     private Job findJobFromSlot(int slot) {
-        List<Integer> contentSlots = config.getContentSlots();
-        int slotIndex = contentSlots.indexOf(slot);
+        Map<String, Integer> configuredJobSlots = config.getJobSlots();
         
+        // First check if this slot is configured for a specific job
+        for (Map.Entry<String, Integer> entry : configuredJobSlots.entrySet()) {
+            if (entry.getValue() == slot) {
+                String jobId = entry.getKey();
+                return availableJobs.stream()
+                    .filter(job -> job.getId().equals(jobId))
+                    .findFirst()
+                    .orElse(null);
+            }
+        }
+        
+        // Then check if it's a content slot with auto-placed jobs
+        List<Integer> contentSlots = config.getContentSlots();
+        Set<Integer> usedSlots = new HashSet<>(configuredJobSlots.values());
+        List<Integer> availableContentSlots = contentSlots.stream()
+            .filter(s -> !usedSlots.contains(s))
+            .collect(Collectors.toList());
+        
+        int slotIndex = availableContentSlots.indexOf(slot);
         if (slotIndex >= 0) {
-            int itemsPerPage = contentSlots.size();
+            List<Job> remainingJobs = availableJobs.stream()
+                .filter(job -> !configuredJobSlots.containsKey(job.getId()))
+                .collect(Collectors.toList());
+            
+            int itemsPerPage = availableContentSlots.size();
             int jobIndex = currentPage * itemsPerPage + slotIndex;
-            if (jobIndex < availableJobs.size()) {
-                return availableJobs.get(jobIndex);
+            if (jobIndex < remainingJobs.size()) {
+                return remainingJobs.get(jobIndex);
             }
         }
         
@@ -467,15 +520,36 @@ public class JobsMainMenu extends BaseMenu implements InventoryHolder {
     
     @Override
     protected boolean hasNextPage() {
-        int itemsPerPage = config.getContentSlots().size();
-        return (currentPage + 1) * itemsPerPage < availableJobs.size();
+        Map<String, Integer> configuredJobSlots = config.getJobSlots();
+        List<Job> remainingJobs = availableJobs.stream()
+            .filter(job -> !configuredJobSlots.containsKey(job.getId()))
+            .collect(Collectors.toList());
+        
+        List<Integer> contentSlots = config.getContentSlots();
+        Set<Integer> usedSlots = new HashSet<>(configuredJobSlots.values());
+        int availableSlots = (int) contentSlots.stream()
+            .filter(slot -> !usedSlots.contains(slot))
+            .count();
+        
+        return (currentPage + 1) * availableSlots < remainingJobs.size();
     }
     
     /**
      * Get total number of pages efficiently.
      */
     private int getTotalPages() {
-        int itemsPerPage = config.getContentSlots().size();
-        return (int) Math.ceil((double) availableJobs.size() / itemsPerPage);
+        Map<String, Integer> configuredJobSlots = config.getJobSlots();
+        List<Job> remainingJobs = availableJobs.stream()
+            .filter(job -> !configuredJobSlots.containsKey(job.getId()))
+            .collect(Collectors.toList());
+        
+        List<Integer> contentSlots = config.getContentSlots();
+        Set<Integer> usedSlots = new HashSet<>(configuredJobSlots.values());
+        int availableSlots = (int) contentSlots.stream()
+            .filter(slot -> !usedSlots.contains(slot))
+            .count();
+        
+        if (availableSlots == 0) return 1;
+        return (int) Math.ceil((double) remainingJobs.size() / availableSlots);
     }
 }

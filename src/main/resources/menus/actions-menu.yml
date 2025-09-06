@@ -2,7 +2,7 @@
 # This file controls the appearance and behavior of job actions menu
 
 # Menu title (supports MiniMessage and PlaceholderAPI)
-title: "<#FFD700><bold>{job_name} - Actions</bold>"
+title: "<#8fcc7a><bold>{job_name} <#5ba343>- Actions</bold>"
 
 # Menu size (must be multiple of 9, max 54)
 size: 54
@@ -29,8 +29,7 @@ fill-item:
 fill-slots: []
 
 # Content slots where action items will be placed
-content-slots: [10, 11, 12, 19, 20, 21]
-
+content-slots: [19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34]
 
 # Static items
 static-items:
@@ -44,7 +43,7 @@ static-items:
       - ""
       - "<gray>Total Actions: <#FFD700>{total_actions}"
     amount: 1
-    slots: [4]
+    slots: 49
     custom-model-data: 0
     glow: true
     hide-attributes: true
@@ -55,7 +54,8 @@ static-items:
 navigation-items:
   previous:
     enabled: true
-    material: ARROW
+    material: PLAYER_HEAD
+    player-head: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZGUxZGZjMTFhODM3MTExZDIyYjAwMWExNDQ2MWY5YTdmYzA5MzUyMmY4OGM1OGZhZWZkNmFkZWZmY2Q0ZTlhYiJ9fX0="
     display-name: "<#abffb3>← Previous Page"
     lore:
       - "<#FFD700>Click to go to the previous page"
@@ -65,15 +65,16 @@ navigation-items:
     amount: 1
     slots: [45]
     custom-model-data: 0
+    sound: "ITEM_BOOK_PAGE_TURN"
     glow: false
     hide-attributes: true
     hide-enchants: false
     action: previous_page
-    sound: "UI_BUTTON_CLICK"
     
   next:
     enabled: true
-    material: ARROW
+    material: PLAYER_HEAD
+    player-head: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvN2M2OWQ0MTA3NmE4ZGVhNGYwNmQzZjFhOWFjNDdjYzk5Njk4OGI3NGEwOTEzYWIyYWMxYTc0Y2FmNzA4MTkxOCJ9fX0="
     display-name: "<#abffb3>Next Page →"
     lore:
       - "<#FFD700>Click to go to the next page"
@@ -83,26 +84,26 @@ navigation-items:
     amount: 1
     slots: [53]
     custom-model-data: 0
+    sound: "ITEM_BOOK_PAGE_TURN"
     glow: false
     hide-attributes: true
     hide-enchants: false
     action: next_page
-    sound: "UI_BUTTON_CLICK"
     
   back:
     enabled: true
-    material: ARROW
+    material: arrow
     display-name: "<#abffb3>← Back to Job Menu"
     lore:
       - "<#FFD700>Click to go back to the job menu"
     amount: 1
     slots: [48]
     custom-model-data: 0
+    sound: "UI_BUTTON_CLICK"
     glow: false
     hide-attributes: true
     hide-enchants: false
     action: back
-    sound: "UI_BUTTON_CLICK"
     
   close:
     enabled: true
@@ -113,27 +114,11 @@ navigation-items:
     amount: 1
     slots: [50]
     custom-model-data: 0
+    sound: "BLOCK_CHEST_CLOSE"
     glow: false
     hide-attributes: true
     hide-enchants: false
     action: close
-    sound: "BLOCK_CHEST_CLOSE"
-    
-  info:
-    enabled: true
-    material: COMPASS
-    display-name: "<#FFD700>Menu Information"
-    lore:
-      - "<gray>Job: <#FFD700>{job_name}"
-      - "<gray>Total Actions: <#FFD700>{total_actions}"
-      - "<gray>Page: <#FFD700>{current_page}<gray>/<#FFD700>{total_pages}"
-    amount: 1
-    slots: [49]
-    custom-model-data: 0
-    glow: false
-    hide-attributes: true
-    hide-enchants: false
-    action: none
 
 # Action item format configuration
 # This defines how action items appear in the menu
@@ -148,22 +133,20 @@ navigation-items:
 # - {action_xp_multiplier} - current XP multiplier for this action
 # - {action_money_multiplier} - current MONEY multiplier for this action
 # - {action_money} - Money reward for this action
-# - {action_interact_type} - Interaction type (for BLOCK_INTERACT)
-# - {action_requirements} - Requirements summary
 # - {action_cooldown} - Cooldown information
+# - {+-}
 action-item-format:
   display_name_bonus: ""
   hide_line:
-    when_no_money: 6
-    when_no_xp: 5
+    when_no_money: 5
+    when_no_xp: 4
   lore_bonus:
-    - "{action_display_name}"
+    - "{action_display_name} <reset>({action_type}<reset>)"
     - "{action_lore}"
     - ""
-    - "<gray>Rewards:"
-    - "<gray>├ <gray>XP: <#abffb3>+{action_xp} {action_xp_multiplier}"
-    - "<gray>└ <gray>Money: <#FFD700>${action_money} {action_money_multiplier}"
-    - "{action_requirements}"
+    - "<#a7eb5e><bold>Rewards:"
+    - "<gray>├ <gray>XP : <#abffb3>{+-}{action_xp} {action_xp_multiplier}"
+    - "<gray>└ <gray>Money : <#FFD700>{+-}{action_money} {action_money_multiplier}"
     - ""
   # Item settings
   amount: 1
