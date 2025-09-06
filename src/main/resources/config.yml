@@ -129,5 +129,5 @@ placeholders:
   action_cooldown: "<gray>Cooldown: {value}s"
   # Job status placeholders - customize how job status is displayed in menus
   job_status:
-    joined: "<#abffb3>✓ Active"
-    not_joined: "<#ff6b6b>○ Not Joined"
+    joined: "<#abffb3>Active"
+    not_joined: "<#ff6b6b>Not Joined"
