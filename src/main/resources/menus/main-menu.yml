@@ -37,7 +37,6 @@ job-slots: []
   # farmer: 11   # Place farmer job in slot 11
   # builder: 12  # Place builder job in slot 12
   # hunter: 13   # Place hunter job in slot 13
-  
 
 # Static items (always shown in the menu)
 static-items:
@@ -80,6 +79,7 @@ static-items:
 job-item-format:
   use-job-icon: true
   display-name: "<bold>{job_name}</bold>"
+  glow: true
   lore:
     - "<gray>{job_description}"
     - ""
@@ -105,7 +105,6 @@ job-item-format:
       - ""
       - "<#FFD700>▶ Left-Click to open job menu"
       - "<#abffb3>▶ Right-Click to join"
-    glow: true
 
 # Navigation items
 navigation-items:
