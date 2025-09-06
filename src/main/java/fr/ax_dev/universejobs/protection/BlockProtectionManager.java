@@ -117,7 +117,12 @@ public class BlockProtectionManager {
      * @return true if the block was placed by a player
      */
     public boolean isPlayerPlacedBlock(Block block) {
-        if (!enabled) return false;
+        if (!enabled) {
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("Block protection disabled - allowing XP for block at " + block.getLocation());
+            }
+            return false;
+        }
         
         try {
             // Check if this block has the player-placed NBT tag
