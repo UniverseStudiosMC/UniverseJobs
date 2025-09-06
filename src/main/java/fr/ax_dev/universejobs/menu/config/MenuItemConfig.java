@@ -14,7 +14,7 @@ public class MenuItemConfig {
     private final String material;
     private final int amount;
     private final String displayName;
-    private final List<String> lore;
+    private List<String> lore;
     private final int customModelData;
     private final Map<String, Integer> enchantments;
     private final boolean glow;
@@ -28,10 +28,12 @@ public class MenuItemConfig {
     private final String playerHead;
     private final String sound;
     
-    // Alternative configuration for when player has job
-    private final String hasJobMaterial;
-    private final String hasJobDisplayName;
-    private final List<String> hasJobLore;
+    
+    // Else configuration for toggle-job
+    private final String elseMaterial;
+    private final String elseDisplayName;
+    private final List<String> elseLore;
+    private final int elseCustomModelData;
     
     public MenuItemConfig(ConfigurationSection config) {
         // Get global defaults
@@ -61,10 +63,20 @@ public class MenuItemConfig {
         this.playerHead = config.getString("player-head", "");
         this.sound = config.getString("sound", (String) defaults.getOrDefault("sound", ""));
         
-        // Load alternative job configurations
-        this.hasJobMaterial = config.getString("has-job-material", "");
-        this.hasJobDisplayName = config.getString("has-job-display-name", "");
-        this.hasJobLore = config.getStringList("has-job-lore");
+        
+        // Load else configuration for toggle-job
+        ConfigurationSection elseSection = config.getConfigurationSection("else");
+        if (elseSection != null) {
+            this.elseMaterial = elseSection.getString("material", "");
+            this.elseDisplayName = elseSection.getString("display-name", "");
+            this.elseLore = elseSection.getStringList("lore");
+            this.elseCustomModelData = elseSection.getInt("custom-model-data", 0);
+        } else {
+            this.elseMaterial = "";
+            this.elseDisplayName = "";
+            this.elseLore = new ArrayList<>();
+            this.elseCustomModelData = 0;
+        }
         
         // Load enchantments
         this.enchantments = new HashMap<>();
@@ -140,13 +152,15 @@ public class MenuItemConfig {
     public String getPlayerHead() { return playerHead; }
     public String getSound() { return sound; }
     
-    // Alternative job configuration getters
-    public String getHasJobMaterial() { return hasJobMaterial; }
-    public String getHasJobDisplayName() { return hasJobDisplayName; }
-    public List<String> getHasJobLore() { return new ArrayList<>(hasJobLore); }
     
-    public boolean hasJobAlternative() { 
-        return hasJobMaterial != null && !hasJobMaterial.isEmpty(); 
+    // Else configuration getters
+    public String getElseMaterial() { return elseMaterial; }
+    public String getElseDisplayName() { return elseDisplayName; }
+    public List<String> getElseLore() { return new ArrayList<>(elseLore); }
+    public int getElseCustomModelData() { return elseCustomModelData; }
+    
+    public boolean hasElseConfiguration() {
+        return elseMaterial != null && !elseMaterial.isEmpty();
     }
     
     /**

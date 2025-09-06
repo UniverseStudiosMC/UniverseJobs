@@ -45,12 +45,20 @@ public class AsyncXpMessageSender {
     }
     
     /**
-     * Internal message processing - runs fully async.
+     * Internal message processing - runs fully async.\n     * Supports cumulative gain tracking for BossBar messages.
      */
     private void sendXpMessageInternal(Player player, Job job, double xp, double money, PlayerJobData playerData) {
         if (!player.isOnline()) return;
         
         XpMessageSettings settings = job.getXpMessageSettings();
+        
+        // Handle cumulative gains for BossBar messages
+        double[] cumulativeGains = null;
+        boolean useCumulativeTracking = settings.getMessageType() == XpMessageSettings.MessageType.BOSSBAR;
+        
+        if (useCumulativeTracking) {
+            cumulativeGains = CumulativeGainTracker.addGains(player, xp, money);
+        }
         
         // Pre-calculate all values to avoid repeated calculations
         int currentLevel = playerData.getLevel(job.getId());
@@ -60,22 +68,52 @@ public class AsyncXpMessageSender {
         double progressPercent = (xpNeededForNext > 0) ? (currentXpInLevel / xpNeededForNext) * 100 : 100;
         double bossbarProgress = (xpNeededForNext > 0) ? (currentXpInLevel / xpNeededForNext) : 1.0;
         
-        // Build message once
-        String message = settings.processMessage(xp, money)
+        // Determine XP and money values to use for message
+        double displayXp, displayMoney, displayXpPerAction, displayMoneyPerAction;
+        
+        if (useCumulativeTracking && cumulativeGains != null) {
+            displayXp = cumulativeGains[0];           // totalXp
+            displayMoney = cumulativeGains[1];        // totalMoney
+            displayXpPerAction = cumulativeGains[2];  // xpPerAction
+            displayMoneyPerAction = cumulativeGains[3]; // moneyPerAction
+        } else {
+            displayXp = xp;
+            displayMoney = money;
+            displayXpPerAction = xp;
+            displayMoneyPerAction = money;
+        }
+        
+        // Build message once with all placeholders
+        String message = settings.processMessage(displayXp, displayMoney)
                 .replace("{job}", job.getName())
                 .replace("{level}", String.valueOf(currentLevel))
                 .replace("{progress}", String.format("%.1f", progressPercent))
                 .replace("{current_xp}", String.format("%.1f", currentXpInLevel))
                 .replace("{needed_xp}", String.format("%.1f", xpNeededForNext))
-                .replace("{player}", player.getName());
+                .replace("{player}", player.getName())
+                .replace("{xp_per_action}", formatNumber(displayXpPerAction))
+                .replace("{money_per_action}", formatNumber(displayMoneyPerAction));
         
         // Process PlaceholderAPI if available (async safe)
         message = processPlaceholderAPI(player, message);
         
         // Send message using pure async/packet approach with custom tick interval
         switch (settings.getMessageType()) {
-            case CHAT -> PacketUtils.sendChatAsync(player, message);
-            case ACTIONBAR -> PacketUtils.sendActionBarAsync(player, message, settings.getActionbarDuration(), settings.getTickUpdateInterval());
+            case CHAT -> {
+                PacketUtils.sendChatAsync(player, message);
+                // Clear cumulative gains for chat messages (immediate display)
+                if (useCumulativeTracking) {
+                    CumulativeGainTracker.clearGains(player);
+                }
+            }
+            case ACTIONBAR -> {
+                PacketUtils.sendActionBarAsync(player, message, settings.getActionbarDuration(), settings.getTickUpdateInterval());
+                // Clear after duration for actionbar
+                if (useCumulativeTracking) {
+                    PacketUtils.runDelayed(() -> CumulativeGainTracker.clearGains(player), 
+                                         settings.getActionbarDuration() * 50L);
+                }
+            }
             case BOSSBAR -> {
                 double finalProgress = settings.shouldShowProgress() ? bossbarProgress : 1.0;
                 PacketUtils.sendBossBarAsync(
@@ -87,9 +125,25 @@ public class AsyncXpMessageSender {
                     settings.getBossbarDuration(),
                     settings.getTickUpdateInterval()
                 );
+                // Clear gains after BossBar expires
+                PacketUtils.runDelayed(() -> CumulativeGainTracker.clearGains(player), 
+                                     settings.getBossbarDuration() * 50L);
             }
-            case TITLE -> PacketUtils.sendTitleAsync(player, message, settings.getTitleFadeIn(), settings.getTitleStay(), settings.getTitleFadeOut(), settings.getTickUpdateInterval());
-            default -> PacketUtils.sendActionBarAsync(player, message, settings.getActionbarDuration(), settings.getTickUpdateInterval());
+            case TITLE -> {
+                PacketUtils.sendTitleAsync(player, message, settings.getTitleFadeIn(), settings.getTitleStay(), settings.getTitleFadeOut(), settings.getTickUpdateInterval());
+                // Clear after title duration
+                if (useCumulativeTracking) {
+                    long totalDuration = (settings.getTitleFadeIn() + settings.getTitleStay() + settings.getTitleFadeOut()) * 50L;
+                    PacketUtils.runDelayed(() -> CumulativeGainTracker.clearGains(player), totalDuration);
+                }
+            }
+            default -> {
+                PacketUtils.sendActionBarAsync(player, message, settings.getActionbarDuration(), settings.getTickUpdateInterval());
+                if (useCumulativeTracking) {
+                    PacketUtils.runDelayed(() -> CumulativeGainTracker.clearGains(player), 
+                                         settings.getActionbarDuration() * 50L);
+                }
+            }
         }
     }
     
@@ -128,6 +182,7 @@ public class AsyncXpMessageSender {
      */
     public void cleanupPlayer(Player player) {
         PacketUtils.cleanupPlayer(player.getUniqueId());
+        CumulativeGainTracker.clearGains(player);
     }
     
     /**
@@ -135,6 +190,7 @@ public class AsyncXpMessageSender {
      */
     public void shutdown() {
         PacketUtils.shutdown();
+        CumulativeGainTracker.clearAllGains();
     }
     
     /**
@@ -150,6 +206,24 @@ public class AsyncXpMessageSender {
             return me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, message);
         } catch (Exception e) {
             return message; // Fallback to original message
+        }
+    }
+    
+    /**
+     * Format a number to show decimals only when necessary.
+     */
+    private String formatNumber(double value) {
+        if (value == Math.floor(value)) {
+            return String.valueOf((int) value);
+        } else {
+            String formatted = String.format("%.2f", value);
+            while (formatted.endsWith("0") && formatted.contains(".")) {
+                formatted = formatted.substring(0, formatted.length() - 1);
+            }
+            if (formatted.endsWith(".")) {
+                formatted = formatted.substring(0, formatted.length() - 1);
+            }
+            return formatted;
         }
     }
     

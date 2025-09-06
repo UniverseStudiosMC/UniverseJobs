@@ -170,15 +170,15 @@ public class SingleJobMenu extends BaseMenu {
             return createMenuItem(baseConfig, cachedPlaceholders);
         }
         
-        // For "leave" state, use alternative configuration if available
-        if (baseConfig.hasJobAlternative()) {
+        // For "leave" state, use else configuration if available, otherwise fallback to has-job alternative
+        if (baseConfig.hasElseConfiguration()) {
             Map<String, Object> leaveConfig = new HashMap<>();
             leaveConfig.put("enabled", true);
-            leaveConfig.put("material", baseConfig.getHasJobMaterial());
-            leaveConfig.put("display-name", baseConfig.getHasJobDisplayName());
-            leaveConfig.put("lore", baseConfig.getHasJobLore());
+            leaveConfig.put("material", baseConfig.getElseMaterial());
+            leaveConfig.put("display-name", baseConfig.getElseDisplayName());
+            leaveConfig.put("lore", baseConfig.getElseLore());
             leaveConfig.put("amount", baseConfig.getAmount());
-            leaveConfig.put("custom-model-data", baseConfig.getCustomModelData());
+            leaveConfig.put("custom-model-data", baseConfig.getElseCustomModelData());
             leaveConfig.put("glow", baseConfig.isGlow());
             leaveConfig.put("hide-attributes", baseConfig.isHideAttributes());
             leaveConfig.put("hide-enchants", baseConfig.isHideEnchants());
