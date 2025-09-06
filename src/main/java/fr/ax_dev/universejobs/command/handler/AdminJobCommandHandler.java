@@ -763,7 +763,7 @@ public class AdminJobCommandHandler extends JobCommandHandler {
         plugin.getFoliaManager().runAsync(() -> {
             try {
                 plugin.getLogger().info("Reloading main configuration...");
-                plugin.getConfigManager().loadConfig();
+                plugin.getConfigManager().reloadConfig();
                 
                 plugin.getLogger().info("Reloading jobs and XP curves...");
                 plugin.getJobManager().reloadJobs();

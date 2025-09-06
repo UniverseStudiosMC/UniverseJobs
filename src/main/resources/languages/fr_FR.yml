@@ -251,6 +251,7 @@ commands:
     # Reload
     reload-start: "&6Rechargement d'UniverseJobs..."
     reload-success: "&aUniverseJobs rechargé avec succès !"
+    reload-failed: "&cÉchec du rechargement : {error}"
 
 # ----------------=
 # SYSTÈME DE RÉCOMPENSES

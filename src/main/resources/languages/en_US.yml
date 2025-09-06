@@ -249,6 +249,7 @@ commands:
     # Reload
     reload-start: "&6Reloading UniverseJobs..."
     reload-success: "&aUniverseJobs reloaded successfully!"
+    reload-failed: "&cReload failed: {error}"
 
 # ----------------=
 # REWARDS SYSTEM
