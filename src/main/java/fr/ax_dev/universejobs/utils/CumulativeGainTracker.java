@@ -7,8 +7,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Tracks cumulative XP and money gains per player for BossBar messages.
- * Accumulates gains until BossBar duration expires.
+ * Tracks cumulative XP and money gains per player for BossBar and ActionBar messages.
+ * Accumulates gains until display duration expires.
  */
 public class CumulativeGainTracker {
     
@@ -47,7 +47,7 @@ public class CumulativeGainTracker {
     
     /**
      * Check if player has gains within the specified duration (in milliseconds).
-     * This prevents creating multiple BossBars for rapid actions.
+     * This prevents creating multiple BossBars/ActionBars for rapid actions.
      */
     public static boolean hasRecentGains(Player player, long durationMs) {
         PlayerGains gains = PLAYER_GAINS.get(player.getUniqueId());

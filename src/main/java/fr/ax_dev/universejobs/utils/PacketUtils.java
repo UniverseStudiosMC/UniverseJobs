@@ -37,6 +37,10 @@ public class PacketUtils {
     private static final Map<UUID, Long> BOSSBAR_CREATION_TIMES = new ConcurrentHashMap<>();
     private static final Object BOSSBAR_LOCK = new Object();
     
+    // ActionBar management - similar to BossBar
+    private static final Map<UUID, CompletableFuture<Void>> ACTIONBAR_CLEANUPS = new ConcurrentHashMap<>();
+    private static final Map<UUID, Long> ACTIONBAR_CREATION_TIMES = new ConcurrentHashMap<>();
+    
     // Packet reflection cache
     private static Class<?> CLIENTBOUND_BOSS_EVENT_PACKET_CLASS;
     private static Constructor<?> BOSS_EVENT_PACKET_CONSTRUCTOR;
@@ -55,7 +59,7 @@ public class PacketUtils {
     }
     
     /**
-     * Send actionbar message using pure async approach.
+     * Send actionbar message using pure async approach with cumulative support.
      * No scheduler tasks, immediate packet sending.
      */
     public static void sendActionBarAsync(Player player, String message, int durationTicks) {
@@ -63,28 +67,48 @@ public class PacketUtils {
     }
     
     /**
-     * Send actionbar message with custom tick update interval.
-     * Allows control over how often the actionbar updates.
+     * Send actionbar message with custom tick update interval and cumulative gains support.
+     * Allows control over how often the actionbar updates and accumulates gains.
      */
     public static void sendActionBarAsync(Player player, String message, int durationTicks, int tickUpdateInterval) {
         if (!player.isOnline()) return;
         
+        UUID playerId = player.getUniqueId();
+        
+        // Check if player has active ActionBar and update existing one
+        CompletableFuture<Void> existingCleanup = ACTIONBAR_CLEANUPS.get(playerId);
+        if (existingCleanup != null) {
+            // Cancel old cleanup safely
+            cancelOldActionBarCleanupSafely(playerId);
+        }
+        
         // Send immediately using Bukkit API
         player.sendActionBar(MessageUtils.parseMessage(message));
         
-        // Schedule cleanup/updates using async executor
+        // Schedule cleanup/updates using async executor with timestamp tracking
         if (durationTicks > 0) {
             long delayMs = durationTicks * 50L; // Convert ticks to milliseconds
             long tickIntervalMs = tickUpdateInterval * 50L;
+            final long creationTime = System.currentTimeMillis();
+            ACTIONBAR_CREATION_TIMES.put(playerId, creationTime);
+            
+            CompletableFuture<Void> cleanup;
             
             if (tickUpdateInterval != 20 && tickIntervalMs < delayMs) {
                 // Create a task that updates the actionbar at specified intervals
-                ASYNC_EXECUTOR.schedule(() -> {
+                cleanup = CompletableFuture.runAsync(() -> {
                     try {
                         long endTime = System.currentTimeMillis() + delayMs;
                         
                         while (System.currentTimeMillis() < endTime && player.isOnline()) {
                             Thread.sleep(tickIntervalMs);
+                            
+                            // Check if this cleanup is still valid
+                            Long currentCreationTime = ACTIONBAR_CREATION_TIMES.get(playerId);
+                            if (currentCreationTime == null || !currentCreationTime.equals(creationTime)) {
+                                // A newer ActionBar was sent, this one is obsolete
+                                return;
+                            }
                             
                             if (player.isOnline()) {
                                 // Refresh the actionbar message
@@ -94,9 +118,14 @@ public class PacketUtils {
                             }
                         }
                         
-                        // Final cleanup - clear actionbar
+                        // Final cleanup - clear actionbar if this is still the active one
                         if (player.isOnline()) {
-                            player.sendActionBar(MessageUtils.parseMessage(""));
+                            Long currentCreationTime = ACTIONBAR_CREATION_TIMES.get(playerId);
+                            if (currentCreationTime != null && currentCreationTime.equals(creationTime)) {
+                                player.sendActionBar(MessageUtils.parseMessage(""));
+                                ACTIONBAR_CLEANUPS.remove(playerId);
+                                ACTIONBAR_CREATION_TIMES.remove(playerId);
+                            }
                         }
                         
                     } catch (InterruptedException e) {
@@ -104,15 +133,31 @@ public class PacketUtils {
                     } catch (Exception e) {
                         // Ignore cleanup errors
                     }
-                }, 0, TimeUnit.MILLISECONDS);
+                }, ASYNC_EXECUTOR);
             } else {
                 // Standard cleanup without intervals
-                ASYNC_EXECUTOR.schedule(() -> {
-                    if (player.isOnline()) {
-                        player.sendActionBar(MessageUtils.parseMessage(""));
+                cleanup = CompletableFuture.runAsync(() -> {
+                    try {
+                        Thread.sleep(delayMs);
+                        
+                        // Check if this cleanup is still valid
+                        Long currentCreationTime = ACTIONBAR_CREATION_TIMES.get(playerId);
+                        if (currentCreationTime != null && currentCreationTime.equals(creationTime)) {
+                            if (player.isOnline()) {
+                                player.sendActionBar(MessageUtils.parseMessage(""));
+                            }
+                            ACTIONBAR_CLEANUPS.remove(playerId);
+                            ACTIONBAR_CREATION_TIMES.remove(playerId);
+                        }
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    } catch (Exception e) {
+                        // Ignore cleanup errors
                     }
-                }, delayMs, TimeUnit.MILLISECONDS);
+                }, ASYNC_EXECUTOR);
             }
+            
+            ACTIONBAR_CLEANUPS.put(playerId, cleanup);
         }
     }
     
@@ -397,6 +442,21 @@ public class PacketUtils {
     }
     
     /**
+     * Cancel old ActionBar cleanup task safely without causing CancellationException.
+     */
+    private static void cancelOldActionBarCleanupSafely(UUID playerId) {
+        CompletableFuture<Void> oldCleanup = ACTIONBAR_CLEANUPS.remove(playerId);
+        if (oldCleanup != null && !oldCleanup.isDone()) {
+            try {
+                oldCleanup.cancel(false); // Use cancel(false) instead of cancel(true) to avoid interrupting
+            } catch (Exception ignored) {
+                // If cancellation fails, just update the timestamp to invalidate it
+                ACTIONBAR_CREATION_TIMES.put(playerId, System.currentTimeMillis());
+            }
+        }
+    }
+    
+    /**
      * Create chat component from string for modern versions.
      */
     private static Object createChatComponent(String message) throws Exception {
@@ -662,8 +722,11 @@ public class PacketUtils {
      * Clean up all resources for a player.
      */
     public static void cleanupPlayer(UUID playerId) {
-        // Use safe cancellation method
+        // Use safe cancellation method for BossBar
         cancelOldCleanupSafely(playerId);
+        
+        // Use safe cancellation method for ActionBar
+        cancelOldActionBarCleanupSafely(playerId);
         
         // Clean up packet-based BossBar
         UUID packetBossBarId = PACKET_BOSSBAR_IDS.remove(playerId);
@@ -682,8 +745,17 @@ public class PacketUtils {
             } catch (Exception ignored) {}
         }
         
-        CumulativeGainTracker.clearGains(Bukkit.getPlayer(playerId));
+        // Clear ActionBar for player
+        Player player = Bukkit.getPlayer(playerId);
+        if (player != null && player.isOnline()) {
+            try {
+                player.sendActionBar(MessageUtils.parseMessage(""));
+            } catch (Exception ignored) {}
+        }
+        
+        CumulativeGainTracker.clearGains(player);
         BOSSBAR_CREATION_TIMES.remove(playerId);
+        ACTIONBAR_CREATION_TIMES.remove(playerId);
     }
     
     /**
@@ -732,6 +804,8 @@ public class PacketUtils {
         // Don't cancel futures to avoid CancellationException, just clear
         BOSSBAR_CLEANUPS.clear();
         BOSSBAR_CREATION_TIMES.clear();
+        ACTIONBAR_CLEANUPS.clear();
+        ACTIONBAR_CREATION_TIMES.clear();
         
         // Clean up packet-based bossbars
         PACKET_BOSSBAR_IDS.entrySet().forEach(entry -> {
@@ -749,6 +823,16 @@ public class PacketUtils {
             } catch (Exception ignored) {}
         });
         ACTIVE_BOSSBARS.clear();
+        
+        // Clear all ActionBars
+        ACTIONBAR_CREATION_TIMES.keySet().forEach(playerId -> {
+            Player player = Bukkit.getPlayer(playerId);
+            if (player != null && player.isOnline()) {
+                try {
+                    player.sendActionBar(MessageUtils.parseMessage(""));
+                } catch (Exception ignored) {}
+            }
+        });
         
         CumulativeGainTracker.clearAllGains();
         
