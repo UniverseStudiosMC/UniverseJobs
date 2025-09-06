@@ -514,26 +514,35 @@ public class PacketUtils {
             }
         }
         
-        // Smart cleanup timer for both packet and Bukkit BossBars
+        // Smart cleanup timer with timestamp validation
         if (durationTicks > 0) {
             long delayMs = durationTicks * 50L;
-            final UUID finalBossBarId = PACKET_BOSSBAR_IDS.get(playerId);
-            final BossBar finalBossBar = ACTIVE_BOSSBARS.get(playerId);
+            final long creationTime = System.currentTimeMillis();
             
+            final CompletableFuture<Void>[] cleanupHolder = new CompletableFuture[1];
             CompletableFuture<Void> cleanup = CompletableFuture.runAsync(() -> {
                 try {
                     Thread.sleep(delayMs);
                     
+                    // Check if this cleanup is still valid (no new BossBar created after this one)
+                    CompletableFuture<Void> currentCleanup = BOSSBAR_CLEANUPS.get(playerId);
+                    if (currentCleanup != cleanupHolder[0]) {
+                        // A newer cleanup was scheduled, this one is obsolete
+                        return;
+                    }
+                    
                     // Clean up packet BossBar if exists
-                    if (finalBossBarId != null && PACKET_BOSSBAR_IDS.get(playerId) == finalBossBarId) {
-                        sendRemoveBossBarPacket(player, finalBossBarId);
+                    UUID currentBossBarId = PACKET_BOSSBAR_IDS.get(playerId);
+                    if (currentBossBarId != null) {
+                        sendRemoveBossBarPacket(player, currentBossBarId);
                         PACKET_BOSSBAR_IDS.remove(playerId);
                     }
                     
                     // Clean up Bukkit BossBar if exists
-                    if (finalBossBar != null && ACTIVE_BOSSBARS.get(playerId) == finalBossBar) {
+                    BossBar currentBossBar = ACTIVE_BOSSBARS.get(playerId);
+                    if (currentBossBar != null) {
                         try {
-                            finalBossBar.removePlayer(player);
+                            currentBossBar.removePlayer(player);
                         } catch (Exception ignored) {}
                         ACTIVE_BOSSBARS.remove(playerId);
                     }
@@ -547,6 +556,7 @@ public class PacketUtils {
                 }
             }, ASYNC_EXECUTOR);
             
+            cleanupHolder[0] = cleanup;
             BOSSBAR_CLEANUPS.put(playerId, cleanup);
         }
     }
