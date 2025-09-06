@@ -13,6 +13,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.UUID;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * High-performance packet-based message sender.
@@ -30,6 +31,7 @@ public class PacketUtils {
     // BossBar management - no scheduler tasks needed
     private static final Map<UUID, BossBar> ACTIVE_BOSSBARS = new ConcurrentHashMap<>();
     private static final Map<UUID, CompletableFuture<Void>> BOSSBAR_CLEANUPS = new ConcurrentHashMap<>();
+    private static final Map<UUID, Consumer<Player>> BOSSBAR_CLEANUP_CALLBACKS = new ConcurrentHashMap<>();
     private static final Object BOSSBAR_LOCK = new Object();
     
     static {
@@ -108,11 +110,29 @@ public class PacketUtils {
     }
     
     /**
+     * Send bossbar message with cleanup callback.
+     */
+    public static void sendBossBarAsync(Player player, String message, BarColor color, 
+                                      BarStyle style, double progress, int durationTicks, 
+                                      int tickUpdateInterval, Consumer<Player> cleanupCallback) {
+        sendBossBarAsyncInternal(player, message, color, style, progress, durationTicks, tickUpdateInterval, cleanupCallback);
+    }
+    
+    /**
      * Send bossbar message with custom tick update interval.
      * Allows control over how often the bossbar updates.
      */
     public static void sendBossBarAsync(Player player, String message, BarColor color, 
                                       BarStyle style, double progress, int durationTicks, int tickUpdateInterval) {
+        sendBossBarAsyncInternal(player, message, color, style, progress, durationTicks, tickUpdateInterval, null);
+    }
+    
+    /**
+     * Internal method for sending bossbar messages with optional cleanup callback.
+     */
+    private static void sendBossBarAsyncInternal(Player player, String message, BarColor color, 
+                                      BarStyle style, double progress, int durationTicks, int tickUpdateInterval, 
+                                      Consumer<Player> cleanupCallback) {
         if (!player.isOnline()) return;
         
         UUID playerId = player.getUniqueId();
@@ -125,6 +145,16 @@ public class PacketUtils {
                 existingCleanup.cancel(true);
             }
             
+            // Execute existing cleanup callback if any
+            Consumer<Player> existingCallback = BOSSBAR_CLEANUP_CALLBACKS.remove(playerId);
+            if (existingCallback != null) {
+                try {
+                    existingCallback.accept(player);
+                } catch (Exception e) {
+                    // Ignore callback errors
+                }
+            }
+            
             // Clean up any existing bossbar first
             BossBar existingBar = ACTIVE_BOSSBARS.remove(playerId);
             if (existingBar != null) {
@@ -133,6 +163,11 @@ public class PacketUtils {
                 } catch (Exception e) {
                     // Ignore cleanup errors
                 }
+            }
+            
+            // Store new cleanup callback
+            if (cleanupCallback != null) {
+                BOSSBAR_CLEANUP_CALLBACKS.put(playerId, cleanupCallback);
             }
             
             // Create new bossbar
@@ -187,6 +222,16 @@ public class PacketUtils {
                                     // Force remove even if cleanup fails
                                     ACTIVE_BOSSBARS.remove(playerId);
                                 }
+                                
+                                // Execute cleanup callback
+                                Consumer<Player> callback = BOSSBAR_CLEANUP_CALLBACKS.remove(playerId);
+                                if (callback != null) {
+                                    try {
+                                        callback.accept(player);
+                                    } catch (Exception e) {
+                                        // Ignore callback errors
+                                    }
+                                }
                             }
                             BOSSBAR_CLEANUPS.remove(playerId);
                         }
@@ -213,6 +258,16 @@ public class PacketUtils {
                                 } catch (Exception e) {
                                     // Force remove even if cleanup fails
                                     ACTIVE_BOSSBARS.remove(playerId);
+                                }
+                                
+                                // Execute cleanup callback
+                                Consumer<Player> callback = BOSSBAR_CLEANUP_CALLBACKS.remove(playerId);
+                                if (callback != null) {
+                                    try {
+                                        callback.accept(player);
+                                    } catch (Exception e) {
+                                        // Ignore callback errors
+                                    }
                                 }
                             }
                             BOSSBAR_CLEANUPS.remove(playerId);
@@ -325,6 +380,9 @@ public class PacketUtils {
                 cleanup.cancel(true);
             }
             
+            // Remove cleanup callback without executing it (player disconnected)
+            BOSSBAR_CLEANUP_CALLBACKS.remove(playerId);
+            
             // Remove and cleanup bossbar
             BossBar bossBar = ACTIVE_BOSSBARS.remove(playerId);
             if (bossBar != null) {
@@ -380,6 +438,9 @@ public class PacketUtils {
         // Cancel all pending cleanups
         BOSSBAR_CLEANUPS.values().forEach(future -> future.cancel(false));
         BOSSBAR_CLEANUPS.clear();
+        
+        // Clear all cleanup callbacks
+        BOSSBAR_CLEANUP_CALLBACKS.clear();
         
         // Clean up all bossbars
         ACTIVE_BOSSBARS.values().forEach(bar -> {

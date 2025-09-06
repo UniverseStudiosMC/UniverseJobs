@@ -116,6 +116,11 @@ public class AsyncXpMessageSender {
             }
             case BOSSBAR -> {
                 double finalProgress = settings.shouldShowProgress() ? bossbarProgress : 1.0;
+                long bossbarDurationMs = settings.getBossbarDuration() * 50L;
+                
+                // Check if there's already a recent BossBar to prevent duration multiplication
+                boolean hasRecentBossBar = CumulativeGainTracker.hasRecentGains(player, bossbarDurationMs);
+                
                 PacketUtils.sendBossBarAsync(
                     player,
                     message,
@@ -123,11 +128,10 @@ public class AsyncXpMessageSender {
                     settings.toBukkitBarStyle(),
                     finalProgress,
                     settings.getBossbarDuration(),
-                    settings.getTickUpdateInterval()
+                    settings.getUpdateRating(),
+                    // Callback to clear gains when BossBar is removed
+                    p -> CumulativeGainTracker.clearGains(p)
                 );
-                // Clear gains after BossBar expires
-                PacketUtils.runDelayed(() -> CumulativeGainTracker.clearGains(player), 
-                                     settings.getBossbarDuration() * 50L);
             }
             case TITLE -> {
                 PacketUtils.sendTitleAsync(player, message, settings.getTitleFadeIn(), settings.getTitleStay(), settings.getTitleFadeOut(), settings.getTickUpdateInterval());

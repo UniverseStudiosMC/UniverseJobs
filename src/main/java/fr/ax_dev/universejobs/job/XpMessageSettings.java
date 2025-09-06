@@ -46,6 +46,7 @@ public class XpMessageSettings {
     
     // TICK update interval settings
     private final int tickUpdateInterval;
+    private final int updateRating;
     
     /**
      * Create XP message settings from configuration.
@@ -69,6 +70,7 @@ public class XpMessageSettings {
             this.titleFadeOut = 20;
             this.titleStay = 70;
             this.tickUpdateInterval = 20; // Default: update every second
+            this.updateRating = 20; // Default: same as tick update interval
         } else {
             // Parse configuration
             this.messageType = parseMessageType(config);
@@ -95,6 +97,7 @@ public class XpMessageSettings {
             
             // Tick update interval
             this.tickUpdateInterval = parseTickUpdateInterval(config, optionsSection);
+            this.updateRating = parseUpdateRating(config, optionsSection);
         }
     }
     
@@ -231,6 +234,38 @@ public class XpMessageSettings {
         
         // Validate bounds: minimum 1 tick, maximum 60 seconds (1200 ticks)
         return Math.max(1, Math.min(1200, tickInterval));
+    }
+    
+    /**
+     * Parse update rating from config.
+     * Supports both string and int values.
+     * 
+     * @param config The main config section
+     * @param optionsSection The options config section
+     * @return The update rating (minimum 1, maximum 1200 = 1 minute)
+     */
+    private int parseUpdateRating(ConfigurationSection config, ConfigurationSection optionsSection) {
+        int updateRating = 20; // Default: 1 second
+        
+        // Try to get from options section first
+        if (optionsSection != null) {
+            Object ratingObj = optionsSection.get("update-rating");
+            if (ratingObj instanceof String) {
+                try {
+                    updateRating = Integer.parseInt((String) ratingObj);
+                } catch (NumberFormatException e) {
+                    updateRating = 20; // Default fallback
+                }
+            } else {
+                updateRating = optionsSection.getInt("update-rating", 20);
+            }
+        } else {
+            // Fallback to main config
+            updateRating = config.getInt("update-rating", config.getInt("options.update-rating", 20));
+        }
+        
+        // Validate bounds: minimum 1 tick, maximum 60 seconds (1200 ticks)
+        return Math.max(1, Math.min(1200, updateRating));
     }
     
     /**
@@ -373,6 +408,16 @@ public class XpMessageSettings {
     }
     
     /**
+     * Get the update rating for messages.
+     * This defines how often the message should be refreshed.
+     * 
+     * @return Update rating in ticks (1-1200, default 20)
+     */
+    public int getUpdateRating() {
+        return updateRating;
+    }
+    
+    /**
      * Process the message text by replacing custom placeholders.
      * Replaces {message_xp} and {message_money} with their respective formats.
      * Also handles {+-} placeholder for positive/negative values.
@@ -384,12 +429,13 @@ public class XpMessageSettings {
     public String processMessage(double xp, double money) {
         String processedText = this.text;
         
-        // Process XP message with {+-} support
+        // Process XP message with {+-} support and MiniMessage parsing
         String xpSign = xp >= 0 ? "+" : "";
         String formattedXp = formatNumber(xp);
         String xpMessage = xpMessageFormat
             .replace("{+-}", xpSign)
             .replace("{xp}", formattedXp);
+        // XP message supports MiniMessage - will be processed in AsyncXpMessageSender
         
         if (xp != 0) {
             processedText = processedText.replace("{message_xp}", xpMessage);
@@ -397,12 +443,13 @@ public class XpMessageSettings {
             processedText = processedText.replace("{message_xp}", "");
         }
         
-        // Process money message with {+-} support
+        // Process money message with {+-} support and MiniMessage parsing
         String moneySign = money >= 0 ? "+" : "";
         String formattedMoney = formatNumber(money);
         String moneyMessage = moneyMessageFormat
             .replace("{+-}", moneySign)
             .replace("{money}", formattedMoney);
+        // Money message supports MiniMessage - will be processed in AsyncXpMessageSender
         
         if (money != 0) {
             processedText = processedText.replace("{message_money}", moneyMessage);
@@ -428,6 +475,8 @@ public class XpMessageSettings {
             }
             processedText = processedText.replace("{+-}", contextualSign);
         }
+        
+        // Final message supports MiniMessage - will be processed in AsyncXpMessageSender
         
         return processedText;
     }
