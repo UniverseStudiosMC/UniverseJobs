@@ -13,7 +13,6 @@ import fr.ax_dev.universejobs.utils.AsyncXpMessageSender;
 import fr.ax_dev.universejobs.cache.ConfigurationCache;
 import fr.ax_dev.universejobs.cache.PlayerJobCache;
 import fr.ax_dev.universejobs.rewards.BatchedRewardManager;
-import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -757,22 +756,6 @@ public class ActionProcessor {
                 .replace("{amount}", String.valueOf(amount));
         
         plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), command);
-    }
-    
-    /**
-     * Get Vault economy instance if available.
-     * 
-     * @return Economy instance or null
-     */
-    private Economy getVaultEconomy() {
-        try {
-            if (plugin.getServer().getServicesManager().getRegistration(Economy.class) != null) {
-                return plugin.getServer().getServicesManager().getRegistration(Economy.class).getProvider();
-            }
-        } catch (Exception e) {
-            // Class not found or other error
-        }
-        return null;
     }
     
     /**

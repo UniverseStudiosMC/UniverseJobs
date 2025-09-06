@@ -3,6 +3,7 @@ package fr.ax_dev.universejobs.levelup;
 import fr.ax_dev.universejobs.UniverseJobs;
 import fr.ax_dev.universejobs.condition.ConditionResult;
 import fr.ax_dev.universejobs.job.Job;
+import fr.ax_dev.universejobs.utils.MessageUtils;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -204,7 +205,7 @@ public class SimpleLevelUpActionManager {
         
         for (String message : messages) {
             String processedMessage = processPlaceholders(message, player, job, level, oldLevel);
-            ConditionResult.allow(processedMessage, null, null).execute(player);
+            MessageUtils.sendMessage(player, processedMessage);
         }
     }
     
@@ -246,14 +247,18 @@ public class SimpleLevelUpActionManager {
      * Execute boss bar action using existing XpMessageSender.
      */
     private void executeBossBarAction(Player player, Job job, int level, int oldLevel, LevelUpActionConfig config) {
-        // Use existing XpMessageSender for boss bar functionality
-        // This would require extending XpMessageSender to accept custom boss bar messages
-        // For now, we can create a simple implementation
         String title = processPlaceholders(config.getConfig().getString(TITLE_KEY, "Level Up!"), player, job, level, oldLevel);
         
-        // Simple title as fallback (since we're simplifying)
         if (title != null && !title.isEmpty()) {
-            player.sendTitle("§6§lLEVEL UP!", title, 10, 70, 20);
+            player.showTitle(net.kyori.adventure.title.Title.title(
+                MessageUtils.parseMessage("<#FFD700><bold>LEVEL UP!</bold>"),
+                MessageUtils.parseMessage(title),
+                net.kyori.adventure.title.Title.Times.times(
+                    java.time.Duration.ofMillis(500L),
+                    java.time.Duration.ofMillis(3500L),
+                    java.time.Duration.ofMillis(1000L)
+                )
+            ));
         }
     }
     
@@ -271,7 +276,7 @@ public class SimpleLevelUpActionManager {
         
         for (String message : messages) {
             String processedMessage = processPlaceholders(message, player, job, level, oldLevel);
-            plugin.getServer().broadcastMessage(processedMessage);
+            plugin.getServer().broadcast(MessageUtils.parseMessage(processedMessage));
         }
     }
     
@@ -282,7 +287,15 @@ public class SimpleLevelUpActionManager {
         int stay = config.getConfig().getInt("stay", 70);
         int fadeOut = config.getConfig().getInt("fade-out", 20);
         
-        player.sendTitle(title, subtitle, fadeIn, stay, fadeOut);
+        player.showTitle(net.kyori.adventure.title.Title.title(
+            MessageUtils.parseMessage(title),
+            MessageUtils.parseMessage(subtitle),
+            net.kyori.adventure.title.Title.Times.times(
+                java.time.Duration.ofMillis(fadeIn * 50L),
+                java.time.Duration.ofMillis(stay * 50L),
+                java.time.Duration.ofMillis(fadeOut * 50L)
+            )
+        ));
     }
     
     private void executeParticleAction(Player player, Job job, int level, int oldLevel, LevelUpActionConfig config) {

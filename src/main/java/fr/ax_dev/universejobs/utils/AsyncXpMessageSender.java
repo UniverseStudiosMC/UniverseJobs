@@ -127,6 +127,7 @@ public class AsyncXpMessageSender {
                     finalProgress,
                     settings.getBossbarDuration()
                 );
+                
             }
             case TITLE -> {
                 PacketUtils.sendTitleAsync(player, message, settings.getTitleFadeIn(), settings.getTitleStay(), settings.getTitleFadeOut());
@@ -150,14 +151,16 @@ public class AsyncXpMessageSender {
                 switch (messageConfig.getType()) {
                     case CHAT -> PacketUtils.sendChatAsync(player, processedMessage);
                     case ACTIONBAR -> PacketUtils.sendActionBarAsync(player, processedMessage, messageConfig.getDuration());
-                    case BOSSBAR -> PacketUtils.sendBossBarAsync(
-                        player,
-                        processedMessage,
-                        messageConfig.getBossbarColor(),
-                        messageConfig.getBossbarStyle(),
-                        1.0, // Action messages show full progress
-                        messageConfig.getDuration()
-                    );
+                    case BOSSBAR -> {
+                        PacketUtils.sendBossBarAsync(
+                            player,
+                            processedMessage,
+                            messageConfig.getBossbarColor(),
+                            messageConfig.getBossbarStyle(),
+                            1.0, // Action messages show full progress
+                            messageConfig.getDuration()
+                        );
+                    }
                     default -> PacketUtils.sendActionBarAsync(player, processedMessage, messageConfig.getDuration());
                 }
             } catch (Exception e) {
