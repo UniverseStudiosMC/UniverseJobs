@@ -132,6 +132,11 @@ placeholders:
   action_xp_base: "<#abffb3>{value}"
   action_xp: "<#abffb3>{value}"
   action_xp_multiplier: "<gray>(<white>x{value}<gray>)"
+  
+  # Job status placeholders - customize how job status is displayed in menus
+  job_status:
+    joined: "<#abffb3>✓ Active"
+    not_joined: "<#ff6b6b>○ Not Joined"
   action_money_base: "<#FFD700>{value}"
   action_money: "<#FFD700>{value}"
   action_money_multiplier: "<gray>(<white>x{value}<gray>)"

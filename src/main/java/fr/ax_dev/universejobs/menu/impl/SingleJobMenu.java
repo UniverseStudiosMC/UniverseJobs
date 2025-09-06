@@ -466,7 +466,7 @@ public class SingleJobMenu extends BaseMenu {
      */
     private void addPlayerPlaceholders(Map<String, String> placeholders) {
         placeholders.put("{player_name}", player.getName());
-        placeholders.put("{job_status}", hasJob ? "&aJoined" : "&cNot Joined");
+        placeholders.put("{job_status}", plugin.getConfigManager().getJobStatus(hasJob));
         
         if (hasJob) {
             int playerLevel = playerData.getLevel(job.getId());
