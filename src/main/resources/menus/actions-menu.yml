@@ -1,29 +1,17 @@
 # Job Actions Menu Configuration
 # This file controls the appearance and behavior of job actions menu
-
 # Menu title (supports MiniMessage and PlaceholderAPI)
 title: "<#8fcc7a><bold>{job_name} <#5ba343>- Actions</bold>"
-
 # Menu size (must be multiple of 9, max 54)
 size: 54
-
-# Pagination settings
 pagination:
   enabled: true
 
 # Fill item configuration
 fill-item:
   enabled: true
-  material: GRAY_STAINED_GLASS_PANE
-  display-name: " "
-  lore: []
-  amount: 1
-  slots: []  # Empty = use global fill-slots. Specify slots like [1, 2, 3, 9, 18] to override
-  custom-model-data: 0
-  glow: false
-  hide-attributes: true
-  hide-enchants: true
   hideToolTip: true
+  slots: []  # Empty = use global fill-slots. Specify slots like [1, 2, 3, 9, 18] to override
 
 # Slots to fill (empty = all empty slots)
 fill-slots: []
@@ -42,18 +30,11 @@ static-items:
       - "<gray>available actions for this job"
       - ""
       - "<gray>Total Actions: <#FFD700>{total_actions}"
-    amount: 1
     slots: 49
-    custom-model-data: 0
-    glow: true
-    hide-attributes: true
-    hide-enchants: false
-    action: none
 
 # Navigation items
 navigation-items:
   previous:
-    enabled: true
     material: PLAYER_HEAD
     player-head: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZGUxZGZjMTFhODM3MTExZDIyYjAwMWExNDQ2MWY5YTdmYzA5MzUyMmY4OGM1OGZhZWZkNmFkZWZmY2Q0ZTlhYiJ9fX0="
     display-name: "<#abffb3>← Previous Page"
@@ -62,17 +43,11 @@ navigation-items:
       - ""
       - "<gray>Page: <#FFD700>{current_page}<gray>/<#FFD700>{total_pages}"
       - "<gray>Actions: <#FFD700>{total_items}"
-    amount: 1
     slots: [45]
-    custom-model-data: 0
     sound: "ITEM_BOOK_PAGE_TURN"
-    glow: false
-    hide-attributes: true
-    hide-enchants: false
     action: previous_page
     
   next:
-    enabled: true
     material: PLAYER_HEAD
     player-head: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvN2M2OWQ0MTA3NmE4ZGVhNGYwNmQzZjFhOWFjNDdjYzk5Njk4OGI3NGEwOTEzYWIyYWMxYTc0Y2FmNzA4MTkxOCJ9fX0="
     display-name: "<#abffb3>Next Page →"
@@ -81,43 +56,26 @@ navigation-items:
       - ""
       - "<gray>Page: <#FFD700>{current_page}<gray>/<#FFD700>{total_pages}"
       - "<gray>Actions: <#FFD700>{total_items}"
-    amount: 1
     slots: [53]
-    custom-model-data: 0
     sound: "ITEM_BOOK_PAGE_TURN"
-    glow: false
-    hide-attributes: true
-    hide-enchants: false
     action: next_page
     
   back:
-    enabled: true
     material: arrow
     display-name: "<#abffb3>← Back to Job Menu"
     lore:
       - "<#FFD700>Click to go back to the job menu"
-    amount: 1
     slots: [48]
-    custom-model-data: 0
     sound: "UI_BUTTON_CLICK"
-    glow: false
-    hide-attributes: true
-    hide-enchants: false
     action: back
     
   close:
-    enabled: true
     material: BARRIER
     display-name: "<#FF6B6B>Close Menu"
     lore:
       - "<#FFD700>Click to close this menu"
-    amount: 1
     slots: [50]
-    custom-model-data: 0
     sound: "BLOCK_CHEST_CLOSE"
-    glow: false
-    hide-attributes: true
-    hide-enchants: false
     action: close
 
 # Action item format configuration
@@ -141,15 +99,9 @@ action-item-format:
     when_no_money: 5
     when_no_xp: 4
   lore_bonus:
-    - "{action_display_name} <reset>({action_type}<reset>)"
+    - "{action_display_name} <white>({action_type}<reset><white>)"
     - "{action_lore}"
+    - "<#a7eb5e><bold>ʀᴇᴡᴀʀᴅs:"
+    - "<#a7eb5e>├ <#abffb3>XP : <#abffb3>{+-}{action_xp} {action_xp_multiplier}"
+    - "<#a7eb5e>└ <#FFD700>Money : <#FFD700>{+-}{action_money} {action_money_multiplier}"
     - ""
-    - "<#a7eb5e><bold>Rewards:"
-    - "<gray>├ <gray>XP : <#abffb3>{+-}{action_xp} {action_xp_multiplier}"
-    - "<gray>└ <gray>Money : <#FFD700>{+-}{action_money} {action_money_multiplier}"
-    - ""
-  # Item settings
-  amount: 1
-  glow: false
-  hide-attributes: true
-  hide-enchants: true

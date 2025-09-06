@@ -147,9 +147,11 @@ menu-items:
     hide-enchants: false
     action: toggle-job
     # Alternative configuration when player has the job
-    has-job-material: REDSTONE_BLOCK
-    has-job-display-name: "<#FF6B6B><bold>Leave Job</bold>"
-    has-job-lore:
+    else:
+      material: REDSTONE_BLOCK
+      display-name: "<#FF6B6B><bold>Leave Job</bold>"
+      custom-model-data:
+      lore:
       - ""
       - "<#FFD700>Click to leave this job"
       - ""

@@ -375,6 +375,7 @@ public class XpMessageSettings {
     /**
      * Process the message text by replacing custom placeholders.
      * Replaces {message_xp} and {message_money} with their respective formats.
+     * Also handles {+-} placeholder for positive/negative values.
      * 
      * @param xp The XP amount
      * @param money The money amount
@@ -383,27 +384,50 @@ public class XpMessageSettings {
     public String processMessage(double xp, double money) {
         String processedText = this.text;
         
-        // Replace {message_xp} with the formatted XP message
-        if (xp > 0) {
-            String formattedXp = formatNumber(xp);
-            String xpMessage = xpMessageFormat.replace("{xp}", formattedXp);
+        // Process XP message with {+-} support
+        String xpSign = xp >= 0 ? "+" : "";
+        String formattedXp = formatNumber(xp);
+        String xpMessage = xpMessageFormat
+            .replace("{+-}", xpSign)
+            .replace("{xp}", formattedXp);
+        
+        if (xp != 0) {
             processedText = processedText.replace("{message_xp}", xpMessage);
         } else {
             processedText = processedText.replace("{message_xp}", "");
         }
         
-        // Replace {message_money} with the formatted money message
-        if (money > 0) {
-            String formattedMoney = formatNumber(money);
-            String moneyMessage = moneyMessageFormat.replace("{money}", formattedMoney);
+        // Process money message with {+-} support
+        String moneySign = money >= 0 ? "+" : "";
+        String formattedMoney = formatNumber(money);
+        String moneyMessage = moneyMessageFormat
+            .replace("{+-}", moneySign)
+            .replace("{money}", formattedMoney);
+        
+        if (money != 0) {
             processedText = processedText.replace("{message_money}", moneyMessage);
         } else {
             processedText = processedText.replace("{message_money}", "");
         }
         
-        // Replace standard placeholders
-        processedText = processedText.replace("{xp}", formatNumber(xp));
-        processedText = processedText.replace("{money}", formatNumber(money));
+        // Replace standard placeholders with {+-} support
+        processedText = processedText.replace("{xp}", formattedXp);
+        processedText = processedText.replace("{money}", formattedMoney);
+        
+        // Replace {+-} in main text based on context
+        if (processedText.contains("{+-}")) {
+            String contextualSign = "";
+            if (processedText.contains("{xp}") || processedText.contains("{message_xp}")) {
+                contextualSign = xpSign;
+            } else if (processedText.contains("{money}") || processedText.contains("{message_money}")) {
+                contextualSign = moneySign;
+            } else if (xp != 0) {
+                contextualSign = xpSign;
+            } else if (money != 0) {
+                contextualSign = moneySign;
+            }
+            processedText = processedText.replace("{+-}", contextualSign);
+        }
         
         return processedText;
     }
