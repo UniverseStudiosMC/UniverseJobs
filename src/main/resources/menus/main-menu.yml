@@ -38,12 +38,6 @@ job-slots: []
   # builder: 12  # Place builder job in slot 12
   # hunter: 13   # Place hunter job in slot 13
   
-# Navigation slot configuration
-navigation-slots:
-  previous: [45]
-  next: [53]
-  close: [49]
-  info: [50]
 
 # Static items (always shown in the menu)
 static-items:

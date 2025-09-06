@@ -84,3 +84,35 @@ progress-bar:
 block-protection:
   enabled: true
 
+placeholders:
+  # Action placeholders - customize how action information is displayed
+  action_type:
+    # Default format for all action types
+    default: "<white>{value}"
+    # Specific formats per action type using MiniMessage
+    EAT: "<gradient:#FF6B6B:#FF8E53><bold>🍎 EAT</bold></gradient>"
+    BREAK: "<gradient:#8B4513:#D2691E><bold>⛏️ BREAK</bold></gradient>"
+    KILL: "<gradient:#DC143C:#B22222><bold>⚔️ KILL</bold></gradient>"
+    PLACE: "<gradient:#32CD32:#228B22><bold>🧱 PLACE</bold></gradient>"
+    ENCHANT: "<gradient:#9370DB:#8A2BE2><bold>✨ ENCHANT</bold></gradient>"
+    BREW: "<gradient:#FFD700:#FFA500><bold>🧪 BREW</bold></gradient>"
+    CRAFT: "<gradient:#4169E1:#1E90FF><bold>🔨 CRAFT</bold></gradient>"
+    SMELT: "<gradient:#FF4500:#FF6347><bold>🔥 SMELT</bold></gradient>"
+    BLOCK_INTERACT: "<gradient:#00CED1:#20B2AA><bold>👆 INTERACT</bold></gradient>"
+    ENTITY_INTERACT: "<gradient:#FF69B4:#DA70D6><bold>🤝 INTERACT</bold></gradient>"
+    HARVEST: "<gradient:#ADFF2F:#7CFC00><bold>🌾 HARVEST</bold></gradient>"
+    FISH: "<gradient:#4682B4:#5F9EA0><bold>🎣 FISH</bold></gradient>"
+    TRADE: "<gradient:#DAA520:#B8860B><bold>💰 TRADE</bold></gradient>"
+    SHEAR: "<gradient:#F0E68C:#BDB76B><bold>✂️ SHEAR</bold></gradient>"
+    POTION: "<gradient:#9932CC:#8B008B><bold>🍵 POTION</bold></gradient>"
+  action_target: "<white>{value}"
+  action_name: "<white>{value}"
+  action_display_name: "<white>{value}"
+  action_lore: "<gray>{value}"
+  action_xp_base: "<#abffb3>{value}"
+  action_xp: "<#abffb3>{value}"
+  action_xp_multiplier: "<gray>(<white>x{value}<gray>)"
+  action_money_base: "<#FFD700>{value}"
+  action_money: "<#FFD700>{value}"
+  action_money_multiplier: "<gray>(<white>x{value}<gray>)"
+  action_cooldown: "<gray>Cooldown: {value}s"

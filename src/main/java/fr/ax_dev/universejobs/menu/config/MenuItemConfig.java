@@ -24,6 +24,8 @@ public class MenuItemConfig {
     private final String action;
     private final String actionValue;
     private final String skullOwner;
+    private final String playerHead;
+    private final String sound;
     
     // Alternative configuration for when player has job
     private final String hasJobMaterial;
@@ -45,6 +47,8 @@ public class MenuItemConfig {
         this.action = config.getString("action", "none");
         this.actionValue = config.getString("action-value", "");
         this.skullOwner = config.getString("skull-owner", "");
+        this.playerHead = config.getString("player-head", "");
+        this.sound = config.getString("sound", "");
         
         // Load alternative job configurations
         this.hasJobMaterial = config.getString("has-job-material", "");
@@ -122,6 +126,8 @@ public class MenuItemConfig {
     public String getAction() { return action; }
     public String getActionValue() { return actionValue; }
     public String getSkullOwner() { return skullOwner; }
+    public String getPlayerHead() { return playerHead; }
+    public String getSound() { return sound; }
     
     // Alternative job configuration getters
     public String getHasJobMaterial() { return hasJobMaterial; }

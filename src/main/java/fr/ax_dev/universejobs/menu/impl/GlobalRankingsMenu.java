@@ -337,7 +337,7 @@ public class GlobalRankingsMenu extends BaseMenu {
     @Override
     public void handleClick(int slot, InventoryClickEvent event) {
         // Handle navigation clicks first
-        if (handleNavigationClick(slot)) {
+        if (handleNavigationClickWithSound(slot)) {
             return;
         }
         

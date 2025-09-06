@@ -1,0 +1,253 @@
+name: "Miner"
+description: "Extract valuable resources from the depths of the earth!"
+enabled: true
+max-level: 100
+permission: "UniverseJobs.job.miner"
+icon: 
+  material: "DIAMOND_PICKAXE"
+  custom-model-data: ""
+
+rewards: "miner_rewards"
+gui-reward: "miner_rewards_gui"
+
+action-limits:
+  auto-restore:
+    enabled: true
+    time: "00:00"
+
+xp: 
+  type: "CURVE"
+  xp: "default"
+  message:
+    type: "BOSSBAR"
+    text: "{message_xp} {message_money} <gray>| <#8B4513>{job} <gray>Level <#32CD32>{level}"
+    money: "<#FFD700>+{money} coins"
+    xp: "<#32CD32>+{xp} xp"
+    options:
+      color: "GREEN"
+      style: "SEGMENTED_10"
+      duration: "8"
+      fade-in: 10
+      fade-out: 20
+      show-progress: true
+
+actions:
+  BREAK:
+    # Basic stone materials
+    break_stone:
+      target: "STONE"
+      display-name: "Break stone"
+      lore:
+      - "Mine basic stone blocks"
+      xp: 1.0
+      money: 0.5
+
+    break_cobblestone:
+      target: "COBBLESTONE"
+      display-name: "Break cobblestone"
+      lore:
+      - "Mine cobblestone blocks"
+      xp: 0.8
+      money: 0.3
+
+    break_deepslate:
+      target: "DEEPSLATE"
+      display-name: "Break deepslate"
+      lore:
+      - "Mine deepslate blocks"
+      xp: 1.2
+      money: 0.6
+
+    # Coal mining
+    break_coal_ore:
+      target: "COAL_ORE"
+      display-name: "Mine coal ore"
+      lore:
+      - "Extract coal from stone"
+      xp: 2.0
+      money: 1.5
+
+    break_deepslate_coal_ore:
+      target: "DEEPSLATE_COAL_ORE"
+      display-name: "Mine deepslate coal ore"
+      lore:
+      - "Extract coal from deepslate"
+      xp: 2.5
+      money: 2.0
+
+    # Iron mining
+    break_iron_ore:
+      target: "IRON_ORE"
+      display-name: "Mine iron ore"
+      lore:
+      - "Extract iron from stone"
+      xp: 3.0
+      money: 3.0
+
+    break_deepslate_iron_ore:
+      target: "DEEPSLATE_IRON_ORE"
+      display-name: "Mine deepslate iron ore"
+      lore:
+      - "Extract iron from deepslate"
+      xp: 3.5
+      money: 3.5
+
+    # Gold mining
+    break_gold_ore:
+      target: "GOLD_ORE"
+      display-name: "Mine gold ore"
+      lore:
+      - "Extract gold from stone"
+      xp: 4.0
+      money: 5.0
+
+    break_deepslate_gold_ore:
+      target: "DEEPSLATE_GOLD_ORE"
+      display-name: "Mine deepslate gold ore"
+      lore:
+      - "Extract gold from deepslate"
+      xp: 4.5
+      money: 5.5
+
+    break_nether_gold_ore:
+      target: "NETHER_GOLD_ORE"
+      display-name: "Mine nether gold ore"
+      lore:
+      - "Extract gold from netherrack"
+      xp: 3.5
+      money: 4.5
+
+    # Diamond mining
+    break_diamond_ore:
+      target: "DIAMOND_ORE"
+      display-name: "Mine diamond ore"
+      lore:
+      - "Extract precious diamonds"
+      xp: 8.0
+      money: 15.0
+
+    break_deepslate_diamond_ore:
+      target: "DEEPSLATE_DIAMOND_ORE"
+      display-name: "Mine deepslate diamond ore"
+      lore:
+      - "Extract diamonds from deepslate"
+      xp: 9.0
+      money: 16.0
+
+    # Emerald mining
+    break_emerald_ore:
+      target: "EMERALD_ORE"
+      display-name: "Mine emerald ore"
+      lore:
+      - "Extract rare emeralds"
+      xp: 10.0
+      money: 20.0
+
+    break_deepslate_emerald_ore:
+      target: "DEEPSLATE_EMERALD_ORE"
+      display-name: "Mine deepslate emerald ore"
+      lore:
+      - "Extract emeralds from deepslate"
+      xp: 11.0
+      money: 22.0
+
+    # Redstone mining
+    break_redstone_ore:
+      target: "REDSTONE_ORE"
+      display-name: "Mine redstone ore"
+      lore:
+      - "Extract redstone dust"
+      xp: 3.5
+      money: 2.5
+
+    break_deepslate_redstone_ore:
+      target: "DEEPSLATE_REDSTONE_ORE"
+      display-name: "Mine deepslate redstone ore"
+      lore:
+      - "Extract redstone from deepslate"
+      xp: 4.0
+      money: 3.0
+
+    # Lapis mining
+    break_lapis_ore:
+      target: "LAPIS_ORE"
+      display-name: "Mine lapis ore"
+      lore:
+      - "Extract lapis lazuli"
+      xp: 3.0
+      money: 2.0
+
+    break_deepslate_lapis_ore:
+      target: "DEEPSLATE_LAPIS_ORE"
+      display-name: "Mine deepslate lapis ore"
+      lore:
+      - "Extract lapis from deepslate"
+      xp: 3.5
+      money: 2.5
+
+    # Copper mining
+    break_copper_ore:
+      target: "COPPER_ORE"
+      display-name: "Mine copper ore"
+      lore:
+      - "Extract copper ingots"
+      xp: 2.5
+      money: 2.0
+
+    break_deepslate_copper_ore:
+      target: "DEEPSLATE_COPPER_ORE"
+      display-name: "Mine deepslate copper ore"
+      lore:
+      - "Extract copper from deepslate"
+      xp: 3.0
+      money: 2.5
+
+    # Nether materials
+    break_netherrack:
+      target: "NETHERRACK"
+      display-name: "Mine netherrack"
+      lore:
+      - "Extract nether stone"
+      xp: 0.5
+      money: 0.2
+
+    break_nether_quartz_ore:
+      target: "NETHER_QUARTZ_ORE"
+      display-name: "Mine nether quartz ore"
+      lore:
+      - "Extract nether quartz"
+      xp: 4.0
+      money: 4.0
+
+    break_ancient_debris:
+      target: "ANCIENT_DEBRIS"
+      display-name: "Mine ancient debris"
+      lore:
+      - "Extract the rarest material"
+      xp: 25.0
+      money: 50.0
+
+    # End materials
+    break_end_stone:
+      target: "END_STONE"
+      display-name: "Mine end stone"
+      lore:
+      - "Extract end dimension stone"
+      xp: 1.5
+      money: 1.0
+
+levelup-actions:
+  level_announcement:
+    type: "command"
+    min-level: 1
+    level-interval: 5
+    commands:
+    - "broadcast <#8B4513>⛏️ <#FFD700>{player} <gray>has reached level <#32CD32>{level} <gray>in <#8B4513>Miner<gray>!"
+
+  level_reward:
+    type: "command"
+    min-level: 10
+    level-interval: 10
+    commands:
+    - "eco give {player} {level * 100}"
+    - "tell {player} <#FFD700>💰 Bonus reward: <#32CD32>{level * 100} coins <gray>for reaching level <#FFD700>{level}<gray>!"
