@@ -433,6 +433,7 @@ public class JobsMainMenu extends BaseMenu implements InventoryHolder {
         placeholders.put("job_id", job.getId());
         placeholders.put("job_name", job.getName());
         placeholders.put("job_description", job.getDescription());
+        placeholders.put("job_description_lines", String.join("\n", job.getDescriptionLines()));
         placeholders.put("job_max_level", String.valueOf(job.getMaxLevel()));
         placeholders.put("job_permission", job.getPermission() != null ? job.getPermission() : "none");
     }
