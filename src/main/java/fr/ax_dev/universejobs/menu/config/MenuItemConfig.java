@@ -37,18 +37,25 @@ public class MenuItemConfig {
         // Get global defaults
         Map<String, Object> defaults = getGlobalDefaults();
         
-        this.enabled = config.getBoolean("enabled", true);
-        this.material = config.getString("material", "STONE");
+        this.enabled = config.getBoolean("enabled", (Boolean) defaults.getOrDefault("enabled", true));
+        this.material = config.getString("material", (String) defaults.getOrDefault("material", "STONE"));
         this.amount = config.getInt("amount", (Integer) defaults.getOrDefault("amount", 1));
-        this.displayName = config.getString("display-name", "");
+        this.displayName = config.getString("display-name", (String) defaults.getOrDefault("display-name", ""));
+        
+        // Handle lore - merge defaults with config
+        List<String> defaultLore = (List<String>) defaults.getOrDefault("lore", new ArrayList<>());
         this.lore = config.getStringList("lore");
-        this.customModelData = config.getInt("custom-model-data", 0);
+        if (this.lore.isEmpty() && !defaultLore.isEmpty()) {
+            this.lore = new ArrayList<>(defaultLore);
+        }
+        
+        this.customModelData = config.getInt("custom-model-data", (Integer) defaults.getOrDefault("custom-model-data", 0));
         this.glow = config.getBoolean("glow", (Boolean) defaults.getOrDefault("glow", false));
         this.hideAttributes = config.getBoolean("hide-attributes", (Boolean) defaults.getOrDefault("hide-attributes", false));
         this.hideEnchants = config.getBoolean("hide-enchants", (Boolean) defaults.getOrDefault("hide-enchants", false));
         this.hideToolTip = config.getBoolean("hideToolTip", false);
         this.slots = config.getIntegerList("slots");
-        this.action = config.getString("action", "none");
+        this.action = config.getString("action", (String) defaults.getOrDefault("action", "none"));
         this.actionValue = config.getString("action-value", "");
         this.skullOwner = config.getString("skull-owner", "");
         this.playerHead = config.getString("player-head", "");
@@ -152,11 +159,17 @@ public class MenuItemConfig {
                 ConfigurationSection defaultsSection = plugin.getConfig().getConfigurationSection("gui-default-settings");
                 if (defaultsSection != null) {
                     Map<String, Object> defaults = new HashMap<>();
+                    defaults.put("enabled", defaultsSection.getBoolean("enabled", true));
                     defaults.put("amount", defaultsSection.getInt("amount", 1));
+                    defaults.put("display-name", defaultsSection.getString("display-name", ""));
+                    defaults.put("material", defaultsSection.getString("material", "STONE"));
+                    defaults.put("lore", defaultsSection.getStringList("lore"));
                     defaults.put("glow", defaultsSection.getBoolean("glow", false));
                     defaults.put("hide-attributes", defaultsSection.getBoolean("hide-attributes", false));
                     defaults.put("hide-enchants", defaultsSection.getBoolean("hide-enchants", false));
                     defaults.put("sound", defaultsSection.getString("sound", ""));
+                    defaults.put("custom-model-data", defaultsSection.getInt("custom-model-data", 0));
+                    defaults.put("action", defaultsSection.getString("action", "none"));
                     return defaults;
                 }
             }
@@ -166,11 +179,17 @@ public class MenuItemConfig {
         
         // Fallback defaults
         Map<String, Object> defaults = new HashMap<>();
+        defaults.put("enabled", true);
         defaults.put("amount", 1);
+        defaults.put("display-name", "");
+        defaults.put("material", "STONE");
+        defaults.put("lore", new ArrayList<>());
         defaults.put("glow", false);
         defaults.put("hide-attributes", false);
         defaults.put("hide-enchants", false);
         defaults.put("sound", "");
+        defaults.put("custom-model-data", 0);
+        defaults.put("action", "none");
         return defaults;
     }
     
