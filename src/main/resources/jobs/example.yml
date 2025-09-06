@@ -15,20 +15,22 @@ action-limits:
       enabled: true
       time: "00:00"  # midnight
 xp: 
-  type: "CURVE" ##CURVE OR EQUATION
-  xp: "example" ##FILE OR EQUATION
+  type: "CURVE"
+  xp: "default"
   message:
-    type: "BOSSBAR" # Types: CHAT, ACTIONBAR, BOSSBAR, TITLE
-    text: "{message_xp} {message_money} <gray>| <#FFD700>{job} <gray>Level <#32CD32>{level}"
-    money: "<#FFD700>+{money} money"
-    xp: "<#32CD32>+{xp} xp"
+    type: "BOSSBAR"
+    text: "{message_xp} {message_money} <gray>| <#8B4513>{job} <gray>Level <#32CD32>{level}"
+    money: "<#FFD700>+{money} $ <gray>({+-}{money_per_action})"
+    xp: "<#abffb3>+{xp} xp <gray>({+-}{xp_per_action})"
     options:
-      color: "RED" #BOSSBAR
-      style: "SEGMENTED_20" #BOSSBAR
-      duration: "10" #TITLE BOSSBAR ACTIONBAR
-      fade-in: 10 #TITLE
-      fade-out: 20 #TITLE
-      show-progress: true #BOSSBAR
+      color: "GREEN"
+      style: "SEGMENTED_0"
+      duration: "8"
+      fade-in: 10
+      fade-out: 20
+      duration: 40
+      update-rating: 2
+      show-progress: true
 
 actions:
   PLACE:

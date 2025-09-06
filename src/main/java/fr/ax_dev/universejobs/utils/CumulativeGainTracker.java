@@ -46,6 +46,20 @@ public class CumulativeGainTracker {
     }
     
     /**
+     * Check if player has gains within the specified duration (in milliseconds).
+     * This prevents creating multiple BossBars for rapid actions.
+     */
+    public static boolean hasRecentGains(Player player, long durationMs) {
+        PlayerGains gains = PLAYER_GAINS.get(player.getUniqueId());
+        if (gains == null) return false;
+        
+        synchronized (gains) {
+            long timeSinceLastUpdate = System.currentTimeMillis() - gains.lastUpdateTime;
+            return timeSinceLastUpdate < durationMs && gains.hasGains();
+        }
+    }
+    
+    /**
      * Clear gains for a player.
      */
     public static void clearGains(Player player) {
