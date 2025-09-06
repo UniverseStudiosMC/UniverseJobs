@@ -25,7 +25,6 @@ import java.util.*;
  */
 public class JobActionsMenu extends BaseMenu {
     
-    private static final int HEADER_SLOT = 4;
     private static final String ACTION_TYPE = "action";
     
     private final Job job;
