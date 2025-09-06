@@ -1,6 +1,7 @@
 package fr.ax_dev.universejobs.menu.config;
 
 import org.bukkit.configuration.ConfigurationSection;
+import fr.ax_dev.universejobs.UniverseJobs;
 
 import java.util.*;
 
@@ -33,22 +34,25 @@ public class MenuItemConfig {
     private final List<String> hasJobLore;
     
     public MenuItemConfig(ConfigurationSection config) {
+        // Get global defaults
+        Map<String, Object> defaults = getGlobalDefaults();
+        
         this.enabled = config.getBoolean("enabled", true);
         this.material = config.getString("material", "STONE");
-        this.amount = config.getInt("amount", 1);
+        this.amount = config.getInt("amount", (Integer) defaults.getOrDefault("amount", 1));
         this.displayName = config.getString("display-name", "");
         this.lore = config.getStringList("lore");
         this.customModelData = config.getInt("custom-model-data", 0);
-        this.glow = config.getBoolean("glow", false);
-        this.hideAttributes = config.getBoolean("hide-attributes", false);
-        this.hideEnchants = config.getBoolean("hide-enchants", false);
+        this.glow = config.getBoolean("glow", (Boolean) defaults.getOrDefault("glow", false));
+        this.hideAttributes = config.getBoolean("hide-attributes", (Boolean) defaults.getOrDefault("hide-attributes", false));
+        this.hideEnchants = config.getBoolean("hide-enchants", (Boolean) defaults.getOrDefault("hide-enchants", false));
         this.hideToolTip = config.getBoolean("hideToolTip", false);
         this.slots = config.getIntegerList("slots");
         this.action = config.getString("action", "none");
         this.actionValue = config.getString("action-value", "");
         this.skullOwner = config.getString("skull-owner", "");
         this.playerHead = config.getString("player-head", "");
-        this.sound = config.getString("sound", "");
+        this.sound = config.getString("sound", (String) defaults.getOrDefault("sound", ""));
         
         // Load alternative job configurations
         this.hasJobMaterial = config.getString("has-job-material", "");
@@ -136,6 +140,38 @@ public class MenuItemConfig {
     
     public boolean hasJobAlternative() { 
         return hasJobMaterial != null && !hasJobMaterial.isEmpty(); 
+    }
+    
+    /**
+     * Get global default settings from config.yml
+     */
+    private static Map<String, Object> getGlobalDefaults() {
+        try {
+            UniverseJobs plugin = UniverseJobs.getInstance();
+            if (plugin != null) {
+                ConfigurationSection defaultsSection = plugin.getConfig().getConfigurationSection("gui-default-settings");
+                if (defaultsSection != null) {
+                    Map<String, Object> defaults = new HashMap<>();
+                    defaults.put("amount", defaultsSection.getInt("amount", 1));
+                    defaults.put("glow", defaultsSection.getBoolean("glow", false));
+                    defaults.put("hide-attributes", defaultsSection.getBoolean("hide-attributes", false));
+                    defaults.put("hide-enchants", defaultsSection.getBoolean("hide-enchants", false));
+                    defaults.put("sound", defaultsSection.getString("sound", ""));
+                    return defaults;
+                }
+            }
+        } catch (Exception e) {
+            // Silently fall back to hardcoded defaults if there's any issue
+        }
+        
+        // Fallback defaults
+        Map<String, Object> defaults = new HashMap<>();
+        defaults.put("amount", 1);
+        defaults.put("glow", false);
+        defaults.put("hide-attributes", false);
+        defaults.put("hide-enchants", false);
+        defaults.put("sound", "");
+        return defaults;
     }
     
 }
