@@ -14,7 +14,6 @@ public class SingleMenuConfig {
     private final MenuItemConfig fillItem;
     private final List<Integer> fillSlots;
     private final List<Integer> contentSlots;
-    private final Map<String, List<Integer>> navigationSlots;
     private final Map<String, MenuItemConfig> staticItems;
     private final Map<String, MenuItemConfig> navigationItems;
     private final Map<String, MenuItemConfig> menuItems;
@@ -54,17 +53,6 @@ public class SingleMenuConfig {
             generateDefaultContentSlots();
         }
         
-        // Load navigation slots
-        this.navigationSlots = new HashMap<>();
-        ConfigurationSection navSection = config.getConfigurationSection("navigation-slots");
-        if (navSection != null) {
-            for (String navKey : navSection.getKeys(false)) {
-                List<Integer> slots = navSection.getIntegerList(navKey);
-                this.navigationSlots.put(navKey, slots);
-            }
-        } else {
-            generateDefaultNavigationSlots();
-        }
         
         // Load static items
         this.staticItems = new HashMap<>();
@@ -145,28 +133,6 @@ public class SingleMenuConfig {
         }
     }
     
-    /**
-     * Generate default navigation slots.
-     */
-    private void generateDefaultNavigationSlots() {
-        int rows = size / 9;
-        int lastRow = rows - 1;
-        
-        // Previous page (bottom left)
-        navigationSlots.put("previous", Arrays.asList(lastRow * 9));
-        
-        // Next page (bottom right)  
-        navigationSlots.put("next", Arrays.asList(lastRow * 9 + 8));
-        
-        // Close button (bottom center)
-        navigationSlots.put("close", Arrays.asList(lastRow * 9 + 4));
-        
-        // Back button (if needed)
-        navigationSlots.put("back", Arrays.asList(lastRow * 9 + 3));
-        
-        // Info button
-        navigationSlots.put("info", Arrays.asList(lastRow * 9 + 5));
-    }
     
     /**
      * Generate default navigation items.
@@ -174,31 +140,31 @@ public class SingleMenuConfig {
     private void generateDefaultNavigationItems() {
         navigationItems.put("previous", MenuItemConfig.navigationItem(
             "ARROW", "&e← Previous Page", "previous_page", 
-            navigationSlots.getOrDefault("previous", Arrays.asList(45)),
+            Arrays.asList(45),
             "&7Click to go to the previous page"
         ));
         
         navigationItems.put("next", MenuItemConfig.navigationItem(
             "ARROW", "&eNext Page →", "next_page",
-            navigationSlots.getOrDefault("next", Arrays.asList(53)),
+            Arrays.asList(53),
             "&7Click to go to the next page"
         ));
         
         navigationItems.put("close", MenuItemConfig.navigationItem(
             "BARRIER", "&cClose", "close",
-            navigationSlots.getOrDefault("close", Arrays.asList(49)),
+            Arrays.asList(49),
             "&7Click to close this menu"
         ));
         
         navigationItems.put("back", MenuItemConfig.navigationItem(
             "ARROW", "&7← Back", "back",
-            navigationSlots.getOrDefault("back", Arrays.asList(48)),
+            Arrays.asList(48),
             "&7Click to go back"
         ));
         
         navigationItems.put("info", MenuItemConfig.navigationItem(
             "BOOK", "&6Info", "none",
-            navigationSlots.getOrDefault("info", Arrays.asList(50)),
+            Arrays.asList(50),
             "&7Menu Information",
             "&8Page: {current_page}/{total_pages}"
         ));
@@ -276,7 +242,6 @@ public class SingleMenuConfig {
     public MenuItemConfig getFillItem() { return fillItem; }
     public List<Integer> getFillSlots() { return new ArrayList<>(fillSlots); }
     public List<Integer> getContentSlots() { return new ArrayList<>(contentSlots); }
-    public Map<String, List<Integer>> getNavigationSlots() { return new HashMap<>(navigationSlots); }
     public Map<String, MenuItemConfig> getStaticItems() { return new HashMap<>(staticItems); }
     public Map<String, MenuItemConfig> getNavigationItems() { return new HashMap<>(navigationItems); }
     public Map<String, MenuItemConfig> getMenuItems() { return new HashMap<>(menuItems); }

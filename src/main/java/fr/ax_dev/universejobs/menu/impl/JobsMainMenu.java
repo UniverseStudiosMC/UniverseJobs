@@ -93,11 +93,17 @@ public class JobsMainMenu extends BaseMenu implements InventoryHolder {
      * Populate job items using centralized slot management.
      */
     private void populateJobItems() {
-        Map<String, Integer> jobSlots = jobSlotManager.calculateJobSlots(availableJobs);
+        List<Integer> contentSlots = config.getContentSlots();
+        int itemsPerPage = contentSlots.size();
+        int startIndex = currentPage * itemsPerPage;
+        int endIndex = Math.min(startIndex + itemsPerPage, availableJobs.size());
         
-        availableJobs.forEach(job -> {
-            Integer slot = jobSlots.get(job.getId());
-            if (slot != null) {
+        for (int i = startIndex; i < endIndex; i++) {
+            Job job = availableJobs.get(i);
+            int slotIndex = i - startIndex;
+            
+            if (slotIndex < contentSlots.size()) {
+                int slot = contentSlots.get(slotIndex);
                 try {
                     ItemStack jobItem = createJobItemOptimized(job);
                     if (jobItem != null) {
@@ -108,7 +114,7 @@ public class JobsMainMenu extends BaseMenu implements InventoryHolder {
                     plugin.getLogger().warning("Failed to create job item for " + job.getId() + ": " + e.getMessage());
                 }
             }
-        });
+        }
     }
     
     /**
@@ -259,7 +265,8 @@ public class JobsMainMenu extends BaseMenu implements InventoryHolder {
         int slotIndex = contentSlots.indexOf(slot);
         
         if (slotIndex >= 0) {
-            int jobIndex = currentPage * config.getItemsPerPage() + slotIndex;
+            int itemsPerPage = contentSlots.size();
+            int jobIndex = currentPage * itemsPerPage + slotIndex;
             if (jobIndex < availableJobs.size()) {
                 return availableJobs.get(jobIndex);
             }
@@ -334,8 +341,9 @@ public class JobsMainMenu extends BaseMenu implements InventoryHolder {
      * Get navigation placeholders efficiently.
      */
     private Map<String, String> getNavigationPlaceholders() {
+        int itemsPerPage = config.getContentSlots().size();
         Map<String, String> placeholders = MenuItemUtils.createNavigationPlaceholders(
-            currentPage, availableJobs.size(), config.getItemsPerPage());
+            currentPage, availableJobs.size(), itemsPerPage);
         placeholders.put("total_jobs", String.valueOf(availableJobs.size()));
         placeholders.put("player_jobs", String.valueOf(playerData.getJobs().size()));
         return placeholders;
@@ -459,13 +467,15 @@ public class JobsMainMenu extends BaseMenu implements InventoryHolder {
     
     @Override
     protected boolean hasNextPage() {
-        return (currentPage + 1) * config.getItemsPerPage() < availableJobs.size();
+        int itemsPerPage = config.getContentSlots().size();
+        return (currentPage + 1) * itemsPerPage < availableJobs.size();
     }
     
     /**
      * Get total number of pages efficiently.
      */
     private int getTotalPages() {
-        return (int) Math.ceil((double) availableJobs.size() / config.getItemsPerPage());
+        int itemsPerPage = config.getContentSlots().size();
+        return (int) Math.ceil((double) availableJobs.size() / itemsPerPage);
     }
 }
