@@ -65,7 +65,8 @@ public class ConfigManager {
         this.progressBarConfig = new ProgressBarConfig(config.getConfigurationSection("progress-bar"));
         
         // Reload level up actions
-        plugin.getLevelUpActionManager().reload();
+        plugin.getLevelUpActionManager().reload(); // Reload batched reward manager
+        plugin.getBatchedRewardManager().reloadConfig();
     }
     
     /**

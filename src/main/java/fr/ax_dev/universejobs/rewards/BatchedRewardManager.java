@@ -321,6 +321,50 @@ public class BatchedRewardManager {
     }
     
     /**
+     * Reload configuration and restart batch processors.
+     */
+    public void reloadConfig() {
+        // Get new configuration values
+        int newXpBatchTicks = plugin.getConfig().getInt("performance.batching-xp", 60);
+        int newMoneyBatchTicks = plugin.getConfig().getInt("performance.batching-money", 60);
+        int newOthersBatchTicks = plugin.getConfig().getInt("performance.batching-others", 40);
+        
+        // Shutdown existing processors
+        batchExecutor.shutdown();
+        try {
+            if (!batchExecutor.awaitTermination(2, TimeUnit.SECONDS)) {
+                batchExecutor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            batchExecutor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+        
+        // Update configuration values via reflection
+        try {
+            java.lang.reflect.Field xpField = this.getClass().getDeclaredField("xpBatchTicks");
+            xpField.setAccessible(true);
+            xpField.setInt(this, newXpBatchTicks);
+            
+            java.lang.reflect.Field moneyField = this.getClass().getDeclaredField("moneyBatchTicks");
+            moneyField.setAccessible(true);
+            moneyField.setInt(this, newMoneyBatchTicks);
+            
+            java.lang.reflect.Field othersField = this.getClass().getDeclaredField("othersBatchTicks");
+            othersField.setAccessible(true);
+            othersField.setInt(this, newOthersBatchTicks);
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to update batch configuration: " + e.getMessage());
+        }
+        
+        // Restart batch processors with new configuration
+        startBatchProcessors();
+        
+        plugin.getLogger().info("BatchedRewardManager reloaded - XP: " + newXpBatchTicks + 
+                               " ticks, Money: " + newMoneyBatchTicks + " ticks, Others: " + newOthersBatchTicks + " ticks");
+    }
+    
+    /**
      * Get current batch statistics.
      */
     public BatchStatistics getStatistics() {
