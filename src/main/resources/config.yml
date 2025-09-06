@@ -87,12 +87,17 @@ block-protection:
 # Global GUI default settings
 # These settings will be applied to all GUI items unless overridden
 gui-default-settings:
+  enabled: true
   amount: 1
+  display-name: ""
+  material: "GRAY_STAINED_GLASS_PANE"
+  lore: []
   glow: false
   hide-attributes: true
   hide-enchants: true
-  sound: "UI_BUTTON_CLICK"  
-  custom-model-data: []
+  sound: "UI_BUTTON_CLICK"
+  custom-model-data: 0
+  action: "none"
 
 placeholders:
   # Action placeholders - customize how action information is displayed
