@@ -17,7 +17,7 @@ public class Job {
     
     private final String id;
     private final String name;
-    private final String description;
+    private final List<String> description;
     private final List<String> lore;
     private final String permission;
     private final int maxLevel;
@@ -45,7 +45,13 @@ public class Job {
         this.id = id;
         this.config = config; // Store the config reference
         this.name = config.getString("name", id);
-        this.description = config.getString("description", "");
+        // Handle both string and list descriptions
+        if (config.isList("description")) {
+            this.description = config.getStringList("description");
+        } else {
+            String descString = config.getString("description", "");
+            this.description = descString.isEmpty() ? new ArrayList<>() : Arrays.asList(descString);
+        }
         this.lore = config.getStringList("lore");
         this.permission = config.getString("permission", "universejobs.job." + id.toLowerCase());
         this.maxLevel = config.getInt("max-level", 100);
@@ -148,7 +154,16 @@ public class Job {
      * @return The job description
      */
     public String getDescription() {
-        return description;
+        return String.join(" ", description);
+    }
+    
+    /**
+     * Get the description as a list of strings.
+     * 
+     * @return List of description lines
+     */
+    public List<String> getDescriptionLines() {
+        return new ArrayList<>(description);
     }
     
     /**

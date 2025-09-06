@@ -495,6 +495,7 @@ public class JobActionsMenu extends BaseMenu {
         placeholders.put("{job_id}", job.getId());
         placeholders.put("{job_name}", job.getDisplayName());
         placeholders.put("{job_description}", job.getDescription());
+        placeholders.put("{job_description_lines}", String.join("\n", job.getDescriptionLines()));
         int totalActions = groupedActions.values().stream().mapToInt(List::size).sum();
         placeholders.put("{total_actions}", String.valueOf(totalActions));
         return placeholders;

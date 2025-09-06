@@ -65,6 +65,43 @@ public class MenuUtils {
     }
     
     /**
+     * Process a lore line with support for multi-line placeholders.
+     */
+    private static List<String> processLoreLineWithMultiLine(String loreLine, Map<String, String> customPlaceholders, Player player) {
+        List<String> result = new ArrayList<>();
+        
+        // Check if this line contains {job_description} placeholder
+        if (loreLine.contains("{job_description}") && customPlaceholders != null && customPlaceholders.containsKey("job_description_lines")) {
+            // Use the multi-line description
+            String[] descriptionLines = customPlaceholders.get("job_description_lines").split("\n");
+            String baseFormat = loreLine.replace("{job_description}", "");
+            
+            for (String descLine : descriptionLines) {
+                if (descLine.trim().isEmpty()) {
+                    result.add("");
+                } else {
+                    String processedLine = baseFormat + descLine;
+                    if (customPlaceholders != null) {
+                        processedLine = replacePlaceholders(processedLine, customPlaceholders);
+                    }
+                    processedLine = processPlaceholders(player, processedLine);
+                    result.add(processedLine);
+                }
+            }
+        } else {
+            // Standard processing
+            String processedLore = loreLine;
+            if (customPlaceholders != null) {
+                processedLore = replacePlaceholders(processedLore, customPlaceholders);
+            }
+            processedLore = processPlaceholders(player, processedLore);
+            result.add(processedLore);
+        }
+        
+        return result;
+    }
+    
+    /**
      * Create an ItemStack from a MenuItemConfig using the existing ItemBuilder.
      */
     public static ItemStack createMenuItem(UniverseJobs plugin, Player player, MenuItemConfig itemConfig) {
@@ -86,15 +123,11 @@ public class MenuUtils {
         displayName = processPlaceholders(player, displayName);
         builder.name(displayName);
         
-        // Process lore
+        // Process lore with multi-line placeholder support
         List<String> lore = new ArrayList<>();
         for (String loreLine : itemConfig.getLore()) {
-            String processedLore = loreLine;
-            if (customPlaceholders != null) {
-                processedLore = replacePlaceholders(processedLore, customPlaceholders);
-            }
-            processedLore = processPlaceholders(player, processedLore);
-            lore.add(processedLore);
+            List<String> processedLines = processLoreLineWithMultiLine(loreLine, customPlaceholders, player);
+            lore.addAll(processedLines);
         }
         builder.lore(lore);
         

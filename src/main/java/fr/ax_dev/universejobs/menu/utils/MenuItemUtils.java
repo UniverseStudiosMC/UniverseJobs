@@ -163,6 +163,15 @@ public class MenuItemUtils {
         return placeholders;
     }
     
+    public static Map<String, String> createJobPlaceholders(fr.ax_dev.universejobs.job.Job job) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("job_id", job.getId());
+        placeholders.put("job_name", job.getName());
+        placeholders.put("job_description", job.getDescription());
+        placeholders.put("job_description_lines", String.join("\n", job.getDescriptionLines()));
+        return placeholders;
+    }
+    
     /**
      * Add navigation items to inventory from configuration.
      */
