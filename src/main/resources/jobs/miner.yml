@@ -237,17 +237,29 @@ actions:
       money: 1.0
 
 levelup-actions:
-  level_announcement:
-    type: "command"
+  broadcast:
+    type: "broadcast"
     min-level: 1
-    level-interval: 5
-    commands:
-    - "broadcast <#8B4513>⛏️ <#FFD700>{player} <gray>has reached level <#32CD32>{level} <gray>in <#8B4513>Miner<gray>!"
-
-  level_reward:
-    type: "command"
-    min-level: 10
     level-interval: 10
-    commands:
-    - "eco give {player} {level * 100}"
-    - "tell {player} <#FFD700>💰 Bonus reward: <#32CD32>{level * 100} coins <gray>for reaching level <#FFD700>{level}<gray>!"
+    messages:
+    - "<#90db8a>{player} <#9a9c9a>has reached level <#41a63a>{level} <#9a9c9a>in <#969696>Miner<#9a9c9a>!"
+  title:
+    type: "title"
+    min-level: 1
+    level-interval: 1
+    title: "<#41a63a>Reached level <#41a63a>{level}"
+    subtitle: "<#9a9c9a>in <#969696>Miner<#9a9c9a>!"
+    fade-in: 5
+    stay: 20
+    fade-out: 10
+  sound:
+    type: "sound"
+    min-level: 1
+    level-interval: 1
+    sound: ENTITY_PLAYER_LEVELUP
+  particle:
+    type: "particle"
+    min-level: 1
+    level-interval: 1
+    count: "20"
+    particle: "ELECTRIC_SPARK"

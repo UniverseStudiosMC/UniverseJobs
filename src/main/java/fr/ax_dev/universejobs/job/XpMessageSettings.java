@@ -2,10 +2,18 @@ package fr.ax_dev.universejobs.job;
 
 import org.bukkit.configuration.ConfigurationSection;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Configuration settings for how XP messages are displayed for a specific job.
  */
 public class XpMessageSettings {
+    
+    private static final Map<String, String> MESSAGE_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Long> MESSAGE_CACHE_TIMESTAMPS = new ConcurrentHashMap<>();
+    private static final long MESSAGE_CACHE_DURATION = 60000L; // 1 minute
+    private static long lastMessageCleanup = System.currentTimeMillis();
     
     private static final String CONFIG_DURATION = "duration";
     
@@ -427,6 +435,14 @@ public class XpMessageSettings {
      * @return The processed message text
      */
     public String processMessage(double xp, double money) {
+        cleanupMessageCache();
+        
+        String cacheKey = this.text + ":" + xp + ":" + money;
+        String cached = MESSAGE_CACHE.get(cacheKey);
+        if (cached != null) {
+            return cached;
+        }
+        
         String processedText = this.text;
         
         // Process XP message with {+-} support and MiniMessage parsing
@@ -435,7 +451,6 @@ public class XpMessageSettings {
         String xpMessage = xpMessageFormat
             .replace("{+-}", xpSign)
             .replace("{xp}", formattedXp);
-        // XP message supports MiniMessage - will be processed in AsyncXpMessageSender
         
         if (xp != 0) {
             processedText = processedText.replace("{message_xp}", xpMessage);
@@ -449,7 +464,6 @@ public class XpMessageSettings {
         String moneyMessage = moneyMessageFormat
             .replace("{+-}", moneySign)
             .replace("{money}", formattedMoney);
-        // Money message supports MiniMessage - will be processed in AsyncXpMessageSender
         
         if (money != 0) {
             processedText = processedText.replace("{message_money}", moneyMessage);
@@ -457,7 +471,7 @@ public class XpMessageSettings {
             processedText = processedText.replace("{message_money}", "");
         }
         
-        // Replace standard placeholders with {+-} support
+        // Replace standard placeholders
         processedText = processedText.replace("{xp}", formattedXp);
         processedText = processedText.replace("{money}", formattedMoney);
         
@@ -476,9 +490,27 @@ public class XpMessageSettings {
             processedText = processedText.replace("{+-}", contextualSign);
         }
         
-        // Final message supports MiniMessage - will be processed in AsyncXpMessageSender
+        MESSAGE_CACHE.put(cacheKey, processedText);
+        MESSAGE_CACHE_TIMESTAMPS.put(cacheKey, System.currentTimeMillis());
         
         return processedText;
+    }
+    
+    /**
+     * Cleanup old message cache entries.
+     */
+    private static void cleanupMessageCache() {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastMessageCleanup > MESSAGE_CACHE_DURATION) {
+            MESSAGE_CACHE_TIMESTAMPS.entrySet().removeIf(entry -> {
+                boolean expired = currentTime - entry.getValue() > MESSAGE_CACHE_DURATION;
+                if (expired) {
+                    MESSAGE_CACHE.remove(entry.getKey());
+                }
+                return expired;
+            });
+            lastMessageCleanup = currentTime;
+        }
     }
     
     /**

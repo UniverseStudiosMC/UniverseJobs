@@ -63,6 +63,9 @@ public class ConfigManager {
         
         // Reload progress bar configuration
         this.progressBarConfig = new ProgressBarConfig(config.getConfigurationSection("progress-bar"));
+        
+        // Reload level up actions
+        plugin.getLevelUpActionManager().reload();
     }
     
     /**

@@ -8,12 +8,16 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Context object that holds data for condition evaluation.
  * Provides easy access to common action-related data.
  */
 public class ConditionContext {
+    
+    private static final ConcurrentLinkedQueue<ConditionContext> CONTEXT_POOL = new ConcurrentLinkedQueue<>();
+    private static final int MAX_POOL_SIZE = 500;
     
     private static final String MATERIAL_KEY = "material";
     
@@ -25,6 +29,31 @@ public class ConditionContext {
      */
     public ConditionContext() {
         // Initialize with empty data map - this is the standard pattern for builder classes
+    }
+    
+    /**
+     * Get a context instance from pool or create new one.
+     * 
+     * @return A fresh context instance
+     */
+    public static ConditionContext obtain() {
+        ConditionContext context = CONTEXT_POOL.poll();
+        if (context == null) {
+            context = new ConditionContext();
+        } else {
+            context.data.clear();
+        }
+        return context;
+    }
+    
+    /**
+     * Return this context to the pool for reuse.
+     */
+    public void release() {
+        if (CONTEXT_POOL.size() < MAX_POOL_SIZE) {
+            data.clear();
+            CONTEXT_POOL.offer(this);
+        }
     }
     
     /**
@@ -214,7 +243,7 @@ public class ConditionContext {
         try {
             // Use direct Nexo API
             com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic mechanic = 
-                com.nexomc.nexo.api.NexoBlocks.customBlockMechanic((Location) block);
+                com.nexomc.nexo.api.NexoBlocks.customBlockMechanic(block.getLocation());
             
             return mechanic != null ? mechanic.getItemID() : null;
             
@@ -227,5 +256,13 @@ public class ConditionContext {
     @Override
     public String toString() {
         return "ConditionContext{data=" + data + "}";
+    }
+    
+    /**
+     * Clear all data and return to pool.
+     */
+    public ConditionContext clear() {
+        data.clear();
+        return this;
     }
 }
