@@ -28,7 +28,6 @@ public class CumulativeGainTracker {
         
         synchronized (gains) {
             gains.addGains(xpGain, moneyGain);
-            System.out.println("[DEBUG] Added gains for " + player.getName() + ": +" + xpGain + " XP, +" + moneyGain + " money. Total: " + gains.totalXp + " XP, " + gains.totalMoney + " money");
             return new double[] {
                 gains.totalXp,
                 gains.totalMoney,
@@ -64,7 +63,6 @@ public class CumulativeGainTracker {
      * Clear gains for a player.
      */
     public static void clearGains(Player player) {
-        System.out.println("[DEBUG] Clearing gains for " + player.getName());
         PLAYER_GAINS.remove(player.getUniqueId());
     }
     
