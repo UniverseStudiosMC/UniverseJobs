@@ -17,10 +17,6 @@ import fr.ax_dev.universejobs.integration.MythicMobsHandler;
 import fr.ax_dev.universejobs.job.JobManager;
 import fr.ax_dev.universejobs.levelup.SimpleLevelUpActionManager;
 import fr.ax_dev.universejobs.listener.JobActionListener;
-import fr.ax_dev.universejobs.listener.NexoEventListener;
-import fr.ax_dev.universejobs.listener.ItemsAdderEventListener;
-import fr.ax_dev.universejobs.listener.CustomCropsEventListener;
-import fr.ax_dev.universejobs.listener.CustomFishingEventListener;
 import fr.ax_dev.universejobs.listener.EnchantEventListener;
 import fr.ax_dev.universejobs.protection.BlockProtectionManager;
 import fr.ax_dev.universejobs.reward.RewardManager;
@@ -186,41 +182,70 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         
         // Register Nexo event listener if Nexo is present
         if (getServer().getPluginManager().isPluginEnabled("Nexo")) {
-            getServer().getPluginManager().registerEvents(
-                new NexoEventListener(this, actionProcessor, protectionManager), 
-                this
-            );
-            // Nexo event listener registered
+            try {
+                Class<?> nexoListenerClass = Class.forName("fr.ax_dev.universejobs.listener.NexoEventListener");
+                Object nexoListener = nexoListenerClass
+                    .getConstructor(UniverseJobs.class, ActionProcessor.class, BlockProtectionManager.class)
+                    .newInstance(this, actionProcessor, protectionManager);
+                getServer().getPluginManager().registerEvents((Listener) nexoListener, this);
+                getLogger().info("Nexo event listener registered successfully");
+            } catch (Exception e) {
+                getLogger().warning("Failed to register Nexo event listener: " + e.getMessage());
+                if (configManager.isDebugEnabled()) {
+                    e.printStackTrace();
+                }
+            }
         }
         
         // Register ItemsAdder event listener if ItemsAdder is present
         if (getServer().getPluginManager().isPluginEnabled("ItemsAdder")) {
-            getServer().getPluginManager().registerEvents(
-                new ItemsAdderEventListener(this, actionProcessor, protectionManager), 
-                this
-            );
-            // ItemsAdder event listener registered
+            try {
+                Class<?> itemsAdderListenerClass = Class.forName("fr.ax_dev.universejobs.listener.ItemsAdderEventListener");
+                Object itemsAdderListener = itemsAdderListenerClass
+                    .getConstructor(UniverseJobs.class, ActionProcessor.class, BlockProtectionManager.class)
+                    .newInstance(this, actionProcessor, protectionManager);
+                getServer().getPluginManager().registerEvents((Listener) itemsAdderListener, this);
+                getLogger().info("ItemsAdder event listener registered successfully");
+            } catch (Exception e) {
+                getLogger().warning("Failed to register ItemsAdder event listener: " + e.getMessage());
+                if (configManager.isDebugEnabled()) {
+                    e.printStackTrace();
+                }
+            }
         }
         
         // Register CustomCrops event listener if CustomCrops is present
         if (getServer().getPluginManager().isPluginEnabled("CustomCrops")) {
-            getServer().getPluginManager().registerEvents(
-                new CustomCropsEventListener(this, actionProcessor, protectionManager), 
-                this
-            );
-            // CustomCrops event listener registered
+            try {
+                Class<?> customCropsListenerClass = Class.forName("fr.ax_dev.universejobs.listener.CustomCropsEventListener");
+                Object customCropsListener = customCropsListenerClass
+                    .getConstructor(UniverseJobs.class, ActionProcessor.class, BlockProtectionManager.class)
+                    .newInstance(this, actionProcessor, protectionManager);
+                getServer().getPluginManager().registerEvents((Listener) customCropsListener, this);
+                getLogger().info("CustomCrops event listener registered successfully");
+            } catch (Exception e) {
+                getLogger().warning("Failed to register CustomCrops event listener: " + e.getMessage());
+                if (configManager.isDebugEnabled()) {
+                    e.printStackTrace();
+                }
+            }
         }
         
         // Register CustomFishing event listener if CustomFishing is present
         if (getServer().getPluginManager().isPluginEnabled("CustomFishing")) {
-            getLogger().info("CustomFishing plugin detected - registering event listener");
-            getServer().getPluginManager().registerEvents(
-                new CustomFishingEventListener(this, actionProcessor), 
-                this
-            );
-            getLogger().info("CustomFishing event listener registered successfully");
-        } else {
-            getLogger().info("CustomFishing plugin not found - skipping CustomFishing integration");
+            try {
+                Class<?> customFishingListenerClass = Class.forName("fr.ax_dev.universejobs.listener.CustomFishingEventListener");
+                Object customFishingListener = customFishingListenerClass
+                    .getConstructor(UniverseJobs.class, ActionProcessor.class)
+                    .newInstance(this, actionProcessor);
+                getServer().getPluginManager().registerEvents((Listener) customFishingListener, this);
+                getLogger().info("CustomFishing event listener registered successfully");
+            } catch (Exception e) {
+                getLogger().warning("Failed to register CustomFishing event listener: " + e.getMessage());
+                if (configManager.isDebugEnabled()) {
+                    e.printStackTrace();
+                }
+            }
         }
         
         // Load player data for online players et précharge dans le cache
