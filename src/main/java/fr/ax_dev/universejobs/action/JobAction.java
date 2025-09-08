@@ -35,6 +35,7 @@ public class JobAction {
     private final List<String> nbtTags;
     private final List<String> potionTypes;
     private final List<String> blacklistedFurnaces;
+    private final String age;
     
     /**
      * Create a new JobAction from configuration.
@@ -66,6 +67,9 @@ public class JobAction {
         
         // Load blacklisted furnaces for SMELT actions
         this.blacklistedFurnaces = config.getStringList("blacklisted-furnaces");
+        
+        // Load age requirement for harvest actions
+        this.age = config.getString("age", null);
         
         // Load message configuration
         ConfigurationSection messageSection = config.getConfigurationSection("message");
@@ -720,6 +724,59 @@ public class JobAction {
      */
     public List<String> getBlacklistedFurnaces() {
         return blacklistedFurnaces;
+    }
+    
+    /**
+     * Get the age requirement for harvest actions.
+     * Supports ranges like "5-7" or single values like "7".
+     * 
+     * @return The age requirement or null if not specified
+     */
+    public String getAge() {
+        return age;
+    }
+    
+    /**
+     * Check if this action has age requirements.
+     * 
+     * @return true if age requirements exist
+     */
+    public boolean hasAgeRequirements() {
+        return age != null && !age.trim().isEmpty();
+    }
+    
+    /**
+     * Check if the current age matches the required age.
+     * Supports ranges like "5-7" or single values like "7".
+     * 
+     * @param currentAge The current age of the block/crop
+     * @return true if the age matches the requirement
+     */
+    public boolean matchesAge(int currentAge) {
+        if (!hasAgeRequirements()) {
+            return true;
+        }
+        
+        try {
+            String ageReq = age.trim();
+            
+            // Check for range (e.g., "5-7")
+            if (ageReq.contains("-")) {
+                String[] parts = ageReq.split("-", 2);
+                if (parts.length == 2) {
+                    int minAge = Integer.parseInt(parts[0].trim());
+                    int maxAge = Integer.parseInt(parts[1].trim());
+                    return currentAge >= minAge && currentAge <= maxAge;
+                }
+            }
+            
+            // Check for exact age (e.g., "7")
+            int requiredAge = Integer.parseInt(ageReq);
+            return currentAge == requiredAge;
+            
+        } catch (NumberFormatException e) {
+            return true;
+        }
     }
     
     /**
