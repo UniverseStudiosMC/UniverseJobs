@@ -200,7 +200,12 @@ public class LeaderboardDao {
                 invalidateCache();
                 
             } catch (SQLException e) {
-                if (e.getMessage() != null && e.getMessage().contains("has been closed")) {
+                if (!connectionPool.isInitialized()) {
+                    // Connection pool is shutdown, ignore silently
+                    return;
+                }
+                if (e.getMessage() != null && (e.getMessage().contains("has been closed") || 
+                    e.getMessage().contains("Connection pool not initialized"))) {
                     // Database connection pool is shutdown, ignore silently
                     return;
                 }

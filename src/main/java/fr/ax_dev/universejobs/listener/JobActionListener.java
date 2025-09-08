@@ -1465,9 +1465,10 @@ public class JobActionListener implements Listener {
                 return false;
             }
             
-            // Use ItemsAdder API to check if this is a custom block
-            dev.lone.itemsadder.api.CustomBlock customBlock = 
-                dev.lone.itemsadder.api.CustomBlock.byAlreadyPlaced(block);
+            // Use reflection to avoid NoClassDefFoundError when ItemsAdder is not present
+            Class<?> customBlockClass = Class.forName("dev.lone.itemsadder.api.CustomBlock");
+            java.lang.reflect.Method byAlreadyPlacedMethod = customBlockClass.getMethod("byAlreadyPlaced", org.bukkit.block.Block.class);
+            Object customBlock = byAlreadyPlacedMethod.invoke(null, block);
             
             return customBlock != null;
         } catch (Exception e) {

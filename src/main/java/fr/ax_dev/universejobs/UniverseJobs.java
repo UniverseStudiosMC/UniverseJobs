@@ -289,9 +289,17 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         try {
             stopSaveTask();
             savePlayerData();
+            
+            // Wait for all async save operations to complete
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            
             shutdownManagers();
             
-            // Wait a bit for async tasks to complete before shutting down storage
+            // Additional wait for any remaining async tasks
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {

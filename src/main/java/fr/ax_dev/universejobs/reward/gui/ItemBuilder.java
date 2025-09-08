@@ -300,11 +300,16 @@ public class ItemBuilder {
         }
         
         try {
-            dev.lone.itemsadder.api.CustomStack customStack = dev.lone.itemsadder.api.CustomStack.getInstance(itemsAdderId);
+            // Use reflection to avoid NoClassDefFoundError when ItemsAdder is not present
+            Class<?> customStackClass = Class.forName("dev.lone.itemsadder.api.CustomStack");
+            java.lang.reflect.Method getInstanceMethod = customStackClass.getMethod("getInstance", String.class);
+            Object customStack = getInstanceMethod.invoke(null, itemsAdderId);
+            
             if (customStack != null) {
-                return customStack.getItemStack();
+                java.lang.reflect.Method getItemStackMethod = customStack.getClass().getMethod("getItemStack");
+                return (ItemStack) getItemStackMethod.invoke(customStack);
             }
-        } catch (NoClassDefFoundError | Exception e) {
+        } catch (Exception e) {
             // ItemsAdder not available or API changed
         }
         

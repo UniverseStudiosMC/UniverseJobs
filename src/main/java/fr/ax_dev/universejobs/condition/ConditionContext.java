@@ -241,11 +241,22 @@ public class ConditionContext {
      */
     private String detectNexoBlockId(Block block) {
         try {
-            // Use direct Nexo API
-            com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic mechanic = 
-                com.nexomc.nexo.api.NexoBlocks.customBlockMechanic(block.getLocation());
+            // First check if Nexo is available
+            if (!org.bukkit.Bukkit.getPluginManager().isPluginEnabled("Nexo")) {
+                return null;
+            }
             
-            return mechanic != null ? mechanic.getItemID() : null;
+            // Use reflection to avoid NoClassDefFoundError when Nexo is not present
+            Class<?> nexoBlocksClass = Class.forName("com.nexomc.nexo.api.NexoBlocks");
+            java.lang.reflect.Method customBlockMechanicMethod = nexoBlocksClass.getMethod("customBlockMechanic", Location.class);
+            Object mechanic = customBlockMechanicMethod.invoke(null, block.getLocation());
+            
+            if (mechanic != null) {
+                java.lang.reflect.Method getItemIDMethod = mechanic.getClass().getMethod("getItemID");
+                return (String) getItemIDMethod.invoke(mechanic);
+            }
+            
+            return null;
             
         } catch (Exception ignored) {
             // Nexo not available or error occurred
