@@ -50,6 +50,13 @@ actions:
       - "Break a stone for gain reward" ## for actions menu
       xp: 1.0                              # XP earned
       money: 3.0                           # Money earned (optional)
+    simple_wheat:
+      target: "WHEAT"                       # Block to break
+      age: 7 #5-7 or 7 etc..
+      display-name: "harvest a wheat"
+      lore: []
+      xp: 2.0
+      money: 3.0
   BLOCK_INTERACT: ##
     simple_cobble:
       interact-type: "RIGHT_CLICK" #LEFT_CLICK, LEFT_SHIFT_CLICK, RIGHT_CLICK, RIGHT_SHIFT_CLICK (default: right click)
