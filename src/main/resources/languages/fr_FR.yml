@@ -170,7 +170,6 @@ commands:
     reset: "&e/jobs admin reset <joueur> [métier|ALL] &7- Réinitialiser les données du joueur"
     info: "&e/jobs admin info <joueur> &7- Afficher les informations du joueur"
     reload: "&e/jobs admin reload &7- Recharger la configuration et les métiers"
-    debug: "&e/jobs admin debug <xp|cache|config> &7- Déboguer le système XP/cache/config"
     
     # Messages d'aide give
     give-help-header: "&6---- Aide Commandes Give ----"
@@ -244,6 +243,7 @@ commands:
     reset-success: "&aRéinitialisation de &e{player} &aterminée ! Nettoyé &e{cleanedJobs}&a/&e{totalJobs} &amétiers."
     reset-job-success: "&aRéinitialisation de &e{job} &apour &e{player} !"
     reset-error: "&cErreur lors de la réinitialisation des données du joueur !"
+    reset-notify: "&cVos données de métier ont été réinitialisées par un administrateur."
     
     # Give custom
     givecustom-success: "&aDonné à &e{player} &ades récompenses personnalisées pour &e{job}&a : &b{xp} XP &aet &6{money}€"

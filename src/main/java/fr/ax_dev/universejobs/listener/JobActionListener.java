@@ -25,6 +25,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.block.data.Ageable;
 import org.bukkit.event.entity.EntityBreedEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTameEvent;
@@ -218,6 +219,17 @@ public class JobActionListener implements Listener {
                     .setBlock(event.getBlock())
                     .set(TARGET_KEY, event.getBlock().getType().name());
             
+            // Add age data for ageable blocks (crops, etc.)
+            if (event.getBlock().getBlockData() instanceof Ageable) {
+                Ageable ageable = (Ageable) event.getBlock().getBlockData();
+                context.set("age", String.valueOf(ageable.getAge()));
+                context.set("max_age", String.valueOf(ageable.getMaximumAge()));
+                
+                if (configCache.isDebugEnabled()) {
+                    plugin.getLogger().info("Block " + event.getBlock().getType().name() + " has age " + ageable.getAge() + "/" + ageable.getMaximumAge());
+                }
+            }
+            
             if (configCache.isDebugEnabled()) {
                 plugin.getLogger().info("Processing BREAK action for " + player.getName() + TARGET_SUFFIX + event.getBlock().getType().name());
             }
@@ -269,6 +281,17 @@ public class JobActionListener implements Listener {
         ConditionContext context = new ConditionContext()
                 .setBlock(event.getBlock())
                 .set(TARGET_KEY, event.getBlock().getType().name());
+        
+        // Add age data for ageable blocks (crops, etc.)
+        if (event.getBlock().getBlockData() instanceof Ageable) {
+            Ageable ageable = (Ageable) event.getBlock().getBlockData();
+            context.set("age", String.valueOf(ageable.getAge()));
+            context.set("max_age", String.valueOf(ageable.getMaximumAge()));
+            
+            if (configCache.isDebugEnabled()) {
+                plugin.getLogger().info("Block " + event.getBlock().getType().name() + " placed with age " + ageable.getAge() + "/" + ageable.getMaximumAge());
+            }
+        }
         
         // Process the action (MONITOR priority - no cancellation)
         actionProcessor.processAction(player, ActionType.PLACE, event, context);

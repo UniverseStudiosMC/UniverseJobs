@@ -213,6 +213,10 @@ public class ActionProcessor {
             return false;
         }
         
+        if (!validateAge(action, context, job)) {
+            return false;
+        }
+        
         ActionType actionType = job.getActionTypeForAction(action);
         if (!validateFurnaceType(action, context, actionType)) {
             return false;
@@ -275,6 +279,7 @@ public class ActionProcessor {
             if (!validateNbtFast(action, context)) continue;
             if (!validatePotionTypeFast(action, context)) continue;
             if (!validateEnchantLevelFast(action, context, job)) continue;
+            if (!validateAgeFast(action, context)) continue;
             if (!validateFurnaceTypeFast(action, context, actionType)) continue;
             
             if (configCache.isDebugEnabled()) {
@@ -382,6 +387,24 @@ public class ActionProcessor {
         try {
             int enchantLevel = Integer.parseInt(enchantLevelStr);
             return matchesEnchantLevel(action.getEnchantLevel(), enchantLevel);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+    
+    private boolean validateAgeFast(JobAction action, ConditionContext context) {
+        if (!action.hasAgeRequirements()) {
+            return true;
+        }
+        
+        String ageStr = context.get("age");
+        if (ageStr == null) {
+            return false;
+        }
+        
+        try {
+            int currentAge = Integer.parseInt(ageStr);
+            return action.matchesAge(currentAge);
         } catch (NumberFormatException e) {
             return false;
         }
@@ -670,6 +693,33 @@ public class ActionProcessor {
                 ", blocked: " + isBlacklisted);
         
         return !isBlacklisted;
+    }
+    
+    private boolean validateAge(JobAction action, ConditionContext context, Job job) {
+        // If no age requirements specified, allow all ages
+        if (!action.hasAgeRequirements()) {
+            return true;
+        }
+        
+        String ageStr = context.get("age");
+        if (ageStr == null) {
+            debugLog("Age check - no age in context");
+            return false;
+        }
+        
+        try {
+            int currentAge = Integer.parseInt(ageStr);
+            boolean ageMatches = action.matchesAge(currentAge);
+            
+            debugLog("Age check - required: " + action.getAge() + 
+                    ", actual: " + currentAge + 
+                    MATCHES_SUFFIX + ageMatches);
+            
+            return ageMatches;
+        } catch (NumberFormatException e) {
+            debugLog("Age check - invalid age format: " + ageStr);
+            return false;
+        }
     }
     
     /**

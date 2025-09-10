@@ -18,13 +18,19 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class AdminJobCommandHandler extends JobCommandHandler {
     
     private final JobManager jobManager;
     private final BoostCommandHandler boostHandler;
+    
+    // Confirmation cache for reset commands
+    private final Map<String, Long> resetConfirmations = new ConcurrentHashMap<>();
+    private static final long CONFIRMATION_TIMEOUT = 10000L; // 10 seconds
     
     public AdminJobCommandHandler(UniverseJobs plugin, JobManager jobManager) {
         super(plugin);
@@ -65,7 +71,6 @@ public class AdminJobCommandHandler extends JobCommandHandler {
             case "reset" -> handleReset(sender, args);
             case "info" -> handlePlayerInfo(sender, args);
             case "reload" -> handleReload(sender, args);
-            case "debug" -> handleDebug(sender, args);
             case "boost" -> {
                 boostHandler.handleCommand(sender, args);
                 yield true;
@@ -105,75 +110,169 @@ public class AdminJobCommandHandler extends JobCommandHandler {
     }
     
     private boolean handleGiveCustom(CommandSender sender, String[] args) {
-        if (args.length < 6) {
-            MessageUtils.sendMessage(sender, "&cUsage: /jobs admin givecustom <player> <job> <exp> <money>");
+        if (args.length < 7) {
+            MessageUtils.sendMessage(sender, "&cUsage: /jobs admin give custom <action> <player> <job> <exp> [money] [silent]");
             return true;
         }
+        
         
         if (!sender.hasPermission("universejobs.admin.givecustom")) {
             sendMessage(sender, "no-permission");
             return true;
         }
         
-        String playerName = args[2];
-        String jobId = args[3];
+        final String action = args[3];
+        final String playerName = args[4];
+        final String jobId = args[5];
         
-        double xp, money;
+        final double xp;
+        double tempMoney = 0;
+        boolean tempSilent = false;
+        
         try {
-            xp = Double.parseDouble(args[4]);
-            money = Double.parseDouble(args[5]);
+            xp = Double.parseDouble(args[6]);
+            
+            // Check for money parameter
+            if (args.length >= 8) {
+                // Try to parse as money first
+                try {
+                    tempMoney = Double.parseDouble(args[7]);
+                    // Check for silent parameter after money
+                    tempSilent = args.length >= 9 && "silent".equalsIgnoreCase(args[8]);
+                } catch (NumberFormatException e) {
+                    // If args[7] is not a number, maybe it's "silent"
+                    if ("silent".equalsIgnoreCase(args[7])) {
+                        tempMoney = 0;
+                        tempSilent = true;
+                    } else {
+                        tempMoney = 0;
+                        tempSilent = false;
+                    }
+                }
+            }
         } catch (NumberFormatException e) {
             MessageUtils.sendMessage(sender, "&cInvalid amounts. Use numbers.");
             return true;
         }
         
+        final double money = tempMoney;
+        final boolean silent = tempSilent;
+        
         OfflinePlayer target = Bukkit.getOfflinePlayer(playerName);
-        if (target == null || !target.hasPlayedBefore()) {
-            sendMessage(sender, "player-not-found", "player", playerName);
+        if (target == null) {
+            if (!silent) {
+                MessageUtils.sendMessage(sender, "&cPlayer " + playerName + " not found.");
+            }
             return true;
+        }
+        
+        // Debug info
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("Give custom command - Player: " + playerName + ", Job: " + jobId + ", XP: " + xp + ", Money: " + money + ", Silent: " + silent);
+            plugin.getLogger().info("Target player UUID: " + target.getUniqueId() + ", HasPlayedBefore: " + target.hasPlayedBefore());
         }
         
         Job job = jobManager.getJob(jobId);
         if (job == null) {
-            sendMessage(sender, "job-not-found", "job", jobId);
+            if (!silent) {
+                sendMessage(sender, "job-not-found", "job", jobId);
+            }
             return true;
         }
         
         plugin.getFoliaManager().runAsync(() -> {
             try {
                 PlayerJobData playerData = jobManager.getPlayerData(target.getUniqueId());
+                
+                // Check if player has the job - if not, don't give anything
                 if (!playerData.hasJob(jobId)) {
-                    plugin.getFoliaManager().runNextTick(() -> 
-                        sendMessage(sender, "player-no-job", "player", playerName, "job", jobId));
+                    if (!silent) {
+                        plugin.getFoliaManager().runNextTick(() -> 
+                            sendMessage(sender, "player-no-job", "player", playerName, "job", jobId));
+                    }
                     return;
                 }
                 
-                if (xp > 0) {
-                    playerData.addXp(jobId, xp);
+                // Apply multipliers if player is online - using arrays to make final
+                final double[] finalValues = {xp, money}; // [0] = finalXp, [1] = finalMoney
+                
+                if (target.isOnline() && target.getPlayer() != null) {
+                    Player onlinePlayer = target.getPlayer();
+                    finalValues[0] = applyXpMultipliers(onlinePlayer, job, xp);
+                    finalValues[1] = applyMoneyMultipliers(onlinePlayer, job, money);
+                    
+                    if (plugin.getConfigManager().isDebugEnabled()) {
+                        plugin.getLogger().info("Applied multipliers - Original XP: " + xp + ", Final XP: " + finalValues[0] + 
+                                               ", Original Money: " + money + ", Final Money: " + finalValues[1]);
+                    }
                 }
                 
-                if (money > 0) {
-                    addPlayerMoney(target, money);
+                // Handle different actions
+                switch (action.toLowerCase()) {
+                    case "give" -> {
+                        if (finalValues[0] > 0) {
+                            playerData.addXp(jobId, finalValues[0]);
+                        }
+                        if (finalValues[1] > 0) {
+                            addPlayerMoney(target, finalValues[1]);
+                        }
+                    }
+                    case "set" -> {
+                        // For set action, don't apply multipliers - set exact value
+                        if (xp > 0) {
+                            playerData.setXp(jobId, xp);
+                        }
+                        // Money setting not supported for set action
+                        finalValues[0] = xp; // Reset to original for message
+                        finalValues[1] = 0;
+                    }
+                    case "remove" -> {
+                        // For remove action, use original values (no multipliers for removal)
+                        if (xp > 0) {
+                            double currentXp = playerData.getXp(jobId);
+                            double newXp = Math.max(0, currentXp - xp); // Don't go below 0
+                            playerData.setXp(jobId, newXp);
+                        }
+                        if (money > 0) {
+                            removePlayerMoney(target, money);
+                        }
+                        finalValues[0] = xp; // Reset to original for message
+                        finalValues[1] = money;
+                    }
+                    default -> {
+                        if (!silent) {
+                            plugin.getFoliaManager().runNextTick(() -> 
+                                MessageUtils.sendMessage(sender, "&cInvalid action. Use: give, set, remove"));
+                        }
+                        return;
+                    }
                 }
                 
                 plugin.getFoliaManager().runNextTick(() -> {
-                    sendMessage(sender, "givecustom-success", "player", target.getName(), 
-                               "job", job.getName(), "xp", String.valueOf(xp), "money", String.valueOf(money));
+                    // Show final values (with multipliers) in admin message (only if not silent)
+                    if (!silent) {
+                        sendMessage(sender, "givecustom-success", "player", target.getName(), 
+                                   "job", job.getName(), "xp", String.valueOf(finalValues[0]), "money", String.valueOf(finalValues[1]));
+                    }
                     
-                    if (target.isOnline()) {
+                    // Always send XP message to player (even in silent mode)
+                    if (target.isOnline() && "give".equals(action.toLowerCase())) {
                         Player onlinePlayer = target.getPlayer();
                         
-                        String messageText = job.getXpMessageSettings().processMessage(xp, money);
+                        // Send XP message to player with final values
+                        String messageText = job.getXpMessageSettings().processMessage(finalValues[0], finalValues[1]);
                         messageText = messageText.replace("{job}", job.getDisplayName());
                         
-                        plugin.getMessageSender().sendXpMessage(onlinePlayer, job, xp, money, playerData);
+                        plugin.getMessageSender().sendXpMessage(onlinePlayer, job, finalValues[0], finalValues[1], playerData);
                     }
                 });
                 
             } catch (Exception e) {
                 plugin.getLogger().warning("Error during givecustom: " + e.getMessage());
-                plugin.getFoliaManager().runNextTick(() -> 
-                    MessageUtils.sendMessage(sender, "&cError while giving rewards."));
+                if (!silent) {
+                    plugin.getFoliaManager().runNextTick(() -> 
+                        MessageUtils.sendMessage(sender, "&cError while giving rewards."));
+                }
             }
         });
         
@@ -190,6 +289,20 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                 }
             } catch (Exception e) {
                 plugin.getLogger().warning("Failed to use Vault for money reward: " + e.getMessage());
+            }
+        }
+    }
+    
+    private void removePlayerMoney(OfflinePlayer player, double amount) {
+        if (plugin.getServer().getPluginManager().isPluginEnabled("Vault")) {
+            try {
+                net.milkbowl.vault.economy.Economy economy = getVaultEconomy();
+                if (economy != null) {
+                    economy.withdrawPlayer(player, amount);
+                    return;
+                }
+            } catch (Exception e) {
+                plugin.getLogger().warning("Failed to use Vault for money removal: " + e.getMessage());
             }
         }
     }
@@ -279,6 +392,9 @@ public class AdminJobCommandHandler extends JobCommandHandler {
     }
     
     private boolean handleReset(CommandSender sender, String[] args) {
+        // Clean up expired confirmations
+        cleanupExpiredConfirmations();
+        
         if (args.length < 3) {
             sendMessage(sender, "usage.reset");
             return true;
@@ -298,12 +414,28 @@ public class AdminJobCommandHandler extends JobCommandHandler {
             return true;
         }
         
+        final String finalJobId;
         if (jobId == null) {
-            sendMessage(sender, "reset-confirmation", "player", playerName);
-            return true;
+            // Check if there's a pending confirmation
+            String confirmationKey = sender.getName() + ":" + playerName;
+            long currentTime = System.currentTimeMillis();
+            Long lastConfirmation = resetConfirmations.get(confirmationKey);
+            
+            if (lastConfirmation != null && (currentTime - lastConfirmation) <= CONFIRMATION_TIMEOUT) {
+                // User confirmed within 10 seconds, proceed with reset
+                resetConfirmations.remove(confirmationKey);
+                finalJobId = "ALL"; // Reset all jobs
+            } else {
+                // First time or expired, ask for confirmation
+                resetConfirmations.put(confirmationKey, currentTime);
+                sendMessage(sender, "reset-confirmation", "player", playerName);
+                return true;
+            }
+        } else {
+            finalJobId = jobId;
         }
         
-        if ("ALL".equalsIgnoreCase(jobId)) {
+        if ("ALL".equalsIgnoreCase(finalJobId)) {
             plugin.getFoliaManager().runAsync(() -> {
                 try {
                     PlayerJobData playerData = jobManager.getPlayerData(target.getUniqueId());
@@ -336,9 +468,9 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                 }
             });
         } else {
-            Job job = jobManager.getJob(jobId);
+            Job job = jobManager.getJob(finalJobId);
             if (job == null) {
-                sendMessage(sender, "job-not-found", "job", jobId);
+                sendMessage(sender, "job-not-found", "job", finalJobId);
                 return true;
             }
             
@@ -346,13 +478,13 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                 try {
                     PlayerJobData playerData = jobManager.getPlayerData(target.getUniqueId());
                     
-                    playerData.setXp(jobId, 0);
-                    playerData.setLevel(jobId, 0);
+                    playerData.setXp(finalJobId, 0);
+                    playerData.setLevel(finalJobId, 0);
                     
                     jobManager.savePlayerData(target.getUniqueId());
                     
                     if (target.isOnline()) {
-                        plugin.getPlayerCache().updatePlayerXp(target.getUniqueId(), jobId, 0, 0);
+                        plugin.getPlayerCache().updatePlayerXp(target.getUniqueId(), finalJobId, 0, 0);
                     }
                     
                     plugin.getFoliaManager().runNextTick(() -> {
@@ -793,79 +925,6 @@ public class AdminJobCommandHandler extends JobCommandHandler {
         return true;
     }
     
-    private boolean handleDebug(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("universejobs.admin.debug")) {
-            sendMessage(sender, "no-permission");
-            return true;
-        }
-        
-        if (args.length < 3) {
-            sendMessage(sender, "usage.debug");
-            return true;
-        }
-        
-        String debugType = args[2].toLowerCase();
-        
-        switch (debugType) {
-            case "xp" -> debugXpSystem(sender);
-            case "cache" -> debugCacheSystem(sender);
-            case "config" -> debugConfiguration(sender);
-            default -> {
-                sendMessage(sender, "debug-invalid-type", "type", debugType);
-                sendMessage(sender, "debug-available-types");
-            }
-        }
-        
-        return true;
-    }
-    
-    private void debugXpSystem(CommandSender sender) {
-        sendMessage(sender, "debug-xp-header");
-        
-        var jobs = jobManager.getAllJobs();
-        sendMessage(sender, "debug-jobs", "count", String.valueOf(jobs.size()));
-        
-        for (var job : jobs) {
-            MessageUtils.sendMessage(sender, 
-                languageManager.getMessage("commands.admin.debug-job-enabled", 
-                    "job", job.getId(), "enabled", String.valueOf(job.isEnabled())));
-            var breakActions = job.getActions(fr.ax_dev.universejobs.action.ActionType.BREAK);
-            MessageUtils.sendMessage(sender, 
-                languageManager.getMessage("commands.admin.debug-actions-break", 
-                    "count", String.valueOf(breakActions.size())));
-        }
-        
-        if (plugin.getConfigCache() != null) {
-            sendMessage(sender, "debug-cache-configured");
-            sendMessage(sender, "debug-enabled", "enabled", String.valueOf(plugin.getConfigCache().isDebugEnabled()));
-        } else {
-            sendMessage(sender, "debug-cache-not-configured");
-        }
-    }
-    
-    private void debugCacheSystem(CommandSender sender) {
-        sendMessage(sender, "debug-cache-header");
-        
-        if (plugin.getConfigCache() != null) {
-            var stats = plugin.getConfigCache().getCacheStats();
-            MessageUtils.sendMessage(sender, 
-                languageManager.getMessage("commands.admin.debug-cache-stats", "stats", String.valueOf(stats)));
-        }
-        
-        if (plugin.getPlayerCache() != null) {
-            var playerStats = plugin.getPlayerCache().getStats();
-            playerStats.forEach((key, value) ->
-                MessageUtils.sendMessage(sender, 
-                    languageManager.getMessage("commands.admin.debug-stat-entry", "key", key, "value", String.valueOf(value))));
-        }
-    }
-    
-    private void debugConfiguration(CommandSender sender) {
-        sendMessage(sender, "debug-config-header");
-        
-        sendMessage(sender, "debug-enabled", "enabled", String.valueOf(plugin.getConfig().getBoolean("debug", false)));
-        sendMessage(sender, "debug-show-xp", "enabled", String.valueOf(plugin.getConfig().getBoolean("messages.show-xp-gain", true)));
-    }
     
     private void sendAdminHelp(CommandSender sender) {
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.header"));
@@ -876,12 +935,11 @@ public class AdminJobCommandHandler extends JobCommandHandler {
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.reset"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.info"));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.reload"));
-        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.debug"));
     }
     
     public List<String> getTabCompletions(CommandSender sender, String[] args) {
         if (args.length == 2) {
-            return Arrays.asList("give", "boost", "forcejoin", "forceleave", "reset", "info", "reload", "debug", "migrate");
+            return Arrays.asList("give", "boost", "forcejoin", "forceleave", "reset", "info", "reload", "migrate");
         }
         
         if (args.length == 3) {
@@ -896,9 +954,6 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                     .collect(Collectors.toList());
             }
             
-            if ("debug".equals(subCommand)) {
-                return Arrays.asList("xp", "cache", "config");
-            }
             
             if ("migrate".equals(subCommand)) {
                 return Arrays.asList("sqlite", "mysql");
@@ -1057,5 +1112,72 @@ public class AdminJobCommandHandler extends JobCommandHandler {
         });
         
         return true;
+    }
+    
+    /**
+     * Apply multipliers to XP amount (permissions + boosts).
+     */
+    private double applyXpMultipliers(Player player, Job job, double baseXp) {
+        if (player == null || job == null || baseXp <= 0) {
+            return baseXp;
+        }
+        
+        // Apply permission multipliers
+        double multiplier = getPermissionMultiplier(player);
+        double xpWithPermissions = baseXp * multiplier;
+        
+        // Apply bonus multipliers (boosts)
+        if (plugin.getBonusManager() != null) {
+            double bonusMultiplier = plugin.getBonusManager().getTotalMultiplier(player.getUniqueId(), job.getId());
+            xpWithPermissions *= bonusMultiplier;
+        }
+        
+        return xpWithPermissions;
+    }
+    
+    /**
+     * Apply multipliers to money amount (boosts only, no permission multipliers for money).
+     */
+    private double applyMoneyMultipliers(Player player, Job job, double baseMoney) {
+        if (player == null || job == null || baseMoney <= 0) {
+            return baseMoney;
+        }
+        
+        // Apply money bonus multipliers (boosts)
+        if (plugin.getMoneyBonusManager() != null) {
+            double moneyBonusMultiplier = plugin.getMoneyBonusManager().getTotalMultiplier(player.getUniqueId(), job.getId());
+            return baseMoney * moneyBonusMultiplier;
+        }
+        
+        return baseMoney;
+    }
+    
+    /**
+     * Get permission multiplier for a player (simplified version without caching).
+     */
+    private double getPermissionMultiplier(Player player) {
+        double multiplier = 1.0;
+        
+        // Skip if player is OP or has wildcard permission to avoid overpowered bonuses
+        if (!player.isOp() && !player.hasPermission("*")) {
+            for (int i = 10; i >= 1; i--) {
+                String permission = "universejobs.multiplier.exp." + i;
+                if (player.hasPermission(permission)) {
+                    multiplier = i;
+                    break;
+                }
+            }
+        }
+        
+        return multiplier;
+    }
+    
+    /**
+     * Clean up expired reset confirmations to prevent memory leaks.
+     */
+    private void cleanupExpiredConfirmations() {
+        long currentTime = System.currentTimeMillis();
+        resetConfirmations.entrySet().removeIf(entry -> 
+            (currentTime - entry.getValue()) > CONFIRMATION_TIMEOUT);
     }
 }

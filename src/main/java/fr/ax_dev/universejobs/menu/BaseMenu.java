@@ -219,11 +219,42 @@ public abstract class BaseMenu implements InventoryHolder {
                     playSound(sound);
                 }
                 
+                // Execute commands if present
+                if (navItem.getCommands() != null && !navItem.getCommands().isEmpty()) {
+                    executeCommands(navItem.getCommands());
+                }
+                
                 return handleActionClick(action);
             }
         }
         
         return false;
+    }
+    
+    /**
+     * Execute commands for menu items.
+     */
+    protected void executeCommands(List<String> commands) {
+        if (commands == null || commands.isEmpty()) return;
+        
+        for (String command : commands) {
+            // Replace placeholders
+            String processedCommand = command.replace("{player}", player.getName());
+            
+            // Handle command prefixes
+            if (processedCommand.startsWith("[console] ")) {
+                // Execute as console
+                String consoleCommand = processedCommand.substring(10);
+                plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), consoleCommand);
+            } else if (processedCommand.startsWith("[player] ")) {
+                // Execute as player
+                String playerCommand = processedCommand.substring(9);
+                plugin.getServer().dispatchCommand(player, playerCommand);
+            } else {
+                // Default: execute as console
+                plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), processedCommand);
+            }
+        }
     }
     
     /**

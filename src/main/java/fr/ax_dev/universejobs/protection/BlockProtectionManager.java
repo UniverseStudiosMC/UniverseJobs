@@ -1,6 +1,7 @@
 package fr.ax_dev.universejobs.protection;
 
 import fr.ax_dev.universejobs.UniverseJobs;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -11,6 +12,7 @@ import com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic;
 
 // Nexo imports handled via reflection to avoid compilation errors when Nexo is not available
 
+import java.util.List;
 import java.util.logging.Level;
 
 /**
@@ -24,6 +26,7 @@ public class BlockProtectionManager {
     private final UniverseJobs plugin;
     private boolean enabled;
     private boolean nexoEnabled;
+    private List<String> blacklist;
     
     /**
      * Create a new block protection manager.
@@ -45,6 +48,7 @@ public class BlockProtectionManager {
      */
     private void loadConfiguration() {
         this.enabled = plugin.getConfig().getBoolean("block-protection.enabled", true);
+        this.blacklist = plugin.getConfig().getStringList("block-protection.blacklist");
     }
     
     /**
@@ -125,6 +129,15 @@ public class BlockProtectionManager {
         if (!enabled) {
             if (plugin.getConfigManager().isDebugEnabled()) {
                 plugin.getLogger().info("Block protection disabled - allowing XP for block at " + block.getLocation());
+            }
+            return false;
+        }
+        
+        // Check if block type is in blacklist (exempt from protection)
+        String blockType = block.getType().name();
+        if (blacklist != null && blacklist.contains(blockType)) {
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("Block type " + blockType + " is blacklisted - allowing XP");
             }
             return false;
         }

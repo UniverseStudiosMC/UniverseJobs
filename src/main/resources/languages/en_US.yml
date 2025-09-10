@@ -168,7 +168,6 @@ commands:
     reset: "&e/jobs admin reset <player> [job|ALL] &7- Reset player data"
     info: "&e/jobs admin info <player> &7- Show player information"
     reload: "&e/jobs admin reload &7- Reload configuration and jobs"
-    debug: "&e/jobs admin debug <xp|cache|config> &7- Debug XP/cache/config system"
     
     # Give help messages
     give-help-header: "&6---- Give Commands Help ----"

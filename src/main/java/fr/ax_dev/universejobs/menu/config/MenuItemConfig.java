@@ -27,6 +27,7 @@ public class MenuItemConfig {
     private final String skullOwner;
     private final String playerHead;
     private final String sound;
+    private final List<String> commands;
     
     
     // Else configuration for toggle-job
@@ -62,6 +63,7 @@ public class MenuItemConfig {
         this.skullOwner = config.getString("skull-owner", "");
         this.playerHead = config.getString("player-head", "");
         this.sound = config.getString("sound", (String) defaults.getOrDefault("sound", ""));
+        this.commands = config.getStringList("commands");
         
         
         // Load else configuration for toggle-job
@@ -151,6 +153,7 @@ public class MenuItemConfig {
     public String getSkullOwner() { return skullOwner; }
     public String getPlayerHead() { return playerHead; }
     public String getSound() { return sound; }
+    public List<String> getCommands() { return commands; }
     
     
     // Else configuration getters
