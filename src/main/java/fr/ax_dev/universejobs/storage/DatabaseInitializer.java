@@ -128,7 +128,7 @@ public class DatabaseInitializer {
                     // Validate that this is a safe schema statement (no user input)
                     if (isValidSchemaStatement(schemaStatement)) {
                         try {
-                            stmt.execute(schemaStatement);
+                            stmt.execute(schemaStatement); // NOSONAR - Schema statements are validated by isValidSchemaStatement
                             plugin.getLogger().fine("Executed database initialization statement successfully");
                         } catch (Exception e) {
                             // Log warning but continue with other statements

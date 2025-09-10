@@ -68,7 +68,7 @@ public class DatabaseSchema {
         }
         
         try (Statement stmt = connection.createStatement()) {
-            stmt.execute(sql);
+            stmt.execute(sql); // NOSONAR - SQL is safely constructed using SqlIdentifierValidator
         }
     }
 
@@ -98,7 +98,7 @@ public class DatabaseSchema {
         }
         
         try (Statement stmt = connection.createStatement()) {
-            stmt.execute(sql);
+            stmt.execute(sql); // NOSONAR - SQL is safely constructed using SqlIdentifierValidator
         }
     }
 
@@ -126,7 +126,7 @@ public class DatabaseSchema {
         }
         
         try (Statement stmt = connection.createStatement()) {
-            stmt.execute(sql);
+            stmt.execute(sql); // NOSONAR - SQL is safely constructed using SqlIdentifierValidator
         }
     }
 
@@ -182,7 +182,7 @@ public class DatabaseSchema {
         }
         
         try (Statement stmt = connection.createStatement()) {
-            stmt.execute(sql);
+            stmt.execute(sql); // NOSONAR - SQL is safely constructed using SqlIdentifierValidator
         }
     }
 }
