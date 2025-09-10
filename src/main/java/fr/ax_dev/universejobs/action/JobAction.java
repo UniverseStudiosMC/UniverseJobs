@@ -24,6 +24,7 @@ public class JobAction {
     private final String name;
     private final String description;
     private final String displayName;
+    private final String displayMaterial;
     private final List<String> lore;
     private final MessageConfig message;
     private final List<String> commands;
@@ -49,6 +50,7 @@ public class JobAction {
         this.name = config.getString("name", "");
         this.description = config.getString("description", "");
         this.displayName = applyDefaultFormatting(config.getString("display-name", ""));
+        this.displayMaterial = config.getString("display-material", null);
         this.lore = applyDefaultFormattingToList(config.getStringList("lore"));
         this.interactType = config.getString("interact-type", "RIGHT_CLICK").toUpperCase();
         this.enchantLevel = config.getString("enchant-level", null);
@@ -277,6 +279,16 @@ public class JobAction {
      */
     public String getDisplayName() {
         return displayName;
+    }
+    
+    /**
+     * Get the custom display material for this action.
+     * Format: "MATERIAL" or "MATERIAL:custom_model_data"
+     * 
+     * @return The display material, or null if not set
+     */
+    public String getDisplayMaterial() {
+        return displayMaterial;
     }
     
     /**
