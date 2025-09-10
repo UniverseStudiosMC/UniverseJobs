@@ -1,6 +1,6 @@
--- SQL Server compatibility settings (uncomment if using SQL Server)
--- SET QUOTED_IDENTIFIER ON;
--- GO
+-- SQL Server compatibility settings
+SET QUOTED_IDENTIFIER ON;
+GO
 
 -- UniverseJobs Database Schema
 -- Cross-database compatible schema for player job data and rewards
