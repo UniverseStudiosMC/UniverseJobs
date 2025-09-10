@@ -64,22 +64,10 @@ public class MessageConfig {
                     styleStr = "SEGMENTED_6";
                 }
             }
-            BarStyle tempStyle;
-            try {
-                tempStyle = BarStyle.valueOf(styleStr);
-            } catch (IllegalArgumentException e) {
-                tempStyle = BarStyle.SOLID;
-            }
-            this.bossbarStyle = tempStyle;
+            this.bossbarStyle = fr.ax_dev.universejobs.utils.EnumUtils.parseBarStyle(styleStr, BarStyle.SOLID);
             
             String colorStr = config.getString("color", "GREEN").toUpperCase();
-            BarColor tempColor;
-            try {
-                tempColor = BarColor.valueOf(colorStr);
-            } catch (IllegalArgumentException e) {
-                tempColor = BarColor.GREEN;
-            }
-            this.bossbarColor = tempColor;
+            this.bossbarColor = fr.ax_dev.universejobs.utils.EnumUtils.parseBarColor(colorStr, BarColor.GREEN);
         }
     }
     

@@ -59,15 +59,10 @@ public class ItemCondition extends AbstractCondition {
         if (!materials.isEmpty()) {
             boolean materialMatched = false;
             for (String materialName : materials) {
-                try {
-                    Material requiredMaterial = Material.valueOf(materialName.toUpperCase());
-                    if (item.getType() == requiredMaterial) {
-                        materialMatched = true;
-                        break;
-                    }
-                } catch (IllegalArgumentException e) {
-                    // Invalid material name, continue checking others
-                    continue;
+                Material requiredMaterial = fr.ax_dev.universejobs.utils.EnumUtils.parseMaterial(materialName, null);
+                if (requiredMaterial != null && item.getType() == requiredMaterial) {
+                    materialMatched = true;
+                    break;
                 }
             }
             if (!materialMatched) {

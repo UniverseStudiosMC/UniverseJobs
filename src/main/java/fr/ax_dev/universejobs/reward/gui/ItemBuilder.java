@@ -57,10 +57,8 @@ public class ItemBuilder {
      * @return New ItemBuilder instance
      */
     public static ItemBuilder of(UniverseJobs plugin, String materialName) {
-        Material material;
-        try {
-            material = Material.valueOf(materialName.toUpperCase());
-        } catch (IllegalArgumentException e) {
+        Material material = fr.ax_dev.universejobs.utils.EnumUtils.parseMaterial(materialName, null);
+        if (material == null) {
             plugin.getLogger().severe("Unknown material: " + materialName);
             return null;
         }
@@ -419,7 +417,10 @@ public class ItemBuilder {
         
         // Regular Bukkit material
         try {
-            Material material = Material.valueOf(materialName.toUpperCase());
+            Material material = fr.ax_dev.universejobs.utils.EnumUtils.parseMaterial(materialName, null);
+            if (material == null) {
+                return null;
+            }
             return new ItemBuilder(plugin, material);
         } catch (IllegalArgumentException e) {
             plugin.getLogger().severe("Unknown material: " + materialName);

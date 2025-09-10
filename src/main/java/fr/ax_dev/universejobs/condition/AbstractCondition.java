@@ -60,7 +60,7 @@ public abstract class AbstractCondition implements Condition {
                     denySound = Registry.SOUNDS.get(key);
                     if (denySound == null) {
                         // Fallback to valueOf for compatibility
-                        denySound = Sound.valueOf(denySoundStr.toUpperCase());
+                        denySound = fr.ax_dev.universejobs.utils.EnumUtils.parseSound(denySoundStr, null);
                     }
                 } catch (Exception ignored) {}
             }
@@ -100,7 +100,7 @@ public abstract class AbstractCondition implements Condition {
                     acceptSound = Registry.SOUNDS.get(key);
                     if (acceptSound == null) {
                         // Fallback to valueOf for compatibility
-                        acceptSound = Sound.valueOf(acceptSoundStr.toUpperCase());
+                        acceptSound = fr.ax_dev.universejobs.utils.EnumUtils.parseSound(acceptSoundStr, null);
                     }
                 } catch (Exception ignored) {}
             }

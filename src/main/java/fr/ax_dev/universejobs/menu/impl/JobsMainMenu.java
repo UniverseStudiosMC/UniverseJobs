@@ -190,12 +190,11 @@ public class JobsMainMenu extends BaseMenu {
                 return null;
             }
             
-            try {
-                return Material.valueOf(job.getIconMaterial().toUpperCase());
-            } catch (IllegalArgumentException e) {
+            Material material = fr.ax_dev.universejobs.utils.EnumUtils.parseMaterial(job.getIconMaterial(), null);
+            if (material == null) {
                 plugin.getLogger().severe("Invalid material for job " + job.getId() + ": " + job.getIconMaterial());
-                return null;
             }
+            return material;
         } else {
             // Default material when format doesn't specify one
             return Material.PAPER;
