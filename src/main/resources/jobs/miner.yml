@@ -47,6 +47,7 @@ actions:
     break_cobblestone:
       target: "COBBLESTONE"
       display-name: "Cobblestone"
+      display-material: "COBBLESTONE:1001"  # Custom diamond with model data 1001
       lore:
       - "<gray>Mine cobblestone blocks"
       xp: 0.8

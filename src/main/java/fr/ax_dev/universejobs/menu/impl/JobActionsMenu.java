@@ -158,10 +158,29 @@ public class JobActionsMenu extends BaseMenu {
      * Create grouped action item combining multiple actions for the same target.
      */
     private ItemStack createGroupedActionItem(GroupedActionInfo groupedInfo) {
-        // Use the first action's material or default to appropriate material
+        // Use the first action's display material if specified, otherwise default material
         ActionInfo firstAction = groupedInfo.actions.get(0);
-        Material material = MaterialUtils.getSourceMaterialForTarget(groupedInfo.target, firstAction.actionType);
-        String materialName = material.name();
+        String materialName;
+        int customModelData = 0;
+        
+        if (firstAction.action.getDisplayMaterial() != null && !firstAction.action.getDisplayMaterial().isEmpty()) {
+            String displayMaterial = firstAction.action.getDisplayMaterial();
+            // Parse MATERIAL:custom_model_data format
+            if (displayMaterial.contains(":")) {
+                String[] parts = displayMaterial.split(":");
+                materialName = parts[0];
+                try {
+                    customModelData = Integer.parseInt(parts[1]);
+                } catch (NumberFormatException e) {
+                    customModelData = 0;
+                }
+            } else {
+                materialName = displayMaterial;
+            }
+        } else {
+            Material material = MaterialUtils.getSourceMaterialForTarget(groupedInfo.target, firstAction.actionType);
+            materialName = material.name();
+        }
         
         // Get display name from config
         String displayName = "";
@@ -203,7 +222,8 @@ public class JobActionsMenu extends BaseMenu {
             materialName, 
             displayName, 
             lore, 
-            false
+            false,
+            customModelData
         );
         
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));

@@ -15,13 +15,20 @@ public class MenuItemUtils {
      * Create a standard item configuration map.
      */
     public static Map<String, Object> createItemConfigMap(String material, String displayName, List<String> lore, boolean glow) {
+        return createItemConfigMap(material, displayName, lore, glow, 0);
+    }
+    
+    /**
+     * Create a standard item configuration map with custom model data.
+     */
+    public static Map<String, Object> createItemConfigMap(String material, String displayName, List<String> lore, boolean glow, int customModelData) {
         Map<String, Object> configMap = new HashMap<>();
         configMap.put("enabled", true);
         configMap.put("material", material);
         configMap.put("amount", 1);
         configMap.put("display-name", displayName);
         configMap.put("lore", lore);
-        configMap.put("custom-model-data", 0);
+        configMap.put("custom-model-data", customModelData);
         configMap.put("glow", glow);
         configMap.put("hide-attributes", false);
         configMap.put("hide-enchants", glow);
