@@ -41,9 +41,12 @@ public class DatabaseSchema {
     }
 
     private void createPlayerDataTable(Connection connection, String prefix) throws SQLException {
+        String validatedPrefix = SqlIdentifierValidator.validateAndSanitizeIdentifier(prefix, "Database prefix");
+        String tableName = SqlIdentifierValidator.buildSafeTableName(validatedPrefix, "player_data");
+        
         String sql;
         if (config.getType() == DatabaseType.MYSQL) {
-            sql = "CREATE TABLE IF NOT EXISTS " + prefix + "player_data (" +
+            sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
                     "player_uuid VARCHAR(36) NOT NULL, " +
                     "job_id VARCHAR(64) NOT NULL, " +
                     "xp DOUBLE NOT NULL DEFAULT 0, " +
@@ -54,7 +57,7 @@ public class DatabaseSchema {
                     "INDEX idx_job (job_id)" +
                     ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
         } else {
-            sql = "CREATE TABLE IF NOT EXISTS " + prefix + "player_data (" +
+            sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
                     "player_uuid TEXT NOT NULL, " +
                     "job_id TEXT NOT NULL, " +
                     "xp REAL NOT NULL DEFAULT 0, " +
@@ -70,9 +73,12 @@ public class DatabaseSchema {
     }
 
     private void createRewardClaimsTable(Connection connection, String prefix) throws SQLException {
+        String validatedPrefix = SqlIdentifierValidator.validateAndSanitizeIdentifier(prefix, "Database prefix");
+        String tableName = SqlIdentifierValidator.buildSafeTableName(validatedPrefix, "reward_claims");
+        
         String sql;
         if (config.getType() == DatabaseType.MYSQL) {
-            sql = "CREATE TABLE IF NOT EXISTS " + prefix + "reward_claims (" +
+            sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
                     "player_uuid VARCHAR(36) NOT NULL, " +
                     "job_id VARCHAR(64) NOT NULL, " +
                     "reward_id VARCHAR(64) NOT NULL, " +
@@ -82,7 +88,7 @@ public class DatabaseSchema {
                     "INDEX idx_job_rewards (job_id)" +
                     ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
         } else {
-            sql = "CREATE TABLE IF NOT EXISTS " + prefix + "reward_claims (" +
+            sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
                     "player_uuid TEXT NOT NULL, " +
                     "job_id TEXT NOT NULL, " +
                     "reward_id TEXT NOT NULL, " +
@@ -97,9 +103,12 @@ public class DatabaseSchema {
     }
 
     private void createJobStatsTable(Connection connection, String prefix) throws SQLException {
+        String validatedPrefix = SqlIdentifierValidator.validateAndSanitizeIdentifier(prefix, "Database prefix");
+        String tableName = SqlIdentifierValidator.buildSafeTableName(validatedPrefix, "job_stats");
+        
         String sql;
         if (config.getType() == DatabaseType.MYSQL) {
-            sql = "CREATE TABLE IF NOT EXISTS " + prefix + "job_stats (" +
+            sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
                     "job_id VARCHAR(64) NOT NULL, " +
                     "stat_name VARCHAR(64) NOT NULL, " +
                     "stat_value TEXT, " +
@@ -107,7 +116,7 @@ public class DatabaseSchema {
                     "PRIMARY KEY (job_id, stat_name)" +
                     ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
         } else {
-            sql = "CREATE TABLE IF NOT EXISTS " + prefix + "job_stats (" +
+            sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
                     "job_id TEXT NOT NULL, " +
                     "stat_name TEXT NOT NULL, " +
                     "stat_value TEXT, " +
@@ -142,9 +151,12 @@ public class DatabaseSchema {
     }
 
     private void createLeaderboardCacheTable(Connection connection, String prefix) throws SQLException {
+        String validatedPrefix = SqlIdentifierValidator.validateAndSanitizeIdentifier(prefix, "Database prefix");
+        String tableName = SqlIdentifierValidator.buildSafeTableName(validatedPrefix, "leaderboard_cache");
+        
         String sql;
         if (config.getType() == DatabaseType.MYSQL) {
-            sql = "CREATE TABLE IF NOT EXISTS " + prefix + "leaderboard_cache (" +
+            sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
                     "player_uuid VARCHAR(36) NOT NULL, " +
                     "player_name VARCHAR(16) NOT NULL, " +
                     "job_id VARCHAR(64) NOT NULL, " +
@@ -158,7 +170,7 @@ public class DatabaseSchema {
                     "INDEX idx_global_level (level DESC)" +
                     ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
         } else {
-            sql = "CREATE TABLE IF NOT EXISTS " + prefix + "leaderboard_cache (" +
+            sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
                     "player_uuid TEXT NOT NULL, " +
                     "player_name TEXT NOT NULL, " +
                     "job_id TEXT NOT NULL, " +
