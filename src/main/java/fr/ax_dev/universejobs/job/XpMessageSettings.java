@@ -113,12 +113,8 @@ public class XpMessageSettings {
      * Parse message type from config.
      */
     private MessageType parseMessageType(ConfigurationSection config) {
-        String typeStr = config.getString("type", "actionbar").toUpperCase();
-        try {
-            return MessageType.valueOf(typeStr);
-        } catch (IllegalArgumentException e) {
-            return MessageType.ACTIONBAR;
-        }
+        String typeStr = config.getString("type", "actionbar");
+        return fr.ax_dev.universejobs.utils.EnumUtils.parseEnumSafely(MessageType.class, typeStr, MessageType.ACTIONBAR);
     }
     
     /**
@@ -127,7 +123,7 @@ public class XpMessageSettings {
     private BossBarColor parseBossBarColor(ConfigurationSection config, ConfigurationSection optionsSection) {
         String colorStr = getConfigValue(optionsSection, config, "color", "bossbar.color", "green");
         try {
-            return BossBarColor.valueOf(colorStr.toUpperCase());
+            return fr.ax_dev.universejobs.utils.EnumUtils.parseEnumSafely(BossBarColor.class, colorStr, BossBarColor.GREEN);
         } catch (IllegalArgumentException e) {
             return BossBarColor.GREEN;
         }
@@ -139,7 +135,7 @@ public class XpMessageSettings {
     private BossBarStyle parseBossBarStyle(ConfigurationSection config, ConfigurationSection optionsSection) {
         String styleStr = getConfigValue(optionsSection, config, "style", "bossbar.style", "solid");
         try {
-            return BossBarStyle.valueOf(styleStr.toUpperCase());
+            return fr.ax_dev.universejobs.utils.EnumUtils.parseEnumSafely(BossBarStyle.class, styleStr, BossBarStyle.SOLID);
         } catch (IllegalArgumentException e) {
             return BossBarStyle.SOLID;
         }
@@ -185,7 +181,8 @@ public class XpMessageSettings {
             java.util.List<String> flagStrings = optionsSection.getStringList("flags");
             for (String flagStr : flagStrings) {
                 try {
-                    BossBarFlag flag = BossBarFlag.valueOf(flagStr.toUpperCase());
+                    BossBarFlag flag = fr.ax_dev.universejobs.utils.EnumUtils.parseEnumSafely(BossBarFlag.class, flagStr, null);
+                    if (flag == null) continue;
                     flags.add(flag);
                 } catch (IllegalArgumentException e) {
                     // Invalid flag, skip it

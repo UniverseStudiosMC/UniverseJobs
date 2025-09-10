@@ -65,9 +65,10 @@ public class MaterialUtils {
                 String itemName = parts[1];
                 
                 // First try direct material lookup
-                try {
-                    return Material.valueOf(itemName.toUpperCase());
-                } catch (IllegalArgumentException e) {
+                Material material = fr.ax_dev.universejobs.utils.EnumUtils.parseMaterial(itemName, null);
+                if (material != null) {
+                    return material;
+                } else {
                     // Try entity lookup for namespaced entities
                     Material spawnEgg = getSpawnEggForEntity(itemName);
                     if (spawnEgg != null) {
@@ -82,7 +83,10 @@ public class MaterialUtils {
         
         // Try to get material directly (for blocks) - case insensitive
         try {
-            return Material.valueOf(normalizedTarget.toUpperCase());
+            Material material = fr.ax_dev.universejobs.utils.EnumUtils.parseMaterial(normalizedTarget, null);
+            if (material != null) {
+                return material;
+            }
         } catch (IllegalArgumentException e) {
             // Not a valid material, might be an entity
         }
@@ -124,7 +128,10 @@ public class MaterialUtils {
         }
         
         try {
-            EntityType entityType = EntityType.valueOf(entityName.trim().toUpperCase());
+            EntityType entityType = fr.ax_dev.universejobs.utils.EnumUtils.parseEntityType(entityName.trim(), null);
+            if (entityType == null) {
+                return null;
+            }
             
             // Map entity types to their spawn eggs
             return switch (entityType) {
