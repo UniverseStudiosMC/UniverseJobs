@@ -6,6 +6,7 @@ import fr.ax_dev.universejobs.action.ActionType;
 import fr.ax_dev.universejobs.condition.ConditionContext;
 import fr.ax_dev.universejobs.protection.BlockProtectionManager;
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks;
+import net.momirealms.craftengine.core.block.ImmutableBlockState;
 
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -147,7 +148,14 @@ public class CraftEngineEventListener implements Listener {
      */
     private String getCraftEngineBlockId(Block block) {
         try {
-            return CraftEngineBlocks.getBlockId(block);
+            ImmutableBlockState blockState = CraftEngineBlocks.getCustomBlockState(block);
+            if (blockState != null) {
+                var nbtData = blockState.getNbtToSave();
+                if (nbtData != null && nbtData.containsKey("id")) {
+                    return nbtData.getString("id");
+                }
+            }
+            return null;
         } catch (Exception e) {
             if (plugin.getConfigManager().isDebugEnabled()) {
                 plugin.getLogger().warning("Error getting CraftEngine block ID: " + e.getMessage());
