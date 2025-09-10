@@ -256,7 +256,7 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                     }
                     
                     // Always send XP message to player (even in silent mode)
-                    if (target.isOnline() && "give".equals(action.toLowerCase())) {
+                    if (target.isOnline() && "give".equalsIgnoreCase(action)) {
                         Player onlinePlayer = target.getPlayer();
                         
                         // Send XP message to player with final values
@@ -965,7 +965,7 @@ public class AdminJobCommandHandler extends JobCommandHandler {
         }
         
         // Délégation boost pour toutes les longueurs supérieures à 3
-        if (args.length > 3 && "boost".equals(args[1].toLowerCase())) {
+        if (args.length > 3 && "boost".equalsIgnoreCase(args[1])) {
             return boostHandler.getTabCompletions(sender, args);
         }
         

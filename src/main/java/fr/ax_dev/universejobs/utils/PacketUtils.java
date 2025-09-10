@@ -278,7 +278,7 @@ public class PacketUtils {
                         // Check if this cleanup is still valid
                         Long currentCreationTime = BOSSBAR_CREATION_TIMES.get(playerId);
                         if (currentCreationTime != null && currentCreationTime.equals(creationTime)) {
-                            if (PACKET_BOSSBAR_IDS.get(playerId) == finalBossBarId) {
+                            if (Objects.equals(PACKET_BOSSBAR_IDS.get(playerId), finalBossBarId)) {
                                 sendRemoveBossBarPacket(player, finalBossBarId);
                                 PACKET_BOSSBAR_IDS.remove(playerId);
                                 CumulativeGainTracker.clearGains(player);
