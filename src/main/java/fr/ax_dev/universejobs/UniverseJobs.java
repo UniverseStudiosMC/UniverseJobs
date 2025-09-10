@@ -191,9 +191,6 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
                 getLogger().info("Nexo event listener registered successfully");
             } catch (Exception e) {
                 getLogger().warning("Failed to register Nexo event listener: " + e.getMessage());
-                if (configManager.isDebugEnabled()) {
-                    e.printStackTrace();
-                }
             }
         }
         
@@ -208,9 +205,6 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
                 getLogger().info("ItemsAdder event listener registered successfully");
             } catch (Exception e) {
                 getLogger().warning("Failed to register ItemsAdder event listener: " + e.getMessage());
-                if (configManager.isDebugEnabled()) {
-                    e.printStackTrace();
-                }
             }
         }
         
@@ -225,9 +219,6 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
                 getLogger().info("Oraxen event listener registered successfully");
             } catch (Exception e) {
                 getLogger().warning("Failed to register Oraxen event listener: " + e.getMessage());
-                if (configManager.isDebugEnabled()) {
-                    e.printStackTrace();
-                }
             }
         }
         
@@ -242,9 +233,6 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
                 getLogger().info("CustomCrops event listener registered successfully");
             } catch (Exception e) {
                 getLogger().warning("Failed to register CustomCrops event listener: " + e.getMessage());
-                if (configManager.isDebugEnabled()) {
-                    e.printStackTrace();
-                }
             }
         }
         
@@ -259,9 +247,6 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
                 getLogger().info("CustomFishing event listener registered successfully");
             } catch (Exception e) {
                 getLogger().warning("Failed to register CustomFishing event listener: " + e.getMessage());
-                if (configManager.isDebugEnabled()) {
-                    e.printStackTrace();
-                }
             }
         }
         
