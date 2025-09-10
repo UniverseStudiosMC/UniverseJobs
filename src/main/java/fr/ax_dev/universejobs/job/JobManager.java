@@ -380,8 +380,8 @@ public class JobManager {
             return;
         }
         
-        // Validate XP amount to prevent exploitation
-        if (Double.isNaN(xp) || Double.isInfinite(xp) || xp < 0 || xp > 1000000) {
+        // Validate XP amount to prevent exploitation (allow negative values for removal)
+        if (Double.isNaN(xp) || Double.isInfinite(xp) || xp < -1000000 || xp > 1000000) {
             plugin.getLogger().warning("Invalid XP amount attempted for player " + player.getName() + ": " + xp);
             return;
         }

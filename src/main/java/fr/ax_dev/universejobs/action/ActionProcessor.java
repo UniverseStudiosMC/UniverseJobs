@@ -430,7 +430,7 @@ public class ActionProcessor {
         double xp = action.getXp();
         double money = action.getMoney();
         
-        if (xp <= 0 && money <= 0) return;
+        if (xp == 0 && money == 0) return;
         
         // Craft multiplier
         Object craftMultiplierObj = context.get("craft_multiplier");
@@ -454,21 +454,23 @@ public class ActionProcessor {
             }
         }
         
-        // XP processing (same logic as awardRewards)
-        if (xp > 0) {
-            int currentLevel = jobManager.getLevel(player, job.getId());
-            if (currentLevel < job.getMaxLevel()) {
-                // Apply any XP multipliers
-                double finalXp = applyMultipliers(player, job, xp);
-                
-                // Apply bonus multipliers
+        // XP processing (allow negative values for removal)
+        if (xp != 0) {
+            // Apply any XP multipliers
+            double finalXp = applyMultipliers(player, job, xp);
+            
+            // Apply bonus multipliers only if positive XP
+            if (xp > 0) {
                 double bonusMultiplier = bonusManager.getTotalMultiplier(player.getUniqueId(), job.getId());
                 finalXp *= bonusMultiplier;
-                
-                // Add XP to batch for optimized processing
-                batchManager.batchXp(player, job.getId(), finalXp);
-                
-                // Check for level up
+            }
+            
+            // Add XP to batch for optimized processing
+            batchManager.batchXp(player, job.getId(), finalXp);
+            
+            // Check for level up only if positive XP
+            if (xp > 0) {
+                int currentLevel = jobManager.getLevel(player, job.getId());
                 int newLevel = jobManager.getLevel(player, job.getId());
                 if (newLevel > currentLevel) {
                     handleLevelUp(player, job, currentLevel, newLevel);
@@ -476,21 +478,25 @@ public class ActionProcessor {
             }
         }
         
-        // Money processing (same logic as awardRewards)
-        if (money > 0) {
-            double moneyBonusMultiplier = moneyBonusManager.getTotalMultiplier(player.getUniqueId(), job.getId());
-            double finalMoney = money * moneyBonusMultiplier;
+        // Money processing (allow negative values for removal)
+        if (money != 0) {
+            // Apply bonus multipliers only if positive money
+            double finalMoney = money;
+            if (money > 0) {
+                double moneyBonusMultiplier = moneyBonusManager.getTotalMultiplier(player.getUniqueId(), job.getId());
+                finalMoney = money * moneyBonusMultiplier;
+            }
             
-            // Add money to the player
+            // Add/remove money to/from the player
             addPlayerMoney(player, finalMoney);
         }
         
         // Message async seulement si activé (et si pas supprimé) - use final values
         boolean suppressMessage = "true".equals(context.get("suppress_message"));
-        double finalXp = xp > 0 ? applyMultipliers(player, job, xp) * bonusManager.getTotalMultiplier(player.getUniqueId(), job.getId()) : 0;
-        double finalMoney = money > 0 ? money * moneyBonusManager.getTotalMultiplier(player.getUniqueId(), job.getId()) : 0;
+        double finalXp = xp != 0 ? (xp > 0 ? applyMultipliers(player, job, xp) * bonusManager.getTotalMultiplier(player.getUniqueId(), job.getId()) : applyMultipliers(player, job, xp)) : 0;
+        double finalMoney = money != 0 ? (money > 0 ? money * moneyBonusManager.getTotalMultiplier(player.getUniqueId(), job.getId()) : money) : 0;
         
-        if (configCache.isShowXpGain() && (finalXp > 0 || finalMoney > 0) && !suppressMessage) {
+        if (configCache.isShowXpGain() && (finalXp != 0 || finalMoney != 0) && !suppressMessage) {
             fr.ax_dev.universejobs.job.PlayerJobData playerData = jobManager.getPlayerData(player);
             messageSender.sendXpMessage(player, job, finalXp, finalMoney, playerData);
         }
