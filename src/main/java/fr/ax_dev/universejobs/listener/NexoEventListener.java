@@ -46,7 +46,7 @@ public class NexoEventListener implements Listener {
      * Handle Nexo custom block placement.
      * Uses Nexo's direct API for better accuracy and performance.
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onNexoBlockPlace(NexoBlockPlaceEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
@@ -61,7 +61,7 @@ public class NexoEventListener implements Listener {
                 .set(TARGET_PREFIX, NEXO_PREFIX + nexoBlockId)
                 .set(NEXO_BLOCK_ID, nexoBlockId);
         
-        // Process the action
+        // Process the action (MONITOR priority - no cancellation)
         actionProcessor.processAction(player, ActionType.PLACE, event, context);
         
         if (plugin.getConfigManager().isDebugEnabled()) {
@@ -73,7 +73,7 @@ public class NexoEventListener implements Listener {
      * Handle Nexo custom block breaking.
      * Uses Nexo's direct API for better accuracy and performance.
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onNexoBlockBreak(NexoBlockBreakEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
@@ -96,7 +96,7 @@ public class NexoEventListener implements Listener {
                 .set(TARGET_PREFIX, NEXO_PREFIX + nexoBlockId)
                 .set(NEXO_BLOCK_ID, nexoBlockId);
         
-        // Process the action and award XP
+        // Process the action (MONITOR priority - no cancellation)
         actionProcessor.processAction(player, ActionType.BREAK, event, context);
         
         if (plugin.getConfigManager().isDebugEnabled()) {
@@ -108,7 +108,7 @@ public class NexoEventListener implements Listener {
      * Handle Nexo custom block interactions.
      * Uses Nexo's direct API for better accuracy and performance.
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onNexoBlockInteract(NexoBlockInteractEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
@@ -134,7 +134,7 @@ public class NexoEventListener implements Listener {
                 .set(NEXO_BLOCK_ID, nexoBlockId)
                 .set("interact-type", interactType);
         
-        // Process the action
+        // Process the action (MONITOR priority - no cancellation)
         actionProcessor.processAction(player, ActionType.BLOCK_INTERACT, event, context);
         
         if (plugin.getConfigManager().isDebugEnabled()) {
