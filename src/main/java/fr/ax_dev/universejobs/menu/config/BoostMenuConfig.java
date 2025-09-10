@@ -169,18 +169,62 @@ public class BoostMenuConfig {
     }
     
     private Sound parseSoundSafely(String soundName) {
-        try {
-            // Try to find the sound by name
-            for (Sound s : Sound.values()) {
-                if (s.name().equalsIgnoreCase(soundName)) {
-                    return s;
-                }
-            }
-            // Fallback to default
-            return Sound.UI_BUTTON_CLICK;
-        } catch (Exception e) {
+        if (soundName == null || soundName.isEmpty()) {
             return Sound.UI_BUTTON_CLICK;
         }
+        
+        try {
+            // Method 1: Try using Registry.SOUNDS (Paper 1.20+)
+            try {
+                // First try with the name as-is (for ENTITY_PLAYER_LEVELUP format)
+                org.bukkit.NamespacedKey key = org.bukkit.NamespacedKey.minecraft(
+                    soundName.toLowerCase().replace("_", ".")
+                );
+                
+                // Use reflection to access Registry.SOUNDS for compatibility
+                java.lang.reflect.Field soundsField = org.bukkit.Registry.class.getField("SOUNDS");
+                Object soundsRegistry = soundsField.get(null);
+                
+                // Call get() method on the registry
+                java.lang.reflect.Method getMethod = soundsRegistry.getClass().getMethod("get", org.bukkit.NamespacedKey.class);
+                Object result = getMethod.invoke(soundsRegistry, key);
+                
+                if (result instanceof Sound) {
+                    return (Sound) result;
+                }
+            } catch (NoSuchFieldException e) {
+                // Registry.SOUNDS doesn't exist, try fallback methods
+            } catch (Exception e) {
+                // Registry method failed, try next approach
+            }
+            
+            // Method 2: Try using Sound.valueOf() with reflection to avoid direct call
+            try {
+                java.lang.reflect.Method valueOfMethod = Sound.class.getMethod("valueOf", String.class);
+                Object result = valueOfMethod.invoke(null, soundName.toUpperCase());
+                if (result instanceof Sound) {
+                    return (Sound) result;
+                }
+            } catch (Exception e) {
+                // valueOf failed, try next approach
+            }
+            
+            // Method 3: Try getting field directly via reflection
+            try {
+                java.lang.reflect.Field field = Sound.class.getField(soundName.toUpperCase());
+                if (field.getType() == Sound.class) {
+                    return (Sound) field.get(null);
+                }
+            } catch (Exception e) {
+                // Field access failed
+            }
+            
+        } catch (Exception e) {
+            // All methods failed
+        }
+        
+        // Fallback to default sound
+        return Sound.UI_BUTTON_CLICK;
     }
     
     public static class BoostItemConfig {
