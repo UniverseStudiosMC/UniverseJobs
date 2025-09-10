@@ -8,7 +8,7 @@ settings:
   save-interval: 300 # Auto-save interval in seconds
 
 # Job Settings
-create-example-jobs: false # Set to false to prevent automatic creation of example job files
+create-example-jobs: true # Set to false to prevent automatic creation of example job files
 
 
 # Database Configuration
