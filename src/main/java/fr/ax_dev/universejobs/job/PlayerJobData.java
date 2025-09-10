@@ -144,8 +144,8 @@ public class PlayerJobData {
             return;
         }
         
-        // Validate XP amount
-        if (Double.isNaN(xp) || Double.isInfinite(xp) || xp < 0) {
+        // Validate XP amount (allow negative values for removal)
+        if (Double.isNaN(xp) || Double.isInfinite(xp)) {
             return;
         }
         
@@ -153,6 +153,11 @@ public class PlayerJobData {
         try {
             double currentXp = xpData.getOrDefault(jobId, 0.0);
             double newXp = currentXp + xp;
+            
+            // Prevent negative XP (minimum is 0)
+            if (newXp < 0) {
+                newXp = 0;
+            }
             
             // Prevent overflow
             if (newXp > Double.MAX_VALUE / 2) {
@@ -162,8 +167,10 @@ public class PlayerJobData {
             xpData.put(jobId, newXp);
             lastModified = System.currentTimeMillis();
             
-            // Check for level up and trigger actions
-            checkLevelUp(jobId, xp);
+            // Check for level up and trigger actions only if XP was added
+            if (xp > 0) {
+                checkLevelUp(jobId, xp);
+            }
         } finally {
             dataLock.writeLock().unlock();
         }
