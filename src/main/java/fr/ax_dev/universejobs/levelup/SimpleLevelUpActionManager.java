@@ -235,12 +235,8 @@ public class SimpleLevelUpActionManager {
     private void executeSoundAction(Player player, Job job, int level, int oldLevel, LevelUpActionConfig config) {
         String soundName = config.getConfig().getString("sound", "ENTITY_PLAYER_LEVELUP");
         
-        try {
-            Sound sound = Sound.valueOf(soundName.toUpperCase());
-            ConditionResult.allow(null, sound, null).execute(player);
-        } catch (IllegalArgumentException e) {
-            ConditionResult.allow(null, Sound.ENTITY_PLAYER_LEVELUP, null).execute(player);
-        }
+        Sound sound = fr.ax_dev.universejobs.utils.EnumUtils.parseSound(soundName, Sound.ENTITY_PLAYER_LEVELUP);
+        ConditionResult.allow(null, sound, null).execute(player);
     }
     
     /**
@@ -301,11 +297,12 @@ public class SimpleLevelUpActionManager {
     private void executeParticleAction(Player player, Job job, int level, int oldLevel, LevelUpActionConfig config) {
         // Simple particle implementation - could be enhanced
         try {
-            org.bukkit.Particle particle = org.bukkit.Particle.valueOf(config.getConfig().getString("particle", "FLAME").toUpperCase());
+            String particleName = config.getConfig().getString("particle", "FLAME");
+            org.bukkit.Particle particle = fr.ax_dev.universejobs.utils.EnumUtils.parseParticle(particleName, org.bukkit.Particle.FLAME);
             int count = config.getConfig().getInt("count", 20);
             player.getWorld().spawnParticle(particle, player.getLocation().add(0, 1, 0), count, 0.5, 1.0, 0.5, 0.1);
         } catch (Exception e) {
-            // Fallback particle
+            // Fallback particle  
             player.getWorld().spawnParticle(org.bukkit.Particle.FLAME, player.getLocation().add(0, 1, 0), 20, 0.5, 1.0, 0.5, 0.1);
         }
     }
