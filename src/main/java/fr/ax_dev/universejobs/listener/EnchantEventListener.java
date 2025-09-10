@@ -35,7 +35,7 @@ public class EnchantEventListener implements Listener {
      * Handle enchantment events.
      * Processes each enchantment applied during the event and cumulates rewards.
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onEnchantItem(EnchantItemEvent event) {
         Player player = event.getEnchanter();
         

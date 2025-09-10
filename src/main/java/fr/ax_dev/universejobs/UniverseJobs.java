@@ -214,6 +214,23 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
             }
         }
         
+        // Register Oraxen event listener if Oraxen is present
+        if (getServer().getPluginManager().isPluginEnabled("Oraxen")) {
+            try {
+                Class<?> oraxenListenerClass = Class.forName("fr.ax_dev.universejobs.listener.OraxenEventListener");
+                Object oraxenListener = oraxenListenerClass
+                    .getConstructor(UniverseJobs.class, ActionProcessor.class, BlockProtectionManager.class)
+                    .newInstance(this, actionProcessor, protectionManager);
+                getServer().getPluginManager().registerEvents((Listener) oraxenListener, this);
+                getLogger().info("Oraxen event listener registered successfully");
+            } catch (Exception e) {
+                getLogger().warning("Failed to register Oraxen event listener: " + e.getMessage());
+                if (configManager.isDebugEnabled()) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        
         // Register CustomCrops event listener if CustomCrops is present
         if (getServer().getPluginManager().isPluginEnabled("CustomCrops")) {
             try {

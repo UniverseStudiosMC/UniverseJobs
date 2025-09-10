@@ -50,7 +50,7 @@ public class CustomFishingEventListener implements Listener {
      * Includes anti-double action protection.
      */   
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onFishingLootSpawn(FishingLootSpawnEvent event) {
         Player player = event.getPlayer();
         if (plugin.getConfigManager().isDebugEnabled()) {

@@ -46,7 +46,7 @@ public class NexoEventListener implements Listener {
      * Handle Nexo custom block placement.
      * Uses Nexo's direct API for better accuracy and performance.
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onNexoBlockPlace(NexoBlockPlaceEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
@@ -73,7 +73,7 @@ public class NexoEventListener implements Listener {
      * Handle Nexo custom block breaking.
      * Uses Nexo's direct API for better accuracy and performance.
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onNexoBlockBreak(NexoBlockBreakEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
@@ -108,7 +108,7 @@ public class NexoEventListener implements Listener {
      * Handle Nexo custom block interactions.
      * Uses Nexo's direct API for better accuracy and performance.
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onNexoBlockInteract(NexoBlockInteractEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
