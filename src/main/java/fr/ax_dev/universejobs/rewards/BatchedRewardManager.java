@@ -138,8 +138,12 @@ public class BatchedRewardManager {
      * Process money immediately (no batching).
      */
     private void processMoneyImmediate(Player player, double money) {
-        if (economy != null && money > 0) {
-            economy.depositPlayer(player, money);
+        if (economy != null && money != 0) {
+            if (money > 0) {
+                economy.depositPlayer(player, money);
+            } else {
+                economy.withdrawPlayer(player, Math.abs(money));
+            }
         }
     }
     
@@ -232,7 +236,12 @@ public class BatchedRewardManager {
                 for (Map.Entry<UUID, Double> entry : toProcess.entrySet()) {
                     Player player = Bukkit.getPlayer(entry.getKey());
                     if (player != null && player.isOnline()) {
-                        economy.depositPlayer(player, entry.getValue());
+                        double amount = entry.getValue();
+                        if (amount > 0) {
+                            economy.depositPlayer(player, amount);
+                        } else if (amount < 0) {
+                            economy.withdrawPlayer(player, Math.abs(amount));
+                        }
                         
                         // Log batch processing if debug
                         if (plugin.getConfigManager().isDebugEnabled()) {
