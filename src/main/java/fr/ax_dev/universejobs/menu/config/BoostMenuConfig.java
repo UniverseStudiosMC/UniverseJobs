@@ -162,13 +162,24 @@ public class BoostMenuConfig {
     private void loadSoundConfig(ConfigurationSection section, SoundConfig sound) {
         if (section != null) {
             sound.enabled = section.getBoolean("enabled", true);
-            try {
-                sound.sound = Sound.valueOf(section.getString("sound", "UI_BUTTON_CLICK"));
-            } catch (IllegalArgumentException e) {
-                sound.sound = Sound.UI_BUTTON_CLICK;
-            }
+            sound.sound = parseSoundSafely(section.getString("sound", "UI_BUTTON_CLICK"));
             sound.volume = (float) section.getDouble("volume", 0.5);
             sound.pitch = (float) section.getDouble("pitch", 1.0);
+        }
+    }
+    
+    private Sound parseSoundSafely(String soundName) {
+        try {
+            // Try to find the sound by name
+            for (Sound s : Sound.values()) {
+                if (s.name().equalsIgnoreCase(soundName)) {
+                    return s;
+                }
+            }
+            // Fallback to default
+            return Sound.UI_BUTTON_CLICK;
+        } catch (Exception e) {
+            return Sound.UI_BUTTON_CLICK;
         }
     }
     
