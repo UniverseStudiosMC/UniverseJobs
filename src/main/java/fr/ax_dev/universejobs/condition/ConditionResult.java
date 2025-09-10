@@ -139,11 +139,7 @@ public class ConditionResult {
         if (soundString == null || soundString.isEmpty()) {
             return null;
         }
-        try {
-            return Sound.valueOf(soundString.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
+        return fr.ax_dev.universejobs.utils.EnumUtils.parseSound(soundString, null);
     }
 
     /**

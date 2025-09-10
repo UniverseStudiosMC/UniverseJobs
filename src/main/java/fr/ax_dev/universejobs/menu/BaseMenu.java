@@ -263,10 +263,10 @@ public abstract class BaseMenu implements InventoryHolder {
     protected void playSound(String soundName) {
         if (soundName == null || soundName.isEmpty()) return;
         
-        try {
-            org.bukkit.Sound sound = org.bukkit.Sound.valueOf(soundName.toUpperCase().replace(".", "_"));
+        org.bukkit.Sound sound = fr.ax_dev.universejobs.utils.EnumUtils.parseSound(soundName.replace(".", "_"), null);
+        if (sound != null) {
             player.playSound(player.getLocation(), sound, 1.0f, 1.0f);
-        } catch (IllegalArgumentException e) {
+        } else {
             // Try with the sound name as-is for custom sounds
             try {
                 player.playSound(player.getLocation(), soundName, 1.0f, 1.0f);

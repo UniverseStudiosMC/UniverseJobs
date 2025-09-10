@@ -40,14 +40,49 @@ public class EnumUtils {
                 }
             } catch (NoSuchFieldException e) {
                 // Registry.SOUNDS doesn't exist, try fallback
+            } catch (Exception e) {
+                // Registry method failed, try fallback
             }
             
-            // Method 2: Use generic enum parsing
-            return parseEnumSafely(Sound.class, soundName, defaultSound);
+            // Method 2: Try using valueOf via reflection
+            try {
+                java.lang.reflect.Method valueOfMethod = Sound.class.getMethod("valueOf", String.class);
+                Object result = valueOfMethod.invoke(null, soundName.toUpperCase());
+                if (result instanceof Sound) {
+                    return (Sound) result;
+                }
+            } catch (Exception e) {
+                // valueOf failed, try next method
+            }
+            
+            // Method 3: Try getting field directly
+            try {
+                java.lang.reflect.Field field = Sound.class.getField(soundName.toUpperCase());
+                if (field.getType() == Sound.class) {
+                    return (Sound) field.get(null);
+                }
+            } catch (Exception e) {
+                // Field access failed, try next method
+            }
+            
+            // Method 4: Iterate through values() via reflection
+            try {
+                java.lang.reflect.Method valuesMethod = Sound.class.getMethod("values");
+                Sound[] values = (Sound[]) valuesMethod.invoke(null);
+                for (Sound enumConstant : values) {
+                    if (enumConstant.name().equalsIgnoreCase(soundName)) {
+                        return enumConstant;
+                    }
+                }
+            } catch (Exception e) {
+                // values() failed
+            }
             
         } catch (Exception e) {
-            return defaultSound;
+            // All methods failed
         }
+        
+        return defaultSound;
     }
     
     /**

@@ -110,11 +110,7 @@ public enum ActionType {
     public static ActionType fromString(String name) {
         if (name == null) return null;
         
-        try {
-            return ActionType.valueOf(name.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
+        return fr.ax_dev.universejobs.utils.EnumUtils.parseEnumSafely(ActionType.class, name, null);
     }
     
     /**

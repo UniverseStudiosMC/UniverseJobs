@@ -833,7 +833,7 @@ public class ActionProcessor {
             Sound sound = Registry.SOUNDS.get(key);
             if (sound == null) {
                 // Fallback to valueOf for compatibility
-                sound = Sound.valueOf(soundName);
+                sound = fr.ax_dev.universejobs.utils.EnumUtils.parseSound(soundName, null);
             }
             if (sound != null) {
                 player.playSound(player.getLocation(), sound, 1.0f, 1.0f);

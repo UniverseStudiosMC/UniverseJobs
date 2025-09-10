@@ -62,7 +62,7 @@ public class BoostMenuConfig {
             
             ConfigurationSection itemSection = xpSection.getConfigurationSection("item");
             if (itemSection != null) {
-                xpBoostConfig.material = Material.valueOf(itemSection.getString("material", "EXPERIENCE_BOTTLE"));
+                xpBoostConfig.material = fr.ax_dev.universejobs.utils.EnumUtils.parseMaterial(itemSection.getString("material", "EXPERIENCE_BOTTLE"), Material.EXPERIENCE_BOTTLE);
                 xpBoostConfig.displayName = itemSection.getString("display-name", "<!italic><white>XP Boost <gold>{boost_id}</gold></white>");
                 xpBoostConfig.lore = itemSection.getStringList("lore");
                 xpBoostConfig.glow = itemSection.getBoolean("glow", false);
@@ -78,7 +78,7 @@ public class BoostMenuConfig {
             
             ConfigurationSection itemSection = moneySection.getConfigurationSection("item");
             if (itemSection != null) {
-                moneyBoostConfig.material = Material.valueOf(itemSection.getString("material", "GOLD_INGOT"));
+                moneyBoostConfig.material = fr.ax_dev.universejobs.utils.EnumUtils.parseMaterial(itemSection.getString("material", "GOLD_INGOT"), Material.GOLD_INGOT);
                 moneyBoostConfig.displayName = itemSection.getString("display-name", "<!italic><white>Money Boost <gold>{boost_id}</gold></white>");
                 moneyBoostConfig.lore = itemSection.getStringList("lore");
                 moneyBoostConfig.glow = itemSection.getBoolean("glow", false);
@@ -92,7 +92,7 @@ public class BoostMenuConfig {
         if (fillerSection != null) {
             fillerConfig = new FillerConfig();
             fillerConfig.enabled = fillerSection.getBoolean("enabled", true);
-            fillerConfig.material = Material.valueOf(fillerSection.getString("material", "GRAY_STAINED_GLASS_PANE"));
+            fillerConfig.material = fr.ax_dev.universejobs.utils.EnumUtils.parseMaterial(fillerSection.getString("material", "GRAY_STAINED_GLASS_PANE"), Material.GRAY_STAINED_GLASS_PANE);
             fillerConfig.displayName = fillerSection.getString("display-name", "<!italic><gray> </gray>");
             fillerConfig.lore = fillerSection.getStringList("lore");
             fillerConfig.slots = fillerSection.getIntegerList("slots");
@@ -114,7 +114,7 @@ public class BoostMenuConfig {
         if (section != null) {
             item.enabled = section.getBoolean("enabled", true);
             item.slots = section.getIntegerList("slots");
-            item.material = Material.valueOf(section.getString("material", "BARRIER"));
+            item.material = fr.ax_dev.universejobs.utils.EnumUtils.parseMaterial(section.getString("material", "BARRIER"), Material.BARRIER);
             item.displayName = section.getString("display-name", "");
             item.lore = section.getStringList("lore");
             item.glow = section.getBoolean("glow", false);
@@ -130,7 +130,7 @@ public class BoostMenuConfig {
                     CustomItemConfig customItem = new CustomItemConfig();
                     customItem.enabled = itemSection.getBoolean("enabled", true);
                     customItem.slots = itemSection.getIntegerList("slots");
-                    customItem.material = Material.valueOf(itemSection.getString("material", "STONE"));
+                    customItem.material = fr.ax_dev.universejobs.utils.EnumUtils.parseMaterial(itemSection.getString("material", "STONE"), Material.STONE);
                     customItem.displayName = itemSection.getString("display-name", "");
                     customItem.lore = itemSection.getStringList("lore");
                     customItems.put(key, customItem);
