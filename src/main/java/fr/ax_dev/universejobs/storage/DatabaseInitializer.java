@@ -109,8 +109,9 @@ public class DatabaseInitializer {
     
     /**
      * Execute SQL script with proper statement splitting.
-     * This method only executes pre-defined schema statements from the plugin resources.
+     * SECURITY: This method only executes pre-defined schema statements from the plugin resources.
      * No user input is involved - all SQL comes from the bundled init.sql file.
+     * Additional safety: All statements are validated by isValidSchemaStatement() before execution.
      * 
      * @param trustedSchemaScript The SQL script from plugin resources (not user input)
      */
@@ -128,7 +129,7 @@ public class DatabaseInitializer {
                     // Validate that this is a safe schema statement (no user input)
                     if (isValidSchemaStatement(schemaStatement)) {
                         try {
-                            stmt.execute(schemaStatement); // NOSONAR - Schema statements are validated by isValidSchemaStatement
+                            stmt.execute(schemaStatement); // NOSONAR - SQL injection safe: schema statements are pre-validated by isValidSchemaStatement() and contain no user input
                             plugin.getLogger().fine("Executed database initialization statement successfully");
                         } catch (Exception e) {
                             // Log warning but continue with other statements
