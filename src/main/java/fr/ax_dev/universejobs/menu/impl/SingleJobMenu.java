@@ -223,27 +223,35 @@ public class SingleJobMenu extends BaseMenu {
         }
         
         // Handle menu items based on configured slots
-        String action = getActionForSlot(slot);
-        
-        switch (action) {
-            case "toggle-job" -> handleJoinLeave();
-            case "open-actions" -> plugin.getMenuManager().openJobActionsMenu(player, job.getId());
-            case "open-rewards" -> plugin.getMenuManager().openRewardsMenu(player, job.getId());
-            case "open-rankings" -> plugin.getMenuManager().openGlobalRankingsMenu(player);
-            case "back" -> plugin.getMenuManager().openJobsMainMenu(player);
-            case "close" -> close();
+        MenuItemConfig clickedItem = getMenuItemForSlot(slot);
+        if (clickedItem != null) {
+            // Execute commands if present
+            if (clickedItem.getCommands() != null && !clickedItem.getCommands().isEmpty()) {
+                executeCommands(clickedItem.getCommands());
+            }
+            
+            // Handle action
+            String action = clickedItem.getAction();
+            switch (action) {
+                case "toggle-job" -> handleJoinLeave();
+                case "open-actions" -> plugin.getMenuManager().openJobActionsMenu(player, job.getId());
+                case "open-rewards" -> plugin.getMenuManager().openRewardsMenu(player, job.getId());
+                case "open-rankings" -> plugin.getMenuManager().openGlobalRankingsMenu(player);
+                case "back" -> plugin.getMenuManager().openJobsMainMenu(player);
+                case "close" -> close();
+            }
         }
     }
     
     /**
-     * Get action for a specific slot based on menu configuration.
+     * Get menu item config for a specific slot.
      */
-    private String getActionForSlot(int slot) {
+    private MenuItemConfig getMenuItemForSlot(int slot) {
         // Check menu items configuration
         for (Map.Entry<String, MenuItemConfig> entry : config.getMenuItems().entrySet()) {
             MenuItemConfig itemConfig = entry.getValue();
             if (itemConfig.getSlots().contains(slot)) {
-                return itemConfig.getAction();
+                return itemConfig;
             }
         }
         
@@ -251,11 +259,19 @@ public class SingleJobMenu extends BaseMenu {
         for (Map.Entry<String, MenuItemConfig> entry : config.getNavigationItems().entrySet()) {
             MenuItemConfig itemConfig = entry.getValue();
             if (itemConfig.getSlots().contains(slot)) {
-                return itemConfig.getAction();
+                return itemConfig;
             }
         }
         
-        return "none";
+        return null;
+    }
+    
+    /**
+     * Get action for a specific slot based on menu configuration.
+     */
+    private String getActionForSlot(int slot) {
+        MenuItemConfig item = getMenuItemForSlot(slot);
+        return item != null ? item.getAction() : "none";
     }
     
     /**

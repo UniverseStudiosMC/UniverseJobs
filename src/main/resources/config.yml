@@ -84,6 +84,9 @@ progress-bar:
 # Prevents XP farming by tracking player-placed blocks
 block-protection:
   enabled: true
+  # List of block materials that are exempt from protection (always give XP)
+  blacklist:
+    - "WHEAT"
 
 gui-default-settings:
   enabled: true
