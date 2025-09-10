@@ -20,8 +20,8 @@ xp:
   message:
     type: "BOSSBAR"
     text: "{message_xp} {message_money} <gray>| <#8B4513>{job} <gray>Level <#32CD32>{level}"
-    money: "<#FFD700>+{money} $ <gray>({+-}{money_per_action})"
-    xp: "<#abffb3>+{xp} xp <gray>({+-}{xp_per_action})"
+    money: "<#FFD700>{money} $ <gray>({+-}{money_per_action})"
+    xp: "<#abffb3>{xp} xp <gray>({+-}{xp_per_action})"
     options:
       color: "GREEN"
       style: "SEGMENTED_0"
