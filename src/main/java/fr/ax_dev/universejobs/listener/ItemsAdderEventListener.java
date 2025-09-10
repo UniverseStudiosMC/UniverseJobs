@@ -47,7 +47,7 @@ public class ItemsAdderEventListener implements Listener {
      * Handle ItemsAdder custom block placement.
      * Uses ItemsAdder's direct API for better accuracy and performance.
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onItemsAdderBlockPlace(CustomBlockPlaceEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
@@ -74,7 +74,7 @@ public class ItemsAdderEventListener implements Listener {
      * Handle ItemsAdder custom block breaking.
      * Uses ItemsAdder's direct API for better accuracy and performance.
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onItemsAdderBlockBreak(CustomBlockBreakEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
@@ -120,7 +120,7 @@ public class ItemsAdderEventListener implements Listener {
      * Handle ItemsAdder custom block interactions.
      * Uses ItemsAdder's direct API for better accuracy and performance.
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onItemsAdderBlockInteract(CustomBlockInteractEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlockClicked(); // Correct API method name

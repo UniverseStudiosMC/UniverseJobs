@@ -54,7 +54,7 @@ public class CustomCropsEventListener implements Listener {
      * Handle CustomCrops crop break events.
      * Uses the same pattern as Nexo and ItemsAdder with target format "customcrops:crop_id".
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onCropBreak(CropBreakEvent event) {
         // Only handle player breaks (entity can be null for other causes)
         if (!(event.entityBreaker() instanceof Player)) {
@@ -129,7 +129,7 @@ public class CustomCropsEventListener implements Listener {
      * Uses the same pattern as Nexo and ItemsAdder with target format "customcrops:crop_id".
      * Includes anti-double click protection and cached interact-type support.
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onCropInteract(CropInteractEvent event) {
         Player player = event.getPlayer();
         Location location = event.location();
@@ -196,7 +196,7 @@ public class CustomCropsEventListener implements Listener {
      * Handle CustomCrops crop plant events.
      * Uses the same pattern as Nexo and ItemsAdder with target format "customcrops:crop_id".
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onCropPlant(CropPlantEvent event) {
         Player player = event.getPlayer();
         Location location = event.location();

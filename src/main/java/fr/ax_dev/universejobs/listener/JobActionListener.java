@@ -158,11 +158,11 @@ public class JobActionListener implements Listener {
      * Handle block breaking (BREAK action).
      * Works with both vanilla blocks and Nexo custom blocks.
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         
-        // Skip if this is a Nexo or ItemsAdder block - handled by their respective listeners
+        // Skip if this is a Nexo, ItemsAdder, or Oraxen block - handled by their respective listeners
         if (isNexoBlock(event.getBlock())) {
             if (configCache.isDebugEnabled()) {
                 plugin.getLogger().info("Skipping vanilla BlockBreakEvent for Nexo block - handled by NexoEventListener");
@@ -173,6 +173,13 @@ public class JobActionListener implements Listener {
         if (isItemsAdderBlock(event.getBlock())) {
             if (configCache.isDebugEnabled()) {
                 plugin.getLogger().info("Skipping vanilla BlockBreakEvent for ItemsAdder block - handled by ItemsAdderEventListener");
+            }
+            return;
+        }
+        
+        if (isOraxenBlock(event.getBlock())) {
+            if (configCache.isDebugEnabled()) {
+                plugin.getLogger().info("Skipping vanilla BlockBreakEvent for Oraxen block - handled by OraxenEventListener");
             }
             return;
         }
@@ -232,11 +239,11 @@ public class JobActionListener implements Listener {
      * Handle block placement (PLACE action).
      * Works with both vanilla blocks and Nexo custom blocks.
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onBlockPlace(BlockPlaceEvent event) {
         Player player = event.getPlayer();
         
-        // Skip if this is a Nexo or ItemsAdder block - handled by their respective listeners
+        // Skip if this is a Nexo, ItemsAdder, or Oraxen block - handled by their respective listeners
         if (isNexoBlock(event.getBlock())) {
             if (configCache.isDebugEnabled()) {
                 plugin.getLogger().info("Skipping vanilla BlockPlaceEvent for Nexo block - handled by NexoEventListener");
@@ -247,6 +254,13 @@ public class JobActionListener implements Listener {
         if (isItemsAdderBlock(event.getBlock())) {
             if (configCache.isDebugEnabled()) {
                 plugin.getLogger().info("Skipping vanilla BlockPlaceEvent for ItemsAdder block - handled by ItemsAdderEventListener");
+            }
+            return;
+        }
+        
+        if (isOraxenBlock(event.getBlock())) {
+            if (configCache.isDebugEnabled()) {
+                plugin.getLogger().info("Skipping vanilla BlockPlaceEvent for Oraxen block - handled by OraxenEventListener");
             }
             return;
         }
@@ -271,7 +285,7 @@ public class JobActionListener implements Listener {
     /**
      * Handle animal breeding (BREED action).
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onEntityBreed(EntityBreedEvent event) {
         if (!(event.getBreeder() instanceof Player player)) return;
         
@@ -291,7 +305,7 @@ public class JobActionListener implements Listener {
      * Handle fishing (FISH action).
      * Supports both vanilla fish and items from fishing.
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerFish(PlayerFishEvent event) {
         if (event.getState() != PlayerFishEvent.State.CAUGHT_FISH) return;
         
@@ -341,7 +355,7 @@ public class JobActionListener implements Listener {
     /**
      * Handle animal taming (TAME action).
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onEntityTame(EntityTameEvent event) {
         if (!(event.getOwner() instanceof Player player)) return;
         
@@ -361,7 +375,7 @@ public class JobActionListener implements Listener {
      * Handle sheep shearing (SHEAR action).
      * Supports color filtering for sheep.
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerShearEntity(PlayerShearEntityEvent event) {
         Player player = event.getPlayer();
         
@@ -392,7 +406,7 @@ public class JobActionListener implements Listener {
      * Handle food and potion consumption (EAT and POTION actions).
      * Supports custom items (CustomCrops, CustomFishing, Nexo, ItemsAdder) and NBT detection.
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerItemConsume(PlayerItemConsumeEvent event) {
         Player player = event.getPlayer();
         ItemStack item = event.getItem();
@@ -439,7 +453,7 @@ public class JobActionListener implements Listener {
      * Handle block interactions (BLOCK_INTERACT action).
      * Only handles RIGHT_CLICK interactions - left clicks that break blocks are handled by BlockBreakEvent
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         
@@ -488,7 +502,7 @@ public class JobActionListener implements Listener {
     /**
      * Handle entity interactions (ENTITY_INTERACT action) - Right click.
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         Player player = event.getPlayer();
         Entity entity = event.getRightClicked();
@@ -1156,7 +1170,7 @@ public class JobActionListener implements Listener {
      * Supports profession filtering for villagers.
      * Handles trading by monitoring merchant inventory clicks.
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onMerchantTradeClick(InventoryClickEvent event) {
         // Only handle merchant inventory (villager trading)
         if (event.getInventory().getType() != InventoryType.MERCHANT) {
@@ -1473,6 +1487,38 @@ public class JobActionListener implements Listener {
             return customBlock != null;
         } catch (Exception e) {
             // If any error occurs, assume it's not an ItemsAdder block
+            return false;
+        }
+    }
+    
+    /**
+     * Check if a block is an Oraxen custom block.
+     * This prevents duplicate processing between vanilla and Oraxen events.
+     */
+    private boolean isOraxenBlock(org.bukkit.block.Block block) {
+        try {
+            // Check if Oraxen is installed
+            if (!plugin.getServer().getPluginManager().isPluginEnabled("Oraxen")) {
+                return false;
+            }
+            
+            // Use reflection to avoid NoClassDefFoundError when Oraxen is not present
+            Class<?> oraxenListenerClass = Class.forName("fr.ax_dev.universejobs.listener.OraxenEventListener");
+            java.lang.reflect.Method isOraxenBlockMethod = oraxenListenerClass.getMethod("isOraxenBlock", org.bukkit.block.Block.class);
+            
+            // Get the OraxenEventListener instance from the server
+            // This is a simplified approach - in reality, you might want to store a reference
+            for (org.bukkit.event.HandlerList handler : org.bukkit.event.HandlerList.getHandlerLists()) {
+                for (org.bukkit.plugin.RegisteredListener listener : handler.getRegisteredListeners()) {
+                    if (listener.getListener().getClass().equals(oraxenListenerClass)) {
+                        return (Boolean) isOraxenBlockMethod.invoke(listener.getListener(), block);
+                    }
+                }
+            }
+            
+            return false;
+        } catch (Exception e) {
+            // If any error occurs, assume it's not an Oraxen block
             return false;
         }
     }
