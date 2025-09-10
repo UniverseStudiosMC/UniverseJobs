@@ -6,7 +6,7 @@
 [![Spigot](https://img.shields.io/badge/Spigot-1.13+-red?style=for-the-badge&logo=minecraft)](https://spigotmc.org/)
 [![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk)](https://openjdk.org/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
-
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/d67ca8d8f6914d76ace23726c6d43a3b)](https://app.codacy.com/gh/UniverseStudiosMC/UniverseJobs/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 ## 📜 **Licensing & Legal**
 

@@ -16,6 +16,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.UUID;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * High-performance packet-based message sender.
@@ -54,8 +56,66 @@ public class PacketUtils {
     private static Object UPDATE_STYLE_ACTION;
     private static boolean PACKET_REFLECTION_AVAILABLE = false;
     
+    // Security: Whitelist of allowed classes for reflection
+    private static final Set<String> ALLOWED_CLASSES = new HashSet<>();
+    
+    // Security: Whitelist of allowed fields for setAccessible
+    private static final Set<String> ALLOWED_FIELDS = new HashSet<>();
+    
+    static {
+        ALLOWED_CLASSES.add("org.bukkit.craftbukkit.v1_17_R1.entity.CraftPlayer");
+        ALLOWED_CLASSES.add("org.bukkit.craftbukkit.v1_18_R1.entity.CraftPlayer");
+        ALLOWED_CLASSES.add("org.bukkit.craftbukkit.v1_18_R2.entity.CraftPlayer");
+        ALLOWED_CLASSES.add("org.bukkit.craftbukkit.v1_19_R1.entity.CraftPlayer");
+        ALLOWED_CLASSES.add("org.bukkit.craftbukkit.v1_19_R2.entity.CraftPlayer");
+        ALLOWED_CLASSES.add("org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer");
+        ALLOWED_CLASSES.add("org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer");
+        ALLOWED_CLASSES.add("org.bukkit.craftbukkit.v1_20_R2.entity.CraftPlayer");
+        ALLOWED_CLASSES.add("org.bukkit.craftbukkit.v1_20_R3.entity.CraftPlayer");
+        ALLOWED_CLASSES.add("org.bukkit.craftbukkit.v1_21_R1.entity.CraftPlayer");
+        ALLOWED_CLASSES.add("net.minecraft.network.protocol.game.ClientboundBossEventPacket");
+        ALLOWED_CLASSES.add("net.minecraft.server.v1_17_R1.PacketPlayOutBoss");
+        ALLOWED_CLASSES.add("net.minecraft.server.v1_18_R1.PacketPlayOutBoss");
+        ALLOWED_CLASSES.add("net.minecraft.server.v1_18_R2.PacketPlayOutBoss");
+        ALLOWED_CLASSES.add("net.minecraft.server.v1_19_R1.PacketPlayOutBoss");
+        ALLOWED_CLASSES.add("net.minecraft.server.v1_19_R2.PacketPlayOutBoss");
+        ALLOWED_CLASSES.add("net.minecraft.server.v1_19_R3.PacketPlayOutBoss");
+        ALLOWED_CLASSES.add("net.minecraft.server.v1_20_R1.PacketPlayOutBoss");
+        ALLOWED_CLASSES.add("net.minecraft.server.v1_20_R2.PacketPlayOutBoss");
+        ALLOWED_CLASSES.add("net.minecraft.server.v1_20_R3.PacketPlayOutBoss");
+        ALLOWED_CLASSES.add("net.minecraft.server.v1_21_R1.PacketPlayOutBoss");
+        ALLOWED_CLASSES.add("net.minecraft.server.network.protocol.game.PacketPlayOutBoss");
+        
+        // Allowed field names for connection access
+        ALLOWED_FIELDS.add("connection");
+        ALLOWED_FIELDS.add("playerConnection");
+        ALLOWED_FIELDS.add("b");
+    }
+    
     static {
         initializeReflection();
+    }
+    
+    /**
+     * Secure Class.forName wrapper that only allows whitelisted classes.
+     */
+    private static Class<?> secureClassForName(String className) throws ClassNotFoundException {
+        if (!ALLOWED_CLASSES.contains(className)) {
+            throw new SecurityException("Class not in whitelist: " + className);
+        }
+        return Class.forName(className);
+    }
+    
+    /**
+     * Secure field access that only allows whitelisted fields.
+     */
+    private static Field secureGetDeclaredField(Class<?> clazz, String fieldName) throws NoSuchFieldException {
+        if (!ALLOWED_FIELDS.contains(fieldName)) {
+            throw new SecurityException("Field not in whitelist: " + fieldName);
+        }
+        Field field = clazz.getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return field;
     }
     
     /**
@@ -397,9 +457,7 @@ public class PacketUtils {
                 String[] connectionFieldNames = {"connection", "playerConnection", "b"};
                 for (String fieldName : connectionFieldNames) {
                     try {
-                        Field field = nmsPlayer.getClass().getDeclaredField(fieldName);
-                        field.setAccessible(true);
-                        CONNECTION_FIELD = field;
+                        CONNECTION_FIELD = secureGetDeclaredField(nmsPlayer.getClass(), fieldName);
                         break;
                     } catch (Exception ignored) {}
                 }
@@ -872,7 +930,7 @@ public class PacketUtils {
     private static void initializeModernReflection() {
         try {
             // Try Paper/Modern approach first
-            Class<?> craftPlayerClass = Class.forName("org.bukkit.craftbukkit." + getServerVersion() + ".entity.CraftPlayer");
+            Class<?> craftPlayerClass = secureClassForName("org.bukkit.craftbukkit." + getServerVersion() + ".entity.CraftPlayer");
             GET_HANDLE_METHOD = craftPlayerClass.getMethod("getHandle");
             
             // Try to get connection field from ServerPlayer
@@ -887,9 +945,9 @@ public class PacketUtils {
             
             for (String packetName : packetNames) {
                 try {
-                    CLIENTBOUND_BOSS_EVENT_PACKET_CLASS = Class.forName(packetName);
+                    CLIENTBOUND_BOSS_EVENT_PACKET_CLASS = secureClassForName(packetName);
                     break;
-                } catch (ClassNotFoundException ignored) {}
+                } catch (Exception ignored) {}
             }
             
             if (CLIENTBOUND_BOSS_EVENT_PACKET_CLASS != null) {
@@ -908,10 +966,10 @@ public class PacketUtils {
      */
     private static void initializeLegacyReflection(String version) {
         try {
-            Class<?> craftPlayerClass = Class.forName("org.bukkit.craftbukkit." + version + ".entity.CraftPlayer");
+            Class<?> craftPlayerClass = secureClassForName("org.bukkit.craftbukkit." + version + ".entity.CraftPlayer");
             GET_HANDLE_METHOD = craftPlayerClass.getMethod("getHandle");
             
-            CLIENTBOUND_BOSS_EVENT_PACKET_CLASS = Class.forName("net.minecraft.server." + version + ".PacketPlayOutBoss");
+            CLIENTBOUND_BOSS_EVENT_PACKET_CLASS = secureClassForName("net.minecraft.server." + version + ".PacketPlayOutBoss");
             
             if (CLIENTBOUND_BOSS_EVENT_PACKET_CLASS != null) {
                 initializePacketActions();

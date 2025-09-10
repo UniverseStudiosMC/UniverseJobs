@@ -37,9 +37,9 @@ public class BatchedRewardManager {
     });
     
     // Configuration
-    private final int xpBatchTicks;
-    private final int moneyBatchTicks;
-    private final int othersBatchTicks;
+    private int xpBatchTicks;
+    private int moneyBatchTicks;
+    private int othersBatchTicks;
     
     // Last flush timestamps
     private long lastXpFlush = System.currentTimeMillis();
@@ -347,22 +347,10 @@ public class BatchedRewardManager {
             return thread;
         });
         
-        // Update configuration values via reflection
-        try {
-            java.lang.reflect.Field xpField = this.getClass().getDeclaredField("xpBatchTicks");
-            xpField.setAccessible(true);
-            xpField.setInt(this, newXpBatchTicks);
-            
-            java.lang.reflect.Field moneyField = this.getClass().getDeclaredField("moneyBatchTicks");
-            moneyField.setAccessible(true);
-            moneyField.setInt(this, newMoneyBatchTicks);
-            
-            java.lang.reflect.Field othersField = this.getClass().getDeclaredField("othersBatchTicks");
-            othersField.setAccessible(true);
-            othersField.setInt(this, newOthersBatchTicks);
-        } catch (Exception e) {
-            plugin.getLogger().warning("Failed to update batch configuration: " + e.getMessage());
-        }
+        // Update configuration values directly
+        this.xpBatchTicks = newXpBatchTicks;
+        this.moneyBatchTicks = newMoneyBatchTicks;
+        this.othersBatchTicks = newOthersBatchTicks;
         
         // Restart batch processors with new configuration
         startBatchProcessors();

@@ -250,6 +250,20 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
             }
         }
         
+        // Register CraftEngine event listener if CraftEngine is present
+        if (getServer().getPluginManager().isPluginEnabled("CraftEngine")) {
+            try {
+                Class<?> craftEngineListenerClass = Class.forName("fr.ax_dev.universejobs.listener.CraftEngineEventListener");
+                Object craftEngineListener = craftEngineListenerClass
+                    .getConstructor(UniverseJobs.class, ActionProcessor.class, BlockProtectionManager.class)
+                    .newInstance(this, actionProcessor, protectionManager);
+                getServer().getPluginManager().registerEvents((Listener) craftEngineListener, this);
+                getLogger().info("CraftEngine event listener registered successfully");
+            } catch (Exception e) {
+                getLogger().warning("Failed to register CraftEngine event listener: " + e.getMessage());
+            }
+        }
+        
         // Load player data for online players et précharge dans le cache
         for (org.bukkit.entity.Player player : getServer().getOnlinePlayers()) {
             foliaManager.runAsync(() -> {
