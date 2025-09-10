@@ -54,7 +54,7 @@ public class CustomCropsEventListener implements Listener {
      * Handle CustomCrops crop break events.
      * Uses the same pattern as Nexo and ItemsAdder with target format "customcrops:crop_id".
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCropBreak(CropBreakEvent event) {
         // Only handle player breaks (entity can be null for other causes)
         if (!(event.entityBreaker() instanceof Player)) {
@@ -77,7 +77,7 @@ public class CustomCropsEventListener implements Listener {
                 .set(TARGET_KEY, TARGET_PREFIX + cropStageItemID)
                 .set("customcrops_crop_stage_id", cropStageItemID);
         
-        // Process the action
+        // Process the action (MONITOR priority - no cancellation)
         actionProcessor.processAction(player, ActionType.BREAK, event, context);
         
         if (plugin.getConfigManager().isDebugEnabled()) {
@@ -129,7 +129,7 @@ public class CustomCropsEventListener implements Listener {
      * Uses the same pattern as Nexo and ItemsAdder with target format "customcrops:crop_id".
      * Includes anti-double click protection and cached interact-type support.
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCropInteract(CropInteractEvent event) {
         Player player = event.getPlayer();
         Location location = event.location();
@@ -183,7 +183,7 @@ public class CustomCropsEventListener implements Listener {
             context.set("interact-type", interactType);
         }
         
-        // Process as block interact action
+        // Process as block interact action (MONITOR priority - no cancellation)
         actionProcessor.processAction(player, ActionType.BLOCK_INTERACT, event, context);
         
         if (plugin.getConfigManager().isDebugEnabled()) {
@@ -196,7 +196,7 @@ public class CustomCropsEventListener implements Listener {
      * Handle CustomCrops crop plant events.
      * Uses the same pattern as Nexo and ItemsAdder with target format "customcrops:crop_id".
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCropPlant(CropPlantEvent event) {
         Player player = event.getPlayer();
         Location location = event.location();
@@ -217,13 +217,12 @@ public class CustomCropsEventListener implements Listener {
                 .set("customcrops_crop_id", cropID)
                 .set("customcrops_crop_point", String.valueOf(event.point()));
         
-        // Process the action
-        boolean processed = actionProcessor.processAction(player, ActionType.PLACE, event, context);
+        // Process the action (MONITOR priority - no cancellation)
+        actionProcessor.processAction(player, ActionType.PLACE, event, context);
         
         if (plugin.getConfigManager().isDebugEnabled()) {
             plugin.getLogger().info("CustomCrops plant: " + cropID + " (point: " + event.point() + ") by " + player.getName() + " at " + location);
             plugin.getLogger().info("CustomCrops context target: " + context.getTarget());
-            plugin.getLogger().info("CustomCrops action processed: " + processed);
         }
     }
     

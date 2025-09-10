@@ -47,7 +47,7 @@ public class ItemsAdderEventListener implements Listener {
      * Handle ItemsAdder custom block placement.
      * Uses ItemsAdder's direct API for better accuracy and performance.
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onItemsAdderBlockPlace(CustomBlockPlaceEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
@@ -62,7 +62,7 @@ public class ItemsAdderEventListener implements Listener {
                 .set(TARGET_PREFIX, ITEMSADDER_PREFIX + itemsAdderBlockId)
                 .set(ITEMSADDER_BLOCK_ID, itemsAdderBlockId);
         
-        // Process the action
+        // Process the action (MONITOR priority - no cancellation)
         actionProcessor.processAction(player, ActionType.PLACE, event, context);
         
         if (plugin.getConfigManager().isDebugEnabled()) {
@@ -74,7 +74,7 @@ public class ItemsAdderEventListener implements Listener {
      * Handle ItemsAdder custom block breaking.
      * Uses ItemsAdder's direct API for better accuracy and performance.
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onItemsAdderBlockBreak(CustomBlockBreakEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
@@ -108,7 +108,7 @@ public class ItemsAdderEventListener implements Listener {
                 .set(TARGET_PREFIX, ITEMSADDER_PREFIX + itemsAdderBlockId)
                 .set(ITEMSADDER_BLOCK_ID, itemsAdderBlockId);
         
-        // Process the action and award XP
+        // Process the action (MONITOR priority - no cancellation)
         actionProcessor.processAction(player, ActionType.BREAK, event, context);
         
         if (plugin.getConfigManager().isDebugEnabled()) {
@@ -120,7 +120,7 @@ public class ItemsAdderEventListener implements Listener {
      * Handle ItemsAdder custom block interactions.
      * Uses ItemsAdder's direct API for better accuracy and performance.
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onItemsAdderBlockInteract(CustomBlockInteractEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlockClicked(); // Correct API method name
@@ -148,7 +148,7 @@ public class ItemsAdderEventListener implements Listener {
                 .set(ITEMSADDER_BLOCK_ID, itemsAdderBlockId)
                 .set("interact-type", interactType);
         
-        // Process the action
+        // Process the action (MONITOR priority - no cancellation)
         actionProcessor.processAction(player, ActionType.BLOCK_INTERACT, event, context);
         
         if (plugin.getConfigManager().isDebugEnabled()) {

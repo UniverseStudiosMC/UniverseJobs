@@ -49,7 +49,7 @@ public class OraxenEventListener implements Listener {
      * Handle Oraxen custom block placement.
      * Uses Oraxen API to detect custom items in standard BlockPlaceEvent.
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onOraxenBlockPlace(BlockPlaceEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
@@ -70,12 +70,8 @@ public class OraxenEventListener implements Listener {
                 .set(TARGET_PREFIX, ORAXEN_PREFIX + oraxenItemId)
                 .set(ORAXEN_ITEM_ID, oraxenItemId);
         
-        // Process the action
-        boolean shouldCancel = actionProcessor.processAction(player, ActionType.PLACE, event, context);
-        if (shouldCancel) {
-            event.setCancelled(true);
-            protectionManager.removeTrackedBlock(block);
-        }
+        // Process the action (MONITOR priority - no cancellation)
+        actionProcessor.processAction(player, ActionType.PLACE, event, context);
         
         if (plugin.getConfigManager().isDebugEnabled()) {
             plugin.getLogger().info("Oraxen block placed: " + oraxenItemId + " by " + player.getName() + " at " + block.getLocation());
@@ -86,7 +82,7 @@ public class OraxenEventListener implements Listener {
      * Handle Oraxen custom block breaking.
      * Uses Oraxen API to detect custom blocks in standard BlockBreakEvent.
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onOraxenBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
@@ -114,11 +110,8 @@ public class OraxenEventListener implements Listener {
                 .set(TARGET_PREFIX, ORAXEN_PREFIX + oraxenItemId)
                 .set(ORAXEN_ITEM_ID, oraxenItemId);
         
-        // Process the action and check if we should cancel
-        boolean shouldCancel = actionProcessor.processAction(player, ActionType.BREAK, event, context);
-        if (shouldCancel) {
-            event.setCancelled(true);
-        }
+        // Process the action (MONITOR priority - no cancellation)
+        actionProcessor.processAction(player, ActionType.BREAK, event, context);
         
         if (plugin.getConfigManager().isDebugEnabled()) {
             plugin.getLogger().info("Oraxen block broken: " + oraxenItemId + " by " + player.getName() + " at " + block.getLocation());
@@ -129,7 +122,7 @@ public class OraxenEventListener implements Listener {
      * Handle Oraxen custom block interactions.
      * Uses Oraxen API to detect custom blocks in standard PlayerInteractEvent.
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onOraxenBlockInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         
@@ -166,11 +159,8 @@ public class OraxenEventListener implements Listener {
                 .set(ORAXEN_ITEM_ID, oraxenItemId)
                 .set("interact-type", interactType);
         
-        // Process the action and check if we should cancel
-        boolean shouldCancel = actionProcessor.processAction(player, ActionType.BLOCK_INTERACT, event, context);
-        if (shouldCancel) {
-            event.setCancelled(true);
-        }
+        // Process the action (MONITOR priority - no cancellation)
+        actionProcessor.processAction(player, ActionType.BLOCK_INTERACT, event, context);
         
         if (plugin.getConfigManager().isDebugEnabled()) {
             plugin.getLogger().info("Oraxen block interact: " + oraxenItemId + " by " + player.getName() + " - interact-type: " + interactType);

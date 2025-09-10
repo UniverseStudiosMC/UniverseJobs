@@ -158,7 +158,7 @@ public class JobActionListener implements Listener {
      * Handle block breaking (BREAK action).
      * Works with both vanilla blocks and Nexo custom blocks.
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         
@@ -222,11 +222,8 @@ public class JobActionListener implements Listener {
                 plugin.getLogger().info("Processing BREAK action for " + player.getName() + TARGET_SUFFIX + event.getBlock().getType().name());
             }
             
-            // Process the action and check if we should cancel
-            boolean shouldCancel = actionProcessor.processAction(player, ActionType.BREAK, event, context);
-            if (shouldCancel) {
-                event.setCancelled(true);
-            }
+            // Process the action (MONITOR priority - no cancellation)
+            actionProcessor.processAction(player, ActionType.BREAK, event, context);
             
             processedEvents.incrementAndGet();
             
@@ -239,7 +236,7 @@ public class JobActionListener implements Listener {
      * Handle block placement (PLACE action).
      * Works with both vanilla blocks and Nexo custom blocks.
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
         Player player = event.getPlayer();
         
@@ -273,19 +270,14 @@ public class JobActionListener implements Listener {
                 .setBlock(event.getBlock())
                 .set(TARGET_KEY, event.getBlock().getType().name());
         
-        // Process the action and check if we should cancel
-        boolean shouldCancel = actionProcessor.processAction(player, ActionType.PLACE, event, context);
-        if (shouldCancel) {
-            event.setCancelled(true);
-            // If cancelled, remove the block from tracking
-            protectionManager.removeTrackedBlock(event.getBlock());
-        }
+        // Process the action (MONITOR priority - no cancellation)
+        actionProcessor.processAction(player, ActionType.PLACE, event, context);
     }
     
     /**
      * Handle animal breeding (BREED action).
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityBreed(EntityBreedEvent event) {
         if (!(event.getBreeder() instanceof Player player)) return;
         
@@ -294,18 +286,15 @@ public class JobActionListener implements Listener {
                 .setEntity(event.getEntity())
                 .set(TARGET_KEY, event.getEntityType().name());
         
-        // Process the action and check if we should cancel
-        boolean shouldCancel = actionProcessor.processAction(player, ActionType.BREED, event, context);
-        if (shouldCancel) {
-            event.setCancelled(true);
-        }
+        // Process the action (MONITOR priority - no cancellation)
+        actionProcessor.processAction(player, ActionType.BREED, event, context);
     }
     
     /**
      * Handle fishing (FISH action).
      * Supports both vanilla fish and items from fishing.
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerFish(PlayerFishEvent event) {
         if (event.getState() != PlayerFishEvent.State.CAUGHT_FISH) return;
         
@@ -345,17 +334,14 @@ public class JobActionListener implements Listener {
             plugin.getLogger().info("Processing FISH action with target: " + target + " by " + player.getName());
         }
         
-        // Process the action and check if we should cancel
-        boolean shouldCancel = actionProcessor.processAction(player, ActionType.FISH, event, context);
-        if (shouldCancel) {
-            event.setCancelled(true);
-        }
+        // Process the action (MONITOR priority - no cancellation)
+        actionProcessor.processAction(player, ActionType.FISH, event, context);
     }
     
     /**
      * Handle animal taming (TAME action).
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityTame(EntityTameEvent event) {
         if (!(event.getOwner() instanceof Player player)) return;
         
@@ -364,18 +350,15 @@ public class JobActionListener implements Listener {
                 .setEntity(event.getEntity())
                 .set(TARGET_KEY, event.getEntityType().name());
         
-        // Process the action and check if we should cancel
-        boolean shouldCancel = actionProcessor.processAction(player, ActionType.TAME, event, context);
-        if (shouldCancel) {
-            event.setCancelled(true);
-        }
+        // Process the action (MONITOR priority - no cancellation)
+        actionProcessor.processAction(player, ActionType.TAME, event, context);
     }
     
     /**
      * Handle sheep shearing (SHEAR action).
      * Supports color filtering for sheep.
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerShearEntity(PlayerShearEntityEvent event) {
         Player player = event.getPlayer();
         
@@ -395,18 +378,15 @@ public class JobActionListener implements Listener {
             }
         }
         
-        // Process the action and check if we should cancel
-        boolean shouldCancel = actionProcessor.processAction(player, ActionType.SHEAR, event, context);
-        if (shouldCancel) {
-            event.setCancelled(true);
-        }
+        // Process the action (MONITOR priority - no cancellation)
+        actionProcessor.processAction(player, ActionType.SHEAR, event, context);
     }
     
     /**
      * Handle food and potion consumption (EAT and POTION actions).
      * Supports custom items (CustomCrops, CustomFishing, Nexo, ItemsAdder) and NBT detection.
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerItemConsume(PlayerItemConsumeEvent event) {
         Player player = event.getPlayer();
         ItemStack item = event.getItem();
@@ -442,18 +422,15 @@ public class JobActionListener implements Listener {
             actionType = ActionType.EAT;
         }
         
-        // Process the action and check if we should cancel
-        boolean shouldCancel = actionProcessor.processAction(player, actionType, event, context);
-        if (shouldCancel) {
-            event.setCancelled(true);
-        }
+        // Process the action (MONITOR priority - no cancellation)
+        actionProcessor.processAction(player, actionType, event, context);
     }
     
     /**
      * Handle block interactions (BLOCK_INTERACT action).
      * Only handles RIGHT_CLICK interactions - left clicks that break blocks are handled by BlockBreakEvent
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         
@@ -488,11 +465,8 @@ public class JobActionListener implements Listener {
             plugin.getLogger().info("Block interact (RIGHT_CLICK): " + event.getClickedBlock().getType() + " by " + player.getName() + " - interact-type: " + interactType);
         }
         
-        // Process the action and check if we should cancel
-        boolean shouldCancel = actionProcessor.processAction(player, ActionType.BLOCK_INTERACT, event, context);
-        if (shouldCancel) {
-            event.setCancelled(true);
-        }
+        // Process the action (MONITOR priority - no cancellation)
+        actionProcessor.processAction(player, ActionType.BLOCK_INTERACT, event, context);
         
         processedEvents.incrementAndGet();
     }
@@ -502,7 +476,7 @@ public class JobActionListener implements Listener {
     /**
      * Handle entity interactions (ENTITY_INTERACT action) - Right click.
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         Player player = event.getPlayer();
         Entity entity = event.getRightClicked();
@@ -533,11 +507,8 @@ public class JobActionListener implements Listener {
         // Check for MythicMobs using official API
         mythicMobsHandler.populateMythicMobContext(entity, context);
         
-        // Process the action and check if we should cancel
-        boolean shouldCancel = actionProcessor.processAction(player, ActionType.ENTITY_INTERACT, event, context);
-        if (shouldCancel) {
-            event.setCancelled(true);
-        }
+        // Process the action (MONITOR priority - no cancellation)
+        actionProcessor.processAction(player, ActionType.ENTITY_INTERACT, event, context);
         
         processedEvents.incrementAndGet();
     }
@@ -576,11 +547,8 @@ public class JobActionListener implements Listener {
                     " - source: " + entity.getType().name());
             }
             
-            // Process the milk action
-            boolean shouldCancel = actionProcessor.processAction(player, ActionType.MILK, event, context);
-            if (shouldCancel) {
-                event.setCancelled(true);
-            }
+            // Process the milk action (MONITOR priority - no cancellation)
+            actionProcessor.processAction(player, ActionType.MILK, event, context);
             
         } catch (Exception e) {
             plugin.getLogger().warning("Error processing MILK action for player " + player.getName() + ": " + e.getMessage());
@@ -1170,7 +1138,7 @@ public class JobActionListener implements Listener {
      * Supports profession filtering for villagers.
      * Handles trading by monitoring merchant inventory clicks.
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onMerchantTradeClick(InventoryClickEvent event) {
         // Only handle merchant inventory (villager trading)
         if (event.getInventory().getType() != InventoryType.MERCHANT) {
@@ -1225,11 +1193,8 @@ public class JobActionListener implements Listener {
                        .set("trade_max_uses", selectedRecipe.getMaxUses());
             }
             
-            // Process the action and check if we should cancel
-            boolean shouldCancel = actionProcessor.processAction(player, ActionType.TRADE, event, context);
-            if (shouldCancel) {
-                event.setCancelled(true);
-            }
+            // Process the action (MONITOR priority - no cancellation)
+            actionProcessor.processAction(player, ActionType.TRADE, event, context);
             
             processedEvents.incrementAndGet();
             
