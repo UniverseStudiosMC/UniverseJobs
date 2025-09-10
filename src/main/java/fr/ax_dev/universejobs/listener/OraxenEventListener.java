@@ -18,13 +18,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.event.Event;
 
-/**
- * Listens for Oraxen custom block events using the direct Oraxen API.
- * Uses specialized Oraxen events: OraxenNoteBlockEvents, OraxenStringBlockEvents, and OraxenFurnitureEvents.
- * Only uses events that actually exist in the Oraxen API.
- */
 public class OraxenEventListener implements Listener {
     
     private static final String TARGET_PREFIX = "target";
@@ -35,235 +30,58 @@ public class OraxenEventListener implements Listener {
     private final ActionProcessor actionProcessor;
     private final BlockProtectionManager protectionManager;
     
-    /**
-     * Create a new OraxenEventListener.
-     * 
-     * @param plugin The plugin instance
-     * @param actionProcessor The action processor
-     * @param protectionManager The block protection manager
-     */
     public OraxenEventListener(UniverseJobs plugin, ActionProcessor actionProcessor, BlockProtectionManager protectionManager) {
         this.plugin = plugin;
         this.actionProcessor = actionProcessor;
         this.protectionManager = protectionManager;
     }
     
-    /**
-     * Handle Oraxen NoteBlock placement using specialized Oraxen events.
-     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onOraxenNoteBlockPlace(OraxenNoteBlockPlaceEvent event) {
-        Player player = event.getPlayer();
-        Block block = event.getBlock();
-        String oraxenItemId = event.getMechanic().getItemID();
-        
-        // Track the placed block for anti-exploit protection
-        protectionManager.recordBlockPlacement(player, block);
-        
-        // Create context with Oraxen information
-        ConditionContext context = new ConditionContext()
-                .setBlock(block)
-                .set(TARGET_PREFIX, ORAXEN_PREFIX + oraxenItemId)
-                .set(ORAXEN_ITEM_ID, oraxenItemId);
-        
-        // Process the action (MONITOR priority - no cancellation)
-        actionProcessor.processAction(player, ActionType.PLACE, event, context);
-        
-        if (plugin.getConfigManager().isDebugEnabled()) {
-            plugin.getLogger().info("Oraxen NoteBlock placed: " + oraxenItemId + " by " + player.getName() + " at " + block.getLocation());
-        }
+        handleOraxenBlockPlace(event.getPlayer(), event.getBlock(), event.getMechanic().getItemID(), event, "NoteBlock");
     }
     
-    /**
-     * Handle Oraxen StringBlock placement using specialized Oraxen events.
-     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onOraxenStringBlockPlace(OraxenStringBlockPlaceEvent event) {
-        Player player = event.getPlayer();
-        Block block = event.getBlock();
-        String oraxenItemId = event.getMechanic().getItemID();
-        
-        // Track the placed block for anti-exploit protection
-        protectionManager.recordBlockPlacement(player, block);
-        
-        // Create context with Oraxen information
-        ConditionContext context = new ConditionContext()
-                .setBlock(block)
-                .set(TARGET_PREFIX, ORAXEN_PREFIX + oraxenItemId)
-                .set(ORAXEN_ITEM_ID, oraxenItemId);
-        
-        // Process the action (MONITOR priority - no cancellation)
-        actionProcessor.processAction(player, ActionType.PLACE, event, context);
-        
-        if (plugin.getConfigManager().isDebugEnabled()) {
-            plugin.getLogger().info("Oraxen StringBlock placed: " + oraxenItemId + " by " + player.getName() + " at " + block.getLocation());
-        }
+        handleOraxenBlockPlace(event.getPlayer(), event.getBlock(), event.getMechanic().getItemID(), event, "StringBlock");
     }
     
-    /**
-     * Handle Oraxen Furniture placement using specialized Oraxen events.
-     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onOraxenFurniturePlace(OraxenFurniturePlaceEvent event) {
-        Player player = event.getPlayer();
-        org.bukkit.entity.Entity baseEntity = event.getBaseEntity();
-        String oraxenItemId = event.getMechanic().getItemID();
-        
-        // For furniture, we use the BaseEntity location as the "block" location
-        Block block = baseEntity.getLocation().getBlock();
-        
-        // Track the placed furniture for anti-exploit protection
-        protectionManager.recordBlockPlacement(player, block);
-        
-        // Create context with Oraxen information
-        ConditionContext context = new ConditionContext()
-                .setBlock(block)
-                .set(TARGET_PREFIX, ORAXEN_PREFIX + oraxenItemId)
-                .set(ORAXEN_ITEM_ID, oraxenItemId);
-        
-        // Process the action (MONITOR priority - no cancellation)
-        actionProcessor.processAction(player, ActionType.PLACE, event, context);
-        
-        if (plugin.getConfigManager().isDebugEnabled()) {
-            plugin.getLogger().info("Oraxen Furniture placed: " + oraxenItemId + " by " + player.getName() + " at " + baseEntity.getLocation());
-        }
+        Block block = event.getBaseEntity().getLocation().getBlock();
+        handleOraxenBlockPlace(event.getPlayer(), block, event.getMechanic().getItemID(), event, "Furniture");
     }
     
-    /**
-     * Handle Oraxen NoteBlock breaking using specialized Oraxen events.
-     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onOraxenNoteBlockBreak(OraxenNoteBlockBreakEvent event) {
-        Player player = event.getPlayer();
-        Block block = event.getBlock();
-        String oraxenBlockId = event.getMechanic().getItemID();
-        
-        // Check if this block was placed by a player (anti-exploit for Oraxen blocks)
-        if (protectionManager.isPlayerPlacedBlock(block)) {
-            // Remove from tracking but don't give XP
-            protectionManager.removeTrackedBlock(block);
-            
-            if (plugin.getConfigManager().isDebugEnabled()) {
-                plugin.getLogger().info("Player " + player.getName() + " mined a player-placed Oraxen NoteBlock (" + oraxenBlockId + ") - no XP awarded");
-            }
-            return;
-        }
-        
-        // Create context with Oraxen information
-        ConditionContext context = new ConditionContext()
-                .setBlock(block)
-                .set(TARGET_PREFIX, ORAXEN_PREFIX + oraxenBlockId)
-                .set(ORAXEN_ITEM_ID, oraxenBlockId);
-        
-        // Process the action (MONITOR priority - no cancellation)
-        actionProcessor.processAction(player, ActionType.BREAK, event, context);
-        
-        if (plugin.getConfigManager().isDebugEnabled()) {
-            plugin.getLogger().info("Oraxen NoteBlock broken: " + oraxenBlockId + " by " + player.getName() + " at " + block.getLocation());
-        }
+        handleOraxenBlockBreak(event.getPlayer(), event.getBlock(), event.getMechanic().getItemID(), event, "NoteBlock");
     }
     
-    /**
-     * Handle Oraxen StringBlock breaking using specialized Oraxen events.
-     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onOraxenStringBlockBreak(OraxenStringBlockBreakEvent event) {
-        Player player = event.getPlayer();
-        Block block = event.getBlock();
-        String oraxenBlockId = event.getMechanic().getItemID();
-        
-        // Check if this block was placed by a player (anti-exploit for Oraxen blocks)
-        if (protectionManager.isPlayerPlacedBlock(block)) {
-            // Remove from tracking but don't give XP
-            protectionManager.removeTrackedBlock(block);
-            
-            if (plugin.getConfigManager().isDebugEnabled()) {
-                plugin.getLogger().info("Player " + player.getName() + " mined a player-placed Oraxen StringBlock (" + oraxenBlockId + ") - no XP awarded");
-            }
-            return;
-        }
-        
-        // Create context with Oraxen information
-        ConditionContext context = new ConditionContext()
-                .setBlock(block)
-                .set(TARGET_PREFIX, ORAXEN_PREFIX + oraxenBlockId)
-                .set(ORAXEN_ITEM_ID, oraxenBlockId);
-        
-        // Process the action (MONITOR priority - no cancellation)
-        actionProcessor.processAction(player, ActionType.BREAK, event, context);
-        
-        if (plugin.getConfigManager().isDebugEnabled()) {
-            plugin.getLogger().info("Oraxen StringBlock broken: " + oraxenBlockId + " by " + player.getName() + " at " + block.getLocation());
-        }
+        handleOraxenBlockBreak(event.getPlayer(), event.getBlock(), event.getMechanic().getItemID(), event, "StringBlock");
     }
     
-    /**
-     * Handle Oraxen Furniture breaking using specialized Oraxen events.
-     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onOraxenFurnitureBreak(OraxenFurnitureBreakEvent event) {
-        Player player = event.getPlayer();
-        org.bukkit.entity.Entity baseEntity = event.getBaseEntity();
-        String oraxenBlockId = event.getMechanic().getItemID();
-        
-        // For furniture, we use the BaseEntity location as the "block" location
-        Block block = baseEntity.getLocation().getBlock();
-        
-        // Check if this furniture was placed by a player (anti-exploit for Oraxen furniture)
-        if (protectionManager.isPlayerPlacedBlock(block)) {
-            // Remove from tracking but don't give XP
-            protectionManager.removeTrackedBlock(block);
-            
-            if (plugin.getConfigManager().isDebugEnabled()) {
-                plugin.getLogger().info("Player " + player.getName() + " removed a player-placed Oraxen Furniture (" + oraxenBlockId + ") - no XP awarded");
-            }
-            return;
-        }
-        
-        // Create context with Oraxen information
-        ConditionContext context = new ConditionContext()
-                .setBlock(block)
-                .set(TARGET_PREFIX, ORAXEN_PREFIX + oraxenBlockId)
-                .set(ORAXEN_ITEM_ID, oraxenBlockId);
-        
-        // Process the action (MONITOR priority - no cancellation)
-        actionProcessor.processAction(player, ActionType.BREAK, event, context);
-        
-        if (plugin.getConfigManager().isDebugEnabled()) {
-            plugin.getLogger().info("Oraxen Furniture broken: " + oraxenBlockId + " by " + player.getName() + " at " + baseEntity.getLocation());
-        }
+        Block block = event.getBaseEntity().getLocation().getBlock();
+        handleOraxenBlockBreak(event.getPlayer(), block, event.getMechanic().getItemID(), event, "Furniture");
     }
     
-    /**
-     * Handle Oraxen NoteBlock interactions using specialized Oraxen events.
-     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onOraxenNoteBlockInteract(OraxenNoteBlockInteractEvent event) {
         Player player = event.getPlayer();
         Block block = event.getBlock();
         String oraxenBlockId = event.getMechanic().getItemID();
         
-        // Determine interact type based on the interaction
-        String interactType;
-        try {
-            org.bukkit.event.block.Action action = event.getAction();
-            boolean isRightClick = (action == org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK);
-            
-            interactType = player.isSneaking() ? 
-                (isRightClick ? "RIGHT_SHIFT_CLICK" : "LEFT_SHIFT_CLICK") : 
-                (isRightClick ? "RIGHT_CLICK" : "LEFT_CLICK");
-        } catch (Exception e) {
-            interactType = player.isSneaking() ? "RIGHT_SHIFT_CLICK" : "RIGHT_CLICK";
-        }
+        String interactType = determineInteractType(player, event.getAction());
         
-        // Create context with Oraxen information
         ConditionContext context = new ConditionContext()
                 .setBlock(block)
                 .set(TARGET_PREFIX, ORAXEN_PREFIX + oraxenBlockId)
                 .set(ORAXEN_ITEM_ID, oraxenBlockId)
                 .set("interact-type", interactType);
         
-        // Process the action (MONITOR priority - no cancellation)
         actionProcessor.processAction(player, ActionType.BLOCK_INTERACT, event, context);
         
         if (plugin.getConfigManager().isDebugEnabled()) {
@@ -271,5 +89,52 @@ public class OraxenEventListener implements Listener {
         }
     }
     
+    private void handleOraxenBlockPlace(Player player, Block block, String oraxenItemId, Event event, String blockType) {
+        protectionManager.recordBlockPlacement(player, block);
+        
+        ConditionContext context = new ConditionContext()
+                .setBlock(block)
+                .set(TARGET_PREFIX, ORAXEN_PREFIX + oraxenItemId)
+                .set(ORAXEN_ITEM_ID, oraxenItemId);
+        
+        actionProcessor.processAction(player, ActionType.PLACE, event, context);
+        
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("Oraxen " + blockType + " placed: " + oraxenItemId + " by " + player.getName() + " at " + block.getLocation());
+        }
+    }
     
+    private void handleOraxenBlockBreak(Player player, Block block, String oraxenBlockId, Event event, String blockType) {
+        if (protectionManager.isPlayerPlacedBlock(block)) {
+            protectionManager.removeTrackedBlock(block);
+            
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("Player " + player.getName() + " mined a player-placed Oraxen " + blockType + " (" + oraxenBlockId + ") - no XP awarded");
+            }
+            return;
+        }
+        
+        ConditionContext context = new ConditionContext()
+                .setBlock(block)
+                .set(TARGET_PREFIX, ORAXEN_PREFIX + oraxenBlockId)
+                .set(ORAXEN_ITEM_ID, oraxenBlockId);
+        
+        actionProcessor.processAction(player, ActionType.BREAK, event, context);
+        
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("Oraxen " + blockType + " broken: " + oraxenBlockId + " by " + player.getName() + " at " + block.getLocation());
+        }
+    }
+    
+    private String determineInteractType(Player player, org.bukkit.event.block.Action action) {
+        try {
+            boolean isRightClick = (action == org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK);
+            
+            return player.isSneaking() ? 
+                (isRightClick ? "RIGHT_SHIFT_CLICK" : "LEFT_SHIFT_CLICK") : 
+                (isRightClick ? "RIGHT_CLICK" : "LEFT_CLICK");
+        } catch (Exception e) {
+            return player.isSneaking() ? "RIGHT_SHIFT_CLICK" : "RIGHT_CLICK";
+        }
+    }
 }
