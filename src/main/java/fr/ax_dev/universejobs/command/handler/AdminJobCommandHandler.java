@@ -445,6 +445,10 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                         playerData.setXp(jobToReset, 0.0);
                         playerData.setLevel(jobToReset, 0);
                         playerData.leaveJob(jobToReset);
+                        
+                        if (plugin.getRewardManager() != null) {
+                            plugin.getRewardManager().resetJobRewards(target.getUniqueId(), jobToReset);
+                        }
                     }
                     
                     jobManager.savePlayerData(target.getUniqueId());
@@ -480,6 +484,10 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                     
                     playerData.setXp(finalJobId, 0);
                     playerData.setLevel(finalJobId, 0);
+                    
+                    if (plugin.getRewardManager() != null) {
+                        plugin.getRewardManager().resetJobRewards(target.getUniqueId(), finalJobId);
+                    }
                     
                     jobManager.savePlayerData(target.getUniqueId());
                     

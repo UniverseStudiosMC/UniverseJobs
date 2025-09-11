@@ -21,6 +21,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.util.*;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
@@ -426,6 +427,16 @@ public class RewardManager {
      */
     public void resetJobRewards(Player player, String jobId) {
         storage.resetJobRewards(player.getUniqueId(), jobId);
+    }
+    
+    /**
+     * Reset all rewards for a player in a specific job using UUID.
+     * 
+     * @param playerUuid The player UUID
+     * @param jobId The job ID
+     */
+    public void resetJobRewards(UUID playerUuid, String jobId) {
+        storage.resetJobRewards(playerUuid, jobId);
     }
     
     /**
