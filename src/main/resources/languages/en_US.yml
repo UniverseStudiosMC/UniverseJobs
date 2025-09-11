@@ -241,7 +241,8 @@ commands:
     reset-success: "&aReset &e{player}'s &aprogress! Cleaned &e{cleanedJobs}&a/&e{totalJobs} &ajobs."
     reset-job-success: "&aReset &e{job} &afor &e{player}!"
     reset-error: "&cError occurred while resetting player data!"
-    
+    reset-notify: "&cYour job data has been reset by an administrator."
+
     # Give custom
     givecustom-success: "&aGave &e{player} &acustom rewards for &e{job}&a: &b{xp} XP &aand &6${money}"
     
