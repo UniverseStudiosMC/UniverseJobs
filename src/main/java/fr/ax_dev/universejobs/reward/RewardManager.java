@@ -353,10 +353,22 @@ public class RewardManager {
         
         // Give economy reward
         if (reward.hasEconomyReward()) {
-            // Integration with economy plugins would go here
-            // For now, just log it
-            if (plugin.getConfigManager().isDebugEnabled()) {
-                plugin.getLogger().info("Economy reward of " + reward.getEconomyReward() + " for player " + player.getName());
+            try {
+                net.milkbowl.vault.economy.Economy economy = null;
+                if (plugin.getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class) != null) {
+                    economy = plugin.getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class).getProvider();
+                }
+                
+                if (economy != null) {
+                    economy.depositPlayer(player, reward.getEconomyReward());
+                    if (plugin.getConfigManager().isDebugEnabled()) {
+                        plugin.getLogger().info("Economy reward of " + reward.getEconomyReward() + " given to player " + player.getName());
+                    }
+                } else {
+                    plugin.getLogger().warning("Economy reward of " + reward.getEconomyReward() + " could not be given to " + player.getName() + " - Vault/Economy not found");
+                }
+            } catch (Exception e) {
+                plugin.getLogger().warning("Failed to give economy reward to " + player.getName() + ": " + e.getMessage());
             }
         }
         

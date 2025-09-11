@@ -2,6 +2,7 @@ package fr.ax_dev.universejobs.condition;
 
 import fr.ax_dev.universejobs.config.MessageConfig;
 import fr.ax_dev.universejobs.utils.MessageUtils;
+
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.Sound;
