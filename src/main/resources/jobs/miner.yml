@@ -14,7 +14,7 @@ gui-reward: "miner_rewards_gui"
 
 action-limits:
   auto-restore:
-    enabled: true
+    enabled: false
     time: "00:00"
 
 xp: 

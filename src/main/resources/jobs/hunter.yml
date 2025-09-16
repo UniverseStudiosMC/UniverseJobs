@@ -1,0 +1,522 @@
+name: "<#ff6b47>Hunter"
+description:
+- "Hunt dangerous creatures and"
+- "explore the wilderness!"
+enabled: true
+max-level: 100
+permission: "UniverseJobs.job.hunter"
+icon:
+  material: "BOW"
+  custom-model-data: ""
+
+rewards: "hunter_rewards"
+gui-reward: "hunter_rewards_gui"
+
+action-limits:
+  auto-restore:
+    enabled: false
+    time: "00:00"
+
+xp:
+  type: "CURVE"
+  xp: "default"
+  message:
+    type: "BOSSBAR"
+    text: "{message_xp} {message_money} <gray>| <#ff6b47>{job} <gray>Level <#32CD32>{level}"
+    money: "<#FFD700>{money} $ <gray>({+-}{money_per_action})"
+    xp: "<#abffb3>{xp} xp <gray>({+-}{xp_per_action})"
+    options:
+      color: "RED"
+      style: "SEGMENTED_0"
+      fade-in: 10
+      fade-out: 20
+      duration: 40
+      show-progress: true
+
+actions:
+  KILL:
+    # Passive mobs
+    kill_cow:
+      target: "COW"
+      display-name: "Cow"
+      lore:
+      - "<gray>Hunt cows for resources"
+      xp: 2.0
+      money: 3.0
+
+    kill_pig:
+      target: "PIG"
+      display-name: "Pig"
+      lore:
+      - "<gray>Hunt pigs for resources"
+      xp: 2.0
+      money: 3.0
+
+    kill_sheep:
+      target: "SHEEP"
+      display-name: "Sheep"
+      lore:
+      - "<gray>Hunt sheep for resources"
+      xp: 2.0
+      money: 3.0
+
+    kill_chicken:
+      target: "CHICKEN"
+      display-name: "Chicken"
+      lore:
+      - "<gray>Hunt chickens for resources"
+      xp: 1.5
+      money: 2.0
+
+    kill_rabbit:
+      target: "RABBIT"
+      display-name: "Rabbit"
+      lore:
+      - "<gray>Hunt rabbits for resources"
+      xp: 1.5
+      money: 2.5
+
+    kill_llama:
+      target: "LLAMA"
+      display-name: "Llama"
+      lore:
+      - "<gray>Hunt llamas for resources"
+      xp: 3.0
+      money: 4.0
+
+    kill_horse:
+      target: "HORSE"
+      display-name: "Horse"
+      lore:
+      - "<gray>Hunt horses for resources"
+      xp: 4.0
+      money: 5.0
+
+    kill_donkey:
+      target: "DONKEY"
+      display-name: "Donkey"
+      lore:
+      - "<gray>Hunt donkeys for resources"
+      xp: 3.5
+      money: 4.5
+
+    kill_mule:
+      target: "MULE"
+      display-name: "Mule"
+      lore:
+      - "<gray>Hunt mules for resources"
+      xp: 3.5
+      money: 4.5
+
+    # Hostile mobs - Overworld
+    kill_zombie:
+      target: "ZOMBIE"
+      display-name: "Zombie"
+      lore:
+      - "<gray>Eliminate zombies"
+      xp: 3.0
+      money: 2.5
+
+    kill_skeleton:
+      target: "SKELETON"
+      display-name: "Skeleton"
+      lore:
+      - "<gray>Eliminate skeletons"
+      xp: 3.5
+      money: 3.0
+
+    kill_creeper:
+      target: "CREEPER"
+      display-name: "Creeper"
+      lore:
+      - "<gray>Eliminate creepers"
+      xp: 4.0
+      money: 3.5
+
+    kill_spider:
+      target: "SPIDER"
+      display-name: "Spider"
+      lore:
+      - "<gray>Eliminate spiders"
+      xp: 2.5
+      money: 2.0
+
+    kill_cave_spider:
+      target: "CAVE_SPIDER"
+      display-name: "Cave spider"
+      lore:
+      - "<gray>Eliminate cave spiders"
+      xp: 3.0
+      money: 2.5
+
+    kill_enderman:
+      target: "ENDERMAN"
+      display-name: "Enderman"
+      lore:
+      - "<gray>Eliminate endermen"
+      xp: 8.0
+      money: 10.0
+
+    kill_witch:
+      target: "WITCH"
+      display-name: "Witch"
+      lore:
+      - "<gray>Eliminate witches"
+      xp: 6.0
+      money: 7.0
+
+    kill_slime:
+      target: "SLIME"
+      display-name: "Slime"
+      lore:
+      - "<gray>Eliminate slimes"
+      xp: 2.0
+      money: 1.5
+
+    kill_phantom:
+      target: "PHANTOM"
+      display-name: "Phantom"
+      lore:
+      - "<gray>Eliminate phantoms"
+      xp: 5.0
+      money: 6.0
+
+    kill_drowned:
+      target: "DROWNED"
+      display-name: "Drowned"
+      lore:
+      - "<gray>Eliminate drowned"
+      xp: 3.5
+      money: 3.0
+
+    kill_husk:
+      target: "HUSK"
+      display-name: "Husk"
+      lore:
+      - "<gray>Eliminate husks"
+      xp: 3.5
+      money: 3.0
+
+    kill_stray:
+      target: "STRAY"
+      display-name: "Stray"
+      lore:
+      - "<gray>Eliminate strays"
+      xp: 4.0
+      money: 3.5
+
+    kill_silverfish:
+      target: "SILVERFISH"
+      display-name: "Silverfish"
+      lore:
+      - "<gray>Eliminate silverfish"
+      xp: 1.5
+      money: 1.0
+
+    kill_endermite:
+      target: "ENDERMITE"
+      display-name: "Endermite"
+      lore:
+      - "<gray>Eliminate endermites"
+      xp: 2.0
+      money: 1.5
+
+    kill_guardian:
+      target: "GUARDIAN"
+      display-name: "Guardian"
+      lore:
+      - "<gray>Eliminate guardians"
+      xp: 6.0
+      money: 8.0
+
+    kill_elder_guardian:
+      target: "ELDER_GUARDIAN"
+      display-name: "Elder guardian"
+      lore:
+      - "<gray>Eliminate elder guardians"
+      xp: 25.0
+      money: 50.0
+
+    # Hostile mobs - Nether
+    kill_blaze:
+      target: "BLAZE"
+      display-name: "Blaze"
+      lore:
+      - "<gray>Eliminate blazes"
+      xp: 8.0
+      money: 12.0
+
+    kill_ghast:
+      target: "GHAST"
+      display-name: "Ghast"
+      lore:
+      - "<gray>Eliminate ghasts"
+      xp: 10.0
+      money: 15.0
+
+    kill_wither_skeleton:
+      target: "WITHER_SKELETON"
+      display-name: "Wither skeleton"
+      lore:
+      - "<gray>Eliminate wither skeletons"
+      xp: 12.0
+      money: 18.0
+
+    kill_piglin:
+      target: "PIGLIN"
+      display-name: "Piglin"
+      lore:
+      - "<gray>Eliminate piglins"
+      xp: 4.0
+      money: 5.0
+
+    kill_piglin_brute:
+      target: "PIGLIN_BRUTE"
+      display-name: "Piglin brute"
+      lore:
+      - "<gray>Eliminate piglin brutes"
+      xp: 8.0
+      money: 12.0
+
+    kill_zombified_piglin:
+      target: "ZOMBIFIED_PIGLIN"
+      display-name: "Zombified piglin"
+      lore:
+      - "<gray>Eliminate zombified piglins"
+      xp: 3.5
+      money: 4.0
+
+    kill_hoglin:
+      target: "HOGLIN"
+      display-name: "Hoglin"
+      lore:
+      - "<gray>Eliminate hoglins"
+      xp: 6.0
+      money: 8.0
+
+    kill_zoglin:
+      target: "ZOGLIN"
+      display-name: "Zoglin"
+      lore:
+      - "<gray>Eliminate zoglins"
+      xp: 7.0
+      money: 10.0
+
+    kill_magma_cube:
+      target: "MAGMA_CUBE"
+      display-name: "Magma cube"
+      lore:
+      - "<gray>Eliminate magma cubes"
+      xp: 3.0
+      money: 3.5
+
+    kill_strider:
+      target: "STRIDER"
+      display-name: "Strider"
+      lore:
+      - "<gray>Eliminate striders"
+      xp: 2.5
+      money: 3.0
+
+    # Hostile mobs - End
+    kill_endermite_end:
+      target: "ENDERMITE"
+      display-name: "Endermite"
+      lore:
+      - "<gray>Eliminate endermites in the End"
+      xp: 3.0
+      money: 2.5
+
+    kill_shulker:
+      target: "SHULKER"
+      display-name: "Shulker"
+      lore:
+      - "<gray>Eliminate shulkers"
+      xp: 15.0
+      money: 25.0
+
+    # Boss mobs
+    kill_wither:
+      target: "WITHER"
+      display-name: "Wither"
+      lore:
+      - "<gray>Eliminate the Wither boss"
+      xp: 100.0
+      money: 200.0
+
+    kill_ender_dragon:
+      target: "ENDER_DRAGON"
+      display-name: "Ender dragon"
+      lore:
+      - "<gray>Eliminate the Ender Dragon"
+      xp: 150.0
+      money: 300.0
+
+    # Neutral mobs
+    kill_wolf:
+      target: "WOLF"
+      display-name: "Wolf"
+      lore:
+      - "<gray>Hunt wolves"
+      xp: 2.5
+      money: 3.0
+
+    kill_polar_bear:
+      target: "POLAR_BEAR"
+      display-name: "Polar bear"
+      lore:
+      - "<gray>Hunt polar bears"
+      xp: 6.0
+      money: 8.0
+
+    kill_panda:
+      target: "PANDA"
+      display-name: "Panda"
+      lore:
+      - "<gray>Hunt pandas"
+      xp: 4.0
+      money: 5.0
+
+    kill_bee:
+      target: "BEE"
+      display-name: "Bee"
+      lore:
+      - "<gray>Hunt bees"
+      xp: 1.0
+      money: 1.5
+
+    kill_iron_golem:
+      target: "IRON_GOLEM"
+      display-name: "Iron golem"
+      lore:
+      - "<gray>Eliminate iron golems"
+      xp: 15.0
+      money: 20.0
+
+    kill_snow_golem:
+      target: "SNOW_GOLEM"
+      display-name: "Snow golem"
+      lore:
+      - "<gray>Eliminate snow golems"
+      xp: 3.0
+      money: 2.0
+
+  FISH:
+    # Basic fish
+    catch_cod:
+      target: "COD"
+      display-name: "Cod"
+      lore:
+      - "<gray>Catch cod fish"
+      xp: 2.0
+      money: 1.5
+
+    catch_salmon:
+      target: "SALMON"
+      display-name: "Salmon"
+      lore:
+      - "<gray>Catch salmon fish"
+      xp: 2.5
+      money: 2.0
+
+    catch_tropical_fish:
+      target: "TROPICAL_FISH"
+      display-name: "Tropical fish"
+      lore:
+      - "<gray>Catch tropical fish"
+      xp: 3.0
+      money: 2.5
+
+    catch_pufferfish:
+      target: "PUFFERFISH"
+      display-name: "Pufferfish"
+      lore:
+      - "<gray>Catch pufferfish"
+      xp: 4.0
+      money: 3.5
+
+    # Junk fishing
+    catch_junk:
+      target: "LEATHER_BOOTS"
+      display-name: "Junk"
+      lore:
+      - "<gray>Fish up junk items"
+      xp: 0.5
+      money: 0.2
+
+    # Treasure fishing
+    catch_enchanted_book:
+      target: "ENCHANTED_BOOK"
+      display-name: "Enchanted book"
+      lore:
+      - "<gray>Fish up enchanted books"
+      xp: 15.0
+      money: 20.0
+
+    catch_bow:
+      target: "BOW"
+      display-name: "Bow"
+      lore:
+      - "<gray>Fish up bows"
+      xp: 8.0
+      money: 10.0
+
+    catch_fishing_rod:
+      target: "FISHING_ROD"
+      display-name: "Fishing rod"
+      lore:
+      - "<gray>Fish up fishing rods"
+      xp: 6.0
+      money: 8.0
+
+    catch_name_tag:
+      target: "NAME_TAG"
+      display-name: "Name tag"
+      lore:
+      - "<gray>Fish up name tags"
+      xp: 10.0
+      money: 15.0
+
+    catch_saddle:
+      target: "SADDLE"
+      display-name: "Saddle"
+      lore:
+      - "<gray>Fish up saddles"
+      xp: 12.0
+      money: 18.0
+
+    catch_nautilus_shell:
+      target: "NAUTILUS_SHELL"
+      display-name: "Nautilus shell"
+      lore:
+      - "<gray>Fish up nautilus shells"
+      xp: 8.0
+      money: 12.0
+
+levelup-actions:
+  broadcast:
+    type: "broadcast"
+    min-level: 1
+    level-interval: 10
+    messages:
+    - "<#90db8a>{player} <#9a9c9a>has reached level <#ff6b47>{level} <#9a9c9a>in <#ff6b47>Hunter<#9a9c9a>!"
+  title:
+    type: "title"
+    min-level: 1
+    level-interval: 1
+    title: "<#ff6b47>Reached level {level}"
+    subtitle: "<#9a9c9a>in <#ff6b47>Hunter<#9a9c9a>!"
+    fade-in: 5
+    stay: 20
+    fade-out: 10
+  sound:
+    type: "sound"
+    min-level: 1
+    level-interval: 1
+    sound: ENTITY_PLAYER_LEVELUP
+  particle:
+    type: "particle"
+    min-level: 1
+    level-interval: 1
+    count: "20"
+    particle: "CRIT"

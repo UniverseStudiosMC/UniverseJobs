@@ -1,0 +1,631 @@
+name: "<#8B4513>Lumberjack"
+description:
+- "Cut down trees and harvest"
+- "wood from the forests!"
+enabled: true
+max-level: 100
+permission: "UniverseJobs.job.lumberjack"
+icon:
+  material: "DIAMOND_AXE"
+  custom-model-data: ""
+
+rewards: "lumberjack_rewards"
+gui-reward: "lumberjack_rewards_gui"
+
+action-limits:
+  auto-restore:
+    enabled: true
+    time: "00:00"
+
+xp:
+  type: "CURVE"
+  xp: "default"
+  message:
+    type: "BOSSBAR"
+    text: "{message_xp} {message_money} <gray>| <#8B4513>{job} <gray>Level <#32CD32>{level}"
+    money: "<#FFD700>{money} $ <gray>({+-}{money_per_action})"
+    xp: "<#abffb3>{xp} xp <gray>({+-}{xp_per_action})"
+    options:
+      color: "YELLOW"
+      style: "SEGMENTED_0"
+      fade-in: 10
+      fade-out: 20
+      duration: 40
+      show-progress: true
+
+actions:
+  BREAK:
+    # Oak wood
+    break_oak_log:
+      target: "OAK_LOG"
+      display-name: "Oak log"
+      lore:
+      - "<gray>Chop down oak logs"
+      xp: 2.0
+      money: 1.5
+
+    break_oak_wood:
+      target: "OAK_WOOD"
+      display-name: "Oak wood"
+      lore:
+      - "<gray>Chop down oak wood"
+      xp: 2.0
+      money: 1.5
+
+    break_stripped_oak_log:
+      target: "STRIPPED_OAK_LOG"
+      display-name: "Stripped oak log"
+      lore:
+      - "<gray>Chop down stripped oak logs"
+      xp: 2.2
+      money: 1.8
+
+    break_stripped_oak_wood:
+      target: "STRIPPED_OAK_WOOD"
+      display-name: "Stripped oak wood"
+      lore:
+      - "<gray>Chop down stripped oak wood"
+      xp: 2.2
+      money: 1.8
+
+    # Birch wood
+    break_birch_log:
+      target: "BIRCH_LOG"
+      display-name: "Birch log"
+      lore:
+      - "<gray>Chop down birch logs"
+      xp: 2.0
+      money: 1.5
+
+    break_birch_wood:
+      target: "BIRCH_WOOD"
+      display-name: "Birch wood"
+      lore:
+      - "<gray>Chop down birch wood"
+      xp: 2.0
+      money: 1.5
+
+    break_stripped_birch_log:
+      target: "STRIPPED_BIRCH_LOG"
+      display-name: "Stripped birch log"
+      lore:
+      - "<gray>Chop down stripped birch logs"
+      xp: 2.2
+      money: 1.8
+
+    break_stripped_birch_wood:
+      target: "STRIPPED_BIRCH_WOOD"
+      display-name: "Stripped birch wood"
+      lore:
+      - "<gray>Chop down stripped birch wood"
+      xp: 2.2
+      money: 1.8
+
+    # Spruce wood
+    break_spruce_log:
+      target: "SPRUCE_LOG"
+      display-name: "Spruce log"
+      lore:
+      - "<gray>Chop down spruce logs"
+      xp: 2.0
+      money: 1.5
+
+    break_spruce_wood:
+      target: "SPRUCE_WOOD"
+      display-name: "Spruce wood"
+      lore:
+      - "<gray>Chop down spruce wood"
+      xp: 2.0
+      money: 1.5
+
+    break_stripped_spruce_log:
+      target: "STRIPPED_SPRUCE_LOG"
+      display-name: "Stripped spruce log"
+      lore:
+      - "<gray>Chop down stripped spruce logs"
+      xp: 2.2
+      money: 1.8
+
+    break_stripped_spruce_wood:
+      target: "STRIPPED_SPRUCE_WOOD"
+      display-name: "Stripped spruce wood"
+      lore:
+      - "<gray>Chop down stripped spruce wood"
+      xp: 2.2
+      money: 1.8
+
+    # Jungle wood
+    break_jungle_log:
+      target: "JUNGLE_LOG"
+      display-name: "Jungle log"
+      lore:
+      - "<gray>Chop down jungle logs"
+      xp: 2.5
+      money: 2.0
+
+    break_jungle_wood:
+      target: "JUNGLE_WOOD"
+      display-name: "Jungle wood"
+      lore:
+      - "<gray>Chop down jungle wood"
+      xp: 2.5
+      money: 2.0
+
+    break_stripped_jungle_log:
+      target: "STRIPPED_JUNGLE_LOG"
+      display-name: "Stripped jungle log"
+      lore:
+      - "<gray>Chop down stripped jungle logs"
+      xp: 2.7
+      money: 2.3
+
+    break_stripped_jungle_wood:
+      target: "STRIPPED_JUNGLE_WOOD"
+      display-name: "Stripped jungle wood"
+      lore:
+      - "<gray>Chop down stripped jungle wood"
+      xp: 2.7
+      money: 2.3
+
+    # Acacia wood
+    break_acacia_log:
+      target: "ACACIA_LOG"
+      display-name: "Acacia log"
+      lore:
+      - "<gray>Chop down acacia logs"
+      xp: 2.0
+      money: 1.5
+
+    break_acacia_wood:
+      target: "ACACIA_WOOD"
+      display-name: "Acacia wood"
+      lore:
+      - "<gray>Chop down acacia wood"
+      xp: 2.0
+      money: 1.5
+
+    break_stripped_acacia_log:
+      target: "STRIPPED_ACACIA_LOG"
+      display-name: "Stripped acacia log"
+      lore:
+      - "<gray>Chop down stripped acacia logs"
+      xp: 2.2
+      money: 1.8
+
+    break_stripped_acacia_wood:
+      target: "STRIPPED_ACACIA_WOOD"
+      display-name: "Stripped acacia wood"
+      lore:
+      - "<gray>Chop down stripped acacia wood"
+      xp: 2.2
+      money: 1.8
+
+    # Dark oak wood
+    break_dark_oak_log:
+      target: "DARK_OAK_LOG"
+      display-name: "Dark oak log"
+      lore:
+      - "<gray>Chop down dark oak logs"
+      xp: 2.3
+      money: 1.8
+
+    break_dark_oak_wood:
+      target: "DARK_OAK_WOOD"
+      display-name: "Dark oak wood"
+      lore:
+      - "<gray>Chop down dark oak wood"
+      xp: 2.3
+      money: 1.8
+
+    break_stripped_dark_oak_log:
+      target: "STRIPPED_DARK_OAK_LOG"
+      display-name: "Stripped dark oak log"
+      lore:
+      - "<gray>Chop down stripped dark oak logs"
+      xp: 2.5
+      money: 2.1
+
+    break_stripped_dark_oak_wood:
+      target: "STRIPPED_DARK_OAK_WOOD"
+      display-name: "Stripped dark oak wood"
+      lore:
+      - "<gray>Chop down stripped dark oak wood"
+      xp: 2.5
+      money: 2.1
+
+    # Mangrove wood
+    break_mangrove_log:
+      target: "MANGROVE_LOG"
+      display-name: "Mangrove log"
+      lore:
+      - "<gray>Chop down mangrove logs"
+      xp: 2.8
+      money: 2.5
+
+    break_mangrove_wood:
+      target: "MANGROVE_WOOD"
+      display-name: "Mangrove wood"
+      lore:
+      - "<gray>Chop down mangrove wood"
+      xp: 2.8
+      money: 2.5
+
+    break_stripped_mangrove_log:
+      target: "STRIPPED_MANGROVE_LOG"
+      display-name: "Stripped mangrove log"
+      lore:
+      - "<gray>Chop down stripped mangrove logs"
+      xp: 3.0
+      money: 2.8
+
+    break_stripped_mangrove_wood:
+      target: "STRIPPED_MANGROVE_WOOD"
+      display-name: "Stripped mangrove wood"
+      lore:
+      - "<gray>Chop down stripped mangrove wood"
+      xp: 3.0
+      money: 2.8
+
+    break_mangrove_roots:
+      target: "MANGROVE_ROOTS"
+      display-name: "Mangrove roots"
+      lore:
+      - "<gray>Harvest mangrove roots"
+      xp: 1.5
+      money: 1.2
+
+    break_muddy_mangrove_roots:
+      target: "MUDDY_MANGROVE_ROOTS"
+      display-name: "Muddy mangrove roots"
+      lore:
+      - "<gray>Harvest muddy mangrove roots"
+      xp: 1.8
+      money: 1.5
+
+    # Cherry wood
+    break_cherry_log:
+      target: "CHERRY_LOG"
+      display-name: "Cherry log"
+      lore:
+      - "<gray>Chop down cherry logs"
+      xp: 3.0
+      money: 2.8
+
+    break_cherry_wood:
+      target: "CHERRY_WOOD"
+      display-name: "Cherry wood"
+      lore:
+      - "<gray>Chop down cherry wood"
+      xp: 3.0
+      money: 2.8
+
+    break_stripped_cherry_log:
+      target: "STRIPPED_CHERRY_LOG"
+      display-name: "Stripped cherry log"
+      lore:
+      - "<gray>Chop down stripped cherry logs"
+      xp: 3.2
+      money: 3.1
+
+    break_stripped_cherry_wood:
+      target: "STRIPPED_CHERRY_WOOD"
+      display-name: "Stripped cherry wood"
+      lore:
+      - "<gray>Chop down stripped cherry wood"
+      xp: 3.2
+      money: 3.1
+
+    # Nether wood
+    break_crimson_stem:
+      target: "CRIMSON_STEM"
+      display-name: "Crimson stem"
+      lore:
+      - "<gray>Chop down crimson stems"
+      xp: 3.5
+      money: 3.5
+
+    break_crimson_hyphae:
+      target: "CRIMSON_HYPHAE"
+      display-name: "Crimson hyphae"
+      lore:
+      - "<gray>Chop down crimson hyphae"
+      xp: 3.5
+      money: 3.5
+
+    break_stripped_crimson_stem:
+      target: "STRIPPED_CRIMSON_STEM"
+      display-name: "Stripped crimson stem"
+      lore:
+      - "<gray>Chop down stripped crimson stems"
+      xp: 3.8
+      money: 3.8
+
+    break_stripped_crimson_hyphae:
+      target: "STRIPPED_CRIMSON_HYPHAE"
+      display-name: "Stripped crimson hyphae"
+      lore:
+      - "<gray>Chop down stripped crimson hyphae"
+      xp: 3.8
+      money: 3.8
+
+    break_warped_stem:
+      target: "WARPED_STEM"
+      display-name: "Warped stem"
+      lore:
+      - "<gray>Chop down warped stems"
+      xp: 3.5
+      money: 3.5
+
+    break_warped_hyphae:
+      target: "WARPED_HYPHAE"
+      display-name: "Warped hyphae"
+      lore:
+      - "<gray>Chop down warped hyphae"
+      xp: 3.5
+      money: 3.5
+
+    break_stripped_warped_stem:
+      target: "STRIPPED_WARPED_STEM"
+      display-name: "Stripped warped stem"
+      lore:
+      - "<gray>Chop down stripped warped stems"
+      xp: 3.8
+      money: 3.8
+
+    break_stripped_warped_hyphae:
+      target: "STRIPPED_WARPED_HYPHAE"
+      display-name: "Stripped warped hyphae"
+      lore:
+      - "<gray>Chop down stripped warped hyphae"
+      xp: 3.8
+      money: 3.8
+
+    # Leaves
+    break_oak_leaves:
+      target: "OAK_LEAVES"
+      display-name: "Oak leaves"
+      lore:
+      - "<gray>Clear oak leaves"
+      xp: 0.3
+      money: 0.1
+
+    break_birch_leaves:
+      target: "BIRCH_LEAVES"
+      display-name: "Birch leaves"
+      lore:
+      - "<gray>Clear birch leaves"
+      xp: 0.3
+      money: 0.1
+
+    break_spruce_leaves:
+      target: "SPRUCE_LEAVES"
+      display-name: "Spruce leaves"
+      lore:
+      - "<gray>Clear spruce leaves"
+      xp: 0.3
+      money: 0.1
+
+    break_jungle_leaves:
+      target: "JUNGLE_LEAVES"
+      display-name: "Jungle leaves"
+      lore:
+      - "<gray>Clear jungle leaves"
+      xp: 0.4
+      money: 0.15
+
+    break_acacia_leaves:
+      target: "ACACIA_LEAVES"
+      display-name: "Acacia leaves"
+      lore:
+      - "<gray>Clear acacia leaves"
+      xp: 0.3
+      money: 0.1
+
+    break_dark_oak_leaves:
+      target: "DARK_OAK_LEAVES"
+      display-name: "Dark oak leaves"
+      lore:
+      - "<gray>Clear dark oak leaves"
+      xp: 0.35
+      money: 0.12
+
+    break_mangrove_leaves:
+      target: "MANGROVE_LEAVES"
+      display-name: "Mangrove leaves"
+      lore:
+      - "<gray>Clear mangrove leaves"
+      xp: 0.4
+      money: 0.15
+
+    break_cherry_leaves:
+      target: "CHERRY_LEAVES"
+      display-name: "Cherry leaves"
+      lore:
+      - "<gray>Clear cherry leaves"
+      xp: 0.45
+      money: 0.18
+
+    break_azalea_leaves:
+      target: "AZALEA_LEAVES"
+      display-name: "Azalea leaves"
+      lore:
+      - "<gray>Clear azalea leaves"
+      xp: 0.4
+      money: 0.15
+
+    break_flowering_azalea_leaves:
+      target: "FLOWERING_AZALEA_LEAVES"
+      display-name: "Flowering azalea leaves"
+      lore:
+      - "<gray>Clear flowering azalea leaves"
+      xp: 0.5
+      money: 0.2
+
+    # Mushroom blocks
+    break_brown_mushroom_block:
+      target: "BROWN_MUSHROOM_BLOCK"
+      display-name: "Brown mushroom block"
+      lore:
+      - "<gray>Harvest brown mushroom blocks"
+      xp: 1.5
+      money: 1.0
+
+    break_red_mushroom_block:
+      target: "RED_MUSHROOM_BLOCK"
+      display-name: "Red mushroom block"
+      lore:
+      - "<gray>Harvest red mushroom blocks"
+      xp: 1.5
+      money: 1.0
+
+    break_mushroom_stem:
+      target: "MUSHROOM_STEM"
+      display-name: "Mushroom stem"
+      lore:
+      - "<gray>Harvest mushroom stems"
+      xp: 1.8
+      money: 1.3
+
+  PLACE:
+    # Planting saplings
+    plant_oak_sapling:
+      target: "OAK_SAPLING"
+      display-name: "Oak sapling"
+      lore:
+      - "<gray>Plant oak saplings"
+      xp: 1.0
+      money: 0.5
+
+    plant_birch_sapling:
+      target: "BIRCH_SAPLING"
+      display-name: "Birch sapling"
+      lore:
+      - "<gray>Plant birch saplings"
+      xp: 1.0
+      money: 0.5
+
+    plant_spruce_sapling:
+      target: "SPRUCE_SAPLING"
+      display-name: "Spruce sapling"
+      lore:
+      - "<gray>Plant spruce saplings"
+      xp: 1.0
+      money: 0.5
+
+    plant_jungle_sapling:
+      target: "JUNGLE_SAPLING"
+      display-name: "Jungle sapling"
+      lore:
+      - "<gray>Plant jungle saplings"
+      xp: 1.2
+      money: 0.6
+
+    plant_acacia_sapling:
+      target: "ACACIA_SAPLING"
+      display-name: "Acacia sapling"
+      lore:
+      - "<gray>Plant acacia saplings"
+      xp: 1.0
+      money: 0.5
+
+    plant_dark_oak_sapling:
+      target: "DARK_OAK_SAPLING"
+      display-name: "Dark oak sapling"
+      lore:
+      - "<gray>Plant dark oak saplings"
+      xp: 1.1
+      money: 0.55
+
+    plant_mangrove_propagule:
+      target: "MANGROVE_PROPAGULE"
+      display-name: "Mangrove propagule"
+      lore:
+      - "<gray>Plant mangrove propagules"
+      xp: 1.4
+      money: 0.7
+
+    plant_cherry_sapling:
+      target: "CHERRY_SAPLING"
+      display-name: "Cherry sapling"
+      lore:
+      - "<gray>Plant cherry saplings"
+      xp: 1.5
+      money: 0.8
+
+    plant_azalea:
+      target: "AZALEA"
+      display-name: "Azalea"
+      lore:
+      - "<gray>Plant azalea bushes"
+      xp: 1.2
+      money: 0.6
+
+    plant_flowering_azalea:
+      target: "FLOWERING_AZALEA"
+      display-name: "Flowering azalea"
+      lore:
+      - "<gray>Plant flowering azalea bushes"
+      xp: 1.3
+      money: 0.65
+
+    # Mushrooms
+    plant_brown_mushroom:
+      target: "BROWN_MUSHROOM"
+      display-name: "Brown mushroom"
+      lore:
+      - "<gray>Plant brown mushrooms"
+      xp: 0.8
+      money: 0.4
+
+    plant_red_mushroom:
+      target: "RED_MUSHROOM"
+      display-name: "Red mushroom"
+      lore:
+      - "<gray>Plant red mushrooms"
+      xp: 0.8
+      money: 0.4
+
+    # Nether fungi
+    plant_crimson_fungus:
+      target: "CRIMSON_FUNGUS"
+      display-name: "Crimson fungus"
+      lore:
+      - "<gray>Plant crimson fungi"
+      xp: 1.5
+      money: 1.0
+
+    plant_warped_fungus:
+      target: "WARPED_FUNGUS"
+      display-name: "Warped fungus"
+      lore:
+      - "<gray>Plant warped fungi"
+      xp: 1.5
+      money: 1.0
+
+levelup-actions:
+  broadcast:
+    type: "broadcast"
+    min-level: 1
+    level-interval: 10
+    messages:
+    - "<#90db8a>{player} <#9a9c9a>has reached level <#8B4513>{level} <#9a9c9a>in <#8B4513>Lumberjack<#9a9c9a>!"
+  title:
+    type: "title"
+    min-level: 1
+    level-interval: 1
+    title: "<#8B4513>Reached level {level}"
+    subtitle: "<#9a9c9a>in <#8B4513>Lumberjack<#9a9c9a>!"
+    fade-in: 5
+    stay: 20
+    fade-out: 10
+  sound:
+    type: "sound"
+    min-level: 1
+    level-interval: 1
+    sound: ENTITY_PLAYER_LEVELUP
+  particle:
+    type: "particle"
+    min-level: 1
+    level-interval: 1
+    count: "20"
+    particle: "BLOCK_CRACK"
