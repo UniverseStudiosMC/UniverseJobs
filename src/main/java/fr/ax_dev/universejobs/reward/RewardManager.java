@@ -92,9 +92,6 @@ public class RewardManager {
             }
         }
         
-        // Always try to create example file if it doesn't exist
-        createExampleRewardFiles();
-        
         // Load rewards based on job configurations
         Set<String> processedFiles = new HashSet<>();
         
@@ -179,29 +176,6 @@ public class RewardManager {
     private void loadRewardFile(File file) {
         String jobId = file.getName().replace(".yml", "");
         loadRewardFileForJob(file, jobId);
-    }
-    
-    /**
-     * Create example reward files for existing jobs.
-     */
-    private void createExampleRewardFiles() {
-        // Create a generic example_rewards.yml file
-        createExampleRewardFile();
-    }
-    
-    /**
-     * Create an example reward file by copying from resources.
-     */
-    private void createExampleRewardFile() {
-        File rewardFile = new File(plugin.getDataFolder(), "rewards/example_rewards.yml");
-        if (rewardFile.exists()) return;
-        
-        try {
-            plugin.saveResource("rewards/example_rewards.yml", false);
-            // Created example reward file
-        } catch (Exception e) {
-            plugin.getLogger().log(Level.WARNING, "Failed to create example reward file from resources", e);
-        }
     }
     
     /**
