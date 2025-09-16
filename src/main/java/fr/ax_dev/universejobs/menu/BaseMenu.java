@@ -128,18 +128,31 @@ public abstract class BaseMenu implements InventoryHolder {
     protected void addFillItems() {
         MenuItemConfig fillConfig = config.getFillItem();
         if (fillConfig == null || !fillConfig.isEnabled()) return;
-        
+
         ItemStack fillItem = createMenuItem(fillConfig);
-        
+        if (fillItem == null) {
+            plugin.getLogger().warning("Failed to create fill item for menu. Material: " + fillConfig.getMaterial());
+            return;
+        }
+
         // Use fill-item's specific slots if defined, otherwise use global fill-slots
         List<Integer> slotsToFill = fillConfig.getSlots();
         if (slotsToFill.isEmpty()) {
             slotsToFill = config.getFillSlots();
         }
-        
-        for (int slot : slotsToFill) {
-            if (slot >= 0 && slot < inventory.getSize() && inventory.getItem(slot) == null) {
-                inventory.setItem(slot, fillItem);
+
+        // If no specific slots defined, fill all empty slots
+        if (slotsToFill.isEmpty()) {
+            for (int i = 0; i < inventory.getSize(); i++) {
+                if (inventory.getItem(i) == null) {
+                    inventory.setItem(i, fillItem);
+                }
+            }
+        } else {
+            for (int slot : slotsToFill) {
+                if (slot >= 0 && slot < inventory.getSize() && inventory.getItem(slot) == null) {
+                    inventory.setItem(slot, fillItem);
+                }
             }
         }
     }

@@ -607,11 +607,6 @@ public class JobManager {
             }
         }
 
-        if (createdCount > 0) {
-            plugin.getLogger().info("Created " + createdCount + " default job files (miner, farmer, hunter, lumberjack)");
-        } else {
-            plugin.getLogger().info("No default jobs were created. You can create your own job files manually.");
-        }
     }
     
     /**

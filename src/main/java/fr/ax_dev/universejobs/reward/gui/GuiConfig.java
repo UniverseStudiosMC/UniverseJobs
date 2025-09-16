@@ -15,6 +15,7 @@ public class GuiConfig {
     private final String title;
     private final int size;
     private final Map<String, GuiItem> items;
+    private final Map<Integer, List<Integer>> rewardSlotsByPage;
     private final List<Integer> rewardSlots;
     private final NavigationConfig navigation;
     private final Map<String, Object> fillItems;
@@ -29,6 +30,7 @@ public class GuiConfig {
         this.title = config.getString("title", "&6Rewards");
         this.size = config.getInt("size", 54);
         this.items = new HashMap<>();
+        this.rewardSlotsByPage = new HashMap<>();
         this.rewardSlots = new ArrayList<>();
         this.navigation = new NavigationConfig(config.getConfigurationSection("navigation"));
         this.fillItems = new HashMap<>();
@@ -93,6 +95,14 @@ public class GuiConfig {
     public int getSize() { return size; }
     public Map<String, GuiItem> getItems() { return items; }
     public List<Integer> getRewardSlots() { return rewardSlots; }
+
+    /**
+     * Get reward slots for a specific page.
+     * Falls back to default slots if page-specific slots not found.
+     */
+    public List<Integer> getRewardSlots(int page) {
+        return rewardSlotsByPage.getOrDefault(page, rewardSlots);
+    }
     public NavigationConfig getNavigation() { return navigation; }
     public Map<String, Object> getFillItems() { return fillItems; }
     public RewardItemConfig getRewardItemConfig() { return rewardItemConfig; }

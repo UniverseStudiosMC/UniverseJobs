@@ -64,7 +64,6 @@ public class MenuConfig {
         try (InputStream inputStream = plugin.getResource("menus/" + resourceName)) {
             if (inputStream != null) {
                 Files.copy(inputStream, target.toPath());
-                plugin.getLogger().info("Created default menu configuration: " + resourceName);
             }
         } catch (IOException e) {
             plugin.getLogger().severe("Failed to copy default menu configuration '" + resourceName + "': " + e.getMessage());
