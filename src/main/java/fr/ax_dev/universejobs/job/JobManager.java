@@ -113,7 +113,6 @@ public class JobManager {
                         if (job.isAutoRestoreEnabled()) {
                             ActionLimitManager limitManager = plugin.getLimitManager();
                             limitManager.setAutoRestoreConfig(jobId, true, job.getAutoRestoreTime());
-                            plugin.getLogger().info("Auto-restore enabled for job '" + jobId + "' at " + job.getAutoRestoreTime());
                         }
                     } else {
                         plugin.getLogger().severe("Job " + jobId + " is disabled due to XP curve error: " + job.getXpCurveErrorMessage());
@@ -126,7 +125,6 @@ public class JobManager {
             }
         }
         
-        plugin.getLogger().info("Loaded " + jobs.size() + " jobs successfully");
         
         // Clean up invalid jobs after initial load to ensure data consistency
         if (!jobs.isEmpty()) {
@@ -745,8 +743,6 @@ public class JobManager {
                             plugin.getLogger().info("Startup cleanup completed: all player data is clean");
                         }
                     });
-                } else if (removedJobs.get() == 0) {
-                    plugin.getLogger().info("Job cleanup completed: no invalid jobs found");
                 }
                 
             } catch (Exception e) {

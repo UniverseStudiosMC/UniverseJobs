@@ -363,9 +363,6 @@ public class BatchedRewardManager {
         
         // Restart batch processors with new configuration
         startBatchProcessors();
-        
-        plugin.getLogger().info("BatchedRewardManager reloaded - XP: " + newXpBatchTicks + 
-                               " ticks, Money: " + newMoneyBatchTicks + " ticks, Others: " + newOthersBatchTicks + " ticks");
     }
     
     /**

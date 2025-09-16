@@ -292,7 +292,6 @@ public class LanguageManager {
      * Reloads all language files and the current language.
      */
     public void reload() {
-        plugin.getLogger().info("Reloading language files...");
         loadLanguage();
     }
 

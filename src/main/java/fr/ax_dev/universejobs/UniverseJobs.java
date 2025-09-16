@@ -121,14 +121,12 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         }
         
         // ========== INITIALIZE ULTRA-FAST CACHE AFTER JOBS ARE LOADED ==========
-        getLogger().info("Initializing ultra-fast cache system...");
         this.configCache = new ConfigurationCache(this);
         this.playerCache = new PlayerJobCache(this);
         
         try {
             configCache.loadAllConfigurations();
             playerCache.preloadOnlinePlayers();
-            getLogger().info("Ultra-fast cache system loaded!");
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Failed to initialize cache system", e);
             getServer().getPluginManager().disablePlugin(this);

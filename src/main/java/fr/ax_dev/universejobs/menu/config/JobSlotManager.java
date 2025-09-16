@@ -110,8 +110,6 @@ public class JobSlotManager {
                     setJobSlot(jobId, slot);
                 }
             }
-            
-            plugin.getLogger().info("Loaded job slot configuration from main-menu.yml: " + jobSlots.size() + " jobs configured");
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load job slot configuration", e);
         }

@@ -121,7 +121,6 @@ public class SimpleLevelUpActionManager {
         }
         
         jobActions.put(job.getId(), actions);
-        plugin.getLogger().info("Loaded " + actions.size() + " level up actions for job " + job.getId());
     }
     
     /**

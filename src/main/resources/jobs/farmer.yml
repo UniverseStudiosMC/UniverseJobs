@@ -19,7 +19,7 @@ action-limits:
 
 xp:
   type: "CURVE"
-  xp: "default"
+  xp: "example"
   message:
     type: "BOSSBAR"
     text: "{message_xp} {message_money} <gray>| <#32cd32>{job} <gray>Level <#32CD32>{level}"
@@ -50,6 +50,7 @@ actions:
       target: "CARROTS"
       age: 7
       display-name: "Carrots"
+      display-material: "carrot"
       lore:
       - "<gray>Harvest fully grown carrots"
       xp: 2.5
@@ -60,6 +61,7 @@ actions:
       target: "POTATOES"
       age: 7
       display-name: "Potatoes"
+      display-material: "potato"
       lore:
       - "<gray>Harvest fully grown potatoes"
       xp: 2.5
@@ -70,6 +72,7 @@ actions:
       target: "BEETROOTS"
       age: 3
       display-name: "Beetroots"
+      display-material: "beetroot"
       lore:
       - "<gray>Harvest fully grown beetroots"
       xp: 2.0
@@ -125,6 +128,7 @@ actions:
       target: "COCOA"
       age: 2
       display-name: "Cocoa beans"
+      display-material: "COCOA_BEANS"
       lore:
       - "<gray>Harvest cocoa beans"
       xp: 2.5
@@ -144,6 +148,7 @@ actions:
       target: "SWEET_BERRY_BUSH"
       age: 3
       display-name: "Sweet berries"
+      display-material: "SWEET_BERRIES"
       lore:
       - "<gray>Harvest sweet berries"
       xp: 2.0
@@ -180,6 +185,7 @@ actions:
     plant_carrot:
       target: "CARROT"
       display-name: "Carrot"
+      display-material: "carrot"
       lore:
       - "<gray>Plant carrots"
       xp: 0.8
@@ -284,140 +290,13 @@ actions:
       xp: 3.0
       money: 2.0
 
-    shear_orange_sheep:
+    shear_sheep:
       target: "SHEEP"
-      color: "ORANGE"
-      display-name: "Orange sheep"
+      display-name: "All sheep"
       lore:
-      - "<gray>Shear orange sheep for wool"
-      xp: 3.0
-      money: 2.0
-
-    shear_magenta_sheep:
-      target: "SHEEP"
-      color: "MAGENTA"
-      display-name: "Magenta sheep"
-      lore:
-      - "<gray>Shear magenta sheep for wool"
-      xp: 3.0
-      money: 2.0
-
-    shear_light_blue_sheep:
-      target: "SHEEP"
-      color: "LIGHT_BLUE"
-      display-name: "Light blue sheep"
-      lore:
-      - "<gray>Shear light blue sheep for wool"
-      xp: 3.0
-      money: 2.0
-
-    shear_yellow_sheep:
-      target: "SHEEP"
-      color: "YELLOW"
-      display-name: "Yellow sheep"
-      lore:
-      - "<gray>Shear yellow sheep for wool"
-      xp: 3.0
-      money: 2.0
-
-    shear_lime_sheep:
-      target: "SHEEP"
-      color: "LIME"
-      display-name: "Lime sheep"
-      lore:
-      - "<gray>Shear lime sheep for wool"
-      xp: 3.0
-      money: 2.0
-
-    shear_pink_sheep:
-      target: "SHEEP"
-      color: "PINK"
-      display-name: "Pink sheep"
-      lore:
-      - "<gray>Shear pink sheep for wool"
-      xp: 3.0
-      money: 2.0
-
-    shear_gray_sheep:
-      target: "SHEEP"
-      color: "GRAY"
-      display-name: "Gray sheep"
-      lore:
-      - "<gray>Shear gray sheep for wool"
-      xp: 3.0
-      money: 2.0
-
-    shear_light_gray_sheep:
-      target: "SHEEP"
-      color: "LIGHT_GRAY"
-      display-name: "Light gray sheep"
-      lore:
-      - "<gray>Shear light gray sheep for wool"
-      xp: 3.0
-      money: 2.0
-
-    shear_cyan_sheep:
-      target: "SHEEP"
-      color: "CYAN"
-      display-name: "Cyan sheep"
-      lore:
-      - "<gray>Shear cyan sheep for wool"
-      xp: 3.0
-      money: 2.0
-
-    shear_purple_sheep:
-      target: "SHEEP"
-      color: "PURPLE"
-      display-name: "Purple sheep"
-      lore:
-      - "<gray>Shear purple sheep for wool"
-      xp: 3.0
-      money: 2.0
-
-    shear_blue_sheep:
-      target: "SHEEP"
-      color: "BLUE"
-      display-name: "Blue sheep"
-      lore:
-      - "<gray>Shear blue sheep for wool"
-      xp: 3.0
-      money: 2.0
-
-    shear_brown_sheep:
-      target: "SHEEP"
-      color: "BROWN"
-      display-name: "Brown sheep"
-      lore:
-      - "<gray>Shear brown sheep for wool"
-      xp: 3.0
-      money: 2.0
-
-    shear_green_sheep:
-      target: "SHEEP"
-      color: "GREEN"
-      display-name: "Green sheep"
-      lore:
-      - "<gray>Shear green sheep for wool"
-      xp: 3.0
-      money: 2.0
-
-    shear_red_sheep:
-      target: "SHEEP"
-      color: "RED"
-      display-name: "Red sheep"
-      lore:
-      - "<gray>Shear red sheep for wool"
-      xp: 3.0
-      money: 2.0
-
-    shear_black_sheep:
-      target: "SHEEP"
-      color: "BLACK"
-      display-name: "Black sheep"
-      lore:
-      - "<gray>Shear black sheep for wool"
-      xp: 3.0
-      money: 2.0
+      - "<gray>Shear All sheep for wool"
+      xp: 1.0
+      money: 1.0
 
 levelup-actions:
   broadcast:

@@ -119,9 +119,7 @@ public class MenuConfig {
             // Load boost menu configuration
             this.boostMenuConfig = new BoostMenuConfig(plugin);
             this.boostMenuConfig.loadConfiguration();
-            
-            plugin.getLogger().info("Menu configurations loaded successfully");
-            
+
         } catch (Exception e) {
             plugin.getLogger().severe("Failed to load menu configurations: " + e.getMessage());
             
