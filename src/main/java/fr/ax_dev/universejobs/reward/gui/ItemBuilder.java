@@ -23,9 +23,10 @@ import java.util.List;
  * Handles Nexo, ItemsAdder, and custom model data integration.
  */
 public class ItemBuilder {
-    
+
     private ItemStack item;
     private ItemMeta meta;
+    private final UniverseJobs plugin;
     
     /**
      * Create a new ItemBuilder.
@@ -34,6 +35,7 @@ public class ItemBuilder {
      * @param material The base material
      */
     public ItemBuilder(UniverseJobs plugin, Material material) {
+        this.plugin = plugin;
         this.item = new ItemStack(material);
         this.meta = item.getItemMeta();
     }
@@ -45,6 +47,7 @@ public class ItemBuilder {
      * @param item The base ItemStack
      */
     public ItemBuilder(UniverseJobs plugin, ItemStack item) {
+        this.plugin = plugin;
         this.item = item.clone();
         this.meta = this.item.getItemMeta();
     }

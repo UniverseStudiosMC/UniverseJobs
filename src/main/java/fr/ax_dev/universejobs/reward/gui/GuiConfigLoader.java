@@ -32,20 +32,17 @@ public class GuiConfigLoader {
      */
     public void loadGuiConfigs() {
         guiConfigs.clear();
-        
+
         File guiFolder = new File(plugin.getDataFolder(), "gui");
         if (!guiFolder.exists()) {
             if (guiFolder.mkdirs()) {
-                // Created gui folder
+                // Created gui folder - generate all default GUI files
+                createDefaultGuiFiles();
             } else {
                 plugin.getLogger().severe("Failed to create gui folder: " + guiFolder.getPath());
                 return;
             }
         }
-        
-        
-        // Always try to create example files if they don't exist
-        createExampleGuiFiles();
         
         // Load GUI files
         File[] files = guiFolder.listFiles((dir, name) -> name.endsWith(".yml"));
@@ -104,29 +101,34 @@ public class GuiConfigLoader {
         return new ConcurrentHashMap<>(guiConfigs);
     }
     
-    /**
-     * Create example GUI files for demonstration.
-     */
-    private void createExampleGuiFiles() {
-        createExampleRewardsGuiFile();
-    }
     
     /**
-     * Create an example rewards GUI configuration file by copying from resources.
+     * Create default GUI files from resources.
+     * Only called when gui folder is created for the first time.
      */
-    private void createExampleRewardsGuiFile() {
-        File guiFile = new File(plugin.getDataFolder(), "gui/example_rewards_gui.yml");
-        if (guiFile.exists()) return;
-        
-        try {
-            plugin.saveResource("gui/example_rewards_gui.yml", false);
-            // Created example GUI file
-        } catch (Exception e) {
-            plugin.getLogger().log(Level.WARNING, "Failed to create example GUI file from resources", e);
+    private void createDefaultGuiFiles() {
+        String[] defaultGuiFiles = {
+            "miner_rewards_gui.yml",
+            "farmer_rewards_gui.yml",
+            "hunter_rewards_gui.yml",
+            "lumberjack_rewards_gui.yml"
+        };
+        int createdCount = 0;
+
+        for (String guiFile : defaultGuiFiles) {
+            try {
+                plugin.saveResource("gui/" + guiFile, false);
+                createdCount++;
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("Could not create GUI file " + guiFile + ": " + e.getMessage());
+            }
+        }
+
+        if (createdCount > 0) {
+            plugin.getLogger().info("Created " + createdCount + " default GUI files");
         }
     }
-    
-    
+
     /**
      * Reload all GUI configurations.
      */

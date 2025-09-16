@@ -65,18 +65,18 @@ navigation-items:
     display-name: "<#abffb3>← Back to Job Menu"
     lore:
       - "<#FFD700>Click to go back to the job menu"
-    slots: [48]
+    slots: [49]
     sound: "UI_BUTTON_CLICK"
     action: back
     
-  close:
-    material: BARRIER
-    display-name: "<#FF6B6B>Close Menu"
-    lore:
-      - "<#FFD700>Click to close this menu"
-    slots: [50]
-    sound: "BLOCK_CHEST_CLOSE"
-    action: close
+#  close:
+#    material: BARRIER
+#    display-name: "<#FF6B6B>Close Menu"
+#    lore:
+#      - "<#FFD700>Click to close this menu"
+#    slots: [50]
+#    sound: "BLOCK_CHEST_CLOSE"
+#    action: close
 
 # Action item format configuration
 # This defines how action items appear in the menu
