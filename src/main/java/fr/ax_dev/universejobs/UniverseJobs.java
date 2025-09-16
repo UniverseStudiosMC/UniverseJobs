@@ -301,30 +301,30 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
         getLogger().info("Shutting down UniverseJobs plugin...");
-        
+
         try {
             stopSaveTask();
+
+            // Shutdown managers first (except JobManager)
+            shutdownManagersExceptJobManager();
+
+            // Save player data while database is still available
             savePlayerData();
-            
+
             // Wait for all async save operations to complete
             try {
-                Thread.sleep(2000);
+                Thread.sleep(3000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-            
-            shutdownManagers();
-            
-            // Additional wait for any remaining async tasks
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            
+
+            // Now shutdown JobManager
+            shutdownJobManager();
+
+            // Finally shutdown storage system
             shutdownStorageSystem();
             getLogger().info("UniverseJobs plugin shutdown completed successfully");
-            
+
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Critical error during plugin shutdown", e);
         } finally {
@@ -353,11 +353,11 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
     }
     
     /**
-     * Shutdown all managers in proper order.
+     * Shutdown all managers except JobManager.
      */
-    private void shutdownManagers() {
+    private void shutdownManagersExceptJobManager() {
         getLogger().info("Shutting down managers...");
-        
+
         shutdownRewardGuiManager();
         shutdownManagerSafely("menu manager", menuManager, () -> menuManager.closeAllMenus());
         shutdownManagerSafely("reward manager", rewardManager, () -> rewardManager.shutdown());
@@ -366,15 +366,21 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         shutdownManagerSafely("bonus manager", bonusManager, () -> bonusManager.shutdown());
         shutdownManagerSafely("money bonus manager", moneyBonusManager, () -> moneyBonusManager.shutdown());
         shutdownManagerSafely("placeholder manager", placeholderManager, () -> placeholderManager.shutdown());
-        shutdownManagerSafely("job manager", jobManager, () -> jobManager.shutdown());
         shutdownManagerSafely("action limit manager", limitManager, () -> limitManager.clearAllLimits());
         shutdownManagerSafely("Folia manager", foliaManager, () -> foliaManager.cancelAllTasks());
-        
+
         // Clear references for managers without explicit shutdown
         protectionManager = null;
         actionProcessor = null;
         languageManager = null;
         configManager = null;
+    }
+
+    /**
+     * Shutdown JobManager last.
+     */
+    private void shutdownJobManager() {
+        shutdownManagerSafely("job manager", jobManager, () -> jobManager.shutdown());
     }
     
     /**
