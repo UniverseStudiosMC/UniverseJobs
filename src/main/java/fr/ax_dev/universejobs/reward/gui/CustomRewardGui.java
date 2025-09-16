@@ -278,63 +278,39 @@ public class CustomRewardGui implements InventoryHolder {
             builder = new ItemBuilder(plugin, Material.CHEST);
         }
         
-        // Format display name
-        String displayName = rewardConfig.getNameFormat()
-            .replace("{status}", statusIndicator)
-            .replace("{name}", reward.getName());
+        // Format display name using status-specific template
+        String displayName = rewardConfig.getDisplayName(statusKey)
+            .replace("{reward_name}", reward.getName());
         displayName = MenuUtils.processPlaceholders(player, displayName);
         builder.name(displayName);
-        
-        // Create lore from configured format
+
+        // Create lore from status-specific template
         List<String> lore = new ArrayList<>();
-        for (String line : rewardConfig.getLoreFormat()) {
-            if (line.contains("{description}")) {
-                String desc = MenuUtils.processPlaceholders(player, reward.getDescription());
-                lore.add(desc);
-            } else if (line.contains("{repeatable_info}")) {
-                if (reward.isRepeatable()) {
-                    lore.add(MenuUtils.processPlaceholders(player, rewardConfig.getText("repeatable_yes")));
-                } else {
-                    lore.add(MenuUtils.processPlaceholders(player, rewardConfig.getText("repeatable_no")));
-                }
-            } else if (line.contains("{cooldown}")) {
-                addCooldownLore(reward, status, lore, line, rewardConfig);
-            } else if (line.contains("{reward_items}")) {
-                addRewardItemsLore(reward, lore, rewardConfig);
-            } else if (line.contains("{click_instruction}")) {
-                if (status == RewardStatus.RETRIEVABLE) {
-                    lore.add("");
-                    String instruction = MenuUtils.processPlaceholders(player, rewardConfig.getClickInstruction());
-                    lore.add(instruction);
-                }
-            } else if (!line.trim().isEmpty()) {
-                // Process ALL placeholders in any line
-                String processedLine = line;
-                
-                // Replace all possible placeholders
-                processedLine = processedLine.replace("{level}", String.valueOf(reward.getRequiredLevel()));
-                processedLine = processedLine.replace("{status_description}", status.getDescription());
-                
-                if (processedLine.contains("{economy_reward}")) {
-                    if (reward.hasEconomyReward()) {
-                        processedLine = processedLine.replace("{economy_reward}", String.valueOf(reward.getEconomyReward()));
-                    } else {
-                        processedLine = processedLine.replace("{economy_reward}", "");
-                    }
-                }
-                
-                if (processedLine.contains("{commands}")) {
-                    if (reward.hasCommands()) {
-                        processedLine = processedLine.replace("{commands}", rewardConfig.getText("special_rewards"));
-                    } else {
-                        processedLine = processedLine.replace("{commands}", "");
-                    }
-                }
-                
-                lore.add(MenuUtils.processPlaceholders(player, processedLine));
-            } else {
-                lore.add("");
+        for (String line : rewardConfig.getLoreTemplate(statusKey)) {
+            // Process all placeholders in the line
+            String processedLine = line;
+
+            // Replace reward-specific placeholders
+            processedLine = processedLine.replace("{level}", String.valueOf(reward.getRequiredLevel()));
+            processedLine = processedLine.replace("{reward_name}", reward.getName());
+            processedLine = processedLine.replace("{description}", reward.getDescription());
+
+            // Get player level for comparison
+            if (processedLine.contains("{player_level}")) {
+                int playerLevel = plugin.getJobManager().getLevel(player, reward.getJobId());
+                processedLine = processedLine.replace("{player_level}", String.valueOf(playerLevel));
             }
+
+            // Add claim date for retrieved rewards
+            if (processedLine.contains("{claim_date}") && status == RewardStatus.RETRIEVED) {
+                long claimTime = rewardManager.getLastClaimTime(player, reward);
+                String claimDate = new java.text.SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date(claimTime));
+                processedLine = processedLine.replace("{claim_date}", claimDate);
+            }
+
+            // Process with MenuUtils for PlaceholderAPI and other placeholders
+            processedLine = MenuUtils.processPlaceholders(player, processedLine);
+            lore.add(processedLine);
         }
         
         builder.lore(lore);

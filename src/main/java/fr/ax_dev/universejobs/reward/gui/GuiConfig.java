@@ -221,19 +221,22 @@ public class GuiConfig {
     
     public static class RewardItemConfig {
         private final Map<String, String> materials;
-        private final List<String> loreFormat;
-        private final String nameFormat;
+        private final Map<String, String> displayNames;
+        private final Map<String, List<String>> loreTemplates;
         private final Map<String, String> statusIndicators;
         private final String clickInstruction;
         private final String timeFormat;
         private final List<String> infoButtonLore;
         private final Map<String, String> texts;
-        
+
         public RewardItemConfig(ConfigurationSection config) {
             this.materials = new HashMap<>();
+            this.displayNames = new HashMap<>();
+            this.loreTemplates = new HashMap<>();
             this.statusIndicators = new HashMap<>();
-            
+
             if (config != null) {
+                // Load materials
                 ConfigurationSection materialsSection = config.getConfigurationSection("materials");
                 if (materialsSection != null) {
                     this.materials.put("retrievable", materialsSection.getString("retrievable", "LIME_SHULKER_BOX"));
@@ -244,21 +247,37 @@ public class GuiConfig {
                     this.materials.put("blocked", "RED_SHULKER_BOX");
                     this.materials.put("retrieved", "GRAY_SHULKER_BOX");
                 }
-                
-                ConfigurationSection statusSection = config.getConfigurationSection("status-indicators");
-                if (statusSection != null) {
-                    this.statusIndicators.put("retrievable", statusSection.getString("retrievable", "&a✓"));
-                    this.statusIndicators.put("blocked", statusSection.getString("blocked", "&c✗"));
-                    this.statusIndicators.put("retrieved", statusSection.getString("retrieved", "&7✓"));
+
+                // Load display names
+                ConfigurationSection displayNamesSection = config.getConfigurationSection("display-names");
+                if (displayNamesSection != null) {
+                    this.displayNames.put("retrievable", displayNamesSection.getString("retrievable", "<#32CD32><bold>✓ {reward_name}</bold>"));
+                    this.displayNames.put("blocked", displayNamesSection.getString("blocked", "<#FF6B6B><bold>✗ {reward_name}</bold>"));
+                    this.displayNames.put("retrieved", displayNamesSection.getString("retrieved", "<#808080><bold>✓ {reward_name}</bold>"));
                 } else {
-                    this.statusIndicators.put("retrievable", "&a✓");
-                    this.statusIndicators.put("blocked", "&c✗");
-                    this.statusIndicators.put("retrieved", "&7✓");
+                    this.displayNames.put("retrievable", "<#32CD32><bold>✓ {reward_name}</bold>");
+                    this.displayNames.put("blocked", "<#FF6B6B><bold>✗ {reward_name}</bold>");
+                    this.displayNames.put("retrieved", "<#808080><bold>✓ {reward_name}</bold>");
                 }
-                
-                this.loreFormat = config.getStringList("lore-format");
-                this.nameFormat = config.getString("name-format", "{status} {name}");
-                this.clickInstruction = config.getString("click-instruction", "&a▶ Click to claim!");
+
+                // Load lore templates
+                ConfigurationSection loreSection = config.getConfigurationSection("lore");
+                if (loreSection != null) {
+                    this.loreTemplates.put("retrievable", loreSection.getStringList("retrievable"));
+                    this.loreTemplates.put("blocked", loreSection.getStringList("blocked"));
+                    this.loreTemplates.put("retrieved", loreSection.getStringList("retrieved"));
+                } else {
+                    this.loreTemplates.put("retrievable", Arrays.asList("<#32CD32>Status: Ready to claim!", "<gray>Level required: <#FFD700>{level}", "", "<#abffb3>Click to claim reward!"));
+                    this.loreTemplates.put("blocked", Arrays.asList("<#FF6B6B>Status: Requirements not met", "<gray>Level required: <#FFD700>{level}", "<gray>Your level: <#FF6B6B>{player_level}", "", "<gray>Level up to unlock this reward!"));
+                    this.loreTemplates.put("retrieved", Arrays.asList("<#808080>Status: Already claimed", "<gray>Level required: <#FFD700>{level}", "<gray>Claimed on: <#808080>{claim_date}"));
+                }
+
+                // Extract status indicators from display names (fallback)
+                this.statusIndicators.put("retrievable", "✓");
+                this.statusIndicators.put("blocked", "✗");
+                this.statusIndicators.put("retrieved", "✓");
+
+                this.clickInstruction = "&a▶ Click to claim!";
                 this.timeFormat = config.getString("time-format", "{hours}h");
                 this.infoButtonLore = config.getStringList("info-button-lore");
                 
@@ -283,29 +302,27 @@ public class GuiConfig {
                     this.texts.put("special_rewards", "Special rewards");
                 }
             } else {
+                // Default configuration
                 this.materials.put("retrievable", "LIME_SHULKER_BOX");
                 this.materials.put("blocked", "RED_SHULKER_BOX");
                 this.materials.put("retrieved", "GRAY_SHULKER_BOX");
-                this.statusIndicators.put("retrievable", "&a✓");
-                this.statusIndicators.put("blocked", "&c✗");
-                this.statusIndicators.put("retrieved", "&7✓");
-                this.loreFormat = Arrays.asList(
-                    "{description}",
-                    "",
-                    "&7Required Level: &e{level}",
-                    "&7Status: {status_description}",
-                    "{repeatable_info}",
-                    "{cooldown}",
-                    "{reward_items}",
-                    "{economy_reward}",
-                    "{commands}",
-                    "{click_instruction}"
-                );
-                this.nameFormat = "{status} {name}";
+
+                this.displayNames.put("retrievable", "<#32CD32><bold>✓ {reward_name}</bold>");
+                this.displayNames.put("blocked", "<#FF6B6B><bold>✗ {reward_name}</bold>");
+                this.displayNames.put("retrieved", "<#808080><bold>✓ {reward_name}</bold>");
+
+                this.loreTemplates.put("retrievable", Arrays.asList("<#32CD32>Status: Ready to claim!", "<gray>Level required: <#FFD700>{level}", "", "<#abffb3>Click to claim reward!"));
+                this.loreTemplates.put("blocked", Arrays.asList("<#FF6B6B>Status: Requirements not met", "<gray>Level required: <#FFD700>{level}", "<gray>Your level: <#FF6B6B>{player_level}", "", "<gray>Level up to unlock this reward!"));
+                this.loreTemplates.put("retrieved", Arrays.asList("<#808080>Status: Already claimed", "<gray>Level required: <#FFD700>{level}", "<gray>Claimed on: <#808080>{claim_date}"));
+
+                this.statusIndicators.put("retrievable", "✓");
+                this.statusIndicators.put("blocked", "✗");
+                this.statusIndicators.put("retrieved", "✓");
+
                 this.clickInstruction = "&a▶ Click to claim!";
                 this.timeFormat = "{hours}h";
                 this.infoButtonLore = new ArrayList<>();
-                
+
                 // Default texts
                 this.texts = new HashMap<>();
                 this.texts.put("repeatable_yes", "&7Repeatable: &aYes");
@@ -319,13 +336,17 @@ public class GuiConfig {
         }
         
         public String getMaterial(String status) { return materials.get(status); }
+        public String getDisplayName(String status) { return displayNames.get(status); }
+        public List<String> getLoreTemplate(String status) { return loreTemplates.getOrDefault(status, new ArrayList<>()); }
         public String getStatusIndicator(String status) { return statusIndicators.get(status); }
-        public List<String> getLoreFormat() { return loreFormat; }
-        public String getNameFormat() { return nameFormat; }
         public String getClickInstruction() { return clickInstruction; }
         public String getTimeFormat() { return timeFormat; }
         public List<String> getInfoButtonLore() { return infoButtonLore; }
         public String getText(String key) { return texts.getOrDefault(key, ""); }
+
+        // Legacy compatibility methods
+        public List<String> getLoreFormat() { return loreTemplates.getOrDefault("retrievable", new ArrayList<>()); }
+        public String getNameFormat() { return displayNames.getOrDefault("retrievable", "{reward_name}"); }
     }
     
     public static class DefaultGuiConfig {
