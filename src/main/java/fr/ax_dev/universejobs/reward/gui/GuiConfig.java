@@ -1,5 +1,6 @@
 package fr.ax_dev.universejobs.reward.gui;
 
+import fr.ax_dev.universejobs.UniverseJobs;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
@@ -32,11 +33,23 @@ public class GuiConfig {
         this.items = new HashMap<>();
         this.rewardSlotsByPage = new HashMap<>();
         this.rewardSlots = new ArrayList<>();
-        this.navigation = new NavigationConfig(config.getConfigurationSection("navigation"));
+
+        // Get global defaults for GuiItems
+        ConfigurationSection globalDefaults = null;
+        try {
+            UniverseJobs plugin = UniverseJobs.getInstance();
+            if (plugin != null) {
+                globalDefaults = plugin.getConfig().getConfigurationSection("gui-default-settings");
+            }
+        } catch (Exception e) {
+            // Ignore if plugin not available
+        }
+
+        this.navigation = new NavigationConfig(config.getConfigurationSection("navigation"), globalDefaults);
         this.fillItems = new HashMap<>();
         this.rewardItemConfig = new RewardItemConfig(config.getConfigurationSection("reward-item"));
-        
-        loadItems(config);
+
+        loadItems(config, globalDefaults);
         loadRewardSlots(config);
         loadFillItems(config);
     }
@@ -44,13 +57,13 @@ public class GuiConfig {
     /**
      * Load custom items from configuration.
      */
-    private void loadItems(ConfigurationSection config) {
+    private void loadItems(ConfigurationSection config, ConfigurationSection globalDefaults) {
         ConfigurationSection itemsSection = config.getConfigurationSection("items");
         if (itemsSection != null) {
             for (String key : itemsSection.getKeys(false)) {
                 ConfigurationSection itemConfig = itemsSection.getConfigurationSection(key);
                 if (itemConfig != null) {
-                    GuiItem item = new GuiItem(itemConfig);
+                    GuiItem item = new GuiItem(itemConfig, globalDefaults);
                     items.put(key, item);
                 }
             }
@@ -137,18 +150,29 @@ public class GuiConfig {
         private final String action;
         private final boolean glowing;
         private final String playerHead;
+        private final boolean hideAttributes;
+        private final boolean hideEnchants;
 
         public GuiItem(ConfigurationSection config) {
-            this.materialName = config.getString("material", "BARRIER");
-            this.amount = config.getInt("amount", 1);
-            this.displayName = config.getString("display-name", config.getString("name", ""));
-            this.lore = config.getStringList("lore");
-            this.customModelData = config.getInt("custom-model-data", -1);
+            this(config, null);
+        }
+
+        public GuiItem(ConfigurationSection config, ConfigurationSection globalDefaults) {
+            // Get global defaults
+            Map<String, Object> defaults = getGlobalDefaults(globalDefaults);
+
+            this.materialName = config.getString("material", (String) defaults.getOrDefault("material", "BARRIER"));
+            this.amount = config.getInt("amount", (Integer) defaults.getOrDefault("amount", 1));
+            this.displayName = config.getString("display-name", config.getString("name", (String) defaults.getOrDefault("display-name", "")));
+            this.lore = config.contains("lore") ? config.getStringList("lore") : (List<String>) defaults.getOrDefault("lore", new ArrayList<>());
+            this.customModelData = config.getInt("custom-model-data", (Integer) defaults.getOrDefault("custom-model-data", -1));
             this.enchantments = loadEnchantments(config);
             this.slots = config.getIntegerList("slots");
-            this.action = config.getString("action", "");
-            this.glowing = config.getBoolean("glowing", false);
+            this.action = config.getString("action", (String) defaults.getOrDefault("action", ""));
+            this.glowing = config.getBoolean("glowing", (Boolean) defaults.getOrDefault("glow", false));
             this.playerHead = config.getString("player-head", "");
+            this.hideAttributes = config.contains("hide-attributes") ? config.getBoolean("hide-attributes") : (Boolean) defaults.getOrDefault("hide-attributes", true);
+            this.hideEnchants = config.contains("hide-enchants") ? config.getBoolean("hide-enchants") : (Boolean) defaults.getOrDefault("hide-enchants", true);
         }
         
         private Map<Enchantment, Integer> loadEnchantments(ConfigurationSection config) {
@@ -168,7 +192,53 @@ public class GuiConfig {
             }
             return enchants;
         }
-        
+
+        private static Map<String, Object> getGlobalDefaults(ConfigurationSection explicitDefaults) {
+            try {
+                ConfigurationSection defaultsSection = explicitDefaults;
+
+                if (defaultsSection == null) {
+                    UniverseJobs plugin = UniverseJobs.getInstance();
+                    if (plugin != null) {
+                        defaultsSection = plugin.getConfig().getConfigurationSection("gui-default-settings");
+                    }
+                }
+
+                if (defaultsSection != null) {
+                    Map<String, Object> defaults = new HashMap<>();
+                    defaults.put("enabled", defaultsSection.getBoolean("enabled", true));
+                    defaults.put("amount", defaultsSection.getInt("amount", 1));
+                    defaults.put("display-name", defaultsSection.getString("display-name", ""));
+                    defaults.put("material", defaultsSection.getString("material", "GRAY_STAINED_GLASS_PANE"));
+                    defaults.put("lore", defaultsSection.getStringList("lore"));
+                    defaults.put("glow", defaultsSection.getBoolean("glow", false));
+                    defaults.put("hide-attributes", defaultsSection.getBoolean("hide-attributes", true));
+                    defaults.put("hide-enchants", defaultsSection.getBoolean("hide-enchants", true));
+                    defaults.put("sound", defaultsSection.getString("sound", ""));
+                    defaults.put("custom-model-data", defaultsSection.getInt("custom-model-data", 0));
+                    defaults.put("action", defaultsSection.getString("action", "none"));
+                    return defaults;
+                }
+            } catch (Exception e) {
+                // Silently fall back to hardcoded defaults if there's any issue
+            }
+
+            // Fallback defaults that match config.yml gui-default-settings
+            Map<String, Object> defaults = new HashMap<>();
+            defaults.put("enabled", true);
+            defaults.put("amount", 1);
+            defaults.put("display-name", "");
+            defaults.put("material", "GRAY_STAINED_GLASS_PANE");
+            defaults.put("lore", new ArrayList<>());
+            defaults.put("glow", false);
+            defaults.put("hide-attributes", true);
+            defaults.put("hide-enchants", true);
+            defaults.put("sound", "");
+            defaults.put("custom-model-data", 0);
+            defaults.put("action", "none");
+            return defaults;
+        }
+
         // Getters
         public String getMaterialName() { return materialName; }
         public int getAmount() { return amount; }
@@ -180,6 +250,8 @@ public class GuiConfig {
         public String getAction() { return action; }
         public boolean isGlowing() { return glowing; }
         public String getPlayerHead() { return playerHead; }
+        public boolean isHideAttributes() { return hideAttributes; }
+        public boolean isHideEnchants() { return hideEnchants; }
     }
     
     /**
@@ -194,19 +266,23 @@ public class GuiConfig {
         private final GuiItem back;
 
         public NavigationConfig(ConfigurationSection config) {
+            this(config, null);
+        }
+
+        public NavigationConfig(ConfigurationSection config, ConfigurationSection globalDefaults) {
             if (config != null) {
                 this.previousPage = config.contains("previous-page") ?
-                    new GuiItem(config.getConfigurationSection("previous-page")) : null;
+                    new GuiItem(config.getConfigurationSection("previous-page"), globalDefaults) : null;
                 this.nextPage = config.contains("next-page") ?
-                    new GuiItem(config.getConfigurationSection("next-page")) : null;
+                    new GuiItem(config.getConfigurationSection("next-page"), globalDefaults) : null;
                 this.close = config.contains("close") ?
-                    new GuiItem(config.getConfigurationSection("close")) : null;
+                    new GuiItem(config.getConfigurationSection("close"), globalDefaults) : null;
                 this.refresh = config.contains("refresh") ?
-                    new GuiItem(config.getConfigurationSection("refresh")) : null;
+                    new GuiItem(config.getConfigurationSection("refresh"), globalDefaults) : null;
                 this.info = config.contains("info") ?
-                    new GuiItem(config.getConfigurationSection("info")) : null;
+                    new GuiItem(config.getConfigurationSection("info"), globalDefaults) : null;
                 this.back = config.contains("back") ?
-                    new GuiItem(config.getConfigurationSection("back")) : null;
+                    new GuiItem(config.getConfigurationSection("back"), globalDefaults) : null;
             } else {
                 // Default navigation items
                 this.previousPage = null;
