@@ -37,9 +37,13 @@ public class MenuItemConfig {
     private final int elseCustomModelData;
     
     public MenuItemConfig(ConfigurationSection config) {
+        this(config, null);
+    }
+
+    public MenuItemConfig(ConfigurationSection config, ConfigurationSection globalDefaults) {
         // Get global defaults
-        Map<String, Object> defaults = getGlobalDefaults();
-        
+        Map<String, Object> defaults = getGlobalDefaults(globalDefaults);
+
         this.enabled = config.getBoolean("enabled", (Boolean) defaults.getOrDefault("enabled", true));
         this.material = config.getString("material", (String) defaults.getOrDefault("material", "STONE"));
         this.amount = config.getInt("amount", (Integer) defaults.getOrDefault("amount", 1));
@@ -170,40 +174,49 @@ public class MenuItemConfig {
      * Get global default settings from config.yml
      */
     private static Map<String, Object> getGlobalDefaults() {
+        return getGlobalDefaults(null);
+    }
+
+    private static Map<String, Object> getGlobalDefaults(ConfigurationSection explicitDefaults) {
         try {
-            UniverseJobs plugin = UniverseJobs.getInstance();
-            if (plugin != null) {
-                ConfigurationSection defaultsSection = plugin.getConfig().getConfigurationSection("gui-default-settings");
-                if (defaultsSection != null) {
-                    Map<String, Object> defaults = new HashMap<>();
-                    defaults.put("enabled", defaultsSection.getBoolean("enabled", true));
-                    defaults.put("amount", defaultsSection.getInt("amount", 1));
-                    defaults.put("display-name", defaultsSection.getString("display-name", ""));
-                    defaults.put("material", defaultsSection.getString("material", "STONE"));
-                    defaults.put("lore", defaultsSection.getStringList("lore"));
-                    defaults.put("glow", defaultsSection.getBoolean("glow", false));
-                    defaults.put("hide-attributes", defaultsSection.getBoolean("hide-attributes", false));
-                    defaults.put("hide-enchants", defaultsSection.getBoolean("hide-enchants", false));
-                    defaults.put("sound", defaultsSection.getString("sound", ""));
-                    defaults.put("custom-model-data", defaultsSection.getInt("custom-model-data", 0));
-                    defaults.put("action", defaultsSection.getString("action", "none"));
-                    return defaults;
+            ConfigurationSection defaultsSection = explicitDefaults;
+
+            if (defaultsSection == null) {
+                UniverseJobs plugin = UniverseJobs.getInstance();
+                if (plugin != null) {
+                    defaultsSection = plugin.getConfig().getConfigurationSection("gui-default-settings");
                 }
+            }
+
+            if (defaultsSection != null) {
+                Map<String, Object> defaults = new HashMap<>();
+                defaults.put("enabled", defaultsSection.getBoolean("enabled", true));
+                defaults.put("amount", defaultsSection.getInt("amount", 1));
+                defaults.put("display-name", defaultsSection.getString("display-name", ""));
+                defaults.put("material", defaultsSection.getString("material", "GRAY_STAINED_GLASS_PANE"));
+                defaults.put("lore", defaultsSection.getStringList("lore"));
+                defaults.put("glow", defaultsSection.getBoolean("glow", false));
+                defaults.put("hide-attributes", defaultsSection.getBoolean("hide-attributes", true));
+                defaults.put("hide-enchants", defaultsSection.getBoolean("hide-enchants", true));
+                defaults.put("sound", defaultsSection.getString("sound", ""));
+                defaults.put("custom-model-data", defaultsSection.getInt("custom-model-data", 0));
+                defaults.put("action", defaultsSection.getString("action", "none"));
+                return defaults;
             }
         } catch (Exception e) {
             // Silently fall back to hardcoded defaults if there's any issue
         }
-        
-        // Fallback defaults
+
+        // Fallback defaults that match config.yml gui-default-settings
         Map<String, Object> defaults = new HashMap<>();
         defaults.put("enabled", true);
         defaults.put("amount", 1);
         defaults.put("display-name", "");
-        defaults.put("material", "STONE");
+        defaults.put("material", "GRAY_STAINED_GLASS_PANE");
         defaults.put("lore", new ArrayList<>());
         defaults.put("glow", false);
-        defaults.put("hide-attributes", false);
-        defaults.put("hide-enchants", false);
+        defaults.put("hide-attributes", true);
+        defaults.put("hide-enchants", true);
         defaults.put("sound", "");
         defaults.put("custom-model-data", 0);
         defaults.put("action", "none");

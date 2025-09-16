@@ -72,7 +72,6 @@ public class RewardManager {
         jobRewards.clear();
         allRewards.clear();
         
-        plugin.getLogger().info("Reward system shutdown complete");
     }
     
     /**

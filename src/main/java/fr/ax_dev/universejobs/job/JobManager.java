@@ -943,7 +943,6 @@ public class JobManager {
      */
     public void shutdown() {
         if (isShutdown.compareAndSet(false, true)) {
-            plugin.getLogger().info("Shutting down JobManager...");
             
             try {
                 // Save all player data before shutdown
@@ -966,7 +965,6 @@ public class JobManager {
                     xpCurveManager = null;
                 }
                 
-                plugin.getLogger().info("JobManager shutdown completed");
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE, "Error during JobManager shutdown", e);
             }

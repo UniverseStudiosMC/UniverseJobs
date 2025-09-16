@@ -70,7 +70,6 @@ public class DatabaseDataStorage implements DataStorage {
                     cache.clear();
                     rewardCache.clear();
                     connectionPool.shutdown();
-                    plugin.getLogger().info("Database storage shutdown completed");
                 } catch (Exception e) {
                     plugin.getLogger().log(Level.WARNING, "Error during database storage shutdown", e);
                 }
