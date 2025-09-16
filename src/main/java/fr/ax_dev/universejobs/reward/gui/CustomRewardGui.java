@@ -267,16 +267,28 @@ public class CustomRewardGui implements InventoryHolder {
             item.addUnsafeEnchantment(entry.getKey(), entry.getValue());
         }
         
-        // Glowing effect
-        if (guiItem.isGlowing() && guiItem.getEnchantments().isEmpty()) {
-            item.addUnsafeEnchantment(Enchantment.LURE, 1);
-            ItemMeta glowMeta = item.getItemMeta();
-            if (glowMeta != null) {
-                glowMeta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
-                item.setItemMeta(glowMeta);
+        // Apply item flags
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            if (guiItem.isHideAttributes()) {
+                meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ATTRIBUTES);
             }
+            if (guiItem.isHideEnchants()) {
+                meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            }
+
+            // Glowing effect
+            if (guiItem.isGlowing() && guiItem.getEnchantments().isEmpty()) {
+                item.addUnsafeEnchantment(Enchantment.LURE, 1);
+                if (!guiItem.isHideEnchants()) {
+                    // Only add hide enchants flag if not already set
+                    meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+                }
+            }
+
+            item.setItemMeta(meta);
         }
-        
+
         return item;
     }
     
