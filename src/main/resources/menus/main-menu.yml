@@ -51,7 +51,7 @@ static-items:
       - "<gray>money and experience points."
       - ""
       - "<gray>Total Jobs: <#FFD700>%universejobs_totaljobs%"
-      - "<gray>Your Active Jobs: <#abffb3>%universejobs_global_player_totaljobs%"
+      - "<gray>Your Active Jobs: <#abffb3>%universejobs_global_player_totaljobs%/{max_jobs}"
     amount: 1
     slots: [4]
     custom-model-data: 0
@@ -76,6 +76,7 @@ static-items:
 # - {job_permission} - Permission required for the job
 # - {progress_bar} - Visual XP progress bar
 # - {progress_percent} - XP progress percentage
+# - {max_jobs} - Maximum number of jobs a player can have
 job-item-format:
   use-job-icon: true
   display-name: "<bold>{job_name}</bold>"
@@ -157,7 +158,7 @@ navigation-items:
     action: close
     
   info:
-    enabled: true
+    enabled: false
     material: COMPASS
     display-name: "<#FFD700>Menu Information"
     lore:
