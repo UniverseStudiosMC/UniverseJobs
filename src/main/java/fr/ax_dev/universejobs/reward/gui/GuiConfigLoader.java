@@ -7,7 +7,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 
 /**
  * Loader for GUI configurations from the gui/ directory.
@@ -113,12 +112,9 @@ public class GuiConfigLoader {
             "hunter_rewards_gui.yml",
             "lumberjack_rewards_gui.yml"
         };
-        int createdCount = 0;
-
         for (String guiFile : defaultGuiFiles) {
             try {
                 plugin.saveResource("gui/" + guiFile, false);
-                createdCount++;
             } catch (IllegalArgumentException e) {
                 plugin.getLogger().warning("Could not create GUI file " + guiFile + ": " + e.getMessage());
             }

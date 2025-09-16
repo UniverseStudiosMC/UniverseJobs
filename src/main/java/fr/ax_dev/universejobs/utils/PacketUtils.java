@@ -46,7 +46,6 @@ public class PacketUtils {
     
     // Packet reflection cache
     private static Class<?> CLIENTBOUND_BOSS_EVENT_PACKET_CLASS;
-    private static Constructor<?> BOSS_EVENT_PACKET_CONSTRUCTOR;
     private static Method SEND_PACKET_METHOD;
     private static Method GET_HANDLE_METHOD;
     private static Field CONNECTION_FIELD;
@@ -933,9 +932,6 @@ public class PacketUtils {
             // Try Paper/Modern approach first
             Class<?> craftPlayerClass = secureClassForName("org.bukkit.craftbukkit." + getServerVersion() + ".entity.CraftPlayer");
             GET_HANDLE_METHOD = craftPlayerClass.getMethod("getHandle");
-            
-            // Try to get connection field from ServerPlayer
-            Object dummyPlayer = null; // We'll need a real player to test this
             
             // Try common Paper/Spigot class names for BossEvent packet
             String[] packetNames = {

@@ -114,14 +114,22 @@ navigation:
     lore:
       - "<#FFD700>Click to continue"
     slots: [44]
+#  close:
+#    material: BARRIER
+#    amount: 1
+#    display-name: "<#FF6B6B>Close"
+#    lore:
+#      - "<#FFD700>Click to close menu"
+#    slots: [49]
 
-  close:
-    material: BARRIER
+  back:
+    material: PLAYER_HEAD
+    player-head: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZGUxZGZjMTFhODM3MTExZDIyYjAwMWExNDQ2MWY5YTdmYzA5MzUyMmY4OGM1OGZhZWZkNmFkZWZmY2Q0ZTlhYiJ9fX0="
     amount: 1
-    display-name: "<#FF6B6B>Close"
+    display-name: "<#abffb3>← Back to Job Menu"
     lore:
-      - "<#FFD700>Click to close menu"
-    slots: [49]
+      - "<#FFD700>Click to return to job menu"
+    slots: [48]
 
 # Reward item configuration
 reward-item:

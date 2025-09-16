@@ -9,7 +9,6 @@ import fr.ax_dev.universejobs.reward.gui.GuiConfig;
 import fr.ax_dev.universejobs.reward.gui.GuiConfigLoader;
 import fr.ax_dev.universejobs.reward.gui.ItemBuilder;
 import fr.ax_dev.universejobs.reward.storage.RewardStorage;
-import fr.ax_dev.universejobs.storage.DataStorage;
 import fr.ax_dev.universejobs.utils.MessageUtils;
 import fr.ax_dev.universejobs.menu.MenuUtils;
 import org.bukkit.Bukkit;
@@ -23,7 +22,6 @@ import java.io.File;
 import java.util.*;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 
 /**
  * Main manager for the reward system.
@@ -72,6 +70,7 @@ public class RewardManager {
         jobRewards.clear();
         allRewards.clear();
         
+        plugin.getLogger().info("Reward system shutdown complete");
     }
     
     /**
@@ -445,12 +444,9 @@ public class RewardManager {
      */
     private void createDefaultRewardFiles() {
         String[] defaultRewardFiles = {"example_rewards.yml", "miner_rewards.yml", "farmer_rewards.yml", "hunter_rewards.yml", "lumberjack_rewards.yml"};
-        int createdCount = 0;
-
         for (String rewardFile : defaultRewardFiles) {
             try {
                 plugin.saveResource("rewards/" + rewardFile, false);
-                createdCount++;
             } catch (IllegalArgumentException e) {
                 plugin.getLogger().warning("Could not create reward file " + rewardFile + ": " + e.getMessage());
             }

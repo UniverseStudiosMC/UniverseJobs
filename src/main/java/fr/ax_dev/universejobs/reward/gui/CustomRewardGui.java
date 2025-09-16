@@ -189,8 +189,18 @@ public class CustomRewardGui implements InventoryHolder {
         // Info button
         if (nav.getInfo() != null) {
             ItemStack item = createItemFromConfig(nav.getInfo());
-            
+
             for (int slot : nav.getInfo().getSlots()) {
+                if (slot >= 0 && slot < inventory.getSize()) {
+                    inventory.setItem(slot, item);
+                }
+            }
+        }
+
+        // Back button
+        if (nav.getBack() != null) {
+            ItemStack item = createItemFromConfig(nav.getBack());
+            for (int slot : nav.getBack().getSlots()) {
                 if (slot >= 0 && slot < inventory.getSize()) {
                     inventory.setItem(slot, item);
                 }
@@ -223,19 +233,28 @@ public class CustomRewardGui implements InventoryHolder {
      * Create an ItemStack from a GuiItem configuration.
      */
     private ItemStack createItemFromConfig(GuiConfig.GuiItem guiItem) {
-        ItemBuilder builder = ItemBuilder.fromMaterialName(plugin, guiItem.getMaterialName())
-                .amount(guiItem.getAmount());
-        
+        ItemBuilder builder;
+
+        // Check if it's a player head with texture
+        if (!guiItem.getPlayerHead().isEmpty()) {
+            builder = new ItemBuilder(plugin, Material.PLAYER_HEAD)
+                    .playerHead(guiItem.getPlayerHead())
+                    .amount(guiItem.getAmount());
+        } else {
+            builder = ItemBuilder.fromMaterialName(plugin, guiItem.getMaterialName())
+                    .amount(guiItem.getAmount());
+        }
+
         // Display name
         if (!guiItem.getDisplayName().isEmpty()) {
             builder.name(guiItem.getDisplayName());
         }
-        
+
         // Lore
         if (!guiItem.getLore().isEmpty()) {
             builder.lore(guiItem.getLore());
         }
-        
+
         // Custom model data
         if (guiItem.getCustomModelData() > 0) {
             builder.customModelData(guiItem.getCustomModelData());
@@ -270,8 +289,6 @@ public class CustomRewardGui implements InventoryHolder {
         
         String statusKey = status.name().toLowerCase();
         String materialName = rewardConfig.getMaterial(statusKey);
-        String statusIndicator = rewardConfig.getStatusIndicator(statusKey);
-        
         // Create item with configured material
         ItemBuilder builder = ItemBuilder.fromMaterialName(plugin, materialName);
         if (builder == null) {
@@ -318,103 +335,10 @@ public class CustomRewardGui implements InventoryHolder {
     }
     
     /**
-     * Format time using the configured format.
-     */
-    private String formatTime(long hours, String format) {
-        String result = format;
-        
-        if (hours < 24) {
-            result = result.replace("{hours}", String.valueOf(hours))
-                          .replace("{days}", "0")
-                          .replace("{weeks}", "0");
-        } else if (hours < 168) {
-            result = result.replace("{hours}", String.valueOf(hours % 24))
-                          .replace("{days}", String.valueOf(hours / 24))
-                          .replace("{weeks}", "0");
-        } else {
-            result = result.replace("{hours}", String.valueOf(hours % 24))
-                          .replace("{days}", String.valueOf((hours % 168) / 24))
-                          .replace("{weeks}", String.valueOf(hours / 168));
-        }
-        
-        if (format.equals("{hours}h")) {
-            if (hours < 24) {
-                return hours + "h";
-            } else if (hours < 168) {
-                return (hours / 24) + "d";
-            } else {
-                return (hours / 168) + "w";
-            }
-        }
-        
-        return result;
-    }
-    
-    /**
-     * Add cooldown information to lore.
-     */
-    private void addCooldownLore(Reward reward, RewardStatus status, List<String> lore, String line, GuiConfig.RewardItemConfig rewardConfig) {
-        if (reward.getCooldownHours() > 0) {
-            if (status == RewardStatus.RETRIEVED) {
-                long lastClaim = rewardManager.getLastClaimTime(player, reward);
-                long nextClaim = lastClaim + (reward.getCooldownHours() * 3600000L);
-                long timeLeft = nextClaim - System.currentTimeMillis();
-                
-                if (timeLeft > 0) {
-                    // Use timeLeft in milliseconds directly for formatTime
-                    String timeString = formatTime(timeLeft / 3600000L, rewardConfig.getTimeFormat());
-                    String cooldownLine = line.replace("{cooldown}", rewardConfig.getText("cooldown_prefix") + timeString);
-                    lore.add(MenuUtils.processPlaceholders(player, cooldownLine));
-                }
-            } else if (reward.isRepeatable()) {
-                // Show cooldown info even if not yet claimed for repeatable rewards
-                String timeStr = formatTime(reward.getCooldownHours(), rewardConfig.getTimeFormat());
-                String cooldownLine = line.replace("{cooldown}", rewardConfig.getText("cooldown_prefix") + timeStr);
-                lore.add(MenuUtils.processPlaceholders(player, cooldownLine));
-            }
-        }
-    }
-    
-    /**
-     * Add reward items information to lore.
-     */
-    private void addRewardItemsLore(Reward reward, List<String> lore, GuiConfig.RewardItemConfig rewardConfig) {
-        if (!reward.getItems().isEmpty()) {
-            lore.add("");
-            lore.add(MenuUtils.processPlaceholders(player, rewardConfig.getText("rewards_title")));
-            
-            int itemsShown = 0;
-            for (Reward.RewardItem rewardItem : reward.getItems()) {
-                if (itemsShown >= 3) {
-                    String moreLine = rewardConfig.getText("more_items")
-                        .replace("{count}", String.valueOf(reward.getItems().size() - 3));
-                    lore.add(MenuUtils.processPlaceholders(player, moreLine));
-                    break;
-                }
-                
-                String itemName = rewardItem.getDisplayName() != null ? 
-                        rewardItem.getDisplayName() : rewardItem.getMaterial();
-                String itemLine = rewardConfig.getText("item_format")
-                    .replace("{amount}", String.valueOf(rewardItem.getAmount()))
-                    .replace("{name}", itemName);
-                lore.add(MenuUtils.processPlaceholders(player, itemLine));
-                itemsShown++;
-            }
-        }
-    }
-    
-    /**
      * Check if there is a next page.
      */
     private boolean hasNextPage() {
         return (currentPage + 1) * rewardsPerPage < rewards.size();
-    }
-    
-    /**
-     * Get the total number of pages.
-     */
-    private int getTotalPages() {
-        return (int) Math.ceil((double) rewards.size() / rewardsPerPage);
     }
     
     /**
@@ -470,6 +394,10 @@ public class CustomRewardGui implements InventoryHolder {
         } else if (nav.getRefresh() != null && nav.getRefresh().getSlots().contains(slot)) {
             // Refresh GUI
             populateInventory();
+        } else if (nav.getBack() != null && nav.getBack().getSlots().contains(slot)) {
+            // Back to job menu
+            player.closeInventory();
+            plugin.getMenuManager().openJobMenu(player, job.getId());
         }
     }
     
