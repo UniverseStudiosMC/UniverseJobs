@@ -1007,8 +1007,10 @@ public class JobManager {
                     try {
                         dataStorage.savePlayerDataAsync(playerUuid, data).join();
                     } catch (Exception e) {
-                        if (e.getMessage() != null && e.getMessage().contains("Storage is shutdown")) {
-                            plugin.getLogger().warning("Cannot save player data for " + playerUuid + " - storage is shutdown");
+                        if (e.getMessage() != null && (e.getMessage().contains("Storage is shutdown") ||
+                            e.getMessage().contains("readonly database") ||
+                            e.getMessage().contains("database file has been moved"))) {
+                            plugin.getLogger().warning("Cannot save player data for " + playerUuid + " - storage is shutdown or readonly");
                         } else {
                             throw e;
                         }
