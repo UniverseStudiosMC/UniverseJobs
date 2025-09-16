@@ -140,6 +140,16 @@ public class RewardGuiManager implements Listener {
     }
     
     /**
+     * Update the open GUI for a player.
+     *
+     * @param player The player
+     * @param gui The new GUI
+     */
+    public void updateOpenGui(Player player, Object gui) {
+        openGuis.put(player.getUniqueId(), gui);
+    }
+
+    /**
      * Close all open GUIs.
      */
     public void closeAllGuis() {
