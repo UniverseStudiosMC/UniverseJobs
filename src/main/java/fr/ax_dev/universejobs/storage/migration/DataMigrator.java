@@ -152,28 +152,6 @@ public class DataMigrator {
         return migratedCount.get();
     }
 
-    private Set<UUID> getAllPlayerIds() {
-        Set<UUID> playerIds = new HashSet<>();
-        
-        if (dataFolder.exists()) {
-            File[] playerFiles = dataFolder.listFiles((dir, name) -> name.endsWith(".yml"));
-            if (playerFiles != null) {
-                for (File playerFile : playerFiles) {
-                    try {
-                        String fileName = playerFile.getName();
-                        String uuidString = fileName.substring(0, fileName.length() - 4);
-                        UUID playerId = UUID.fromString(uuidString);
-                        playerIds.add(playerId);
-                    } catch (Exception e) {
-                        plugin.getLogger().log(Level.WARNING, "Invalid player file name: " + playerFile.getName(), e);
-                    }
-                }
-            }
-        }
-        
-        return playerIds;
-    }
-
     private void copyDirectory(File source, File destination) {
         try {
             if (source.isDirectory()) {

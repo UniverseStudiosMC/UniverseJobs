@@ -136,7 +136,8 @@ public class GuiConfig {
         private final List<Integer> slots;
         private final String action;
         private final boolean glowing;
-        
+        private final String playerHead;
+
         public GuiItem(ConfigurationSection config) {
             this.materialName = config.getString("material", "BARRIER");
             this.amount = config.getInt("amount", 1);
@@ -147,6 +148,7 @@ public class GuiConfig {
             this.slots = config.getIntegerList("slots");
             this.action = config.getString("action", "");
             this.glowing = config.getBoolean("glowing", false);
+            this.playerHead = config.getString("player-head", "");
         }
         
         private Map<Enchantment, Integer> loadEnchantments(ConfigurationSection config) {
@@ -177,6 +179,7 @@ public class GuiConfig {
         public List<Integer> getSlots() { return slots; }
         public String getAction() { return action; }
         public boolean isGlowing() { return glowing; }
+        public String getPlayerHead() { return playerHead; }
     }
     
     /**
@@ -188,19 +191,22 @@ public class GuiConfig {
         private final GuiItem close;
         private final GuiItem refresh;
         private final GuiItem info;
-        
+        private final GuiItem back;
+
         public NavigationConfig(ConfigurationSection config) {
             if (config != null) {
-                this.previousPage = config.contains("previous-page") ? 
+                this.previousPage = config.contains("previous-page") ?
                     new GuiItem(config.getConfigurationSection("previous-page")) : null;
-                this.nextPage = config.contains("next-page") ? 
+                this.nextPage = config.contains("next-page") ?
                     new GuiItem(config.getConfigurationSection("next-page")) : null;
-                this.close = config.contains("close") ? 
+                this.close = config.contains("close") ?
                     new GuiItem(config.getConfigurationSection("close")) : null;
-                this.refresh = config.contains("refresh") ? 
+                this.refresh = config.contains("refresh") ?
                     new GuiItem(config.getConfigurationSection("refresh")) : null;
-                this.info = config.contains("info") ? 
+                this.info = config.contains("info") ?
                     new GuiItem(config.getConfigurationSection("info")) : null;
+                this.back = config.contains("back") ?
+                    new GuiItem(config.getConfigurationSection("back")) : null;
             } else {
                 // Default navigation items
                 this.previousPage = null;
@@ -208,6 +214,7 @@ public class GuiConfig {
                 this.close = null;
                 this.refresh = null;
                 this.info = null;
+                this.back = null;
             }
         }
         
@@ -217,6 +224,7 @@ public class GuiConfig {
         public GuiItem getClose() { return close; }
         public GuiItem getRefresh() { return refresh; }
         public GuiItem getInfo() { return info; }
+        public GuiItem getBack() { return back; }
     }
     
     public static class RewardItemConfig {

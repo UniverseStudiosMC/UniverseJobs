@@ -15,8 +15,6 @@ import java.util.logging.Level;
 public class UpdateChecker {
 
     private static final String SPIGOT_API_URL = "https://api.spiget.org/v2/resources/128572/versions/latest";
-    private static final int RESOURCE_ID = 128572;
-
     private final UniverseJobs plugin;
 
     public UpdateChecker(UniverseJobs plugin) {

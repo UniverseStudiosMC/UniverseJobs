@@ -170,13 +170,6 @@ public class MenuItemConfig {
         return elseMaterial != null && !elseMaterial.isEmpty();
     }
     
-    /**
-     * Get global default settings from config.yml
-     */
-    private static Map<String, Object> getGlobalDefaults() {
-        return getGlobalDefaults(null);
-    }
-
     private static Map<String, Object> getGlobalDefaults(ConfigurationSection explicitDefaults) {
         try {
             ConfigurationSection defaultsSection = explicitDefaults;
