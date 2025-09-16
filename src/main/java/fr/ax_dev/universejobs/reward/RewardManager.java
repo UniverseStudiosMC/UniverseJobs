@@ -85,7 +85,8 @@ public class RewardManager {
         File rewardsFolder = new File(plugin.getDataFolder(), "rewards");
         if (!rewardsFolder.exists()) {
             if (rewardsFolder.mkdirs()) {
-                // Created rewards folder
+                // Created rewards folder for the first time - generate all default reward files
+                createDefaultRewardFiles();
             } else {
                 plugin.getLogger().severe("Failed to create rewards folder: " + rewardsFolder.getPath());
                 return;
@@ -440,6 +441,28 @@ public class RewardManager {
         storage.unloadPlayerData(player.getUniqueId());
     }
     
+    /**
+     * Create default reward files from resources.
+     */
+    private void createDefaultRewardFiles() {
+        String[] defaultRewardFiles = {"example_rewards.yml", "miner_rewards.yml", "farmer_rewards.yml", "hunter_rewards.yml", "lumberjack_rewards.yml"};
+        int createdCount = 0;
+
+        for (String rewardFile : defaultRewardFiles) {
+            try {
+                plugin.saveResource("rewards/" + rewardFile, false);
+                createdCount++;
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("Could not create reward file " + rewardFile + ": " + e.getMessage());
+            }
+        }
+
+        if (createdCount > 0) {
+            plugin.getLogger().info("Created " + createdCount + " default reward files");
+        }
+    }
+
+
     /**
      * Save all pending data.
      */

@@ -70,13 +70,15 @@ public class JobActionsMenu extends BaseMenu {
     }
     
     /**
-     * Load all actions for this job efficiently and group them by target.
+     * Load all actions for this job efficiently and group them by display-material or target.
      */
     private void loadJobActionsEfficiently() {
         for (ActionType actionType : job.getActionTypes()) {
             for (JobAction action : job.getActions(actionType)) {
-                String target = action.getTarget();
-                groupedActions.computeIfAbsent(target, k -> new ArrayList<>())
+                String groupKey = action.getDisplayMaterial() != null && !action.getDisplayMaterial().isEmpty()
+                    ? action.getDisplayMaterial()
+                    : action.getTarget();
+                groupedActions.computeIfAbsent(groupKey, k -> new ArrayList<>())
                     .add(new ActionInfo(actionType, action));
             }
         }
@@ -117,8 +119,8 @@ public class JobActionsMenu extends BaseMenu {
         List<DisplayItem> displayItems = new ArrayList<>(groupedActions.size());
         
         // Add grouped actions efficiently
-        groupedActions.forEach((target, actions) -> 
-            displayItems.add(new DisplayItem(ACTION_TYPE, new GroupedActionInfo(target, actions))));
+        groupedActions.forEach((groupKey, actions) ->
+            displayItems.add(new DisplayItem(ACTION_TYPE, new GroupedActionInfo(groupKey, actions))));
         
         return displayItems;
     }
@@ -178,7 +180,7 @@ public class JobActionsMenu extends BaseMenu {
                 materialName = displayMaterial;
             }
         } else {
-            Material material = MaterialUtils.getSourceMaterialForTarget(groupedInfo.target, firstAction.actionType);
+            Material material = MaterialUtils.getSourceMaterialForTarget(groupedInfo.groupKey, firstAction.actionType);
             materialName = material.name();
         }
         
@@ -190,8 +192,8 @@ public class JobActionsMenu extends BaseMenu {
         if (format != null && format.getDisplayNameEnabled() != null && !format.getDisplayNameEnabled().isEmpty()) {
             // Use configured display name with placeholders
             displayName = format.getDisplayNameEnabled()
-                .replace("{action_target}", groupedInfo.target)
-                .replace("{action_display_name}", firstAction.action.getDisplayName() != null ? firstAction.action.getDisplayName() : groupedInfo.target)
+                .replace("{action_target}", groupedInfo.groupKey)
+                .replace("{action_display_name}", firstAction.action.getDisplayName() != null ? firstAction.action.getDisplayName() : groupedInfo.groupKey)
                 .replace("{action_type}", firstAction.actionType.name())
                 .replace("{action_name}", firstAction.action.getName());
             
@@ -237,7 +239,7 @@ public class JobActionsMenu extends BaseMenu {
         List<String> lore = new ArrayList<>();
         
         // Add each action's information using the YAML format
-        for (ActionInfo actionInfo : groupedActions.get(groupedInfo.target)) {
+        for (ActionInfo actionInfo : groupedActions.get(groupedInfo.groupKey)) {
             JobAction action = actionInfo.action;
             String actionTypeStr = actionInfo.actionType.name().toLowerCase();
             actionTypeStr = actionTypeStr.substring(0, 1).toUpperCase() + actionTypeStr.substring(1);
@@ -551,11 +553,11 @@ public class JobActionsMenu extends BaseMenu {
      * Grouped action information for same target.
      */
     private static class GroupedActionInfo {
-        final String target;
+        final String groupKey;
         final List<ActionInfo> actions;
-        
-        GroupedActionInfo(String target, List<ActionInfo> actions) {
-            this.target = target;
+
+        GroupedActionInfo(String groupKey, List<ActionInfo> actions) {
+            this.groupKey = groupKey;
             this.actions = actions;
         }
     }

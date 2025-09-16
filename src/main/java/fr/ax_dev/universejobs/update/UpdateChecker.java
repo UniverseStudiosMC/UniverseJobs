@@ -51,7 +51,7 @@ public class UpdateChecker {
                 }
 
                 String responseBody = response.toString();
-                String latestVersion = extractValue(responseBody, "\"name\":\"");
+                String latestVersion = extractValue(responseBody, "\"name\"");
 
                 if (latestVersion == null) {
                     plugin.getLogger().warning("Could not parse latest version from Spigot response.");
@@ -60,21 +60,22 @@ public class UpdateChecker {
 
                 String currentVersion = plugin.getDescription().getVersion();
 
-                // Clean version strings for comparison
-                String cleanLatest = cleanVersionString(latestVersion);
-                String cleanCurrent = cleanVersionString(currentVersion);
+                int comparison = compareVersions(currentVersion, latestVersion);
 
-                if (cleanCurrent.equals(cleanLatest)) {
+                if (comparison == 0) {
                     plugin.getLogger().info("UniverseJobs is up to date! (Version: " + currentVersion + ")");
-                    return;
+                } else if (comparison > 0) {
+                    plugin.getLogger().info("You are running a newer version than the latest on SpigotMC!");
+                    plugin.getLogger().info("    Current: " + currentVersion);
+                    plugin.getLogger().info("    SpigotMC: " + latestVersion);
+                } else {
+                    plugin.getLogger().info("═══════════════════════════════════════");
+                    plugin.getLogger().info("    NEW UPDATE AVAILABLE!");
+                    plugin.getLogger().info("    Current: " + currentVersion);
+                    plugin.getLogger().info("    Latest:  " + latestVersion);
+                    plugin.getLogger().info("    Download: https://www.spigotmc.org/resources/128572/");
+                    plugin.getLogger().info("═══════════════════════════════════════");
                 }
-
-                plugin.getLogger().info("═══════════════════════════════════════");
-                plugin.getLogger().info("    NEW UPDATE AVAILABLE!");
-                plugin.getLogger().info("    Current: " + currentVersion);
-                plugin.getLogger().info("    Latest:  " + latestVersion);
-                plugin.getLogger().info("    Download: https://www.spigotmc.org/resources/128572/");
-                plugin.getLogger().info("═══════════════════════════════════════");
 
             } catch (IOException e) {
                 if (plugin.getServer().getPluginManager().getPlugin("UniverseJobs").isEnabled()) {
@@ -87,18 +88,52 @@ public class UpdateChecker {
     }
 
     /**
-     * Clean version string for comparison by removing common prefixes/suffixes.
+     * Compare two version strings.
+     * @return positive if current > latest, 0 if equal, negative if current < latest
      */
-    private String cleanVersionString(String version) {
-        if (version == null) return "";
+    private int compareVersions(String current, String latest) {
+        String cleanCurrent = extractVersionNumber(current);
+        String cleanLatest = extractVersionNumber(latest);
 
-        // Remove common prefixes like "v", "version-", etc.
-        version = version.replaceAll("^(v|version-?)", "");
+        String[] currentParts = cleanCurrent.split("\\.");
+        String[] latestParts = cleanLatest.split("\\.");
 
-        // Remove common suffixes like "-dev", "-SNAPSHOT", etc.
-        version = version.replaceAll("(-dev|-SNAPSHOT|-beta|-alpha).*$", "");
+        int maxLength = Math.max(currentParts.length, latestParts.length);
+
+        for (int i = 0; i < maxLength; i++) {
+            int currentPart = i < currentParts.length ? parseVersionPart(currentParts[i]) : 0;
+            int latestPart = i < latestParts.length ? parseVersionPart(latestParts[i]) : 0;
+
+            if (currentPart != latestPart) {
+                return currentPart - latestPart;
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * Extract version number from a version string.
+     */
+    private String extractVersionNumber(String version) {
+        if (version == null) return "0.0.0";
+
+        version = version.toUpperCase();
+        version = version.replaceAll("^(ALPHA-|BETA-|RC-|RELEASE-|V)", "");
+        version = version.replaceAll("(-DEV|-SNAPSHOT|-BETA|-ALPHA).*$", "");
 
         return version.trim();
+    }
+
+    /**
+     * Parse a single version part to integer.
+     */
+    private int parseVersionPart(String part) {
+        try {
+            return Integer.parseInt(part);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     /**
@@ -107,9 +142,17 @@ public class UpdateChecker {
     private String extractValue(String json, String key) {
         int start = json.indexOf(key);
         if (start == -1) return null;
-        start += key.length();
+
+        start = json.indexOf(':', start);
+        if (start == -1) return null;
+
+        start = json.indexOf('"', start);
+        if (start == -1) return null;
+        start++;
+
         int end = json.indexOf('"', start);
         if (end == -1) return null;
+
         return json.substring(start, end);
     }
 }

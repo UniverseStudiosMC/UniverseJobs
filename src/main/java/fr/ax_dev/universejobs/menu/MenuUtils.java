@@ -112,8 +112,12 @@ public class MenuUtils {
      * Create an ItemStack from a MenuItemConfig with custom placeholders using existing ItemBuilder.
      */
     public static ItemStack createMenuItem(UniverseJobs plugin, Player player, MenuItemConfig itemConfig, Map<String, String> customPlaceholders) {
-        ItemBuilder builder = ItemBuilder.fromMaterialName(plugin, itemConfig.getMaterial())
-                .amount(itemConfig.getAmount());
+        ItemBuilder builder = ItemBuilder.fromMaterialName(plugin, itemConfig.getMaterial());
+        if (builder == null) {
+            plugin.getLogger().severe("Failed to create item from material: " + itemConfig.getMaterial() + ". Using STONE as fallback.");
+            builder = new ItemBuilder(plugin, Material.STONE);
+        }
+        builder.amount(itemConfig.getAmount());
         
         // Process display name
         String displayName = itemConfig.getDisplayName();
