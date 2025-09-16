@@ -479,12 +479,14 @@ public class CustomRewardGui implements InventoryHolder {
             if (currentPage > 0) {
                 // Create new GUI for previous page
                 CustomRewardGui newGui = new CustomRewardGui(plugin, player, job, rewards, config, currentPage - 1);
+                plugin.getRewardGuiManager().updateOpenGui(player, newGui);
                 newGui.open();
             }
         } else if (nav.getNextPage() != null && nav.getNextPage().getSlots().contains(slot)) {
             if (hasNextPage()) {
                 // Create new GUI for next page
                 CustomRewardGui newGui = new CustomRewardGui(plugin, player, job, rewards, config, currentPage + 1);
+                plugin.getRewardGuiManager().updateOpenGui(player, newGui);
                 newGui.open();
             }
         } else if (nav.getClose() != null && nav.getClose().getSlots().contains(slot)) {
