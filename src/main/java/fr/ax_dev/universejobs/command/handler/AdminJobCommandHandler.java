@@ -902,22 +902,16 @@ public class AdminJobCommandHandler extends JobCommandHandler {
         
         plugin.getFoliaManager().runAsync(() -> {
             try {
-                plugin.getLogger().info("Reloading main configuration...");
                 plugin.getConfigManager().reloadConfig();
-                
-                plugin.getLogger().info("Reloading jobs and XP curves...");
+
                 plugin.getJobManager().reloadJobs();
-                
-                plugin.getLogger().info("Reloading language files...");
+
                 plugin.getLanguageManager().reload();
-                
-                plugin.getLogger().info("Reloading menu configurations...");
+
                 plugin.getMenuManager().reloadConfigurations();
-                
-                plugin.getLogger().info("Reloading reward configurations...");
+
                 plugin.getRewardManager().reloadRewards();
-                
-                plugin.getLogger().info("Reloading cache system...");
+
                 plugin.getConfigCache().reload();
                 plugin.getPlayerCache().preloadOnlinePlayers();
                 

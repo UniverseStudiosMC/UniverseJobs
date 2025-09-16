@@ -51,7 +51,6 @@ public class ConfigurationCache {
      * Une seule fois = performance maximale après.
      */
     public void loadAllConfigurations() {
-        plugin.getLogger().info("Loading configuration cache...");
         long startTime = System.currentTimeMillis();
         
         // 1. Config flags basiques
@@ -70,8 +69,6 @@ public class ConfigurationCache {
         loadMessageTemplates();
         
         long loadTime = System.currentTimeMillis() - startTime;
-        plugin.getLogger().info("Configuration cache loaded in " + loadTime + "ms");
-        plugin.getLogger().info("Cache size: " + getCacheStats());
     }
     
     /**

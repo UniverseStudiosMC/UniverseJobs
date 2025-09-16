@@ -19,7 +19,7 @@ action-limits:
 
 xp:
   type: "CURVE"
-  xp: "default"
+  xp: "example"
   message:
     type: "BOSSBAR"
     text: "{message_xp} {message_money} <gray>| <#32cd32>{job} <gray>Level <#32CD32>{level}"
