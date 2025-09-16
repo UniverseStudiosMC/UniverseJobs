@@ -1,0 +1,128 @@
+# Farmer Rewards GUI Configuration
+# This file defines the GUI layout for displaying farmer rewards
+
+title: "<#32cd32><bold>Farmer Rewards</bold>"
+size: 54  # Must be multiple of 9 (9, 18, 27, 36, 45, 54)
+
+# Slots where rewards will be displayed in zigzag pattern
+reward-slots:
+  - 10
+  - 11
+  - 20
+  - 29
+  - 38
+  - 39
+  - 40
+  - 31
+  - 22
+  - 13
+  - 14
+  - 15
+  - 24
+  - 33
+  - 42
+  - 43
+
+# Fill empty slots with decoration items
+fill-items:
+  enabled: true
+  material: GRAY_STAINED_GLASS_PANE
+  name: " "
+  slots: []  # Empty = fill all empty slots
+
+# Custom items in the GUI
+items:
+  border_top:
+    material: WHITE_STAINED_GLASS_PANE
+    amount: 1
+    display-name: " "
+    slots: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+
+  job_icon:
+    material: DIAMOND_HOE
+    amount: 1
+    display-name: "<#32cd32><bold>Farmer Job</bold>"
+    lore:
+      - "<gray>Cultivate crops and raise animals"
+      - "<gray>to feed the world!"
+    slots: [4]
+
+# Navigation buttons
+navigation:
+  previous-page:
+    material: ARROW
+    amount: 1
+    display-name: "<#abffb3>Previous Page"
+    lore:
+      - "<#FFD700>Click to go back"
+    slots: [9]
+
+  next-page:
+    material: ARROW
+    amount: 1
+    display-name: "<#abffb3>Next Page"
+    lore:
+      - "<#FFD700>Click to continue"
+    slots: [44]
+
+  close:
+    material: BARRIER
+    amount: 1
+    display-name: "<#FF6B6B>Close"
+    lore:
+      - "<#FFD700>Click to close menu"
+    slots: [49]
+
+# Reward item configuration
+reward-item:
+  # Materials for different reward statuses
+  materials:
+    retrievable: LIME_SHULKER_BOX      # Can be claimed
+    blocked: RED_SHULKER_BOX           # Requirements not met
+    retrieved: GRAY_SHULKER_BOX        # Already claimed
+
+  # Display names for different statuses
+  display-names:
+    retrievable: "<#32CD32><bold>✓ {reward_name}</bold>"
+    blocked: "<#FF6B6B><bold>✗ {reward_name}</bold>"
+    retrieved: "<#808080><bold>✓ {reward_name}</bold>"
+
+  # Lore templates
+  lore:
+    retrievable:
+      - "<#32CD32>Status: Ready to claim!"
+      - "<gray>Level required: <#FFD700>{level}"
+      - ""
+      - "<#abffb3>Click to claim reward!"
+
+    blocked:
+      - "<#FF6B6B>Status: Requirements not met"
+      - "<gray>Level required: <#FFD700>{level}"
+      - "<gray>Your level: <#FF6B6B>{player_level}"
+      - ""
+      - "<gray>Level up to unlock this reward!"
+
+    retrieved:
+      - "<#808080>Status: Already claimed"
+      - "<gray>Level required: <#FFD700>{level}"
+      - "<gray>Claimed on: <#808080>{claim_date}"
+
+  # Enchantment effects
+  enchantments:
+    retrievable:
+      - "DURABILITY:1"
+    blocked: []
+    retrieved: []
+
+  # Item flags to hide certain attributes
+  item-flags:
+    - "HIDE_ENCHANTS"
+    - "HIDE_ATTRIBUTES"
+    - "HIDE_UNBREAKABLE"
+
+# Sound effects
+sounds:
+  open: "UI_BUTTON_CLICK"
+  claim: "ENTITY_PLAYER_LEVELUP"
+  error: "BLOCK_NOTE_BLOCK_BASS"
+  page-turn: "ITEM_BOOK_PAGE_TURN"

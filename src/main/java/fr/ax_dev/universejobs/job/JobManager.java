@@ -78,20 +78,18 @@ public class JobManager {
         
         File[] jobFiles = jobsFolder.listFiles((dir, name) -> name.endsWith(".yml"));
         if (jobFiles == null || jobFiles.length == 0) {
-            plugin.getLogger().warning("No job files found in " + jobsFolder.getPath());
-            
-            // Only create example job if configured to do so (default: true for first startup)
+            // Only create default jobs if configured to do so (default: true for first startup)
             boolean createExamples = plugin.getConfig().getBoolean("create-example-jobs", true);
             if (createExamples) {
-                createExampleJobs();
+                createDefaultJobs();
                 // Set the config to false after first creation to prevent re-creation on reload
                 plugin.getConfig().set("create-example-jobs", false);
                 plugin.saveConfig();
-                
-                // Reload after creating example jobs
+
+                // Reload after creating default jobs
                 jobFiles = jobsFolder.listFiles((dir, name) -> name.endsWith(".yml"));
             }
-            
+
             if (jobFiles == null || jobFiles.length == 0) {
                 plugin.getLogger().info("UniverseJobs started with no jobs. Add .yml files to " + jobsFolder.getPath() + " to create jobs.");
                 return;
@@ -596,15 +594,25 @@ public class JobManager {
     }
     
     /**
-     * Create example job files.
+     * Create default job files from resources.
      */
-    private void createExampleJobs() {
-        try {
-            plugin.saveResource("jobs/example.yml", false);
-            plugin.getLogger().info("Created example job file: example.yml");
-        } catch (IllegalArgumentException e) {
-            plugin.getLogger().warning("Could not create example job file: " + e.getMessage());
-            plugin.getLogger().info("No example jobs will be created. You can create your own job files manually.");
+    private void createDefaultJobs() {
+        String[] defaultJobs = {"miner.yml", "farmer.yml", "hunter.yml", "lumberjack.yml"};
+        int createdCount = 0;
+
+        for (String jobFile : defaultJobs) {
+            try {
+                plugin.saveResource("jobs/" + jobFile, false);
+                createdCount++;
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("Could not create job file " + jobFile + ": " + e.getMessage());
+            }
+        }
+
+        if (createdCount > 0) {
+            plugin.getLogger().info("Created " + createdCount + " default job files (miner, farmer, hunter, lumberjack)");
+        } else {
+            plugin.getLogger().info("No default jobs were created. You can create your own job files manually.");
         }
     }
     

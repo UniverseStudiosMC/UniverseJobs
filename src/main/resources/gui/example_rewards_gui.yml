@@ -10,25 +10,20 @@ size: 54  # Must be multiple of 9 (9, 18, 27, 36, 45, 54)
 reward-slots:
   - 10
   - 11
-  - 12
+  - 20
+  - 29
+  - 38
+  - 39
+  - 40
+  - 31
+  - 22
   - 13
   - 14
   - 15
-  - 16
-  - 19
-  - 20
-  - 21
-  - 22
-  - 23
   - 24
-  - 25
-  - 28
-  - 29
-  - 30
-  - 31
-  - 32
   - 33
-  - 34
+  - 42
+  - 43
 
 # Fill empty slots with decoration items
 fill-items:
@@ -59,7 +54,7 @@ navigation:
     display-name: "<#abffb3>Previous Page"
     lore:
       - "<#FFD700>Click to go back"
-    slots: [18]
+    slots: [9]
   
   next-page:
     material: ARROW
@@ -67,7 +62,7 @@ navigation:
     display-name: "<#abffb3>Next Page"
     lore:
       - "<#FFD700>Click to continue"
-    slots: [26]
+    slots: [44]
   
   close:
     material: BARRIER
