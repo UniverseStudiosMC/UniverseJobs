@@ -1,0 +1,448 @@
+name: "<#32cd32>Farmer"
+description:
+- "Cultivate crops and raise animals"
+- "to feed the world!"
+enabled: true
+max-level: 100
+permission: "UniverseJobs.job.farmer"
+icon:
+  material: "DIAMOND_HOE"
+  custom-model-data: ""
+
+rewards: "farmer_rewards"
+gui-reward: "farmer_rewards_gui"
+
+action-limits:
+  auto-restore:
+    enabled: false
+    time: "00:00"
+
+xp:
+  type: "CURVE"
+  xp: "default"
+  message:
+    type: "BOSSBAR"
+    text: "{message_xp} {message_money} <gray>| <#32cd32>{job} <gray>Level <#32CD32>{level}"
+    money: "<#FFD700>{money} $ <gray>({+-}{money_per_action})"
+    xp: "<#abffb3>{xp} xp <gray>({+-}{xp_per_action})"
+    options:
+      color: "GREEN"
+      style: "SEGMENTED_0"
+      fade-in: 10
+      fade-out: 20
+      duration: 40
+      show-progress: true
+
+actions:
+  BREAK:
+    # Wheat farming
+    harvest_wheat:
+      target: "WHEAT"
+      age: 7
+      display-name: "Wheat"
+      lore:
+      - "<gray>Harvest fully grown wheat"
+      xp: 2.0
+      money: 1.5
+
+    # Carrot farming
+    harvest_carrot:
+      target: "CARROTS"
+      age: 7
+      display-name: "Carrots"
+      lore:
+      - "<gray>Harvest fully grown carrots"
+      xp: 2.5
+      money: 2.0
+
+    # Potato farming
+    harvest_potato:
+      target: "POTATOES"
+      age: 7
+      display-name: "Potatoes"
+      lore:
+      - "<gray>Harvest fully grown potatoes"
+      xp: 2.5
+      money: 2.0
+
+    # Beetroot farming
+    harvest_beetroot:
+      target: "BEETROOTS"
+      age: 3
+      display-name: "Beetroots"
+      lore:
+      - "<gray>Harvest fully grown beetroots"
+      xp: 2.0
+      money: 1.8
+
+    # Nether wart farming
+    harvest_nether_wart:
+      target: "NETHER_WART"
+      age: 3
+      display-name: "Nether wart"
+      lore:
+      - "<gray>Harvest fully grown nether wart"
+      xp: 3.0
+      money: 2.5
+
+    # Pumpkin and melon
+    harvest_pumpkin:
+      target: "PUMPKIN"
+      display-name: "Pumpkin"
+      lore:
+      - "<gray>Harvest pumpkins"
+      xp: 3.5
+      money: 3.0
+
+    harvest_melon:
+      target: "MELON"
+      display-name: "Melon"
+      lore:
+      - "<gray>Harvest melons"
+      xp: 3.5
+      money: 3.0
+
+    # Sugar cane
+    harvest_sugar_cane:
+      target: "SUGAR_CANE"
+      display-name: "Sugar cane"
+      lore:
+      - "<gray>Harvest sugar cane"
+      xp: 1.5
+      money: 1.0
+
+    # Bamboo
+    harvest_bamboo:
+      target: "BAMBOO"
+      display-name: "Bamboo"
+      lore:
+      - "<gray>Harvest bamboo"
+      xp: 1.0
+      money: 0.8
+
+    # Cocoa beans
+    harvest_cocoa:
+      target: "COCOA"
+      age: 2
+      display-name: "Cocoa beans"
+      lore:
+      - "<gray>Harvest cocoa beans"
+      xp: 2.5
+      money: 2.2
+
+    # Cactus
+    harvest_cactus:
+      target: "CACTUS"
+      display-name: "Cactus"
+      lore:
+      - "<gray>Harvest cactus"
+      xp: 1.5
+      money: 1.2
+
+    # Sweet berries
+    harvest_sweet_berries:
+      target: "SWEET_BERRY_BUSH"
+      age: 3
+      display-name: "Sweet berries"
+      lore:
+      - "<gray>Harvest sweet berries"
+      xp: 2.0
+      money: 1.8
+
+    # Kelp
+    harvest_kelp:
+      target: "KELP"
+      display-name: "Kelp"
+      lore:
+      - "<gray>Harvest kelp"
+      xp: 1.0
+      money: 0.5
+
+    # Sea pickle
+    harvest_sea_pickle:
+      target: "SEA_PICKLE"
+      display-name: "Sea pickle"
+      lore:
+      - "<gray>Harvest sea pickles"
+      xp: 1.5
+      money: 1.5
+
+  PLACE:
+    # Planting crops
+    plant_wheat_seeds:
+      target: "WHEAT_SEEDS"
+      display-name: "Wheat seeds"
+      lore:
+      - "<gray>Plant wheat seeds"
+      xp: 0.5
+      money: 0.2
+
+    plant_carrot:
+      target: "CARROT"
+      display-name: "Carrot"
+      lore:
+      - "<gray>Plant carrots"
+      xp: 0.8
+      money: 0.3
+
+    plant_potato:
+      target: "POTATO"
+      display-name: "Potato"
+      lore:
+      - "<gray>Plant potatoes"
+      xp: 0.8
+      money: 0.3
+
+    plant_beetroot_seeds:
+      target: "BEETROOT_SEEDS"
+      display-name: "Beetroot seeds"
+      lore:
+      - "<gray>Plant beetroot seeds"
+      xp: 0.5
+      money: 0.2
+
+    plant_nether_wart:
+      target: "NETHER_WART"
+      display-name: "Nether wart"
+      lore:
+      - "<gray>Plant nether wart"
+      xp: 1.0
+      money: 0.5
+
+    plant_pumpkin_seeds:
+      target: "PUMPKIN_SEEDS"
+      display-name: "Pumpkin seeds"
+      lore:
+      - "<gray>Plant pumpkin seeds"
+      xp: 1.0
+      money: 0.4
+
+    plant_melon_seeds:
+      target: "MELON_SEEDS"
+      display-name: "Melon seeds"
+      lore:
+      - "<gray>Plant melon seeds"
+      xp: 1.0
+      money: 0.4
+
+    plant_sugar_cane:
+      target: "SUGAR_CANE"
+      display-name: "Sugar cane"
+      lore:
+      - "<gray>Plant sugar cane"
+      xp: 0.5
+      money: 0.2
+
+    plant_bamboo:
+      target: "BAMBOO"
+      display-name: "Bamboo"
+      lore:
+      - "<gray>Plant bamboo"
+      xp: 0.3
+      money: 0.1
+
+    plant_cactus:
+      target: "CACTUS"
+      display-name: "Cactus"
+      lore:
+      - "<gray>Plant cactus"
+      xp: 0.5
+      money: 0.2
+
+    plant_sweet_berries:
+      target: "SWEET_BERRIES"
+      display-name: "Sweet berries"
+      lore:
+      - "<gray>Plant sweet berries"
+      xp: 0.8
+      money: 0.3
+
+    plant_kelp:
+      target: "KELP"
+      display-name: "Kelp"
+      lore:
+      - "<gray>Plant kelp"
+      xp: 0.3
+      money: 0.1
+
+    plant_sea_pickle:
+      target: "SEA_PICKLE"
+      display-name: "Sea pickle"
+      lore:
+      - "<gray>Plant sea pickles"
+      xp: 0.5
+      money: 0.3
+
+  SHEAR:
+    # Sheep shearing
+    shear_white_sheep:
+      target: "SHEEP"
+      color: "WHITE"
+      display-name: "White sheep"
+      lore:
+      - "<gray>Shear white sheep for wool"
+      xp: 3.0
+      money: 2.0
+
+    shear_orange_sheep:
+      target: "SHEEP"
+      color: "ORANGE"
+      display-name: "Orange sheep"
+      lore:
+      - "<gray>Shear orange sheep for wool"
+      xp: 3.0
+      money: 2.0
+
+    shear_magenta_sheep:
+      target: "SHEEP"
+      color: "MAGENTA"
+      display-name: "Magenta sheep"
+      lore:
+      - "<gray>Shear magenta sheep for wool"
+      xp: 3.0
+      money: 2.0
+
+    shear_light_blue_sheep:
+      target: "SHEEP"
+      color: "LIGHT_BLUE"
+      display-name: "Light blue sheep"
+      lore:
+      - "<gray>Shear light blue sheep for wool"
+      xp: 3.0
+      money: 2.0
+
+    shear_yellow_sheep:
+      target: "SHEEP"
+      color: "YELLOW"
+      display-name: "Yellow sheep"
+      lore:
+      - "<gray>Shear yellow sheep for wool"
+      xp: 3.0
+      money: 2.0
+
+    shear_lime_sheep:
+      target: "SHEEP"
+      color: "LIME"
+      display-name: "Lime sheep"
+      lore:
+      - "<gray>Shear lime sheep for wool"
+      xp: 3.0
+      money: 2.0
+
+    shear_pink_sheep:
+      target: "SHEEP"
+      color: "PINK"
+      display-name: "Pink sheep"
+      lore:
+      - "<gray>Shear pink sheep for wool"
+      xp: 3.0
+      money: 2.0
+
+    shear_gray_sheep:
+      target: "SHEEP"
+      color: "GRAY"
+      display-name: "Gray sheep"
+      lore:
+      - "<gray>Shear gray sheep for wool"
+      xp: 3.0
+      money: 2.0
+
+    shear_light_gray_sheep:
+      target: "SHEEP"
+      color: "LIGHT_GRAY"
+      display-name: "Light gray sheep"
+      lore:
+      - "<gray>Shear light gray sheep for wool"
+      xp: 3.0
+      money: 2.0
+
+    shear_cyan_sheep:
+      target: "SHEEP"
+      color: "CYAN"
+      display-name: "Cyan sheep"
+      lore:
+      - "<gray>Shear cyan sheep for wool"
+      xp: 3.0
+      money: 2.0
+
+    shear_purple_sheep:
+      target: "SHEEP"
+      color: "PURPLE"
+      display-name: "Purple sheep"
+      lore:
+      - "<gray>Shear purple sheep for wool"
+      xp: 3.0
+      money: 2.0
+
+    shear_blue_sheep:
+      target: "SHEEP"
+      color: "BLUE"
+      display-name: "Blue sheep"
+      lore:
+      - "<gray>Shear blue sheep for wool"
+      xp: 3.0
+      money: 2.0
+
+    shear_brown_sheep:
+      target: "SHEEP"
+      color: "BROWN"
+      display-name: "Brown sheep"
+      lore:
+      - "<gray>Shear brown sheep for wool"
+      xp: 3.0
+      money: 2.0
+
+    shear_green_sheep:
+      target: "SHEEP"
+      color: "GREEN"
+      display-name: "Green sheep"
+      lore:
+      - "<gray>Shear green sheep for wool"
+      xp: 3.0
+      money: 2.0
+
+    shear_red_sheep:
+      target: "SHEEP"
+      color: "RED"
+      display-name: "Red sheep"
+      lore:
+      - "<gray>Shear red sheep for wool"
+      xp: 3.0
+      money: 2.0
+
+    shear_black_sheep:
+      target: "SHEEP"
+      color: "BLACK"
+      display-name: "Black sheep"
+      lore:
+      - "<gray>Shear black sheep for wool"
+      xp: 3.0
+      money: 2.0
+
+levelup-actions:
+  broadcast:
+    type: "broadcast"
+    min-level: 1
+    level-interval: 10
+    messages:
+    - "<#90db8a>{player} <#9a9c9a>has reached level <#32cd32>{level} <#9a9c9a>in <#32cd32>Farmer<#9a9c9a>!"
+  title:
+    type: "title"
+    min-level: 1
+    level-interval: 1
+    title: "<#32cd32>Reached level {level}"
+    subtitle: "<#9a9c9a>in <#32cd32>Farmer<#9a9c9a>!"
+    fade-in: 5
+    stay: 20
+    fade-out: 10
+  sound:
+    type: "sound"
+    min-level: 1
+    level-interval: 1
+    sound: ENTITY_PLAYER_LEVELUP
+  particle:
+    type: "particle"
+    min-level: 1
+    level-interval: 1
+    count: "20"
+    particle: "HAPPY_VILLAGER"

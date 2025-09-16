@@ -192,29 +192,36 @@ public class JoinLeaveCommandHandler extends JobCommandHandler {
      * @return The maximum number of jobs the player can join
      */
     private int getMaxJobsForPlayer(Player player) {
-        int maxJobs = 1; // Default value
-        
+        int maxJobs = plugin.getConfigManager().getMaxJobsPerPlayer(); // Use config as default
+        boolean hasPermission = false;
+
         // Get all permissions for the player
         for (org.bukkit.permissions.PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
             String permission = permInfo.getPermission();
-            
+
             // Check if this is a max_join permission
             if (permission.startsWith("universejobs.max_join.") && permInfo.getValue()) {
                 try {
                     // Extract the number from the permission
                     String numberPart = permission.substring("universejobs.max_join.".length());
                     int permissionValue = Integer.parseInt(numberPart);
-                    
+
                     // Use the highest value found
                     if (permissionValue > maxJobs) {
                         maxJobs = permissionValue;
                     }
+                    hasPermission = true;
                 } catch (NumberFormatException e) {
                     // Invalid number in permission, ignore it
                 }
             }
         }
-        
+
+        // If no permission found, use config value
+        if (!hasPermission) {
+            maxJobs = plugin.getConfigManager().getMaxJobsPerPlayer();
+        }
+
         return maxJobs;
     }
 }
