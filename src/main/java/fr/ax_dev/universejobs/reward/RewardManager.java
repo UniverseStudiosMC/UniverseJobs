@@ -457,9 +457,6 @@ public class RewardManager {
             }
         }
 
-        if (createdCount > 0) {
-            plugin.getLogger().info("Created " + createdCount + " default reward files");
-        }
     }
 
 

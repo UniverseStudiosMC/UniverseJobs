@@ -4,24 +4,75 @@
 title: "<#8B4513><bold>Lumberjack Rewards</bold>"
 size: 54  # Must be multiple of 9 (9, 18, 27, 36, 45, 54)
 
-# Slots where rewards will be displayed in zigzag pattern
+# Default slots where rewards will be displayed
 reward-slots:
   - 10
   - 11
-  - 20
-  - 29
-  - 38
-  - 39
-  - 40
-  - 31
-  - 22
+  - 12
   - 13
   - 14
   - 15
+  - 16
+  - 19
+  - 20
+  - 21
+  - 22
+  - 23
   - 24
-  - 33
-  - 42
-  - 43
+  - 25
+
+# Page-specific reward slots (optional)
+# If not defined, uses default reward-slots for all pages
+reward-slots-by-page:
+  0:  # Page 1 (0-indexed) - tree trunk pattern
+    - 13
+    - 22
+    - 31
+    - 40
+    - 12
+    - 14
+    - 21
+    - 23
+    - 30
+    - 32
+    - 39
+    - 41
+    - 11
+    - 15
+    - 20
+    - 24
+  1:  # Page 2 - forest layout
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+    - 16
+    - 19
+    - 20
+    - 21
+    - 22
+    - 23
+    - 24
+    - 25
+  2:  # Page 3 - lumber yard
+    - 10
+    - 12
+    - 14
+    - 16
+    - 19
+    - 21
+    - 23
+    - 25
+    - 28
+    - 30
+    - 32
+    - 34
+    - 37
+    - 39
+    - 41
+    - 43
 
 # Fill empty slots with decoration items
 fill-items:

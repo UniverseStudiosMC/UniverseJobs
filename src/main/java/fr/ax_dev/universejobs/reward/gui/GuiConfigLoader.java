@@ -124,9 +124,6 @@ public class GuiConfigLoader {
             }
         }
 
-        if (createdCount > 0) {
-            plugin.getLogger().info("Created " + createdCount + " default GUI files");
-        }
     }
 
     /**

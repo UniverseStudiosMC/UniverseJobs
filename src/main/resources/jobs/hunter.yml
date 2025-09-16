@@ -1,16 +1,16 @@
-name: "<#32cd32>Farmer"
+name: "<#ff6b47>Hunter"
 description:
-- "Cultivate crops and raise animals"
-- "to feed the world!"
+- "Hunt dangerous creatures and"
+- "explore the wilderness!"
 enabled: true
 max-level: 100
-permission: "UniverseJobs.job.farmer"
+permission: "UniverseJobs.job.hunter"
 icon:
-  material: "DIAMOND_HOE"
+  material: "BOW"
   custom-model-data: ""
 
-rewards: "farmer_rewards"
-gui-reward: "farmer_rewards_gui"
+rewards: "hunter_rewards"
+gui-reward: "hunter_rewards_gui"
 
 action-limits:
   auto-restore:

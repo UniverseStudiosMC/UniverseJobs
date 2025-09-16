@@ -422,12 +422,13 @@ public class ItemBuilder {
         try {
             Material material = fr.ax_dev.universejobs.utils.EnumUtils.parseMaterial(materialName, null);
             if (material == null) {
-                return null;
+                plugin.getLogger().warning("Unknown material: " + materialName + ", falling back to STONE");
+                return new ItemBuilder(plugin, Material.STONE);
             }
             return new ItemBuilder(plugin, material);
         } catch (IllegalArgumentException e) {
-            plugin.getLogger().severe("Unknown material: " + materialName);
-            return null;
+            plugin.getLogger().warning("Unknown material: " + materialName + ", falling back to STONE. Error: " + e.getMessage());
+            return new ItemBuilder(plugin, Material.STONE);
         }
     }
 }

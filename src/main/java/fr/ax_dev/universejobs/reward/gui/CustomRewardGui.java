@@ -57,7 +57,7 @@ public class CustomRewardGui implements InventoryHolder {
         this.config = config;
         this.rewardManager = plugin.getRewardManager();
         this.currentPage = page;
-        this.rewardsPerPage = config.getRewardSlots().size();
+        this.rewardsPerPage = config.getRewardSlots(page).size();
         
         createInventory();
         populateInventory();
@@ -202,7 +202,7 @@ public class CustomRewardGui implements InventoryHolder {
      * Add reward items to the configured slots.
      */
     private void addRewardItems() {
-        List<Integer> rewardSlots = config.getRewardSlots();
+        List<Integer> rewardSlots = config.getRewardSlots(currentPage);
         int startIndex = currentPage * rewardsPerPage;
         
         for (int i = 0; i < rewardsPerPage && i < rewardSlots.size(); i++) {
@@ -459,7 +459,7 @@ public class CustomRewardGui implements InventoryHolder {
      * Handle click on a specific slot.
      */
     public void handleClick(int slot) {
-        List<Integer> rewardSlots = config.getRewardSlots();
+        List<Integer> rewardSlots = config.getRewardSlots(currentPage);
         
         // Check if clicked on a reward slot
         int rewardSlotIndex = rewardSlots.indexOf(slot);
