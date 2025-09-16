@@ -267,14 +267,6 @@ public class SingleJobMenu extends BaseMenu {
     }
     
     /**
-     * Get action for a specific slot based on menu configuration.
-     */
-    private String getActionForSlot(int slot) {
-        MenuItemConfig item = getMenuItemForSlot(slot);
-        return item != null ? item.getAction() : "none";
-    }
-    
-    /**
      * Handle join/leave job action with proper error handling.
      */
     private void handleJoinLeave() {
@@ -483,7 +475,7 @@ public class SingleJobMenu extends BaseMenu {
     private void addPlayerPlaceholders(Map<String, String> placeholders) {
         placeholders.put("{player_name}", player.getName());
         placeholders.put("{job_status}", plugin.getConfigManager().getJobStatus(hasJob));
-        placeholders.put("{max_jobs}", String.valueOf(plugin.getConfigManager().getMaxJobs()));
+        placeholders.put("{max_jobs}", String.valueOf(plugin.getConfigManager().getMaxJobsPerPlayer()));
         
         if (hasJob) {
             int playerLevel = playerData.getLevel(job.getId());

@@ -441,7 +441,7 @@ public class JobsMainMenu extends BaseMenu {
         placeholders.put("player_xp", String.valueOf(playerXp));
         placeholders.put("has_job", hasJob ? "Yes" : "No");
         placeholders.put("job_status", plugin.getConfigManager().getJobStatus(hasJob));
-        placeholders.put("max_jobs", String.valueOf(plugin.getConfigManager().getMaxJobs()));
+        placeholders.put("max_jobs", String.valueOf(plugin.getConfigManager().getMaxJobsPerPlayer()));
     }
     
     /**
