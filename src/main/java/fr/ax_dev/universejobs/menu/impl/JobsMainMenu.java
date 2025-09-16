@@ -394,6 +394,7 @@ public class JobsMainMenu extends BaseMenu {
             currentPage, availableJobs.size(), itemsPerPage);
         placeholders.put("total_jobs", String.valueOf(availableJobs.size()));
         placeholders.put("player_jobs", String.valueOf(playerData.getJobs().size()));
+        placeholders.put("max_jobs", String.valueOf(plugin.getConfigManager().getMaxJobsPerPlayer()));
         return placeholders;
     }
     
