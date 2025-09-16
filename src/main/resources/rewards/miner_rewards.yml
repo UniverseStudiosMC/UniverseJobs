@@ -1,0 +1,290 @@
+# Miner Rewards Configuration
+# Simple rewards for every level 1-25
+
+rewards:
+  level_1:
+    name: "<#98b097>Level 1 Reward"
+    description: "<gray>Stone pickaxe to start mining"
+    required-level: 1
+    repeatable: false
+    items:
+      stone_pickaxe:
+        material: STONE_PICKAXE
+        amount: 1
+    economy-reward: 50
+
+  level_2:
+    name: "<#98b097>Level 2 Reward"
+    description: "<gray>Some coal for fuel"
+    required-level: 2
+    repeatable: false
+    items:
+      coal:
+        material: COAL
+        amount: 16
+    economy-reward: 75
+
+  level_3:
+    name: "<#98b097>Level 3 Reward"
+    description: "<gray>Iron ingots for tools"
+    required-level: 3
+    repeatable: false
+    items:
+      iron_ingot:
+        material: IRON_INGOT
+        amount: 8
+    economy-reward: 100
+
+  level_4:
+    name: "<#98b097>Level 4 Reward"
+    description: "<gray>Torches for mining"
+    required-level: 4
+    repeatable: false
+    items:
+      torch:
+        material: TORCH
+        amount: 32
+    economy-reward: 125
+
+  level_5:
+    name: "<#98b097>Level 5 Reward"
+    description: "<gray>Iron pickaxe upgrade"
+    required-level: 5
+    repeatable: false
+    items:
+      iron_pickaxe:
+        material: IRON_PICKAXE
+        amount: 1
+    economy-reward: 150
+
+  level_6:
+    name: "<#98b097>Level 6 Reward"
+    description: "<gray>Gold ingots"
+    required-level: 6
+    repeatable: false
+    items:
+      gold_ingot:
+        material: GOLD_INGOT
+        amount: 4
+    economy-reward: 175
+
+  level_7:
+    name: "<#98b097>Level 7 Reward"
+    description: "<gray>Redstone dust"
+    required-level: 7
+    repeatable: false
+    items:
+      redstone:
+        material: REDSTONE
+        amount: 16
+    economy-reward: 200
+
+  level_8:
+    name: "<#98b097>Level 8 Reward"
+    description: "<gray>Lapis lazuli"
+    required-level: 8
+    repeatable: false
+    items:
+      lapis_lazuli:
+        material: LAPIS_LAZULI
+        amount: 12
+    economy-reward: 225
+
+  level_9:
+    name: "<#98b097>Level 9 Reward"
+    description: "<gray>Copper ingots"
+    required-level: 9
+    repeatable: false
+    items:
+      copper_ingot:
+        material: COPPER_INGOT
+        amount: 16
+    economy-reward: 250
+
+  level_10:
+    name: "<#98b097>Level 10 Reward"
+    description: "<gray>Diamond pickaxe"
+    required-level: 10
+    repeatable: false
+    items:
+      diamond_pickaxe:
+        material: DIAMOND_PICKAXE
+        amount: 1
+    economy-reward: 300
+
+  level_11:
+    name: "<#98b097>Level 11 Reward"
+    description: "<gray>Diamonds"
+    required-level: 11
+    repeatable: false
+    items:
+      diamond:
+        material: DIAMOND
+        amount: 3
+    economy-reward: 350
+
+  level_12:
+    name: "<#98b097>Level 12 Reward"
+    description: "<gray>Emeralds"
+    required-level: 12
+    repeatable: false
+    items:
+      emerald:
+        material: EMERALD
+        amount: 2
+    economy-reward: 400
+
+  level_13:
+    name: "<#98b097>Level 13 Reward"
+    description: "<gray>Nether quartz"
+    required-level: 13
+    repeatable: false
+    items:
+      quartz:
+        material: QUARTZ
+        amount: 16
+    economy-reward: 450
+
+  level_14:
+    name: "<#98b097>Level 14 Reward"
+    description: "<gray>Enchanted pickaxe"
+    required-level: 14
+    repeatable: false
+    items:
+      enchanted_pickaxe:
+        material: DIAMOND_PICKAXE
+        amount: 1
+        enchantments:
+          efficiency: 1
+    economy-reward: 500
+
+  level_15:
+    name: "<#98b097>Level 15 Reward"
+    description: "<gray>Fortune pickaxe"
+    required-level: 15
+    repeatable: false
+    items:
+      fortune_pickaxe:
+        material: DIAMOND_PICKAXE
+        amount: 1
+        enchantments:
+          fortune: 1
+    economy-reward: 600
+
+  level_16:
+    name: "<#98b097>Level 16 Reward"
+    description: "<gray>Gold blocks"
+    required-level: 16
+    repeatable: false
+    items:
+      gold_block:
+        material: GOLD_BLOCK
+        amount: 2
+    economy-reward: 700
+
+  level_17:
+    name: "<#98b097>Level 17 Reward"
+    description: "<gray>Iron blocks"
+    required-level: 17
+    repeatable: false
+    items:
+      iron_block:
+        material: IRON_BLOCK
+        amount: 4
+    economy-reward: 800
+
+  level_18:
+    name: "<#98b097>Level 18 Reward"
+    description: "<gray>Experience bottles"
+    required-level: 18
+    repeatable: false
+    items:
+      exp_bottle:
+        material: EXPERIENCE_BOTTLE
+        amount: 8
+    economy-reward: 900
+
+  level_19:
+    name: "<#98b097>Level 19 Reward"
+    description: "<gray>Netherite scrap"
+    required-level: 19
+    repeatable: false
+    items:
+      netherite_scrap:
+        material: NETHERITE_SCRAP
+        amount: 1
+    economy-reward: 1000
+
+  level_20:
+    name: "<#98b097>Level 20 Reward"
+    description: "<gray>Netherite pickaxe"
+    required-level: 20
+    repeatable: false
+    items:
+      netherite_pickaxe:
+        material: NETHERITE_PICKAXE
+        amount: 1
+    economy-reward: 1200
+
+  level_21:
+    name: "<#98b097>Level 21 Reward"
+    description: "<gray>Diamond blocks"
+    required-level: 21
+    repeatable: false
+    items:
+      diamond_block:
+        material: DIAMOND_BLOCK
+        amount: 2
+    economy-reward: 1400
+
+  level_22:
+    name: "<#98b097>Level 22 Reward"
+    description: "<gray>Enchanted netherite pickaxe"
+    required-level: 22
+    repeatable: false
+    items:
+      enchanted_netherite_pickaxe:
+        material: NETHERITE_PICKAXE
+        amount: 1
+        enchantments:
+          efficiency: 2
+          fortune: 2
+    economy-reward: 1600
+
+  level_23:
+    name: "<#98b097>Level 23 Reward"
+    description: "<gray>Ancient debris"
+    required-level: 23
+    repeatable: false
+    items:
+      ancient_debris:
+        material: ANCIENT_DEBRIS
+        amount: 1
+    economy-reward: 1800
+
+  level_24:
+    name: "<#98b097>Level 24 Reward"
+    description: "<gray>Emerald blocks"
+    required-level: 24
+    repeatable: false
+    items:
+      emerald_block:
+        material: EMERALD_BLOCK
+        amount: 2
+    economy-reward: 2000
+
+  level_25:
+    name: "<#98b097>Level 25 Reward"
+    description: "<gray>Master miner pickaxe"
+    required-level: 25
+    repeatable: false
+    items:
+      master_pickaxe:
+        material: NETHERITE_PICKAXE
+        amount: 1
+        display-name: "<#98b097>Master Miner's Pickaxe"
+        enchantments:
+          efficiency: 3
+          fortune: 3
+          unbreaking: 3
+    economy-reward: 2500

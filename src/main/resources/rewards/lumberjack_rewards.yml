@@ -1,0 +1,284 @@
+# Lumberjack Rewards Configuration
+# Simple example rewards for every level 1-25
+
+rewards:
+  level_1:
+    name: "<#8B4513>Level 1 Reward"
+    description: "<gray>Wooden axe to start chopping"
+    required-level: 1
+    repeatable: false
+    items:
+      wooden_axe:
+        material: WOODEN_AXE
+        amount: 1
+    economy-reward: 50
+
+  level_2:
+    name: "<#8B4513>Level 2 Reward"
+    description: "<gray>Oak saplings for replanting"
+    required-level: 2
+    repeatable: false
+    items:
+      oak_sapling:
+        material: OAK_SAPLING
+        amount: 8
+    economy-reward: 75
+
+  level_3:
+    name: "<#8B4513>Level 3 Reward"
+    description: "<gray>Sticks for crafting"
+    required-level: 3
+    repeatable: false
+    items:
+      stick:
+        material: STICK
+        amount: 32
+    economy-reward: 100
+
+  level_4:
+    name: "<#8B4513>Level 4 Reward"
+    description: "<gray>Birch saplings"
+    required-level: 4
+    repeatable: false
+    items:
+      birch_sapling:
+        material: BIRCH_SAPLING
+        amount: 8
+    economy-reward: 125
+
+  level_5:
+    name: "<#8B4513>Level 5 Reward"
+    description: "<gray>Stone axe upgrade"
+    required-level: 5
+    repeatable: false
+    items:
+      stone_axe:
+        material: STONE_AXE
+        amount: 1
+    economy-reward: 150
+
+  level_6:
+    name: "<#8B4513>Level 6 Reward"
+    description: "<gray>Spruce saplings"
+    required-level: 6
+    repeatable: false
+    items:
+      spruce_sapling:
+        material: SPRUCE_SAPLING
+        amount: 8
+    economy-reward: 175
+
+  level_7:
+    name: "<#8B4513>Level 7 Reward"
+    description: "<gray>Oak logs"
+    required-level: 7
+    repeatable: false
+    items:
+      oak_log:
+        material: OAK_LOG
+        amount: 16
+    economy-reward: 200
+
+  level_8:
+    name: "<#8B4513>Level 8 Reward"
+    description: "<gray>Jungle saplings"
+    required-level: 8
+    repeatable: false
+    items:
+      jungle_sapling:
+        material: JUNGLE_SAPLING
+        amount: 4
+    economy-reward: 225
+
+  level_9:
+    name: "<#8B4513>Level 9 Reward"
+    description: "<gray>Acacia saplings"
+    required-level: 9
+    repeatable: false
+    items:
+      acacia_sapling:
+        material: ACACIA_SAPLING
+        amount: 8
+    economy-reward: 250
+
+  level_10:
+    name: "<#8B4513>Level 10 Reward"
+    description: "<gray>Iron axe upgrade"
+    required-level: 10
+    repeatable: false
+    items:
+      iron_axe:
+        material: IRON_AXE
+        amount: 1
+    economy-reward: 300
+
+  level_11:
+    name: "<#8B4513>Level 11 Reward"
+    description: "<gray>Dark oak saplings"
+    required-level: 11
+    repeatable: false
+    items:
+      dark_oak_sapling:
+        material: DARK_OAK_SAPLING
+        amount: 4
+    economy-reward: 350
+
+  level_12:
+    name: "<#8B4513>Level 12 Reward"
+    description: "<gray>Birch logs"
+    required-level: 12
+    repeatable: false
+    items:
+      birch_log:
+        material: BIRCH_LOG
+        amount: 16
+    economy-reward: 400
+
+  level_13:
+    name: "<#8B4513>Level 13 Reward"
+    description: "<gray>Cherry saplings"
+    required-level: 13
+    repeatable: false
+    items:
+      cherry_sapling:
+        material: CHERRY_SAPLING
+        amount: 4
+    economy-reward: 450
+
+  level_14:
+    name: "<#8B4513>Level 14 Reward"
+    description: "<gray>Mangrove propagules"
+    required-level: 14
+    repeatable: false
+    items:
+      mangrove_propagule:
+        material: MANGROVE_PROPAGULE
+        amount: 4
+    economy-reward: 500
+
+  level_15:
+    name: "<#8B4513>Level 15 Reward"
+    description: "<gray>Diamond axe upgrade"
+    required-level: 15
+    repeatable: false
+    items:
+      diamond_axe:
+        material: DIAMOND_AXE
+        amount: 1
+    economy-reward: 600
+
+  level_16:
+    name: "<#8B4513>Level 16 Reward"
+    description: "<gray>Spruce logs"
+    required-level: 16
+    repeatable: false
+    items:
+      spruce_log:
+        material: SPRUCE_LOG
+        amount: 16
+    economy-reward: 700
+
+  level_17:
+    name: "<#8B4513>Level 17 Reward"
+    description: "<gray>Azalea bushes"
+    required-level: 17
+    repeatable: false
+    items:
+      azalea:
+        material: AZALEA
+        amount: 8
+    economy-reward: 800
+
+  level_18:
+    name: "<#8B4513>Level 18 Reward"
+    description: "<gray>Enchanted diamond axe"
+    required-level: 18
+    repeatable: false
+    items:
+      enchanted_axe:
+        material: DIAMOND_AXE
+        amount: 1
+        enchantments:
+          efficiency: 1
+    economy-reward: 900
+
+  level_19:
+    name: "<#8B4513>Level 19 Reward"
+    description: "<gray>Crimson fungus"
+    required-level: 19
+    repeatable: false
+    items:
+      crimson_fungus:
+        material: CRIMSON_FUNGUS
+        amount: 4
+    economy-reward: 1000
+
+  level_20:
+    name: "<#8B4513>Level 20 Reward"
+    description: "<gray>Netherite axe upgrade"
+    required-level: 20
+    repeatable: false
+    items:
+      netherite_axe:
+        material: NETHERITE_AXE
+        amount: 1
+    economy-reward: 1200
+
+  level_21:
+    name: "<#8B4513>Level 21 Reward"
+    description: "<gray>Warped fungus"
+    required-level: 21
+    repeatable: false
+    items:
+      warped_fungus:
+        material: WARPED_FUNGUS
+        amount: 4
+    economy-reward: 1400
+
+  level_22:
+    name: "<#8B4513>Level 22 Reward"
+    description: "<gray>Flowering azalea"
+    required-level: 22
+    repeatable: false
+    items:
+      flowering_azalea:
+        material: FLOWERING_AZALEA
+        amount: 8
+    economy-reward: 1600
+
+  level_23:
+    name: "<#8B4513>Level 23 Reward"
+    description: "<gray>Crimson stems"
+    required-level: 23
+    repeatable: false
+    items:
+      crimson_stem:
+        material: CRIMSON_STEM
+        amount: 8
+    economy-reward: 1800
+
+  level_24:
+    name: "<#8B4513>Level 24 Reward"
+    description: "<gray>Warped stems"
+    required-level: 24
+    repeatable: false
+    items:
+      warped_stem:
+        material: WARPED_STEM
+        amount: 8
+    economy-reward: 2000
+
+  level_25:
+    name: "<#8B4513>Level 25 Reward"
+    description: "<gray>Master lumberjack's axe"
+    required-level: 25
+    repeatable: false
+    items:
+      master_axe:
+        material: NETHERITE_AXE
+        amount: 1
+        display-name: "<#8B4513>Master Lumberjack's Axe"
+        enchantments:
+          efficiency: 2
+          fortune: 1
+    economy-reward: 2500

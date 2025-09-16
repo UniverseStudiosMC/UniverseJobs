@@ -1,0 +1,286 @@
+# Hunter Rewards Configuration
+# Simple example rewards for every level 1-25
+
+rewards:
+  level_1:
+    name: "<#ff6b47>Level 1 Reward"
+    description: "<gray>Wooden sword to start hunting"
+    required-level: 1
+    repeatable: false
+    items:
+      wooden_sword:
+        material: WOODEN_SWORD
+        amount: 1
+    economy-reward: 50
+
+  level_2:
+    name: "<#ff6b47>Level 2 Reward"
+    description: "<gray>Arrows for hunting"
+    required-level: 2
+    repeatable: false
+    items:
+      arrow:
+        material: ARROW
+        amount: 32
+    economy-reward: 75
+
+  level_3:
+    name: "<#ff6b47>Level 3 Reward"
+    description: "<gray>Cooked chicken"
+    required-level: 3
+    repeatable: false
+    items:
+      cooked_chicken:
+        material: COOKED_CHICKEN
+        amount: 8
+    economy-reward: 100
+
+  level_4:
+    name: "<#ff6b47>Level 4 Reward"
+    description: "<gray>Leather for armor"
+    required-level: 4
+    repeatable: false
+    items:
+      leather:
+        material: LEATHER
+        amount: 12
+    economy-reward: 125
+
+  level_5:
+    name: "<#ff6b47>Level 5 Reward"
+    description: "<gray>Bow for ranged hunting"
+    required-level: 5
+    repeatable: false
+    items:
+      bow:
+        material: BOW
+        amount: 1
+    economy-reward: 150
+
+  level_6:
+    name: "<#ff6b47>Level 6 Reward"
+    description: "<gray>Cooked beef"
+    required-level: 6
+    repeatable: false
+    items:
+      cooked_beef:
+        material: COOKED_BEEF
+        amount: 8
+    economy-reward: 175
+
+  level_7:
+    name: "<#ff6b47>Level 7 Reward"
+    description: "<gray>Feathers from birds"
+    required-level: 7
+    repeatable: false
+    items:
+      feather:
+        material: FEATHER
+        amount: 16
+    economy-reward: 200
+
+  level_8:
+    name: "<#ff6b47>Level 8 Reward"
+    description: "<gray>Fishing rod"
+    required-level: 8
+    repeatable: false
+    items:
+      fishing_rod:
+        material: FISHING_ROD
+        amount: 1
+    economy-reward: 225
+
+  level_9:
+    name: "<#ff6b47>Level 9 Reward"
+    description: "<gray>String for crafting"
+    required-level: 9
+    repeatable: false
+    items:
+      string:
+        material: STRING
+        amount: 16
+    economy-reward: 250
+
+  level_10:
+    name: "<#ff6b47>Level 10 Reward"
+    description: "<gray>Iron sword upgrade"
+    required-level: 10
+    repeatable: false
+    items:
+      iron_sword:
+        material: IRON_SWORD
+        amount: 1
+    economy-reward: 300
+
+  level_11:
+    name: "<#ff6b47>Level 11 Reward"
+    description: "<gray>Cooked porkchop"
+    required-level: 11
+    repeatable: false
+    items:
+      cooked_porkchop:
+        material: COOKED_PORKCHOP
+        amount: 8
+    economy-reward: 350
+
+  level_12:
+    name: "<#ff6b47>Level 12 Reward"
+    description: "<gray>Rabbit hide"
+    required-level: 12
+    repeatable: false
+    items:
+      rabbit_hide:
+        material: RABBIT_HIDE
+        amount: 8
+    economy-reward: 400
+
+  level_13:
+    name: "<#ff6b47>Level 13 Reward"
+    description: "<gray>Spectral arrows"
+    required-level: 13
+    repeatable: false
+    items:
+      spectral_arrow:
+        material: SPECTRAL_ARROW
+        amount: 16
+    economy-reward: 450
+
+  level_14:
+    name: "<#ff6b47>Level 14 Reward"
+    description: "<gray>Crossbow for hunting"
+    required-level: 14
+    repeatable: false
+    items:
+      crossbow:
+        material: CROSSBOW
+        amount: 1
+    economy-reward: 500
+
+  level_15:
+    name: "<#ff6b47>Level 15 Reward"
+    description: "<gray>Diamond sword upgrade"
+    required-level: 15
+    repeatable: false
+    items:
+      diamond_sword:
+        material: DIAMOND_SWORD
+        amount: 1
+    economy-reward: 600
+
+  level_16:
+    name: "<#ff6b47>Level 16 Reward"
+    description: "<gray>Cooked mutton"
+    required-level: 16
+    repeatable: false
+    items:
+      cooked_mutton:
+        material: COOKED_MUTTON
+        amount: 8
+    economy-reward: 700
+
+  level_17:
+    name: "<#ff6b47>Level 17 Reward"
+    description: "<gray>Ender pearls"
+    required-level: 17
+    repeatable: false
+    items:
+      ender_pearl:
+        material: ENDER_PEARL
+        amount: 4
+    economy-reward: 800
+
+  level_18:
+    name: "<#ff6b47>Level 18 Reward"
+    description: "<gray>Enchanted bow"
+    required-level: 18
+    repeatable: false
+    items:
+      enchanted_bow:
+        material: BOW
+        amount: 1
+        enchantments:
+          power: 1
+    economy-reward: 900
+
+  level_19:
+    name: "<#ff6b47>Level 19 Reward"
+    description: "<gray>Blaze rods"
+    required-level: 19
+    repeatable: false
+    items:
+      blaze_rod:
+        material: BLAZE_ROD
+        amount: 2
+    economy-reward: 1000
+
+  level_20:
+    name: "<#ff6b47>Level 20 Reward"
+    description: "<gray>Enchanted diamond sword"
+    required-level: 20
+    repeatable: false
+    items:
+      enchanted_sword:
+        material: DIAMOND_SWORD
+        amount: 1
+        enchantments:
+          sharpness: 1
+    economy-reward: 1200
+
+  level_21:
+    name: "<#ff6b47>Level 21 Reward"
+    description: "<gray>Ghast tears"
+    required-level: 21
+    repeatable: false
+    items:
+      ghast_tear:
+        material: GHAST_TEAR
+        amount: 2
+    economy-reward: 1400
+
+  level_22:
+    name: "<#ff6b47>Level 22 Reward"
+    description: "<gray>Trident for fishing"
+    required-level: 22
+    repeatable: false
+    items:
+      trident:
+        material: TRIDENT
+        amount: 1
+    economy-reward: 1600
+
+  level_23:
+    name: "<#ff6b47>Level 23 Reward"
+    description: "<gray>Wither skeleton skull"
+    required-level: 23
+    repeatable: false
+    items:
+      wither_skeleton_skull:
+        material: WITHER_SKELETON_SKULL
+        amount: 1
+    economy-reward: 1800
+
+  level_24:
+    name: "<#ff6b47>Level 24 Reward"
+    description: "<gray>Dragon breath"
+    required-level: 24
+    repeatable: false
+    items:
+      dragon_breath:
+        material: DRAGON_BREATH
+        amount: 1
+    economy-reward: 2000
+
+  level_25:
+    name: "<#ff6b47>Level 25 Reward"
+    description: "<gray>Master hunter's bow"
+    required-level: 25
+    repeatable: false
+    items:
+      master_bow:
+        material: BOW
+        amount: 1
+        display-name: "<#ff6b47>Master Hunter's Bow"
+        enchantments:
+          power: 2
+          flame: 1
+    economy-reward: 2500

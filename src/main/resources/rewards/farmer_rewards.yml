@@ -1,0 +1,284 @@
+# Farmer Rewards Configuration
+# Simple example rewards for every level 1-25
+
+rewards:
+  level_1:
+    name: "<#32cd32>Level 1 Reward"
+    description: "<gray>Wheat seeds to start farming"
+    required-level: 1
+    repeatable: false
+    items:
+      wheat_seeds:
+        material: WHEAT_SEEDS
+        amount: 16
+    economy-reward: 50
+
+  level_2:
+    name: "<#32cd32>Level 2 Reward"
+    description: "<gray>Bone meal for growing crops"
+    required-level: 2
+    repeatable: false
+    items:
+      bone_meal:
+        material: BONE_MEAL
+        amount: 8
+    economy-reward: 75
+
+  level_3:
+    name: "<#32cd32>Level 3 Reward"
+    description: "<gray>Wood hoe for farming"
+    required-level: 3
+    repeatable: false
+    items:
+      wooden_hoe:
+        material: WOODEN_HOE
+        amount: 1
+    economy-reward: 100
+
+  level_4:
+    name: "<#32cd32>Level 4 Reward"
+    description: "<gray>Carrots for planting"
+    required-level: 4
+    repeatable: false
+    items:
+      carrot:
+        material: CARROT
+        amount: 12
+    economy-reward: 125
+
+  level_5:
+    name: "<#32cd32>Level 5 Reward"
+    description: "<gray>Stone hoe upgrade"
+    required-level: 5
+    repeatable: false
+    items:
+      stone_hoe:
+        material: STONE_HOE
+        amount: 1
+    economy-reward: 150
+
+  level_6:
+    name: "<#32cd32>Level 6 Reward"
+    description: "<gray>Potatoes for farming"
+    required-level: 6
+    repeatable: false
+    items:
+      potato:
+        material: POTATO
+        amount: 12
+    economy-reward: 175
+
+  level_7:
+    name: "<#32cd32>Level 7 Reward"
+    description: "<gray>Beetroot seeds"
+    required-level: 7
+    repeatable: false
+    items:
+      beetroot_seeds:
+        material: BEETROOT_SEEDS
+        amount: 16
+    economy-reward: 200
+
+  level_8:
+    name: "<#32cd32>Level 8 Reward"
+    description: "<gray>Pumpkin seeds"
+    required-level: 8
+    repeatable: false
+    items:
+      pumpkin_seeds:
+        material: PUMPKIN_SEEDS
+        amount: 8
+    economy-reward: 225
+
+  level_9:
+    name: "<#32cd32>Level 9 Reward"
+    description: "<gray>Melon seeds"
+    required-level: 9
+    repeatable: false
+    items:
+      melon_seeds:
+        material: MELON_SEEDS
+        amount: 8
+    economy-reward: 250
+
+  level_10:
+    name: "<#32cd32>Level 10 Reward"
+    description: "<gray>Iron hoe upgrade"
+    required-level: 10
+    repeatable: false
+    items:
+      iron_hoe:
+        material: IRON_HOE
+        amount: 1
+    economy-reward: 300
+
+  level_11:
+    name: "<#32cd32>Level 11 Reward"
+    description: "<gray>Bread for energy"
+    required-level: 11
+    repeatable: false
+    items:
+      bread:
+        material: BREAD
+        amount: 16
+    economy-reward: 350
+
+  level_12:
+    name: "<#32cd32>Level 12 Reward"
+    description: "<gray>Golden carrots"
+    required-level: 12
+    repeatable: false
+    items:
+      golden_carrot:
+        material: GOLDEN_CARROT
+        amount: 8
+    economy-reward: 400
+
+  level_13:
+    name: "<#32cd32>Level 13 Reward"
+    description: "<gray>Sweet berries"
+    required-level: 13
+    repeatable: false
+    items:
+      sweet_berries:
+        material: SWEET_BERRIES
+        amount: 16
+    economy-reward: 450
+
+  level_14:
+    name: "<#32cd32>Level 14 Reward"
+    description: "<gray>Cocoa beans"
+    required-level: 14
+    repeatable: false
+    items:
+      cocoa_beans:
+        material: COCOA_BEANS
+        amount: 12
+    economy-reward: 500
+
+  level_15:
+    name: "<#32cd32>Level 15 Reward"
+    description: "<gray>Diamond hoe upgrade"
+    required-level: 15
+    repeatable: false
+    items:
+      diamond_hoe:
+        material: DIAMOND_HOE
+        amount: 1
+    economy-reward: 600
+
+  level_16:
+    name: "<#32cd32>Level 16 Reward"
+    description: "<gray>Cake for celebration"
+    required-level: 16
+    repeatable: false
+    items:
+      cake:
+        material: CAKE
+        amount: 2
+    economy-reward: 700
+
+  level_17:
+    name: "<#32cd32>Level 17 Reward"
+    description: "<gray>Hay blocks"
+    required-level: 17
+    repeatable: false
+    items:
+      hay_block:
+        material: HAY_BLOCK
+        amount: 8
+    economy-reward: 800
+
+  level_18:
+    name: "<#32cd32>Level 18 Reward"
+    description: "<gray>Apples from trees"
+    required-level: 18
+    repeatable: false
+    items:
+      apple:
+        material: APPLE
+        amount: 16
+    economy-reward: 900
+
+  level_19:
+    name: "<#32cd32>Level 19 Reward"
+    description: "<gray>Golden apples"
+    required-level: 19
+    repeatable: false
+    items:
+      golden_apple:
+        material: GOLDEN_APPLE
+        amount: 2
+    economy-reward: 1000
+
+  level_20:
+    name: "<#32cd32>Level 20 Reward"
+    description: "<gray>Enchanted diamond hoe"
+    required-level: 20
+    repeatable: false
+    items:
+      enchanted_hoe:
+        material: DIAMOND_HOE
+        amount: 1
+        enchantments:
+          efficiency: 1
+    economy-reward: 1200
+
+  level_21:
+    name: "<#32cd32>Level 21 Reward"
+    description: "<gray>Pumpkin pie"
+    required-level: 21
+    repeatable: false
+    items:
+      pumpkin_pie:
+        material: PUMPKIN_PIE
+        amount: 8
+    economy-reward: 1400
+
+  level_22:
+    name: "<#32cd32>Level 22 Reward"
+    description: "<gray>Enchanted golden apple"
+    required-level: 22
+    repeatable: false
+    items:
+      enchanted_golden_apple:
+        material: ENCHANTED_GOLDEN_APPLE
+        amount: 1
+    economy-reward: 1600
+
+  level_23:
+    name: "<#32cd32>Level 23 Reward"
+    description: "<gray>Mushroom stew"
+    required-level: 23
+    repeatable: false
+    items:
+      mushroom_stew:
+        material: MUSHROOM_STEW
+        amount: 4
+    economy-reward: 1800
+
+  level_24:
+    name: "<#32cd32>Level 24 Reward"
+    description: "<gray>Suspicious stew"
+    required-level: 24
+    repeatable: false
+    items:
+      suspicious_stew:
+        material: SUSPICIOUS_STEW
+        amount: 2
+    economy-reward: 2000
+
+  level_25:
+    name: "<#32cd32>Level 25 Reward"
+    description: "<gray>Master farmer's hoe"
+    required-level: 25
+    repeatable: false
+    items:
+      master_hoe:
+        material: NETHERITE_HOE
+        amount: 1
+        display-name: "<#32cd32>Master Farmer's Hoe"
+        enchantments:
+          efficiency: 2
+          fortune: 1
+    economy-reward: 2500
