@@ -44,8 +44,6 @@ public class EnchantEventListener implements Listener {
                                   event.getItem().getType() + " with " + event.getEnchantsToAdd().size() + " enchantments");
         }
         
-        double totalXp = 0;
-        double totalMoney = 0;
         int processedEnchantments = 0;
         
         // Process each enchantment being applied and cumulate rewards

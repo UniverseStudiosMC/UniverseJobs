@@ -16,7 +16,6 @@ import java.util.logging.Level;
 public class JobSlotManager {
     
     private final UniverseJobs plugin;
-    private final File configFile;
     private MenuConfig menuConfig;
     
     // Map: jobId -> slot number (0-53 pour inventaire 6 lignes)
@@ -33,7 +32,7 @@ public class JobSlotManager {
     
     public JobSlotManager(UniverseJobs plugin) {
         this.plugin = plugin;
-        this.configFile = new File(plugin.getDataFolder(), "menus/job-slots.yml");
+        new File(plugin.getDataFolder(), "menus/job-slots.yml");
         
         initializeDefaultSlots();
         // Don't load configuration in constructor - will be done after MenuManager is fully initialized
@@ -113,14 +112,6 @@ public class JobSlotManager {
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load job slot configuration", e);
         }
-    }
-    
-    /**
-     * Crée la configuration par défaut (deprecated - now uses main-menu.yml).
-     */
-    private void createDefaultConfiguration() {
-        // Job slots are now configured in main-menu.yml
-        plugin.getLogger().info("Job slots are now configured in main-menu.yml under 'job-slots' section");
     }
     
     /**

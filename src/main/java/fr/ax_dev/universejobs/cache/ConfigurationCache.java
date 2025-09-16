@@ -51,8 +51,6 @@ public class ConfigurationCache {
      * Une seule fois = performance maximale après.
      */
     public void loadAllConfigurations() {
-        long startTime = System.currentTimeMillis();
-        
         // 1. Config flags basiques
         loadConfigurationFlags();
         
@@ -67,8 +65,6 @@ public class ConfigurationCache {
         
         // 5. Message templates
         loadMessageTemplates();
-        
-        long loadTime = System.currentTimeMillis() - startTime;
     }
     
     /**

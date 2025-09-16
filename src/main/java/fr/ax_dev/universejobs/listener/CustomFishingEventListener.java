@@ -6,7 +6,6 @@ import fr.ax_dev.universejobs.action.ActionType;
 import fr.ax_dev.universejobs.condition.ConditionContext;
 import net.momirealms.customfishing.api.BukkitCustomFishingPlugin;
 import net.momirealms.customfishing.api.event.FishingLootSpawnEvent;
-import net.momirealms.customfishing.api.event.FishingResultEvent;
 import net.momirealms.customfishing.api.mechanic.item.ItemManager;
 
 import org.bukkit.entity.Item;
