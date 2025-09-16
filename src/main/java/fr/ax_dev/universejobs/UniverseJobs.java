@@ -321,7 +321,6 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
 
             // Finally shutdown storage system
             shutdownStorageSystem();
-            getLogger().info("UniverseJobs plugin shutdown completed successfully");
 
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Critical error during plugin shutdown", e);
@@ -354,18 +353,16 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
      * Shutdown all managers except JobManager.
      */
     private void shutdownManagersExceptJobManager() {
-        getLogger().info("Shutting down managers...");
-
         shutdownRewardGuiManager();
-        shutdownManagerSafely("menu manager", menuManager, () -> menuManager.closeAllMenus());
-        shutdownManagerSafely("reward manager", rewardManager, () -> rewardManager.shutdown());
-        shutdownManagerSafely("batched reward manager", batchedRewardManager, () -> batchedRewardManager.shutdown());
-        shutdownManagerSafely("message sender", messageSender, () -> messageSender.shutdown());
-        shutdownManagerSafely("bonus manager", bonusManager, () -> bonusManager.shutdown());
-        shutdownManagerSafely("money bonus manager", moneyBonusManager, () -> moneyBonusManager.shutdown());
-        shutdownManagerSafely("placeholder manager", placeholderManager, () -> placeholderManager.shutdown());
-        shutdownManagerSafely("action limit manager", limitManager, () -> limitManager.clearAllLimits());
-        shutdownManagerSafely("Folia manager", foliaManager, () -> foliaManager.cancelAllTasks());
+        shutdownManagerSilently("menu manager", menuManager, () -> menuManager.closeAllMenus());
+        shutdownManagerSilently("reward manager", rewardManager, () -> rewardManager.shutdown());
+        shutdownManagerSilently("batched reward manager", batchedRewardManager, () -> batchedRewardManager.shutdown());
+        shutdownManagerSilently("message sender", messageSender, () -> messageSender.shutdown());
+        shutdownManagerSilently("bonus manager", bonusManager, () -> bonusManager.shutdown());
+        shutdownManagerSilently("money bonus manager", moneyBonusManager, () -> moneyBonusManager.shutdown());
+        shutdownManagerSilently("placeholder manager", placeholderManager, () -> placeholderManager.shutdown());
+        shutdownManagerSilently("action limit manager", limitManager, () -> limitManager.clearAllLimits());
+        shutdownManagerSilently("Folia manager", foliaManager, () -> foliaManager.cancelAllTasks());
 
         // Clear references for managers without explicit shutdown
         protectionManager = null;
@@ -378,7 +375,7 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
      * Shutdown JobManager last.
      */
     private void shutdownJobManager() {
-        shutdownManagerSafely("job manager", jobManager, () -> jobManager.shutdown());
+        shutdownManagerSilently("job manager", jobManager, () -> jobManager.shutdown());
     }
     
     /**
@@ -421,7 +418,29 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
             }
         }
     }
-    
+
+    /**
+     * Shutdown a manager silently without individual logging.
+     */
+    private void shutdownManagerSilently(String managerName, Object manager, Runnable shutdownAction) {
+        if (manager != null) {
+            try {
+                shutdownAction.run();
+
+                // Give time for async operations to complete for critical managers
+                if ("job manager".equals(managerName) || "reward manager".equals(managerName)) {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            } catch (Exception e) {
+                getLogger().log(Level.WARNING, "Error shutting down " + managerName, e);
+            }
+        }
+    }
+
     /**
      * Start the periodic save task.
      */

@@ -202,9 +202,6 @@ public class ConnectionPool {
             closeConnection(connection);
         }
         
-        plugin.getLogger().info("Database connection pool shutdown complete. " +
-                "Total connections created: " + totalConnectionsCreated.get() + 
-                ", destroyed: " + totalConnectionsDestroyed.get());
     }
     
     /**

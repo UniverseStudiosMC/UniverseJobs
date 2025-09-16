@@ -24,15 +24,19 @@ public class SingleMenuConfig {
     private final Map<String, Integer> jobSlots;
     
     public SingleMenuConfig(ConfigurationSection config) {
+        this(config, null);
+    }
+
+    public SingleMenuConfig(ConfigurationSection config, ConfigurationSection globalDefaults) {
         this.title = config.getString("title", "&6Jobs Menu");
         this.size = config.getInt("size", 54);
         this.enablePagination = config.getBoolean("pagination.enabled", true);
         this.itemsPerPage = config.getInt("pagination.items-per-page", 28);
-        
+
         // Load fill item configuration
         ConfigurationSection fillSection = config.getConfigurationSection("fill-item");
         if (fillSection != null && fillSection.getBoolean("enabled", false)) {
-            this.fillItem = new MenuItemConfig(fillSection);
+            this.fillItem = new MenuItemConfig(fillSection, globalDefaults);
         } else {
             this.fillItem = null;
         }
@@ -61,7 +65,7 @@ public class SingleMenuConfig {
             for (String itemKey : staticSection.getKeys(false)) {
                 ConfigurationSection itemSection = staticSection.getConfigurationSection(itemKey);
                 if (itemSection != null) {
-                    this.staticItems.put(itemKey, new MenuItemConfig(itemSection));
+                    this.staticItems.put(itemKey, new MenuItemConfig(itemSection, globalDefaults));
                 }
             }
         }
@@ -73,7 +77,7 @@ public class SingleMenuConfig {
             for (String itemKey : navItemsSection.getKeys(false)) {
                 ConfigurationSection itemSection = navItemsSection.getConfigurationSection(itemKey);
                 if (itemSection != null) {
-                    this.navigationItems.put(itemKey, new MenuItemConfig(itemSection));
+                    this.navigationItems.put(itemKey, new MenuItemConfig(itemSection, globalDefaults));
                 }
             }
         } else {
@@ -87,7 +91,7 @@ public class SingleMenuConfig {
             for (String itemKey : menuItemsSection.getKeys(false)) {
                 ConfigurationSection itemSection = menuItemsSection.getConfigurationSection(itemKey);
                 if (itemSection != null) {
-                    this.menuItems.put(itemKey, new MenuItemConfig(itemSection));
+                    this.menuItems.put(itemKey, new MenuItemConfig(itemSection, globalDefaults));
                 }
             }
         }

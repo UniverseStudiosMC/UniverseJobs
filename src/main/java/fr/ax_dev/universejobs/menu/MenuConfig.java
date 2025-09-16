@@ -3,6 +3,7 @@ package fr.ax_dev.universejobs.menu;
 import fr.ax_dev.universejobs.UniverseJobs;
 import fr.ax_dev.universejobs.menu.config.SingleMenuConfig;
 import fr.ax_dev.universejobs.menu.config.BoostMenuConfig;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -75,41 +76,44 @@ public class MenuConfig {
      */
     public void loadConfigurations() {
         try {
+            // Get gui-default-settings from main config
+            ConfigurationSection globalDefaults = plugin.getConfig().getConfigurationSection("gui-default-settings");
+
             // Load main menu configuration
             File mainMenuFile = new File(menusFolder, "main-menu.yml");
             if (mainMenuFile.exists()) {
                 FileConfiguration mainConfig = YamlConfiguration.loadConfiguration(mainMenuFile);
-                this.mainMenuConfig = new SingleMenuConfig(mainConfig);
+                this.mainMenuConfig = new SingleMenuConfig(mainConfig, globalDefaults);
             } else {
                 plugin.getLogger().warning("Main menu configuration not found, using defaults");
                 this.mainMenuConfig = SingleMenuConfig.getDefaultMainMenu();
             }
-            
+
             // Load job menu configuration
             File jobMenuFile = new File(menusFolder, "job-menu.yml");
             if (jobMenuFile.exists()) {
                 FileConfiguration jobConfig = YamlConfiguration.loadConfiguration(jobMenuFile);
-                this.jobMenuConfig = new SingleMenuConfig(jobConfig);
+                this.jobMenuConfig = new SingleMenuConfig(jobConfig, globalDefaults);
             } else {
                 plugin.getLogger().warning("Job menu configuration not found, using defaults");
                 this.jobMenuConfig = SingleMenuConfig.getDefaultJobMenu();
             }
-            
+
             // Load actions menu configuration
             File actionsMenuFile = new File(menusFolder, "actions-menu.yml");
             if (actionsMenuFile.exists()) {
                 FileConfiguration actionsConfig = YamlConfiguration.loadConfiguration(actionsMenuFile);
-                this.actionsMenuConfig = new SingleMenuConfig(actionsConfig);
+                this.actionsMenuConfig = new SingleMenuConfig(actionsConfig, globalDefaults);
             } else {
                 plugin.getLogger().warning("Actions menu configuration not found, using defaults");
                 this.actionsMenuConfig = SingleMenuConfig.getDefaultActionsMenu();
             }
-            
+
             // Load rankings menu configuration
             File rankingsMenuFile = new File(menusFolder, "rankings-menu.yml");
             if (rankingsMenuFile.exists()) {
                 FileConfiguration rankingsConfig = YamlConfiguration.loadConfiguration(rankingsMenuFile);
-                this.rankingsMenuConfig = new SingleMenuConfig(rankingsConfig);
+                this.rankingsMenuConfig = new SingleMenuConfig(rankingsConfig, globalDefaults);
             } else {
                 plugin.getLogger().warning("Rankings menu configuration not found, using defaults");
                 this.rankingsMenuConfig = SingleMenuConfig.getDefaultRankingsMenu();

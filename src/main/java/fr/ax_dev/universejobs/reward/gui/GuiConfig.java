@@ -70,6 +70,22 @@ public class GuiConfig {
                 rewardSlots.add(i);
             }
         }
+
+        // Load page-specific reward slots
+        ConfigurationSection pageSection = config.getConfigurationSection("reward-slots-by-page");
+        if (pageSection != null) {
+            for (String pageKey : pageSection.getKeys(false)) {
+                try {
+                    int pageNum = Integer.parseInt(pageKey);
+                    List<Integer> pageSlots = pageSection.getIntegerList(pageKey);
+                    if (!pageSlots.isEmpty()) {
+                        rewardSlotsByPage.put(pageNum, pageSlots);
+                    }
+                } catch (NumberFormatException e) {
+                    // Skip invalid page numbers
+                }
+            }
+        }
     }
     
     /**
