@@ -394,7 +394,7 @@ public class JobsMainMenu extends BaseMenu {
             currentPage, availableJobs.size(), itemsPerPage);
         placeholders.put("total_jobs", String.valueOf(availableJobs.size()));
         placeholders.put("player_jobs", String.valueOf(playerData.getJobs().size()));
-        placeholders.put("max_jobs", String.valueOf(plugin.getConfigManager().getMaxJobsPerPlayer()));
+        placeholders.put("{max_jobs}", String.valueOf(plugin.getConfigManager().getMaxJobsPerPlayer()));
         return placeholders;
     }
     
@@ -405,6 +405,7 @@ public class JobsMainMenu extends BaseMenu {
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put("total_jobs", String.valueOf(availableJobs.size()));
         placeholders.put("player_jobs", String.valueOf(playerData.getJobs().size()));
+        placeholders.put("{max_jobs}", String.valueOf(plugin.getConfigManager().getMaxJobsPerPlayer()));
         return placeholders;
     }
     
@@ -442,7 +443,7 @@ public class JobsMainMenu extends BaseMenu {
         placeholders.put("player_xp", String.valueOf(playerXp));
         placeholders.put("has_job", hasJob ? "Yes" : "No");
         placeholders.put("job_status", plugin.getConfigManager().getJobStatus(hasJob));
-        placeholders.put("max_jobs", String.valueOf(plugin.getConfigManager().getMaxJobsPerPlayer()));
+        placeholders.put("{max_jobs}", String.valueOf(plugin.getConfigManager().getMaxJobsPerPlayer()));
     }
     
     /**
