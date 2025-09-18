@@ -212,6 +212,33 @@ public class ConfigManager {
     }
     
     /**
+     * Check if job leave penalty is enabled.
+     *
+     * @return true if penalty is enabled
+     */
+    public boolean isLeavePenaltyEnabled() {
+        return plugin.getConfig().getBoolean("jobs.leave-penalty.enabled", false);
+    }
+
+    /**
+     * Get the leave penalty type.
+     *
+     * @return "level" or "xp"
+     */
+    public String getLeavePenaltyType() {
+        return plugin.getConfig().getString("jobs.leave-penalty.type", "level");
+    }
+
+    /**
+     * Get the leave penalty percentage.
+     *
+     * @return The penalty percentage (0.0 to 1.0)
+     */
+    public double getLeavePenaltyPercentage() {
+        return plugin.getConfig().getDouble("jobs.leave-penalty.percentage", 0.1);
+    }
+
+    /**
      * Enum for boost calculation modes.
      */
     public enum BoostCalculationMode {
