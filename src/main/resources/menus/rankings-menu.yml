@@ -9,28 +9,19 @@ size: 54
 
 # Pagination settings
 pagination:
-  enabled: true
+  enabled: false
   items-per-page: 35
 
 # Fill item configuration
 fill-item:
   enabled: true
-  material: GRAY_STAINED_GLASS_PANE
-  display-name: " "
-  lore: []
-  amount: 1
-  slots: []  # Empty = use global fill-slots. Specify slots like [1, 2, 3, 9, 18] to override
-  custom-model-data: 0
-  glow: false
-  hide-attributes: true
-  hide-enchants: true
   hideToolTip: true
 
 # Slots to fill (empty = all empty slots)
 fill-slots: []
 
 # Content slots where ranking items will be placed
-content-slots: [19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43]
+content-slots: [13, 21, 22, 23, 29, 30, 31, 32, 33]
 
 
 # Static items
@@ -72,13 +63,45 @@ static-items:
     hide-enchants: false
     action: none
 
-# Job selection slots (row 2: slots 10-16)
-job-selection-slots: [10, 11, 12, 13, 14, 15, 16]
+# Job selection button configuration
+job-selection:
+  default-format:
+    slots: 
+    - "17"
+    - "26"
+    - "35"
+    - "44"
+    selected:
+      material: "{job_material}"
+      customodeldata: "{job_custom-model-data}"
+      display-name: "<#FFD700>{job_name}"
+      lore:
+        - ""
+        - "<gray>Click to view rankings for this job"
+        - ""
+        - "<gray>Players with this job: <#FFD700>{player_count}"
+        - ""
+        - "<gray>Top Player: <#abffb3>{top_player}"
+        - "<gray>Top Level: <#abffb3>{top_level}"
+      glow: true
+
+    not_selected:
+      material: "{job_material}"
+      customodeldata: "{job_custom-model-data}"
+      display-name: "<#FFD700>{job_name}"
+      lore:
+        - ""
+        - "<gray>Click to view rankings for this job"
+        - ""
+        - "<gray>Players with this job: <#FFD700>{player_count}"
+        - ""
+        - "<gray>Top Player: <#abffb3>{top_player}"
+        - "<gray>Top Level: <#abffb3>{top_level}"
 
 # Navigation items
 navigation-items:
   previous:
-    enabled: true
+    enabled: false
     material: ARROW
     display-name: "<#abffb3>← Previous Page"
     lore:
@@ -95,7 +118,7 @@ navigation-items:
     action: previous_page
     
   next:
-    enabled: true
+    enabled: false
     material: ARROW
     display-name: "<#abffb3>Next Page →"
     lore:
@@ -140,7 +163,7 @@ navigation-items:
     action: close
     
   info:
-    enabled: true
+    enabled: false
     material: COMPASS
     display-name: "<#FFD700>Ranking Statistics"
     lore:
@@ -158,20 +181,108 @@ navigation-items:
     hide-enchants: false
     action: none
 
-# Ranking display settings
-ranking-display:
-  # Materials for different ranking positions
-  rank-materials:
-    1: GOLD_INGOT      # 1st place
-    2: IRON_INGOT      # 2nd place
-    3: COPPER_INGOT    # 3rd place
-    top-10: EMERALD    # 4th-10th place
-    default: PLAYER_HEAD # 11th+ place
-  
-  # Colors for different ranking positions
-  rank-colors:
-    1: "<#FFD700><bold>"          # Gold
-    2: "<#C0C0C0><bold>"          # Silver
-    3: "<#CD7F32><bold>"          # Bronze
-    top-10: "<#abffb3>"           # Green
-    default: "<white>"            # White
+# Ranking entry configuration
+# Each rank can be fully customized individually or use default settings
+ranking-entries:
+  # Rank 1 - First place
+  rank-1:
+    enabled: true
+    slot: 13  # Specific slot for rank 1 (optional, uses content-slots if not set)
+    material: PLAYER_HEAD
+    player-head: "{player_name}"
+    display-name: "<#FFD700><bold>🏆 #1 - {player}"
+    lore:
+      - ""
+      - "<gray>Player: <#FFD700><bold>{player}"
+      - "<gray>Level: <#FFD700><bold>{level}"
+      - "<gray>Total XP: <#FFD700><bold>{xp}"
+      - ""
+      - "<#FFD700>⭐ Top Player ⭐"
+    amount: 1
+    glow: true
+    hide-attributes: true
+    hide-enchants: false
+    custom-model-data: 0
+
+  # Rank 2 - Second place
+  rank-2:
+    enabled: true
+    slot: 21  # Specific slot for rank 2
+    material: PLAYER_HEAD
+    player-head: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGQ0MjMzN2JlMGJkY2EyMjI4OWQ2ZTM4YWI5NTZmZjc3NmE3YjVmNzU2ZTI5MzU3MmY0YmQ2N2Q0MzRiYmNjZCJ9fX0="  # Silver trophy head
+    display-name: "<#C0C0C0><bold>🥈 #2 - {player}"
+    lore:
+      - ""
+      - "<gray>Player: <#C0C0C0><bold>{player}"
+      - "<gray>Level: <#C0C0C0><bold>{level}"
+      - "<gray>Total XP: <#C0C0C0><bold>{xp}"
+    amount: 1
+    glow: false
+    hide-attributes: true
+    hide-enchants: false
+    custom-model-data: 0
+
+  # Rank 3 - Third place
+  rank-3:
+    enabled: true
+    slot: 23  # Specific slot for rank 3
+    material: PLAYER_HEAD
+    player-head: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOWY2Mjg5YzMzNjIzNWRmYzc1YjEzMmJjNzkzOTlmODgyMTlhOWZjNGNlMDg2YzNiNDNmYzg4MmNjNmFkNjA2YiJ9fX0="  # Bronze trophy head
+    display-name: "<#CD7F32><bold>🥉 #3 - {player}"
+    lore:
+      - ""
+      - "<gray>Player: <#CD7F32><bold>{player}"
+      - "<gray>Level: <#CD7F32><bold>{level}"
+      - "<gray>Total XP: <#CD7F32><bold>{xp}"
+    amount: 1
+    glow: false
+    hide-attributes: true
+    hide-enchants: false
+    custom-model-data: 0
+
+  # Ranks 4-10 - Top 10
+  rank-top10:
+    enabled: true
+    # No specific slots, uses content-slots
+    material: PLAYER_HEAD
+    player-head: "{player_texture}"  # Use actual player's head texture
+    display-name: "<#abffb3>#{rank} - {player}"
+    lore:
+      - ""
+      - "<gray>Player: <#abffb3>{player}"
+      - "<gray>Rank: <#abffb3>#{rank}"
+      - "<gray>Level: <#abffb3>{level}"
+      - "<gray>Total XP: <#abffb3>{xp}"
+      - ""
+      - "<gray>Rank: <#abffb3><bold>#{rank}"
+    amount: 1
+    glow: false
+    hide-attributes: true
+    hide-enchants: false
+    custom-model-data: 0
+
+  # Default ranks (11+)
+  rank-default:
+    enabled: true
+    material: PLAYER_HEAD
+    player-head: "{player_texture}"  # Use actual player's head texture
+    display-name: "<white>#{rank} - {player}"
+    lore:
+      - ""
+      - "<gray>Player: <white>{player}"
+      - "<gray>Level: <white>{level}"
+      - "<gray>Total XP: <white>{xp}"
+      - ""
+      - "<gray>Rank: <white>#{rank}"
+    amount: 1
+    glow: false
+    hide-attributes: true
+    hide-enchants: false
+    custom-model-data: 0
+
+# Available placeholders for ranking entries:
+# {rank} - The player's rank number
+# {player} - The player's name
+# {level} - The player's level in the job
+# {xp} - The player's total XP in the job
+# {player_texture} - The player's actual head texture (for PLAYER_HEAD material)

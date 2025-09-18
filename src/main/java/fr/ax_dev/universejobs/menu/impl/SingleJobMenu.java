@@ -529,10 +529,6 @@ public class SingleJobMenu extends BaseMenu {
      * Calculate player rank for the current job.
      */
     private String calculatePlayerRank() {
-        if (!hasJob) {
-            return "N/A";
-        }
-        
         List<RankingEntry> rankings = getJobRankings();
         for (int i = 0; i < rankings.size(); i++) {
             if (rankings.get(i).playerUuid.equals(player.getUniqueId())) {
@@ -558,51 +554,35 @@ public class SingleJobMenu extends BaseMenu {
      */
     private List<RankingEntry> getJobRankings() {
         List<RankingEntry> entries = new ArrayList<>();
-        java.io.File dataFolder = new java.io.File(plugin.getDataFolder(), "data");
-        
-        if (!dataFolder.exists()) {
-            return entries;
-        }
-        
-        java.io.File[] dataFiles = dataFolder.listFiles((dir, name) -> name.endsWith(".yml"));
-        if (dataFiles == null) {
-            return entries;
-        }
-        
-        for (java.io.File dataFile : dataFiles) {
-            try {
-                String uuidString = dataFile.getName().replace(".yml", "");
-                UUID playerUuid = UUID.fromString(uuidString);
-                
-                PlayerJobData data = plugin.getJobManager().getPlayerData(playerUuid);
-                
-                if (data.hasJob(job.getId())) {
-                    org.bukkit.OfflinePlayer offlinePlayer = org.bukkit.Bukkit.getOfflinePlayer(playerUuid);
-                    String playerName = offlinePlayer.getName();
-                    
-                    if (playerName == null) {
-                        playerName = "Unknown";
-                    }
-                    
-                    double xp = data.getXp(job.getId());
-                    int level = data.getLevel(job.getId());
-                    
-                    entries.add(new RankingEntry(playerUuid, playerName, level, xp));
+
+        // Get all player data using centralized JobManager approach
+        Map<UUID, PlayerJobData> allPlayerData = plugin.getJobManager().getAllPlayerData();
+
+        for (Map.Entry<UUID, PlayerJobData> entry : allPlayerData.entrySet()) {
+            UUID playerId = entry.getKey();
+            PlayerJobData playerData = entry.getValue();
+
+            int level = playerData.getLevel(job.getId());
+            double xp = playerData.getXp(job.getId());
+
+            // Only include players with stats for this job
+            if (level > 0 || xp > 0) {
+                org.bukkit.OfflinePlayer offlinePlayer = org.bukkit.Bukkit.getOfflinePlayer(playerId);
+                String playerName = offlinePlayer.getName();
+
+                if (playerName != null) {
+                    entries.add(new RankingEntry(playerId, playerName, level, xp));
                 }
-            } catch (Exception e) {
-                // Skip invalid entries
             }
         }
-        
-        // Sort by level desc, then by XP desc
+
+        // Sort by level (descending), then by XP (descending)
         entries.sort((a, b) -> {
             int levelCompare = Integer.compare(b.level, a.level);
-            if (levelCompare != 0) {
-                return levelCompare;
-            }
+            if (levelCompare != 0) return levelCompare;
             return Double.compare(b.xp, a.xp);
         });
-        
+
         return entries;
     }
     

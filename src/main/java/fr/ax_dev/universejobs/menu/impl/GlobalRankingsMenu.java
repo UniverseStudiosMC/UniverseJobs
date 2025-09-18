@@ -201,54 +201,201 @@ public class GlobalRankingsMenu extends BaseMenu {
     }
     
     /**
-     * Add job selection buttons.
+     * Add job selection buttons using configuration.
      */
     private void addJobSelectionButtons() {
         if (availableJobs.isEmpty()) return;
-        
-        // Job selection buttons in the second row
-        int startSlot = 10;
-        int maxButtons = 7; // Slots 10-16
-        
-        for (int i = 0; i < Math.min(availableJobs.size(), maxButtons); i++) {
-            String jobId = availableJobs.get(i);
+
+        org.bukkit.configuration.ConfigurationSection selectionConfig =
+            config.getRawConfig().getConfigurationSection("job-selection");
+
+        if (selectionConfig == null) {
+            plugin.getLogger().warning("Missing job-selection configuration in rankings-menu.yml");
+            return;
+        }
+
+        // Get default slots
+        org.bukkit.configuration.ConfigurationSection defaultFormat =
+            selectionConfig.getConfigurationSection("default-format");
+
+        List<Integer> defaultSlots = new ArrayList<>();
+        if (defaultFormat != null && defaultFormat.contains("slots")) {
+            // Handle both string and integer lists
+            List<?> slotsList = defaultFormat.getList("slots");
+            if (slotsList != null) {
+                for (Object slot : slotsList) {
+                    if (slot instanceof Integer) {
+                        defaultSlots.add((Integer) slot);
+                    } else if (slot instanceof String) {
+                        try {
+                            defaultSlots.add(Integer.parseInt((String) slot));
+                        } catch (NumberFormatException e) {
+                            plugin.getLogger().warning("Invalid slot number: " + slot);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Fallback if no slots configured
+        if (defaultSlots.isEmpty()) {
+            defaultSlots = Arrays.asList(19, 28, 37, 46);
+        }
+
+        plugin.getLogger().info("DEBUG: Default slots for job selection: " + defaultSlots);
+
+        org.bukkit.configuration.ConfigurationSection jobsConfig =
+            selectionConfig.getConfigurationSection("jobs");
+
+        int slotIndex = 0;
+        for (String jobId : availableJobs) {
             Job job = plugin.getJobManager().getJob(jobId);
             if (job == null) continue;
-            
-            ItemStack jobButton = createJobSelectionButton(job, jobId.equals(selectedJob));
-            inventory.setItem(startSlot + i, jobButton);
+
+            Integer slot = null;
+
+            // Check for specific job slot configuration
+            if (jobsConfig != null && jobsConfig.contains(jobId)) {
+                org.bukkit.configuration.ConfigurationSection jobConfig = jobsConfig.getConfigurationSection(jobId);
+                if (jobConfig != null && jobConfig.contains("slot")) {
+                    slot = jobConfig.getInt("slot");
+                    plugin.getLogger().info("DEBUG: Job " + jobId + " has specific slot: " + slot);
+                }
+            }
+
+            // Use default slots if no specific slot configured
+            if (slot == null && slotIndex < defaultSlots.size()) {
+                slot = defaultSlots.get(slotIndex);
+                plugin.getLogger().info("DEBUG: Job " + jobId + " using default slot index " + slotIndex + ": " + slot);
+                slotIndex++;
+            }
+
+            if (slot != null && slot >= 0 && slot < inventory.getSize()) {
+                ItemStack button = createJobSelectionButton(job, jobId.equals(selectedJob), selectionConfig, jobsConfig);
+                if (button != null) {
+                    inventory.setItem(slot, button);
+                    plugin.getLogger().info("DEBUG: Placed job button for " + jobId + " at slot " + slot);
+                } else {
+                    plugin.getLogger().warning("DEBUG: Failed to create button for job " + jobId);
+                }
+            } else {
+                plugin.getLogger().warning("DEBUG: Invalid slot for job " + jobId + ": " + slot);
+            }
         }
     }
-    
+
     /**
-     * Create job selection button.
+     * Create job selection button using configuration.
      */
-    private ItemStack createJobSelectionButton(Job job, boolean selected) {
+    private ItemStack createJobSelectionButton(Job job, boolean selected,
+                                               org.bukkit.configuration.ConfigurationSection selectionConfig,
+                                               org.bukkit.configuration.ConfigurationSection jobsConfig) {
+
+        // Get rankings for placeholders
         List<RankingEntry> rankings = jobRankings.getOrDefault(job.getId(), new ArrayList<>());
-        
-        List<String> lore = new ArrayList<>();
-        lore.add("&7Click to view rankings for this job");
-        lore.add("");
-        lore.add("&7Players: &e" + rankings.size());
-        
-        if (selected) {
-            lore.add("");
-            lore.add("&a▶ Currently Selected");
+
+        // Create placeholders
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("{job_id}", job.getId());
+        placeholders.put("{job_name}", job.getName());
+        placeholders.put("{job_material}", job.getIconMaterial() != null ? job.getIconMaterial() : "PAPER");
+        placeholders.put("{job_custom-model-data}", String.valueOf(job.getCustomModelData()));
+        placeholders.put("{player_count}", String.valueOf(rankings.size()));
+
+        // Add top player info
+        if (!rankings.isEmpty()) {
+            RankingEntry topPlayer = rankings.get(0);
+            placeholders.put("{top_player}", topPlayer.playerName);
+            placeholders.put("{top_level}", String.valueOf(topPlayer.level));
+        } else {
+            placeholders.put("{top_player}", "None");
+            placeholders.put("{top_level}", "0");
         }
-        
+
+        // Determine which configuration to use (selected or not_selected)
+        org.bukkit.configuration.ConfigurationSection stateConfig = null;
+        String stateSuffix = selected ? "selected" : "not_selected";
+
+        // Check for specific job configuration first
+        if (jobsConfig != null && jobsConfig.contains(job.getId())) {
+            org.bukkit.configuration.ConfigurationSection jobConfig = jobsConfig.getConfigurationSection(job.getId());
+            if (jobConfig != null && jobConfig.contains(stateSuffix)) {
+                stateConfig = jobConfig.getConfigurationSection(stateSuffix);
+            }
+        }
+
+        // Use default format if no specific config
+        if (stateConfig == null) {
+            org.bukkit.configuration.ConfigurationSection defaultFormat =
+                selectionConfig.getConfigurationSection("default-format");
+            if (defaultFormat != null && defaultFormat.contains(stateSuffix)) {
+                stateConfig = defaultFormat.getConfigurationSection(stateSuffix);
+            }
+        }
+
+        if (stateConfig == null) {
+            // Fallback to legacy method
+            return createLegacyJobButton(job, selected, rankings.size());
+        }
+
+        // Build item configuration
+        Map<String, Object> configMap = new HashMap<>();
+
+        // Material
+        String material = stateConfig.getString("material", job.getIconMaterial());
+        if (material != null && material.equals("{job_material}")) {
+            material = job.getIconMaterial() != null ? job.getIconMaterial() : "PAPER";
+        }
+        configMap.put("material", material);
+
+        // Custom model data
+        String customModelStr = stateConfig.getString("customodeldata", "0");
+        if (customModelStr.equals("{job_custom-model-data}")) {
+            configMap.put("custom-model-data", job.getCustomModelData());
+        } else {
+            int customModelData = stateConfig.getInt("customodeldata", 0);
+            if (customModelData > 0) {
+                configMap.put("custom-model-data", customModelData);
+            }
+        }
+
+        // Display name
+        configMap.put("display-name", stateConfig.getString("display-name", job.getName()));
+
+        // Lore
+        configMap.put("lore", stateConfig.getStringList("lore"));
+
+        // Item settings
+        configMap.put("amount", stateConfig.getInt("amount", 1));
+        configMap.put("glow", stateConfig.getBoolean("glow", false));
+        configMap.put("hide-attributes", stateConfig.getBoolean("hide-attributes", true));
+        configMap.put("hide-enchants", stateConfig.getBoolean("hide-enchants", false));
+
+        configMap.put("action", "select_job");
+        configMap.put("action-value", job.getId());
+
+        MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
+        return createMenuItem(itemConfig, placeholders);
+    }
+
+    /**
+     * Create legacy job button (fallback).
+     */
+    private ItemStack createLegacyJobButton(Job job, boolean selected, int playerCount) {
+        List<String> lore = Arrays.asList(
+            "&7Click to view rankings",
+            "",
+            "&7Players: &e" + playerCount,
+            selected ? "" : "",
+            selected ? "&a▶ Currently Selected" : ""
+        );
+
         Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
             job.getIconMaterial(), "&e" + job.getName(), lore, selected
         );
-        
-        // Apply custom model data if set
-        if (job.getCustomModelData() > 0) {
-            configMap.put("custom-model-data", job.getCustomModelData());
-        }
-        
-        configMap.put("action", "select_job");
-        
+
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig, MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription()));
+        return createMenuItem(itemConfig, new HashMap<>());
     }
     
     /**
@@ -256,58 +403,217 @@ public class GlobalRankingsMenu extends BaseMenu {
      */
     private void addRankingEntries() {
         if (selectedJob == null) return;
-        
+
         List<RankingEntry> rankings = jobRankings.getOrDefault(selectedJob, new ArrayList<>());
         if (rankings.isEmpty()) return;
-        
-        List<Integer> contentSlots = config.getContentSlots();
-        int startIndex = currentPage * config.getItemsPerPage();
-        int endIndex = Math.min(startIndex + config.getItemsPerPage(), rankings.size());
-        
-        for (int i = startIndex; i < endIndex; i++) {
-            RankingEntry entry = rankings.get(i);
-            int slotIndex = i - startIndex;
-            
-            if (slotIndex >= contentSlots.size()) break;
-            
-            int slot = contentSlots.get(slotIndex);
+
+        List<Integer> contentSlots = new ArrayList<>(config.getContentSlots());
+        Set<Integer> usedSlots = new HashSet<>();
+
+        // First, place entries with specific slots
+        for (RankingEntry entry : rankings) {
             ItemStack rankingItem = createRankingItem(entry);
-            inventory.setItem(slot, rankingItem);
+            if (rankingItem == null) continue;
+
+            if (entry.preferredSlot != null && entry.preferredSlot >= 0 && entry.preferredSlot < inventory.getSize()) {
+                inventory.setItem(entry.preferredSlot, rankingItem);
+                usedSlots.add(entry.preferredSlot);
+                contentSlots.remove(entry.preferredSlot);
+            }
+        }
+
+        // Then place remaining entries in available content slots
+        int slotIndex = 0;
+        for (RankingEntry entry : rankings) {
+            if (entry.preferredSlot != null) continue; // Already placed
+
+            ItemStack rankingItem = createRankingItem(entry);
+            if (rankingItem == null) continue;
+
+            if (slotIndex < contentSlots.size()) {
+                int slot = contentSlots.get(slotIndex);
+                if (!usedSlots.contains(slot)) {
+                    inventory.setItem(slot, rankingItem);
+                    slotIndex++;
+                }
+            }
         }
     }
     
     /**
-     * Create ranking entry item.
+     * Create ranking entry item using configuration.
      */
     private ItemStack createRankingItem(RankingEntry entry) {
-        // Choose material based on rank
-        String material = getRankMaterial(entry.rank);
-        String rankColor = getRankColor(entry.rank);
-        
-        List<String> lore = new ArrayList<>();
-        lore.add("&7Player: &f" + entry.playerName);
-        lore.add("&7Level: &a" + entry.level);
-        lore.add("&7Total XP: &b" + entry.xp);
-        
-        // Show if it's the current player
-        if (entry.playerId.equals(player.getUniqueId())) {
-            lore.add("");
-            lore.add("&e⭐ This is you!");
+        // Get ranking entries configuration
+        org.bukkit.configuration.ConfigurationSection entriesConfig =
+            config.getRawConfig().getConfigurationSection("ranking-entries");
+
+        if (entriesConfig == null) {
+            plugin.getLogger().warning("Missing ranking-entries configuration in rankings-menu.yml");
+            return createDefaultRankingItem(entry);
         }
-        
-        Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("rank", String.valueOf(entry.rank));
-        placeholders.put("player", entry.playerName);
-        placeholders.put("level", String.valueOf(entry.level));
-        placeholders.put("xp", String.valueOf(entry.xp));
-        
-        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
-            material, rankColor + "#" + entry.rank + " - " + entry.playerName, lore, 
-            entry.playerId.equals(player.getUniqueId())
-        );
-        
+
+        // Determine which config to use based on rank
+        org.bukkit.configuration.ConfigurationSection rankConfig = getRankConfig(entriesConfig, entry.rank);
+
+        if (rankConfig == null || !rankConfig.getBoolean("enabled", true)) {
+            return null;
+        }
+
+        // Create placeholders for this entry
+        Map<String, String> placeholders = createRankingPlaceholders(entry);
+
+        // Build item configuration from config
+        Map<String, Object> configMap = new HashMap<>();
+
+        // Material
+        String material = rankConfig.getString("material", "PLAYER_HEAD");
+        configMap.put("material", material);
+
+        // Handle player head texture
+        if (material.equalsIgnoreCase("PLAYER_HEAD")) {
+            String headTexture = rankConfig.getString("player-head", "");
+            if (!headTexture.isEmpty()) {
+                if (headTexture.equals("{player_texture}") || headTexture.equals("{player_name}")) {
+                    // Use actual player's head name
+                    configMap.put("player-head", entry.playerName);
+                } else {
+                    // Use custom texture
+                    configMap.put("player-head", headTexture);
+                }
+            }
+        }
+
+        // Display name
+        configMap.put("display-name", rankConfig.getString("display-name", "#{rank} - {player}"));
+
+        // Base lore
+        List<String> lore = new ArrayList<>(rankConfig.getStringList("lore"));
+
+
+        configMap.put("lore", lore);
+
+        // General item settings
+        configMap.put("amount", rankConfig.getInt("amount", 1));
+        configMap.put("glow", rankConfig.getBoolean("glow", false) ||
+            (entry.playerId.equals(player.getUniqueId()) && entry.rank <= 3));
+        configMap.put("hide-attributes", rankConfig.getBoolean("hide-attributes", true));
+        configMap.put("hide-enchants", rankConfig.getBoolean("hide-enchants", false));
+
+        int customModelData = rankConfig.getInt("custom-model-data", 0);
+        if (customModelData > 0) {
+            configMap.put("custom-model-data", customModelData);
+        }
+
+        // Check for specific slot
+        if (rankConfig.contains("slot")) {
+            entry.preferredSlot = rankConfig.getInt("slot");
+        }
+
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
         return createMenuItem(itemConfig, placeholders);
+    }
+
+    /**
+     * Get the appropriate rank configuration based on rank number.
+     */
+    private org.bukkit.configuration.ConfigurationSection getRankConfig(
+            org.bukkit.configuration.ConfigurationSection entriesConfig, int rank) {
+
+        // Check for specific rank configuration
+        if (rank == 1 && entriesConfig.contains("rank-1")) {
+            return entriesConfig.getConfigurationSection("rank-1");
+        } else if (rank == 2 && entriesConfig.contains("rank-2")) {
+            return entriesConfig.getConfigurationSection("rank-2");
+        } else if (rank == 3 && entriesConfig.contains("rank-3")) {
+            return entriesConfig.getConfigurationSection("rank-3");
+        } else if (rank >= 4 && rank <= 10 && entriesConfig.contains("rank-top10")) {
+            return entriesConfig.getConfigurationSection("rank-top10");
+        } else if (entriesConfig.contains("rank-default")) {
+            return entriesConfig.getConfigurationSection("rank-default");
+        }
+
+        return null;
+    }
+
+    /**
+     * Create default ranking item (fallback).
+     */
+    private ItemStack createDefaultRankingItem(RankingEntry entry) {
+        Map<String, String> placeholders = createRankingPlaceholders(entry);
+
+        List<String> lore = Arrays.asList(
+            "&7Player: &f" + entry.playerName,
+            "&7Level: &a" + entry.level,
+            "&7Total XP: &b" + entry.xp
+        );
+
+        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
+            "PLAYER_HEAD", "#{rank} - {player}", lore, false
+        );
+
+        MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
+        return createMenuItem(itemConfig, placeholders);
+    }
+
+    /**
+     * Create placeholders for ranking entry.
+     */
+    private Map<String, String> createRankingPlaceholders(RankingEntry entry) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("{rank}", String.valueOf(entry.rank));
+        placeholders.put("{player}", entry.playerName);
+        placeholders.put("{player_name}", entry.playerName);
+        placeholders.put("{level}", String.valueOf(entry.level));
+        placeholders.put("{xp}", String.valueOf(entry.xp));
+        placeholders.put("{rank_color}", getRankColorFromConfig(entry.rank));
+        return placeholders;
+    }
+
+    /**
+     * Get rank material from configuration.
+     */
+    private String getRankMaterialFromConfig(int rank, org.bukkit.configuration.ConfigurationSection config) {
+        org.bukkit.configuration.ConfigurationSection materials = config.getConfigurationSection("rank-materials");
+        if (materials == null) {
+            return "PLAYER_HEAD";
+        }
+
+        if (rank == 1 && materials.contains("1")) {
+            return materials.getString("1");
+        } else if (rank == 2 && materials.contains("2")) {
+            return materials.getString("2");
+        } else if (rank == 3 && materials.contains("3")) {
+            return materials.getString("3");
+        } else if (rank <= 10 && materials.contains("top-10")) {
+            return materials.getString("top-10");
+        } else {
+            return materials.getString("default", "PLAYER_HEAD");
+        }
+    }
+
+    /**
+     * Get rank color from configuration.
+     */
+    private String getRankColorFromConfig(int rank) {
+        org.bukkit.configuration.ConfigurationSection colorConfig =
+            config.getRawConfig().getConfigurationSection("ranking-entry-format.rank-colors");
+
+        if (colorConfig == null) {
+            return "<white>";
+        }
+
+        if (rank == 1 && colorConfig.contains("1")) {
+            return colorConfig.getString("1");
+        } else if (rank == 2 && colorConfig.contains("2")) {
+            return colorConfig.getString("2");
+        } else if (rank == 3 && colorConfig.contains("3")) {
+            return colorConfig.getString("3");
+        } else if (rank <= 10 && colorConfig.contains("top-10")) {
+            return colorConfig.getString("top-10");
+        } else {
+            return colorConfig.getString("default", "<white>");
+        }
     }
     
     /**
@@ -341,16 +647,13 @@ public class GlobalRankingsMenu extends BaseMenu {
             return;
         }
         
-        // Handle job selection buttons (slots 10-16)
-        if (slot >= 10 && slot <= 16) {
-            int jobIndex = slot - 10;
-            if (jobIndex < availableJobs.size()) {
-                String newSelectedJob = availableJobs.get(jobIndex);
-                if (!newSelectedJob.equals(selectedJob)) {
-                    selectedJob = newSelectedJob;
-                    currentPage = 0; // Reset to first page
-                    refresh();
-                }
+        // Handle job selection buttons using dynamic slot detection
+        String clickedJobId = getJobIdBySlot(slot);
+        if (clickedJobId != null) {
+            if (!clickedJobId.equals(selectedJob)) {
+                selectedJob = clickedJobId;
+                currentPage = 0; // Reset to first page
+                refresh();
             }
             return;
         }
@@ -373,6 +676,81 @@ public class GlobalRankingsMenu extends BaseMenu {
     @Override
     protected void handleBackButton() {
         plugin.getMenuManager().openJobsMainMenu(player);
+    }
+
+    /**
+     * Get the job ID that corresponds to the clicked slot.
+     */
+    private String getJobIdBySlot(int clickedSlot) {
+        org.bukkit.configuration.ConfigurationSection selectionConfig =
+            config.getRawConfig().getConfigurationSection("job-selection");
+
+        if (selectionConfig == null) {
+            return null;
+        }
+
+        // Get default slots
+        org.bukkit.configuration.ConfigurationSection defaultFormat =
+            selectionConfig.getConfigurationSection("default-format");
+        List<Integer> defaultSlots = new ArrayList<>();
+
+        if (defaultFormat != null && defaultFormat.contains("slots")) {
+            List<?> slotsList = defaultFormat.getList("slots");
+            if (slotsList != null) {
+                for (Object slot : slotsList) {
+                    if (slot instanceof Integer) {
+                        defaultSlots.add((Integer) slot);
+                    } else if (slot instanceof String) {
+                        try {
+                            defaultSlots.add(Integer.parseInt((String) slot));
+                        } catch (NumberFormatException e) {
+                            // Skip invalid slots
+                        }
+                    }
+                }
+            }
+        }
+
+        org.bukkit.configuration.ConfigurationSection jobsConfig =
+            selectionConfig.getConfigurationSection("jobs");
+
+        // Check specific job slot configurations first
+        if (jobsConfig != null) {
+            for (String jobId : availableJobs) {
+                if (jobsConfig.contains(jobId)) {
+                    org.bukkit.configuration.ConfigurationSection jobConfig = jobsConfig.getConfigurationSection(jobId);
+                    if (jobConfig != null && jobConfig.contains("slot")) {
+                        int jobSlot = jobConfig.getInt("slot");
+                        if (jobSlot == clickedSlot) {
+                            return jobId;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Check default slots
+        int slotIndex = 0;
+        for (String jobId : availableJobs) {
+            // Skip jobs that have specific slot configuration
+            boolean hasSpecificSlot = false;
+            if (jobsConfig != null && jobsConfig.contains(jobId)) {
+                org.bukkit.configuration.ConfigurationSection jobConfig = jobsConfig.getConfigurationSection(jobId);
+                if (jobConfig != null && jobConfig.contains("slot")) {
+                    hasSpecificSlot = true;
+                }
+            }
+
+            if (!hasSpecificSlot && slotIndex < defaultSlots.size()) {
+                int defaultSlot = defaultSlots.get(slotIndex);
+                if (defaultSlot == clickedSlot) {
+                    return jobId;
+                }
+                slotIndex++;
+            }
+        }
+
+        return null;
     }
     
     /**
@@ -424,6 +802,7 @@ public class GlobalRankingsMenu extends BaseMenu {
         final int level;
         final long xp;
         int rank;
+        Integer preferredSlot;
         
         RankingEntry(UUID playerId, String playerName, int level, long xp) {
             this.playerId = playerId;
