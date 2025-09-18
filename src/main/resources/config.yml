@@ -152,12 +152,10 @@ placeholders:
 # Adjusts rewards based on how many players use each job relative to other jobs
 usage-multiplier:
   enabled: false
-
   # Default settings for all jobs
   default:
     min: 0.5         # Minimum multiplier (for most popular job - 100% usage)
     max: 2.0         # Maximum multiplier (for least popular job - lowest % usage)
-
   # Per-job specific settings (overrides default)
   jobs:
     miner:
