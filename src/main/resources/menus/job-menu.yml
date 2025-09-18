@@ -154,9 +154,6 @@ menu-items:
       lore:
       - ""
       - "<#FFD700>Click to leave this job"
-      - ""
-      - "<#FF6B6B><bold>Warning:</bold>"
-      - "<#FF6B6B>You will lose all progress!"
     
   actions-button:
     enabled: true
