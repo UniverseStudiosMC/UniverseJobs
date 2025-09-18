@@ -311,6 +311,7 @@ public class JobManager {
         synchronized (data) {
             boolean result = data.leaveJob(jobId);
             if (result) {
+                applyLeavePenalty(data, jobId);
                 updateLeaderboardCache(playerUuid, jobId, data);
                 plugin.getPlayerCache().removePlayerJob(playerUuid, jobId);
             }
@@ -818,8 +819,43 @@ public class JobManager {
     }
     
     /**
+     * Apply leave penalty to player data when leaving a job.
+     *
+     * @param data The player job data
+     * @param jobId The job ID being left
+     */
+    private void applyLeavePenalty(PlayerJobData data, String jobId) {
+        if (!plugin.getConfigManager().isLeavePenaltyEnabled()) {
+            return;
+        }
+
+        String penaltyType = plugin.getConfigManager().getLeavePenaltyType();
+        double penaltyPercentage = plugin.getConfigManager().getLeavePenaltyPercentage();
+
+        if (penaltyPercentage <= 0.0 || penaltyPercentage > 1.0) {
+            return;
+        }
+
+        if ("level".equalsIgnoreCase(penaltyType)) {
+            int currentLevel = data.getLevel(jobId);
+            if (currentLevel > 1) {
+                int levelsToLose = Math.max(1, (int) Math.floor(currentLevel * penaltyPercentage));
+                int newLevel = Math.max(1, currentLevel - levelsToLose);
+                data.setLevel(jobId, newLevel);
+            }
+        } else if ("xp".equalsIgnoreCase(penaltyType)) {
+            double currentXp = data.getXp(jobId);
+            if (currentXp > 0) {
+                double xpToLose = currentXp * penaltyPercentage;
+                double newXp = Math.max(0, currentXp - xpToLose);
+                data.setXp(jobId, newXp);
+            }
+        }
+    }
+
+    /**
      * Get the performance manager.
-     * 
+     *
      * @return The performance manager
      */
     public Object getPerformanceManager() {

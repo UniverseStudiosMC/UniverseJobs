@@ -37,20 +37,33 @@ jobs:
   # When enabled, players will have all jobs and cannot leave them
   # This overrides 'max-jobs-per-player' and 'jobs-by-default' settings
   all-jobs-by-default: false
-  
+
   # List of job IDs that players automatically join and cannot leave
   # Only works when 'all-jobs-by-default' is false
   # Example: ["miner", "farmer", "hunter"]
   jobs-by-default: []
-  
+
   # Maximum number of jobs a player can have at once (ignored if all-jobs-by-default is true)
   max-jobs-per-player: 3
-  
+
   # Boost Calculation Mode
   # ADDITIVE: Multipliers are added together (2.5x + 2.5x = 5.0x)
   # MULTIPLICATIVE: Multipliers are multiplied (2.5x * 2.5x = 6.25x) - Current default
   # HIGHEST: Only the highest multiplier is used (3.0x, 2.5x = 3.0x)
   boost-calculation-mode: MULTIPLICATIVE
+
+  # Job Leave Penalty Settings
+  leave-penalty:
+    # Enable or disable penalties when leaving jobs
+    enabled: false
+    # Penalty type: "level" or "xp"
+    # level: lose a percentage of current level
+    # xp: lose a percentage of current xp
+    type: "level"
+
+    # Percentage to lose (0.0 to 1.0)
+    # Example: 0.1 = 10%, 0.25 = 25%, 0.5 = 50%
+    percentage: 0.1
 
 performance:
   batching-xp: 40 # XP batched every 60 ticks (3 seconds)
