@@ -17,6 +17,15 @@ action-limits:
     enabled: false
     time: "00:00"
 
+# mcMMO multipliers when abilities are active
+mcmmo:
+  greenterra:
+    money-amplifier: 1.8  # +80% money when Green Terra is active
+    xp-amplifier: 1.5     # +50% XP when Green Terra is active
+  herbalism_bonus:
+    money-amplifier: 1.3  # +30% money for herbalism related abilities
+    xp-amplifier: 1.2     # +20% XP for herbalism related abilities
+
 xp:
   type: "CURVE"
   xp: "example"

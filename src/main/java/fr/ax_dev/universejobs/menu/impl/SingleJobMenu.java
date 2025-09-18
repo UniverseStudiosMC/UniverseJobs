@@ -465,7 +465,7 @@ public class SingleJobMenu extends BaseMenu {
         placeholders.put("{job_name}", job.getDisplayName());
         placeholders.put("{job_description}", job.getDescription());
         placeholders.put("{job_description_lines}", String.join("\n", job.getDescriptionLines()));
-        placeholders.put("{job_max_level}", String.valueOf(job.getMaxLevel()));
+        placeholders.put("{job_max_level}", String.valueOf(playerData.getMaxLevel(job.getId())));
         placeholders.put("{job_permission}", job.getPermission() != null ? job.getPermission() : "none");
     }
     
@@ -495,7 +495,8 @@ public class SingleJobMenu extends BaseMenu {
      * Calculate and add progress-related placeholders efficiently.
      */
     private void calculateAndAddProgressPlaceholders(Map<String, String> placeholders, int playerLevel, long playerXp) {
-        if (playerLevel < job.getMaxLevel() && job.getXpCurve() != null) {
+        int effectiveMaxLevel = playerData.getMaxLevel(job.getId());
+        if (playerLevel < effectiveMaxLevel && job.getXpCurve() != null) {
             long nextLevelXp = (long) job.getXpCurve().getXpForLevel(playerLevel + 1);
             long xpToNext = Math.max(0, nextLevelXp - playerXp);
             double progress = Math.min(1.0, (double) playerXp / nextLevelXp);
