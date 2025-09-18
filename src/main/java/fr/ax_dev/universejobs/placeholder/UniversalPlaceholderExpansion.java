@@ -46,15 +46,30 @@ public class UniversalPlaceholderExpansion extends PlaceholderExpansion {
             return String.valueOf(plugin.getJobManager().getAllJobs().size());
         }
 
+        if (params.equalsIgnoreCase("equippedjobs")) {
+            if (player == null) return "0";
+            return String.valueOf(getEquippedJobsCount(player));
+        }
+
         String[] args = params.split("_");
         if (args.length < 1) return null;
 
         if (args[0].equalsIgnoreCase("global")) {
             return globalLeaderboardPlaceholder.onRequest(player, params);
         }
-        
+
         if (args[0].equalsIgnoreCase("boost")) {
             return boostPlaceholder.onRequest(player, params);
+        }
+
+        if (args[0].equalsIgnoreCase("equippedjobs") && args.length == 2) {
+            if (player == null) return "0";
+            return String.valueOf(getEquippedJobsOfTypeCount(player, args[1]));
+        }
+
+        if (args[0].equalsIgnoreCase("multiplier") && args.length == 2) {
+            if (player == null) return "1.0";
+            return String.valueOf(getUsageMultiplier(args[1]));
         }
 
         return jobsLeaderboardPlaceholder.onRequest(player, params);
@@ -67,5 +82,33 @@ public class UniversalPlaceholderExpansion extends PlaceholderExpansion {
 
     public void clearJobCache(String jobId) {
         jobsLeaderboardPlaceholder.clearJobCache(jobId);
+    }
+
+    private int getEquippedJobsCount(OfflinePlayer player) {
+        try {
+            return plugin.getDataStorage().getPlayerData(player.getUniqueId()).getJobs().size();
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    private int getEquippedJobsOfTypeCount(OfflinePlayer player, String jobType) {
+        try {
+            return (int) plugin.getDataStorage().getPlayerData(player.getUniqueId())
+                    .getJobs().stream()
+                    .filter(jobId -> jobType.equalsIgnoreCase(jobId))
+                    .count();
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    private double getUsageMultiplier(String jobId) {
+        try {
+            double userCount = plugin.getDataStorage().getJobUserCount(jobId);
+            return plugin.getJobManager().calculateUsageMultiplier(jobId, userCount);
+        } catch (Exception e) {
+            return 1.0;
+        }
     }
 }

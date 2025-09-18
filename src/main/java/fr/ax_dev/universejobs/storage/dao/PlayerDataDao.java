@@ -186,12 +186,32 @@ public class PlayerDataDao {
         return CompletableFuture.runAsync(() -> {
             try (Connection conn = connectionPool.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(deleteByPlayerAndJobSql)) {
-                
+
                 stmt.setString(1, playerId.toString());
                 stmt.setString(2, jobId);
                 stmt.executeUpdate();
             } catch (SQLException e) {
                 throw new RuntimeException("Failed to remove job data for " + playerId + " job " + jobId, e);
+            }
+        });
+    }
+
+    public CompletableFuture<Double> getJobUserCount(String jobId) {
+        return CompletableFuture.supplyAsync(() -> {
+            String countSql = "SELECT COUNT(DISTINCT player_uuid) FROM " + tableName + " WHERE job_id = ?";
+
+            try (Connection conn = connectionPool.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(countSql)) {
+
+                stmt.setString(1, jobId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return (double) rs.getInt(1);
+                    }
+                    return 0.0;
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException("Failed to get user count for job " + jobId, e);
             }
         });
     }

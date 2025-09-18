@@ -1114,6 +1114,47 @@ public class JobManager {
     public UniverseJobs getPlugin() {
         return plugin;
     }
+
+    public double calculateUsageMultiplier(String jobId, double userCount) {
+        FileConfiguration config = plugin.getConfig();
+
+        if (!config.getBoolean("usage-multiplier.enabled", false)) {
+            return 1.0;
+        }
+
+        String path = "usage-multiplier.jobs." + jobId;
+        if (!config.contains(path)) {
+            path = "usage-multiplier.default";
+        }
+
+        if (!config.contains(path)) {
+            return 1.0;
+        }
+
+        double minMultiplier = config.getDouble(path + ".min", 0.5);
+        double maxMultiplier = config.getDouble(path + ".max", 2.0);
+
+        double maxJobUsers = getMaxJobUserCount();
+        if (maxJobUsers <= 0 || userCount <= 0) {
+            return maxMultiplier;
+        }
+
+        double usagePercentage = userCount / maxJobUsers;
+        double multiplier = maxMultiplier - (usagePercentage * (maxMultiplier - minMultiplier));
+
+        return Math.max(minMultiplier, Math.min(maxMultiplier, multiplier));
+    }
+
+    private double getMaxJobUserCount() {
+        double maxUsers = 0.0;
+        for (String jobId : jobs.keySet()) {
+            double userCount = plugin.getDataStorage().getJobUserCount(jobId);
+            if (userCount > maxUsers) {
+                maxUsers = userCount;
+            }
+        }
+        return maxUsers;
+    }
     
     // Leaderboard batch system for performance (update every 10 seconds)
     private static final Map<String, LeaderboardBatchData> LEADERBOARD_BATCH = new ConcurrentHashMap<>();
