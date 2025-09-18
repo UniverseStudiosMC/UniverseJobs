@@ -209,12 +209,23 @@ public class PlayerJobData {
     
     /**
      * Set level for a job.
-     * 
+     *
      * @param jobId The job ID
      * @param level The level
      */
     public void setLevel(String jobId, int level) {
         levelData.put(jobId, Math.max(1, level));
+    }
+
+    /**
+     * Get the maximum level this player can reach for a job.
+     * Takes into account both job configuration and player permissions.
+     *
+     * @param jobId The job ID
+     * @return The effective max level
+     */
+    public int getMaxLevel(String jobId) {
+        return getEffectiveMaxLevel(jobId);
     }
     
     /**
@@ -309,8 +320,96 @@ public class PlayerJobData {
     }
     
     /**
+     * Get the effective max level for a player in a job, considering permissions.
+     *
+     * @param jobId The job ID
+     * @return The max level the player can reach
+     */
+    private int getEffectiveMaxLevel(String jobId) {
+        if (jobManager == null) {
+            return Integer.MAX_VALUE;
+        }
+
+        org.bukkit.entity.Player player = org.bukkit.Bukkit.getPlayer(playerUuid);
+        if (player == null || !player.isOnline()) {
+            Job job = jobManager.getJob(jobId);
+            return job != null ? job.getMaxLevel() : 100;
+        }
+
+        Job job = jobManager.getJob(jobId);
+        int defaultMaxLevel = job != null ? job.getMaxLevel() : 100;
+        int highestPermissionLevel = defaultMaxLevel;
+
+        // Check for permission-based max level overrides
+        // Look for explicit permissions even if player has wildcards
+        for (int level = 10000; level >= defaultMaxLevel; level--) {
+            String permission = "universejobs.job." + jobId + ".maxlevel." + level;
+
+            // Check if the permission is explicitly set (not just through wildcards)
+            if (hasExplicitPermission(player, permission)) {
+                highestPermissionLevel = level;
+                break;
+            }
+        }
+
+        return highestPermissionLevel;
+    }
+
+
+    /**
+     * Check if a player has an explicit permission (not just through wildcards).
+     * This method tries to detect if the permission is specifically assigned.
+     *
+     * @param player The player to check
+     * @param permission The permission to check
+     * @return true if the permission is explicitly set
+     */
+    private boolean hasExplicitPermission(org.bukkit.entity.Player player, String permission) {
+        // First check if player has the permission at all
+        if (!player.hasPermission(permission)) {
+            return false;
+        }
+
+        // If player doesn't have any wildcards, then it must be explicit
+        if (!hasWildcardPermission(player)) {
+            return true;
+        }
+
+        // Player has wildcards, so we need to check if the permission is explicitly set
+        // Try to access the permission attachment system
+        try {
+            // Check if the permission is set in any permission attachment
+            for (org.bukkit.permissions.PermissionAttachmentInfo info : player.getEffectivePermissions()) {
+                if (permission.equals(info.getPermission()) && info.getValue()) {
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            // Fallback: if we can't determine, allow it if they have the permission
+            return player.hasPermission(permission);
+        }
+
+        // Permission only comes from wildcards
+        return false;
+    }
+
+    /**
+     * Check if player has wildcard permissions.
+     *
+     * @param player The player to check
+     * @return true if player has wildcard permissions
+     */
+    private boolean hasWildcardPermission(org.bukkit.entity.Player player) {
+        // Check for common wildcard permissions (same as XP multiplier)
+        return player.hasPermission("*") ||
+               player.hasPermission("universejobs.*") ||
+               player.hasPermission("universejobs.job.*") ||
+               player.hasPermission("universejobs.job.*.maxlevel.*");
+    }
+
+    /**
      * Check if the player should level up and update accordingly.
-     * 
+     *
      * @param jobId The job ID
      * @param xpGained The XP gained that might trigger level up
      * @return true if leveled up
@@ -319,7 +418,13 @@ public class PlayerJobData {
         double totalXp = getXp(jobId);
         int currentLevel = getLevel(jobId);
         int calculatedLevel = getLevelFromXp(jobId, totalXp);
-        
+        int maxLevel = getEffectiveMaxLevel(jobId);
+
+        // Cap the calculated level to the effective max level
+        if (calculatedLevel > maxLevel) {
+            calculatedLevel = maxLevel;
+        }
+
         if (calculatedLevel > currentLevel) {
             setLevel(jobId, calculatedLevel);
             

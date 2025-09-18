@@ -6,6 +6,7 @@ import fr.ax_dev.universejobs.bonus.MoneyBonusManager;
 import fr.ax_dev.universejobs.condition.ConditionContext;
 import fr.ax_dev.universejobs.condition.ConditionResult;
 import fr.ax_dev.universejobs.config.MessageConfig;
+import fr.ax_dev.universejobs.integration.McMMOHandler;
 import fr.ax_dev.universejobs.job.Job;
 import fr.ax_dev.universejobs.job.JobManager;
 import fr.ax_dev.universejobs.utils.MessageUtils;
@@ -42,6 +43,7 @@ public class ActionProcessor {
     private final ConfigurationCache configCache;
     private final PlayerJobCache playerCache;
     private final BatchedRewardManager batchManager;
+    private final McMMOHandler mcmmoHandler;
     
     // Permission cache for performance (cleared every 30 seconds)
     private static final Map<UUID, Integer> PERMISSION_MULTIPLIER_CACHE = new ConcurrentHashMap<>();
@@ -60,9 +62,9 @@ public class ActionProcessor {
      * @param configCache The configuration cache
      * @param playerCache The player cache
      */
-    public ActionProcessor(UniverseJobs plugin, JobManager jobManager, XpBonusManager bonusManager, 
-                          MoneyBonusManager moneyBonusManager, AsyncXpMessageSender messageSender, 
-                          ActionLimitManager limitManager, ConfigurationCache configCache, 
+    public ActionProcessor(UniverseJobs plugin, JobManager jobManager, XpBonusManager bonusManager,
+                          MoneyBonusManager moneyBonusManager, AsyncXpMessageSender messageSender,
+                          ActionLimitManager limitManager, ConfigurationCache configCache,
                           PlayerJobCache playerCache) {
         this.plugin = plugin;
         this.jobManager = jobManager;
@@ -73,6 +75,7 @@ public class ActionProcessor {
         this.configCache = configCache;
         this.playerCache = playerCache;
         this.batchManager = new BatchedRewardManager(plugin);
+        this.mcmmoHandler = McMMOHandler.getInstance(plugin);
     }
     
     /**
@@ -429,15 +432,24 @@ public class ActionProcessor {
     private void processActionRewardsFast(Player player, Job job, JobAction action, ConditionContext context) {
         double xp = action.getXp();
         double money = action.getMoney();
-        
+
         if (xp == 0 && money == 0) return;
-        
+
         // Craft multiplier
         Object craftMultiplierObj = context.get("craft_multiplier");
         if (craftMultiplierObj instanceof Integer) {
             int craftMultiplier = (Integer) craftMultiplierObj;
             xp *= craftMultiplier;
             money *= craftMultiplier;
+        }
+
+        // Apply mcMMO multipliers if enabled
+        if (mcmmoHandler.isEnabled() && job.getMcmmoConfig() != null && !job.getMcmmoConfig().isEmpty()) {
+            double mcmmoMoneyMultiplier = mcmmoHandler.getActiveAbilityMultiplier(player, job.getMcmmoConfig(), true);
+            double mcmmoXpMultiplier = mcmmoHandler.getActiveAbilityMultiplier(player, job.getMcmmoConfig(), false);
+
+            money *= mcmmoMoneyMultiplier;
+            xp *= mcmmoXpMultiplier;
         }
         
         // Check action limits first (if any)

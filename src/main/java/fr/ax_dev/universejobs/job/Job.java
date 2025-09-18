@@ -2,6 +2,7 @@ package fr.ax_dev.universejobs.job;
 
 import fr.ax_dev.universejobs.action.ActionType;
 import fr.ax_dev.universejobs.action.JobAction;
+import fr.ax_dev.universejobs.integration.McMMOHandler;
 import fr.ax_dev.universejobs.xp.XpCurve;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -34,6 +35,7 @@ public class Job {
     private final String guiReward;
     private final String rewardsFile;
     private final ConfigurationSection config;
+    private final Map<String, McMMOHandler.McMMOAbilityConfig> mcmmoConfig;
     
     /**
      * Create a new Job instance.
@@ -90,14 +92,42 @@ public class Job {
         this.xpCurve = null; // Will be set by JobManager
         this.guiReward = config.getString("gui-reward");
         this.rewardsFile = config.getString("rewards");
-        
+
+        this.mcmmoConfig = loadMcMMOConfig(config.getConfigurationSection("mcmmo"));
+
         this.actions = new EnumMap<>(ActionType.class);
         loadActions(config.getConfigurationSection("actions"));
     }
     
     /**
+     * Load mcMMO configuration for ability modifiers.
+     *
+     * @param mcmmoSection The configuration section containing mcMMO data
+     * @return Map of ability names to their configurations
+     */
+    private Map<String, McMMOHandler.McMMOAbilityConfig> loadMcMMOConfig(ConfigurationSection mcmmoSection) {
+        Map<String, McMMOHandler.McMMOAbilityConfig> configMap = new HashMap<>();
+
+        if (mcmmoSection == null) {
+            return configMap;
+        }
+
+        for (String abilityName : mcmmoSection.getKeys(false)) {
+            ConfigurationSection abilitySection = mcmmoSection.getConfigurationSection(abilityName);
+            if (abilitySection != null) {
+                double moneyAmplifier = abilitySection.getDouble("money-amplifier", 1.0);
+                double xpAmplifier = abilitySection.getDouble("xp-amplifier", 1.0);
+                configMap.put(abilityName.toLowerCase(),
+                    new McMMOHandler.McMMOAbilityConfig(moneyAmplifier, xpAmplifier));
+            }
+        }
+
+        return configMap;
+    }
+
+    /**
      * Load actions from the configuration.
-     * 
+     *
      * @param actionsSection The actions configuration section
      */
     private void loadActions(ConfigurationSection actionsSection) {
@@ -269,8 +299,17 @@ public class Job {
     }
     
     /**
+     * Get the mcMMO configuration for this job.
+     *
+     * @return The mcMMO configuration map
+     */
+    public Map<String, McMMOHandler.McMMOAbilityConfig> getMcmmoConfig() {
+        return mcmmoConfig;
+    }
+
+    /**
      * Check if this job has any actions for the given action type.
-     * 
+     *
      * @param actionType The action type to check
      * @return true if actions exist
      */

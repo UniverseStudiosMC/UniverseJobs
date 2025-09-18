@@ -17,7 +17,16 @@ action-limits:
     enabled: false
     time: "00:00"
 
-xp: 
+# mcMMO multipliers when abilities are active
+mcmmo:
+  superbreaker:
+    money-amplifier: 1.5  # +50% money when Super Breaker is active
+    xp-amplifier: 1.3     # +30% XP when Super Breaker is active
+  gigadrillbreaker:
+    money-amplifier: 1.4  # +40% money when Giga Drill Breaker is active
+    xp-amplifier: 1.2     # +20% XP when Giga Drill Breaker is active
+
+xp:
   type: "CURVE"
   xp: "example"
   message:

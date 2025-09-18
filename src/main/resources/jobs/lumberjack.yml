@@ -17,6 +17,12 @@ action-limits:
     enabled: true
     time: "00:00"
 
+# mcMMO multipliers when abilities are active
+mcmmo:
+  treefeller:
+    money-amplifier: 2.0  # +100% money when Tree Feller is active
+    xp-amplifier: 1.8     # +80% XP when Tree Feller is active
+
 xp:
   type: "CURVE"
   xp: "example"

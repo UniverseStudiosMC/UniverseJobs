@@ -167,9 +167,12 @@ public class InfoStatsCommandHandler extends JobCommandHandler {
      * Show information about a specific job.
      */
     private void showJobInfo(Player player, Job job) {
+        PlayerJobData playerData = plugin.getJobManager().getPlayerData(player);
+        int effectiveMaxLevel = playerData.getMaxLevel(job.getId());
+
         MessageUtils.sendMessage(player, languageManager.getMessage("commands.info.job.header", "job", job.getName()));
         MessageUtils.sendMessage(player, languageManager.getMessage("commands.info.job.description", "description", job.getDescription()));
-        MessageUtils.sendMessage(player, languageManager.getMessage("commands.info.job.max-level", "level", String.valueOf(job.getMaxLevel())));
+        MessageUtils.sendMessage(player, languageManager.getMessage("commands.info.job.max-level", "level", String.valueOf(effectiveMaxLevel)));
         MessageUtils.sendMessage(player, languageManager.getMessage("commands.info.job.permission", "permission", job.getPermission()));
         
         if (!job.getLore().isEmpty()) {

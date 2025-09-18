@@ -430,7 +430,7 @@ public class JobsMainMenu extends BaseMenu {
         placeholders.put("job_name", job.getName());
         placeholders.put("job_description", job.getDescription());
         placeholders.put("job_description_lines", String.join("\n", job.getDescriptionLines()));
-        placeholders.put("job_max_level", String.valueOf(job.getMaxLevel()));
+        placeholders.put("job_max_level", String.valueOf(playerData.getMaxLevel(job.getId())));
         placeholders.put("job_permission", job.getPermission() != null ? job.getPermission() : "none");
     }
     
@@ -450,7 +450,8 @@ public class JobsMainMenu extends BaseMenu {
      */
     private void addProgressPlaceholders(Map<String, String> placeholders, Job job, boolean hasJob, int playerLevel, long playerXp) {
         // Calculate progress based on saved stats, regardless of current job status
-        if (job.getXpCurve() != null && playerLevel > 0 && playerLevel < job.getMaxLevel()) {
+        int effectiveMaxLevel = playerData.getMaxLevel(job.getId());
+        if (job.getXpCurve() != null && playerLevel > 0 && playerLevel < effectiveMaxLevel) {
             calculateAndAddProgressValues(placeholders, job, playerLevel, playerXp);
         } else {
             addDefaultProgressValues(placeholders, job, playerLevel);
@@ -485,7 +486,7 @@ public class JobsMainMenu extends BaseMenu {
         placeholders.put("next_level_xp", "0");
         placeholders.put("current_level_xp", "0");
         
-        boolean isMaxLevel = playerLevel >= job.getMaxLevel();
+        boolean isMaxLevel = playerLevel >= playerData.getMaxLevel(job.getId());
         placeholders.put("progress_percent", isMaxLevel ? "100.0" : "0.0");
         placeholders.put("progress_bar", createProgressBarOptimized(isMaxLevel ? 100 : 0));
     }

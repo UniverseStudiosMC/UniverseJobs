@@ -17,6 +17,18 @@ action-limits:
     enabled: false
     time: "00:00"
 
+# mcMMO multipliers when abilities are active
+mcmmo:
+  berserk:
+    money-amplifier: 1.7  # +70% money when Berserk is active
+    xp-amplifier: 1.4     # +40% XP when Berserk is active
+  skullsplitter:
+    money-amplifier: 1.6  # +60% money when Skull Splitter is active
+    xp-amplifier: 1.3     # +30% XP when Skull Splitter is active
+  serratedstrikes:
+    money-amplifier: 1.5  # +50% money when Serrated Strikes is active
+    xp-amplifier: 1.2     # +20% XP when Serrated Strikes is active
+
 xp:
   type: "CURVE"
   xp: "example"
