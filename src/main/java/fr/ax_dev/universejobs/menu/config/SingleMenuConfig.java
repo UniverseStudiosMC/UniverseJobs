@@ -22,12 +22,14 @@ public class SingleMenuConfig {
     private final JobItemFormat jobItemFormat;
     private final ActionItemFormat actionItemFormat;
     private final Map<String, Integer> jobSlots;
-    
+    private final ConfigurationSection rawConfig;
+
     public SingleMenuConfig(ConfigurationSection config) {
         this(config, null);
     }
 
     public SingleMenuConfig(ConfigurationSection config, ConfigurationSection globalDefaults) {
+        this.rawConfig = config;
         this.title = config.getString("title", "&6Jobs Menu");
         this.size = config.getInt("size", 54);
         this.enablePagination = config.getBoolean("pagination.enabled", true);
@@ -254,5 +256,6 @@ public class SingleMenuConfig {
     public JobItemFormat getJobItemFormat() { return jobItemFormat; }
     public ActionItemFormat getActionItemFormat() { return actionItemFormat; }
     public Map<String, Integer> getJobSlots() { return new HashMap<>(jobSlots); }
-    
+    public ConfigurationSection getRawConfig() { return rawConfig; }
+
 }
