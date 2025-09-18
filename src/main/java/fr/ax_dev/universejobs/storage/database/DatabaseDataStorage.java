@@ -369,4 +369,35 @@ public class DatabaseDataStorage implements DataStorage {
     public JobStatsDao getJobStatsDao() {
         return jobStatsDao;
     }
+
+    @Override
+    public double getJobUserCount(String jobId) {
+        try {
+            return playerDataDao.getJobUserCount(jobId).get();
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to get job user count for " + jobId, e);
+            return 0.0;
+        }
+    }
+
+    @Override
+    public PlayerJobData getPlayerData(UUID playerId) {
+        PlayerJobData cached = cache.get(playerId);
+        if (cached != null) {
+            cacheHits++;
+            return cached;
+        }
+
+        cacheMisses++;
+        try {
+            PlayerJobData data = loadPlayerDataAsync(playerId).get();
+            cache.put(playerId, data);
+            return data;
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to load player data for " + playerId, e);
+            PlayerJobData newData = new PlayerJobData(playerId);
+            cache.put(playerId, newData);
+            return newData;
+        }
+    }
 }

@@ -147,3 +147,22 @@ placeholders:
   job_status:
     joined: "<#abffb3>Active"
     not_joined: "<#ff6b6b>Not Joined"
+
+# Usage-based multiplier system
+# Adjusts rewards based on how many players use each job relative to other jobs
+usage-multiplier:
+  enabled: false
+
+  # Default settings for all jobs
+  default:
+    min: 0.5         # Minimum multiplier (for most popular job - 100% usage)
+    max: 2.0         # Maximum multiplier (for least popular job - lowest % usage)
+
+  # Per-job specific settings (overrides default)
+  jobs:
+    miner:
+      min: 0.3
+      max: 2.5
+    farmer:
+      min: 0.6
+      max: 1.8

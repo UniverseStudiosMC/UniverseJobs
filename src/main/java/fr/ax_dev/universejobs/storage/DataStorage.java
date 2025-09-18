@@ -117,8 +117,24 @@ public interface DataStorage extends RewardStorage {
     
     /**
      * Get detailed health information.
-     * 
+     *
      * @return Map containing health information
      */
     Map<String, Object> getHealthInfo();
+
+    /**
+     * Get the number of users for a specific job.
+     *
+     * @param jobId The job ID
+     * @return Number of users with this job
+     */
+    double getJobUserCount(String jobId);
+
+    /**
+     * Get player job data synchronously (cache lookup).
+     *
+     * @param playerId The player UUID
+     * @return PlayerJobData or creates new if not found
+     */
+    PlayerJobData getPlayerData(UUID playerId);
 }
