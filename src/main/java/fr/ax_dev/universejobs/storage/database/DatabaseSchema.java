@@ -52,6 +52,7 @@ public class DatabaseSchema {
                     "xp DOUBLE NOT NULL DEFAULT 0, " +
                     "level INT NOT NULL DEFAULT 1, " +
                     "last_modified BIGINT NOT NULL DEFAULT 0, " +
+                    "last_login BIGINT NOT NULL DEFAULT 0, " +
                     "PRIMARY KEY (player_uuid, job_id), " +
                     "INDEX idx_player (player_uuid), " +
                     "INDEX idx_job (job_id)" +
@@ -63,6 +64,7 @@ public class DatabaseSchema {
                     "xp REAL NOT NULL DEFAULT 0, " +
                     "level INTEGER NOT NULL DEFAULT 1, " +
                     "last_modified INTEGER NOT NULL DEFAULT 0, " +
+                    "last_login INTEGER NOT NULL DEFAULT 0, " +
                     "PRIMARY KEY (player_uuid, job_id)" +
                     ")";
         }

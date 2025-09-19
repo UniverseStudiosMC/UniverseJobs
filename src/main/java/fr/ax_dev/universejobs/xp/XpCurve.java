@@ -217,13 +217,23 @@ public class XpCurve {
     
     /**
      * Get the XP required to go from one level to the next.
-     * 
+     *
      * @param currentLevel The current level
      * @return The XP required for next level
      */
     public double getXpToNextLevel(int currentLevel) {
         if (currentLevel <= 0) return getXpForLevel(2);
         return getXpForLevel(currentLevel + 1) - getXpForLevel(currentLevel);
+    }
+
+    /**
+     * Get the level from a given amount of XP (alias for getLevelForXp with default max level).
+     *
+     * @param xp The XP amount
+     * @return The level
+     */
+    public int getLevelFromXp(double xp) {
+        return getLevelForXp(xp, 100);
     }
     
     /**

@@ -84,11 +84,17 @@ public class MaterialUtils {
         // Try to get material directly (for blocks) - case insensitive
         try {
             Material material = fr.ax_dev.universejobs.utils.EnumUtils.parseMaterial(normalizedTarget, null);
-            if (material != null) {
+            if (material != null && material.isItem()) {
                 return material;
             }
         } catch (IllegalArgumentException e) {
             // Not a valid material, might be an entity
+        }
+
+        // Handle crop stems and non-item materials
+        Material cropMaterial = getCropMaterialForStem(normalizedTarget);
+        if (cropMaterial != null) {
+            return cropMaterial;
         }
         
         // Try to get spawn egg for entities - case insensitive
@@ -111,8 +117,14 @@ public class MaterialUtils {
             return fallbackMaterial;
         }
         
-        // No valid material found
-        throw new IllegalArgumentException("No valid material found for target: " + target);
+        // Fallback for special cases
+        Material specialMaterial = getSpecialMaterial(normalizedTarget);
+        if (specialMaterial != null) {
+            return specialMaterial;
+        }
+
+        // Default fallback instead of throwing exception
+        return Material.STONE;
     }
     
     /**
@@ -349,7 +361,39 @@ public class MaterialUtils {
         if (tool.contains("hoe")) return Material.DIAMOND_HOE;
         return Material.STICK;
     }
-    
+
+    /**
+     * Get crop material for stem blocks that aren't items.
+     */
+    private static Material getCropMaterialForStem(String target) {
+        return switch (target.toUpperCase()) {
+            case "MELON_STEM", "ATTACHED_MELON_STEM" -> Material.MELON_SLICE;
+            case "PUMPKIN_STEM", "ATTACHED_PUMPKIN_STEM" -> Material.PUMPKIN;
+            case "CARROTS" -> Material.CARROT;
+            case "POTATOES" -> Material.POTATO;
+            case "BEETROOTS" -> Material.BEETROOT;
+            case "WHEAT" -> Material.WHEAT_SEEDS;
+            case "COCOA" -> Material.COCOA_BEANS;
+            case "NETHER_WART" -> Material.NETHER_WART;
+            case "SWEET_BERRY_BUSH" -> Material.SWEET_BERRIES;
+            default -> null;
+        };
+    }
+
+    /**
+     * Get material for special cases like PLAYER, etc.
+     */
+    /**
+     * Retourne le Material pour les cas spéciaux comme PLAYER, etc.
+     */
+    private static Material getSpecialMaterial(String target) {
+        switch (target.toUpperCase()) {
+            case "PLAYER":
+                return Material.PLAYER_HEAD;
+            default:
+                return null;
+        }
+    }
     /**
      * Map processed/refined materials to their source materials for better display.
      * 

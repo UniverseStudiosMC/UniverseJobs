@@ -86,10 +86,22 @@ public class EnumUtils {
     }
     
     /**
-     * Safely parse a Material enum value.
+     * Safely parse a Material enum value with flexible name matching.
+     * Supports both HONEY_BOTTLE and HONEYBOTTLE formats.
      */
     public static Material parseMaterial(String materialName, Material defaultMaterial) {
-        return parseEnumSafely(Material.class, materialName, defaultMaterial);
+        if (materialName == null || materialName.isEmpty()) {
+            return defaultMaterial;
+        }
+
+        // Try the original name first
+        Material result = parseEnumSafely(Material.class, materialName, null);
+        if (result != null) {
+            return result;
+        }
+
+        // If not found, try flexible material name matching
+        return parseMaterialFlexible(materialName, defaultMaterial);
     }
     
     /**
@@ -120,6 +132,44 @@ public class EnumUtils {
         return parseEnumSafely(BarStyle.class, styleName, defaultStyle);
     }
     
+    /**
+     * Flexible material parsing that handles underscore variations.
+     * Examples: HONEYBOTTLE -> HONEY_BOTTLE, honey_bottle -> HONEY_BOTTLE
+     */
+    public static Material parseMaterialFlexible(String materialName, Material defaultMaterial) {
+        if (materialName == null || materialName.isEmpty()) {
+            return defaultMaterial;
+        }
+
+        String normalizedName = materialName.trim().toUpperCase();
+
+        try {
+            // Get all Material values via reflection
+            Method valuesMethod = Material.class.getMethod("values");
+            Material[] values = (Material[]) valuesMethod.invoke(null);
+
+            for (Material material : values) {
+                String materialNameStr = material.name();
+
+                // Exact match (case insensitive)
+                if (materialNameStr.equalsIgnoreCase(normalizedName)) {
+                    return material;
+                }
+
+                // Match without underscores (HONEY_BOTTLE matches HONEYBOTTLE)
+                String withoutUnderscores = materialNameStr.replace("_", "");
+                String inputWithoutUnderscores = normalizedName.replace("_", "");
+                if (withoutUnderscores.equalsIgnoreCase(inputWithoutUnderscores)) {
+                    return material;
+                }
+            }
+        } catch (Exception e) {
+            // Fallback to default parsing if reflection fails
+        }
+
+        return defaultMaterial;
+    }
+
     /**
      * Generic safe enum parsing using reflection to avoid valueOf() issues.
      */

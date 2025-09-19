@@ -456,11 +456,37 @@ public class Job {
     
     /**
      * Get the display name of this job (alias for getName()).
-     * 
+     *
      * @return The job display name
      */
     public String getDisplayName() {
         return name;
+    }
+
+    /**
+     * Get the XP required for a specific level.
+     *
+     * @param level The level
+     * @return The XP required for that level
+     */
+    public double getXpForLevel(int level) {
+        if (xpCurve != null) {
+            return xpCurve.getXpForLevel(level);
+        }
+        return 0.0;
+    }
+
+    /**
+     * Get the level from a given amount of XP.
+     *
+     * @param xp The XP amount
+     * @return The level
+     */
+    public int getLevelFromXp(double xp) {
+        if (xpCurve != null) {
+            return xpCurve.getLevelFromXp(xp);
+        }
+        return 1;
     }
     
     /**

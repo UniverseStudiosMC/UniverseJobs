@@ -268,6 +268,14 @@ public class ActionLimitManager {
             }
         }.runTaskTimer(plugin, 20 * 60, 20 * 60); // Every minute
     }
+
+    /**
+     * Check and reset limits based on configured schedules.
+     * This method is called by the daily task scheduler.
+     */
+    public void checkAndResetLimits() {
+        checkScheduledRestore();
+    }
     
     /**
      * Check if it's time for scheduled restore and execute if needed.

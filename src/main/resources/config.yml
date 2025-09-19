@@ -54,16 +54,59 @@ jobs:
 
   # Job Leave Penalty Settings
   leave-penalty:
-    # Enable or disable penalties when leaving jobs
+    # Enable or disable penalties when leaving jobs globally
     enabled: false
-    # Penalty type: "level" or "xp"
-    # level: lose a percentage of current level
-    # xp: lose a percentage of current xp
-    type: "level"
+    # Default penalty settings (can be overridden per job)
+    default:
+      # Penalty type: "level" or "xp"
+      # level: lose a percentage of current level
+      # xp: lose a percentage of current xp
+      type: "level"
+      # Percentage to lose (0.0 to 1.0)
+      # Example: 0.1 = 10%, 0.25 = 25%, 0.5 = 50%
+      percentage: 0.1
+    # Per-job specific penalty settings (overrides default)
+    jobs:
+      miner:
+        type: "xp"
+        percentage: 0.15
+      farmer:
+        type: "level"
+        percentage: 0.05
 
-    # Percentage to lose (0.0 to 1.0)
-    # Example: 0.1 = 10%, 0.25 = 25%, 0.5 = 50%
-    percentage: 0.1
+  # Inactivity Decay Settings
+  # Automatically reduce levels/xp for inactive players
+  inactivity-decay:
+    # Enable or disable inactivity decay globally
+    enabled: false
+    # Number of days before a player is considered inactive
+    days-before-inactive: 30
+    # Number of days before completely removing player data (0 = never remove)
+    days-before-removal: 90
+    # Default decay settings (can be overridden per job)
+    default:
+      # Decay type: "level" or "xp" or "percentage"
+      # level: lose X levels per day
+      # xp: lose X xp per day
+      # percentage: lose X% of current level per day
+      type: "percentage"
+      # Amount to lose per day of inactivity
+      # For "percentage" type: 0.01 = 1%, 0.05 = 5%
+      # For "level" type: number of levels to lose
+      # For "xp" type: amount of xp to lose
+      amount: 0.01
+      # Minimum level to keep (players won't go below this level)
+      min-level: 1
+    # Per-job specific decay settings (overrides default)
+    jobs:
+      miner:
+        type: "percentage"
+        amount: 0.015
+        min-level: 1
+      farmer:
+        type: "level"
+        amount: 1
+        min-level: 5
 
 performance:
   batching-xp: 40 # XP batched every 60 ticks (3 seconds)

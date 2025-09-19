@@ -137,4 +137,12 @@ public interface DataStorage extends RewardStorage {
      * @return PlayerJobData or creates new if not found
      */
     PlayerJobData getPlayerData(UUID playerId);
+
+    /**
+     * Delete all data for a specific player.
+     *
+     * @param playerId The player UUID
+     * @return CompletableFuture that completes when deletion is done
+     */
+    CompletableFuture<Void> deletePlayerData(UUID playerId);
 }

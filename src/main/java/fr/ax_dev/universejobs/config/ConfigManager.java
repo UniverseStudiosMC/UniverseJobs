@@ -221,21 +221,100 @@ public class ConfigManager {
     }
 
     /**
-     * Get the leave penalty type.
+     * Get the leave penalty type for a specific job.
      *
+     * @param jobId The job ID
      * @return "level" or "xp"
      */
-    public String getLeavePenaltyType() {
-        return plugin.getConfig().getString("jobs.leave-penalty.type", "level");
+    public String getLeavePenaltyType(String jobId) {
+        String jobPath = "jobs.leave-penalty.jobs." + jobId + ".type";
+        if (plugin.getConfig().contains(jobPath)) {
+            return plugin.getConfig().getString(jobPath);
+        }
+        return plugin.getConfig().getString("jobs.leave-penalty.default.type", "level");
     }
 
     /**
-     * Get the leave penalty percentage.
+     * Get the leave penalty percentage for a specific job.
      *
+     * @param jobId The job ID
      * @return The penalty percentage (0.0 to 1.0)
      */
-    public double getLeavePenaltyPercentage() {
-        return plugin.getConfig().getDouble("jobs.leave-penalty.percentage", 0.1);
+    public double getLeavePenaltyPercentage(String jobId) {
+        String jobPath = "jobs.leave-penalty.jobs." + jobId + ".percentage";
+        if (plugin.getConfig().contains(jobPath)) {
+            return plugin.getConfig().getDouble(jobPath);
+        }
+        return plugin.getConfig().getDouble("jobs.leave-penalty.default.percentage", 0.1);
+    }
+
+    /**
+     * Check if inactivity decay is enabled.
+     *
+     * @return true if enabled
+     */
+    public boolean isInactivityDecayEnabled() {
+        return plugin.getConfig().getBoolean("jobs.inactivity-decay.enabled", false);
+    }
+
+    /**
+     * Get days before a player is considered inactive.
+     *
+     * @return number of days
+     */
+    public int getDaysBeforeInactive() {
+        return plugin.getConfig().getInt("jobs.inactivity-decay.days-before-inactive", 30);
+    }
+
+    /**
+     * Get days before player data is removed.
+     *
+     * @return number of days (0 = never)
+     */
+    public int getDaysBeforeRemoval() {
+        return plugin.getConfig().getInt("jobs.inactivity-decay.days-before-removal", 90);
+    }
+
+    /**
+     * Get the inactivity decay type for a specific job.
+     *
+     * @param jobId The job ID
+     * @return "percentage", "level", or "xp"
+     */
+    public String getInactivityDecayType(String jobId) {
+        String jobPath = "jobs.inactivity-decay.jobs." + jobId + ".type";
+        if (plugin.getConfig().contains(jobPath)) {
+            return plugin.getConfig().getString(jobPath);
+        }
+        return plugin.getConfig().getString("jobs.inactivity-decay.default.type", "percentage");
+    }
+
+    /**
+     * Get the inactivity decay amount for a specific job.
+     *
+     * @param jobId The job ID
+     * @return The decay amount per day
+     */
+    public double getInactivityDecayAmount(String jobId) {
+        String jobPath = "jobs.inactivity-decay.jobs." + jobId + ".amount";
+        if (plugin.getConfig().contains(jobPath)) {
+            return plugin.getConfig().getDouble(jobPath);
+        }
+        return plugin.getConfig().getDouble("jobs.inactivity-decay.default.amount", 0.01);
+    }
+
+    /**
+     * Get the minimum level to keep for a specific job.
+     *
+     * @param jobId The job ID
+     * @return The minimum level
+     */
+    public int getInactivityDecayMinLevel(String jobId) {
+        String jobPath = "jobs.inactivity-decay.jobs." + jobId + ".min-level";
+        if (plugin.getConfig().contains(jobPath)) {
+            return plugin.getConfig().getInt(jobPath);
+        }
+        return plugin.getConfig().getInt("jobs.inactivity-decay.default.min-level", 1);
     }
 
     /**
