@@ -400,4 +400,21 @@ public class DatabaseDataStorage implements DataStorage {
             return newData;
         }
     }
+
+    @Override
+    public CompletableFuture<Void> deletePlayerData(UUID playerId) {
+        return CompletableFuture.runAsync(() -> {
+            cache.remove(playerId);
+            rewardCache.remove(playerId);
+
+            try {
+                playerDataDao.deletePlayerData(playerId).get();
+                rewardDao.deletePlayerRewards(playerId).get();
+                leaderboardDao.removeFromLeaderboard(playerId).get();
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.SEVERE, "Failed to delete player data for " + playerId, e);
+                throw new RuntimeException("Failed to delete player data", e);
+            }
+        });
+    }
 }

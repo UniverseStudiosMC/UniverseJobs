@@ -28,6 +28,7 @@ public class PlayerJobData {
     private final ReadWriteLock dataLock = new ReentrantReadWriteLock();
     private final AtomicBoolean isLoading = new AtomicBoolean(false);
     private volatile long lastModified = System.currentTimeMillis();
+    private volatile long lastLogin = System.currentTimeMillis();
     
     // Reference to JobManager for XP curve calculations
     private volatile JobManager jobManager;
@@ -538,11 +539,29 @@ public class PlayerJobData {
     
     /**
      * Get the last modification time.
-     * 
+     *
      * @return Last modification timestamp
      */
     public long getLastModified() {
         return lastModified;
+    }
+
+    /**
+     * Get the last login time.
+     *
+     * @return Last login timestamp
+     */
+    public long getLastLogin() {
+        return lastLogin;
+    }
+
+    /**
+     * Set the last login time.
+     *
+     * @param lastLogin The last login timestamp
+     */
+    public void setLastLogin(long lastLogin) {
+        this.lastLogin = lastLogin;
     }
     
     /**

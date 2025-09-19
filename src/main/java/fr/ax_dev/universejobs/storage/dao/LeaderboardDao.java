@@ -245,6 +245,21 @@ public class LeaderboardDao {
         globalLeaderboardCache.clear();
         lastCacheUpdate = 0;
     }
+
+    public CompletableFuture<Void> removeFromLeaderboard(UUID playerId) {
+        return CompletableFuture.runAsync(() -> {
+            String sql = "DELETE FROM " + leaderboardCacheTable + " WHERE player_uuid = ?";
+            try (Connection conn = connectionPool.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+                stmt.setString(1, playerId.toString());
+                stmt.executeUpdate();
+                invalidateCache();
+            } catch (SQLException e) {
+                throw new RuntimeException("Failed to remove player from leaderboard: " + playerId, e);
+            }
+        });
+    }
     
     public static class LeaderboardEntry {
         private final UUID playerId;

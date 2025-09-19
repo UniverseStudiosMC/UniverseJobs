@@ -597,12 +597,10 @@ public class JobManager {
      */
     private void createDefaultJobs() {
         String[] defaultJobs = {"miner.yml", "farmer.yml", "hunter.yml", "lumberjack.yml"};
-        int createdCount = 0;
 
         for (String jobFile : defaultJobs) {
             try {
                 plugin.saveResource("jobs/" + jobFile, false);
-                createdCount++;
             } catch (IllegalArgumentException e) {
                 plugin.getLogger().warning("Could not create job file " + jobFile + ": " + e.getMessage());
             }
@@ -829,8 +827,8 @@ public class JobManager {
             return;
         }
 
-        String penaltyType = plugin.getConfigManager().getLeavePenaltyType();
-        double penaltyPercentage = plugin.getConfigManager().getLeavePenaltyPercentage();
+        String penaltyType = plugin.getConfigManager().getLeavePenaltyType(jobId);
+        double penaltyPercentage = plugin.getConfigManager().getLeavePenaltyPercentage(jobId);
 
         if (penaltyPercentage <= 0.0 || penaltyPercentage > 1.0) {
             return;
@@ -882,11 +880,40 @@ public class JobManager {
     
     /**
      * Get performance statistics from the performance manager.
-     * 
+     *
      * @return Map containing performance statistics
      */
     public Map<String, Object> getPerformanceStats() {
         return new java.util.HashMap<>(); // Performance manager removed
+    }
+
+    /**
+     * Remove all data for a specific player.
+     *
+     * @param playerUuid The player's UUID
+     */
+    public void removePlayerData(UUID playerUuid) {
+        dataLock.writeLock().lock();
+        try {
+            playerData.remove(playerUuid);
+            if (plugin.getDataStorage() != null) {
+                plugin.getDataStorage().deletePlayerData(playerUuid);
+            }
+        } finally {
+            dataLock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * Mark player data as dirty (needs saving).
+     *
+     * @param playerUuid The player's UUID
+     */
+    public void markDataDirty(UUID playerUuid) {
+        PlayerJobData data = getPlayerData(playerUuid);
+        if (data != null) {
+            savePlayerData(playerUuid);
+        }
     }
     
     /**

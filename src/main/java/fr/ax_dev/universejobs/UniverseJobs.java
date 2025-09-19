@@ -59,9 +59,11 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
     private PlaceholderManager placeholderManager;
     private MythicMobsHandler mythicMobsHandler;
     private BukkitTask saveTask;
+    private BukkitTask dailyTask;
     private long startTime;
     private fr.ax_dev.universejobs.utils.PluginAccessor accessor;
     private UpdateChecker updateChecker;
+    private fr.ax_dev.universejobs.job.InactivityDecayManager inactivityDecayManager;
     
     // ========== STORAGE SYSTEM ==========
     private DataStorage dataStorage;
@@ -280,9 +282,15 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
             getLogger().log(Level.WARNING, "Failed to initialize PlaceholderAPI integration", e);
         }
         
+        // Initialize inactivity decay manager
+        this.inactivityDecayManager = new fr.ax_dev.universejobs.job.InactivityDecayManager(this, jobManager);
+
         // Start periodic save task
         startSaveTask();
-        
+
+        // Start daily task for inactivity decay
+        startDailyTask();
+
         // Check for optional dependencies
         checkDependencies();
         
@@ -336,6 +344,10 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         if (saveTask != null && !saveTask.isCancelled()) {
             saveTask.cancel();
             saveTask = null;
+        }
+        if (dailyTask != null && !dailyTask.isCancelled()) {
+            dailyTask.cancel();
+            dailyTask = null;
         }
     }
     
@@ -430,9 +442,42 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
                 }
                 jobManager.saveAllPlayerData();
             }, saveInterval * 20L, saveInterval * 20L);
-            
+
             // Auto-save task started
         }
+    }
+
+    private void startDailyTask() {
+        long ticksIn24Hours = 20L * 60L * 60L * 24L;
+
+        long initialDelay = calculateInitialDelayToMidnight();
+
+        foliaManager.runTimerAsync(() -> {
+            if (configManager.isDebugEnabled()) {
+                getLogger().info("Running daily tasks...");
+            }
+
+            if (inactivityDecayManager != null) {
+                inactivityDecayManager.processInactivePlayersAsync();
+            }
+
+            if (limitManager != null) {
+                limitManager.checkAndResetLimits();
+            }
+        }, initialDelay, ticksIn24Hours);
+    }
+
+    private long calculateInitialDelayToMidnight() {
+        java.util.Calendar now = java.util.Calendar.getInstance();
+        java.util.Calendar nextMidnight = java.util.Calendar.getInstance();
+        nextMidnight.add(java.util.Calendar.DAY_OF_MONTH, 1);
+        nextMidnight.set(java.util.Calendar.HOUR_OF_DAY, 0);
+        nextMidnight.set(java.util.Calendar.MINUTE, 0);
+        nextMidnight.set(java.util.Calendar.SECOND, 0);
+        nextMidnight.set(java.util.Calendar.MILLISECOND, 0);
+
+        long millisecondsUntilMidnight = nextMidnight.getTimeInMillis() - now.getTimeInMillis();
+        return (millisecondsUntilMidnight / 50L);
     }
     
     /**
@@ -497,7 +542,12 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
             rewardManager.loadPlayerData(event.getPlayer());
             // Précharge immédiatement dans le cache
             playerCache.preloadPlayer(event.getPlayer().getUniqueId());
-            
+
+            // Update last login time for inactivity tracking
+            if (inactivityDecayManager != null) {
+                inactivityDecayManager.updatePlayerActivity(event.getPlayer().getUniqueId());
+            }
+
             if (configCache.isDebugEnabled()) {
                 getLogger().info("Loaded data and preloaded cache for player: " + event.getPlayer().getName());
             }

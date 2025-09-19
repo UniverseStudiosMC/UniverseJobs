@@ -136,6 +136,20 @@ public class RewardDao {
         });
     }
 
+    public CompletableFuture<Void> deletePlayerRewards(UUID playerId) {
+        return CompletableFuture.runAsync(() -> {
+            String sql = "DELETE FROM " + tableName + " WHERE player_uuid = ?";
+            try (Connection conn = connectionPool.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+                stmt.setString(1, playerId.toString());
+                stmt.executeUpdate();
+            } catch (SQLException e) {
+                throw new RuntimeException("Failed to delete player rewards for " + playerId, e);
+            }
+        });
+    }
+
     public CompletableFuture<Map<String, Long>> getClaimedRewardsWithTime(UUID playerId, String jobId) {
         return CompletableFuture.supplyAsync(() -> {
             Map<String, Long> claimedRewards = new HashMap<>();

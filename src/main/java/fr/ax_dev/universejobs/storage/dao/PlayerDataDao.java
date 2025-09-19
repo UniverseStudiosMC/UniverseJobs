@@ -196,6 +196,20 @@ public class PlayerDataDao {
         });
     }
 
+    public CompletableFuture<Void> deletePlayerData(UUID playerId) {
+        return CompletableFuture.runAsync(() -> {
+            String sql = "DELETE FROM " + tableName + " WHERE player_uuid = ?";
+            try (Connection conn = connectionPool.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+                stmt.setString(1, playerId.toString());
+                stmt.executeUpdate();
+            } catch (SQLException e) {
+                throw new RuntimeException("Failed to delete player data for " + playerId, e);
+            }
+        });
+    }
+
     public CompletableFuture<Double> getJobUserCount(String jobId) {
         return CompletableFuture.supplyAsync(() -> {
             String countSql = "SELECT COUNT(DISTINCT player_uuid) FROM " + tableName + " WHERE job_id = ?";
