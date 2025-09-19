@@ -7,6 +7,7 @@ import fr.ax_dev.universejobs.levelup.SimpleLevelUpActionManager;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -32,6 +33,13 @@ public class PlayerJobData {
     
     // Reference to JobManager for XP curve calculations
     private volatile JobManager jobManager;
+
+    // Permission cache with size limit
+    private static final int MAX_CACHE_SIZE = 100;
+    private static final Map<String, Integer> maxLevelCache = new ConcurrentHashMap<>();
+    private static final Map<String, Long> cacheAccessTimes = new ConcurrentHashMap<>();
+    private static final long CACHE_DURATION = TimeUnit.SECONDS.toMillis(30);
+    private static volatile long lastCacheClear = System.currentTimeMillis();
     
     /**
      * Create new player job data.
@@ -44,11 +52,21 @@ public class PlayerJobData {
     
     /**
      * Set the JobManager reference for XP curve calculations.
-     * 
+     *
      * @param jobManager The JobManager instance
      */
     public void setJobManager(JobManager jobManager) {
         this.jobManager = jobManager;
+    }
+
+    /**
+     * Clear permission cache for this player.
+     * Should be called when player leaves or permissions change.
+     */
+    public void clearPermissionCache() {
+        String playerKey = playerUuid.toString();
+        maxLevelCache.entrySet().removeIf(entry -> entry.getKey().startsWith(playerKey + ":"));
+        cacheAccessTimes.entrySet().removeIf(entry -> entry.getKey().startsWith(playerKey + ":"));
     }
     
     /**
@@ -337,76 +355,75 @@ public class PlayerJobData {
             return job != null ? job.getMaxLevel() : 100;
         }
 
+        clearCacheIfNeeded();
+
+        String cacheKey = playerUuid.toString() + ":" + jobId;
+        Integer cachedLevel = maxLevelCache.get(cacheKey);
+        if (cachedLevel != null) {
+            cacheAccessTimes.put(cacheKey, System.currentTimeMillis());
+            return cachedLevel;
+        }
+
         Job job = jobManager.getJob(jobId);
         int defaultMaxLevel = job != null ? job.getMaxLevel() : 100;
-        int highestPermissionLevel = defaultMaxLevel;
+        int maxLevel = defaultMaxLevel;
 
-        // Check for permission-based max level overrides
-        // Look for explicit permissions even if player has wildcards
-        for (int level = 10000; level >= defaultMaxLevel; level--) {
-            String permission = "universejobs.job." + jobId + ".maxlevel." + level;
+        // Parse effective permissions to find the highest maxlevel permission
+        String permissionPrefix = "universejobs.job." + jobId + ".maxlevel.";
 
-            // Check if the permission is explicitly set (not just through wildcards)
-            if (hasExplicitPermission(player, permission)) {
-                highestPermissionLevel = level;
-                break;
-            }
-        }
-
-        return highestPermissionLevel;
-    }
-
-
-    /**
-     * Check if a player has an explicit permission (not just through wildcards).
-     * This method tries to detect if the permission is specifically assigned.
-     *
-     * @param player The player to check
-     * @param permission The permission to check
-     * @return true if the permission is explicitly set
-     */
-    private boolean hasExplicitPermission(org.bukkit.entity.Player player, String permission) {
-        // First check if player has the permission at all
-        if (!player.hasPermission(permission)) {
-            return false;
-        }
-
-        // If player doesn't have any wildcards, then it must be explicit
-        if (!hasWildcardPermission(player)) {
-            return true;
-        }
-
-        // Player has wildcards, so we need to check if the permission is explicitly set
-        // Try to access the permission attachment system
-        try {
-            // Check if the permission is set in any permission attachment
-            for (org.bukkit.permissions.PermissionAttachmentInfo info : player.getEffectivePermissions()) {
-                if (permission.equals(info.getPermission()) && info.getValue()) {
-                    return true;
+        for (org.bukkit.permissions.PermissionAttachmentInfo info : player.getEffectivePermissions()) {
+            if (info.getValue() && info.getPermission().startsWith(permissionPrefix)) {
+                String levelStr = info.getPermission().substring(permissionPrefix.length());
+                try {
+                    int level = Integer.parseInt(levelStr);
+                    if (level > maxLevel) {
+                        maxLevel = level;
+                    }
+                } catch (NumberFormatException ignored) {
+                    // Ignore non-numeric permission endings
                 }
             }
-        } catch (Exception e) {
-            // Fallback: if we can't determine, allow it if they have the permission
-            return player.hasPermission(permission);
         }
 
-        // Permission only comes from wildcards
-        return false;
+        // Add to cache with size management
+        addToCache(cacheKey, maxLevel);
+        return maxLevel;
     }
 
-    /**
-     * Check if player has wildcard permissions.
-     *
-     * @param player The player to check
-     * @return true if player has wildcard permissions
-     */
-    private boolean hasWildcardPermission(org.bukkit.entity.Player player) {
-        // Check for common wildcard permissions (same as XP multiplier)
-        return player.hasPermission("*") ||
-               player.hasPermission("universejobs.*") ||
-               player.hasPermission("universejobs.job.*") ||
-               player.hasPermission("universejobs.job.*.maxlevel.*");
+    private void addToCache(String key, int value) {
+        // Check if cache is full
+        if (maxLevelCache.size() >= MAX_CACHE_SIZE) {
+            // Remove oldest entry
+            String oldestKey = null;
+            long oldestTime = Long.MAX_VALUE;
+
+            for (Map.Entry<String, Long> entry : cacheAccessTimes.entrySet()) {
+                if (entry.getValue() < oldestTime) {
+                    oldestTime = entry.getValue();
+                    oldestKey = entry.getKey();
+                }
+            }
+
+            if (oldestKey != null) {
+                maxLevelCache.remove(oldestKey);
+                cacheAccessTimes.remove(oldestKey);
+            }
+        }
+
+        maxLevelCache.put(key, value);
+        cacheAccessTimes.put(key, System.currentTimeMillis());
     }
+
+    private void clearCacheIfNeeded() {
+        long now = System.currentTimeMillis();
+        if (now - lastCacheClear > CACHE_DURATION) {
+            maxLevelCache.clear();
+            cacheAccessTimes.clear();
+            lastCacheClear = now;
+        }
+    }
+
+
 
     /**
      * Check if the player should level up and update accordingly.

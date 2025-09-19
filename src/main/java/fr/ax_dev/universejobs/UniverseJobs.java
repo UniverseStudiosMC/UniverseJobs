@@ -15,6 +15,7 @@ import fr.ax_dev.universejobs.config.ConfigManager;
 import fr.ax_dev.universejobs.config.LanguageManager;
 import fr.ax_dev.universejobs.integration.MythicMobsHandler;
 import fr.ax_dev.universejobs.job.JobManager;
+import fr.ax_dev.universejobs.job.PlayerJobData;
 import fr.ax_dev.universejobs.levelup.SimpleLevelUpActionManager;
 import fr.ax_dev.universejobs.listener.JobActionListener;
 import fr.ax_dev.universejobs.listener.EnchantEventListener;
@@ -563,10 +564,16 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         if (messageSender != null) {
             messageSender.cleanupPlayer(event.getPlayer());
         }
-        
+
+        // Clear permission cache for this player
+        PlayerJobData playerData = jobManager.getPlayerData(event.getPlayer().getUniqueId());
+        if (playerData != null) {
+            playerData.clearPermissionCache();
+        }
+
         // Cleanup cache immédiatement
         playerCache.cleanupPlayer(event.getPlayer().getUniqueId());
-        
+
         // Save player data asynchronously
         foliaManager.runAsync(() -> {
             jobManager.savePlayerData(event.getPlayer());
