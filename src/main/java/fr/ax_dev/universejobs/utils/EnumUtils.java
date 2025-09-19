@@ -8,12 +8,30 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.entity.EntityType;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 
 /**
  * Utility class for safe enum parsing that works across all Minecraft/Paper versions.
  * Avoids IncompatibleClassChangeError on Paper 1.21+ by using reflection.
  */
 public class EnumUtils {
+
+    // Cache for enum parsing results to avoid repeated reflection calls
+    private static final Map<String, Object> enumCache = new ConcurrentHashMap<>();
+    private static final int MAX_CACHE_SIZE = 500;
+
+    // Pre-cache Material values since they're used frequently
+    private static Material[] cachedMaterialValues = null;
+
+    static {
+        try {
+            Method valuesMethod = Material.class.getMethod("values");
+            cachedMaterialValues = (Material[]) valuesMethod.invoke(null);
+        } catch (Exception e) {
+            // Fallback to runtime fetching if initialization fails
+        }
+    }
     
     /**
      * Safely parse a Sound enum value using reflection to avoid version conflicts.
@@ -94,14 +112,37 @@ public class EnumUtils {
             return defaultMaterial;
         }
 
+        // Check cache first
+        String cacheKey = "Material:" + materialName.toUpperCase();
+        Object cached = enumCache.get(cacheKey);
+        if (cached != null) {
+            return cached == NullMarker.INSTANCE ? defaultMaterial : (Material) cached;
+        }
+
         // Try the original name first
         Material result = parseEnumSafely(Material.class, materialName, null);
         if (result != null) {
+            addToCache(cacheKey, result);
             return result;
         }
 
         // If not found, try flexible material name matching
-        return parseMaterialFlexible(materialName, defaultMaterial);
+        result = parseMaterialFlexible(materialName, defaultMaterial);
+        addToCache(cacheKey, result != null ? result : NullMarker.INSTANCE);
+        return result;
+    }
+
+    // Marker object for null values in cache
+    private static class NullMarker {
+        static final NullMarker INSTANCE = new NullMarker();
+    }
+
+    private static void addToCache(String key, Object value) {
+        if (enumCache.size() >= MAX_CACHE_SIZE) {
+            // Simple eviction: clear entire cache when full
+            enumCache.clear();
+        }
+        enumCache.put(key, value);
     }
     
     /**
@@ -143,28 +184,32 @@ public class EnumUtils {
 
         String normalizedName = materialName.trim().toUpperCase();
 
-        try {
-            // Get all Material values via reflection
-            Method valuesMethod = Material.class.getMethod("values");
-            Material[] values = (Material[]) valuesMethod.invoke(null);
-
-            for (Material material : values) {
-                String materialNameStr = material.name();
-
-                // Exact match (case insensitive)
-                if (materialNameStr.equalsIgnoreCase(normalizedName)) {
-                    return material;
-                }
-
-                // Match without underscores (HONEY_BOTTLE matches HONEYBOTTLE)
-                String withoutUnderscores = materialNameStr.replace("_", "");
-                String inputWithoutUnderscores = normalizedName.replace("_", "");
-                if (withoutUnderscores.equalsIgnoreCase(inputWithoutUnderscores)) {
-                    return material;
-                }
+        // Use cached Material values if available
+        Material[] values = cachedMaterialValues;
+        if (values == null) {
+            try {
+                // Fallback to runtime fetching if cache is not available
+                Method valuesMethod = Material.class.getMethod("values");
+                values = (Material[]) valuesMethod.invoke(null);
+            } catch (Exception e) {
+                return defaultMaterial;
             }
-        } catch (Exception e) {
-            // Fallback to default parsing if reflection fails
+        }
+
+        for (Material material : values) {
+            String materialNameStr = material.name();
+
+            // Exact match (case insensitive)
+            if (materialNameStr.equalsIgnoreCase(normalizedName)) {
+                return material;
+            }
+
+            // Match without underscores (HONEY_BOTTLE matches HONEYBOTTLE)
+            String withoutUnderscores = materialNameStr.replace("_", "");
+            String inputWithoutUnderscores = normalizedName.replace("_", "");
+            if (withoutUnderscores.equalsIgnoreCase(inputWithoutUnderscores)) {
+                return material;
+            }
         }
 
         return defaultMaterial;
@@ -178,46 +223,62 @@ public class EnumUtils {
         if (value == null || value.isEmpty()) {
             return defaultValue;
         }
-        
+
+        // Check cache first
+        String cacheKey = enumClass.getSimpleName() + ":" + value.toUpperCase();
+        Object cached = enumCache.get(cacheKey);
+        if (cached != null) {
+            return cached == NullMarker.INSTANCE ? defaultValue : (T) cached;
+        }
+
+        T result = null;
+
         try {
             // Method 1: Try using valueOf via reflection
             try {
                 Method valueOfMethod = enumClass.getMethod("valueOf", String.class);
-                Object result = valueOfMethod.invoke(null, value.toUpperCase());
-                if (enumClass.isInstance(result)) {
-                    return (T) result;
+                Object enumResult = valueOfMethod.invoke(null, value.toUpperCase());
+                if (enumClass.isInstance(enumResult)) {
+                    result = (T) enumResult;
                 }
             } catch (Exception e) {
                 // valueOf failed, try next method
             }
-            
-            // Method 2: Try getting field directly
-            try {
-                java.lang.reflect.Field field = enumClass.getField(value.toUpperCase());
-                if (field.getType() == enumClass) {
-                    return (T) field.get(null);
-                }
-            } catch (Exception e) {
-                // Field access failed, try next method
-            }
-            
-            // Method 3: Iterate through values() via reflection
-            try {
-                Method valuesMethod = enumClass.getMethod("values");
-                T[] values = (T[]) valuesMethod.invoke(null);
-                for (T enumConstant : values) {
-                    if (enumConstant.name().equalsIgnoreCase(value)) {
-                        return enumConstant;
+
+            if (result == null) {
+                // Method 2: Try getting field directly
+                try {
+                    java.lang.reflect.Field field = enumClass.getField(value.toUpperCase());
+                    if (field.getType() == enumClass) {
+                        result = (T) field.get(null);
                     }
+                } catch (Exception e) {
+                    // Field access failed, try next method
                 }
-            } catch (Exception e) {
-                // values() failed
             }
-            
+
+            if (result == null) {
+                // Method 3: Iterate through values() via reflection
+                try {
+                    Method valuesMethod = enumClass.getMethod("values");
+                    T[] values = (T[]) valuesMethod.invoke(null);
+                    for (T enumConstant : values) {
+                        if (enumConstant.name().equalsIgnoreCase(value)) {
+                            result = enumConstant;
+                            break;
+                        }
+                    }
+                } catch (Exception e) {
+                    // values() failed
+                }
+            }
+
         } catch (Exception e) {
             // All methods failed
         }
-        
-        return defaultValue;
+
+        // Cache the result
+        addToCache(cacheKey, result != null ? result : NullMarker.INSTANCE);
+        return result != null ? result : defaultValue;
     }
 }
