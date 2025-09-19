@@ -242,7 +242,6 @@ public class GlobalRankingsMenu extends BaseMenu {
             defaultSlots = Arrays.asList(19, 28, 37, 46);
         }
 
-        plugin.getLogger().info("DEBUG: Default slots for job selection: " + defaultSlots);
 
         org.bukkit.configuration.ConfigurationSection jobsConfig =
             selectionConfig.getConfigurationSection("jobs");
@@ -259,14 +258,12 @@ public class GlobalRankingsMenu extends BaseMenu {
                 org.bukkit.configuration.ConfigurationSection jobConfig = jobsConfig.getConfigurationSection(jobId);
                 if (jobConfig != null && jobConfig.contains("slot")) {
                     slot = jobConfig.getInt("slot");
-                    plugin.getLogger().info("DEBUG: Job " + jobId + " has specific slot: " + slot);
                 }
             }
 
             // Use default slots if no specific slot configured
             if (slot == null && slotIndex < defaultSlots.size()) {
                 slot = defaultSlots.get(slotIndex);
-                plugin.getLogger().info("DEBUG: Job " + jobId + " using default slot index " + slotIndex + ": " + slot);
                 slotIndex++;
             }
 
@@ -274,12 +271,7 @@ public class GlobalRankingsMenu extends BaseMenu {
                 ItemStack button = createJobSelectionButton(job, jobId.equals(selectedJob), selectionConfig, jobsConfig);
                 if (button != null) {
                     inventory.setItem(slot, button);
-                    plugin.getLogger().info("DEBUG: Placed job button for " + jobId + " at slot " + slot);
-                } else {
-                    plugin.getLogger().warning("DEBUG: Failed to create button for job " + jobId);
                 }
-            } else {
-                plugin.getLogger().warning("DEBUG: Invalid slot for job " + jobId + ": " + slot);
             }
         }
     }
