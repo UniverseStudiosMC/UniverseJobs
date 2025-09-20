@@ -49,6 +49,7 @@ actions:
       target: "WHEAT"
       age: 7
       display-name: "Wheat"
+      action-menu-priority: 1
       lore:
       - "<gray>Harvest fully grown wheat"
       xp: 2.0
@@ -59,6 +60,7 @@ actions:
       target: "CARROTS"
       age: 7
       display-name: "Carrots"
+      action-menu-priority: 2
       display-material: "carrot"
       lore:
       - "<gray>Harvest fully grown carrots"
@@ -70,6 +72,7 @@ actions:
       target: "POTATOES"
       age: 7
       display-name: "Potatoes"
+      action-menu-priority: 3
       display-material: "potato"
       lore:
       - "<gray>Harvest fully grown potatoes"
@@ -81,6 +84,7 @@ actions:
       target: "BEETROOTS"
       age: 3
       display-name: "Beetroots"
+      action-menu-priority: 4
       display-material: "beetroot"
       lore:
       - "<gray>Harvest fully grown beetroots"
@@ -92,6 +96,7 @@ actions:
       target: "NETHER_WART"
       age: 3
       display-name: "Nether wart"
+      action-menu-priority: 5
       lore:
       - "<gray>Harvest fully grown nether wart"
       xp: 3.0
@@ -101,6 +106,7 @@ actions:
     harvest_pumpkin:
       target: "PUMPKIN"
       display-name: "Pumpkin"
+      action-menu-priority: 6
       lore:
       - "<gray>Harvest pumpkins"
       xp: 3.5
@@ -109,6 +115,7 @@ actions:
     harvest_melon:
       target: "MELON"
       display-name: "Melon"
+      action-menu-priority: 7
       lore:
       - "<gray>Harvest melons"
       xp: 3.5
@@ -118,6 +125,7 @@ actions:
     harvest_sugar_cane:
       target: "SUGAR_CANE"
       display-name: "Sugar cane"
+      action-menu-priority: 8
       lore:
       - "<gray>Harvest sugar cane"
       xp: 1.5
@@ -127,6 +135,7 @@ actions:
     harvest_bamboo:
       target: "BAMBOO"
       display-name: "Bamboo"
+      action-menu-priority: 9
       lore:
       - "<gray>Harvest bamboo"
       xp: 1.0
@@ -137,6 +146,7 @@ actions:
       target: "COCOA"
       age: 2
       display-name: "Cocoa beans"
+      action-menu-priority: 10
       display-material: "COCOA_BEANS"
       lore:
       - "<gray>Harvest cocoa beans"
@@ -147,6 +157,7 @@ actions:
     harvest_cactus:
       target: "CACTUS"
       display-name: "Cactus"
+      action-menu-priority: 11
       lore:
       - "<gray>Harvest cactus"
       xp: 1.5
@@ -157,6 +168,7 @@ actions:
       target: "SWEET_BERRY_BUSH"
       age: 3
       display-name: "Sweet berries"
+      action-menu-priority: 12
       display-material: "SWEET_BERRIES"
       lore:
       - "<gray>Harvest sweet berries"
@@ -167,6 +179,7 @@ actions:
     harvest_kelp:
       target: "KELP"
       display-name: "Kelp"
+      action-menu-priority: 13
       lore:
       - "<gray>Harvest kelp"
       xp: 1.0
@@ -176,6 +189,7 @@ actions:
     harvest_sea_pickle:
       target: "SEA_PICKLE"
       display-name: "Sea pickle"
+      action-menu-priority: 14
       lore:
       - "<gray>Harvest sea pickles"
       xp: 1.5
@@ -186,6 +200,7 @@ actions:
     plant_wheat_seeds:
       target: "WHEAT_SEEDS"
       display-name: "Wheat seeds"
+      action-menu-priority: 15
       lore:
       - "<gray>Plant wheat seeds"
       xp: 0.5
@@ -194,6 +209,7 @@ actions:
     plant_carrot:
       target: "CARROT"
       display-name: "Carrot"
+      action-menu-priority: 16
       display-material: "carrot"
       lore:
       - "<gray>Plant carrots"
@@ -203,6 +219,7 @@ actions:
     plant_potato:
       target: "POTATO"
       display-name: "Potato"
+      action-menu-priority: 17
       lore:
       - "<gray>Plant potatoes"
       xp: 0.8
@@ -211,6 +228,7 @@ actions:
     plant_beetroot_seeds:
       target: "BEETROOT_SEEDS"
       display-name: "Beetroot seeds"
+      action-menu-priority: 18
       lore:
       - "<gray>Plant beetroot seeds"
       xp: 0.5
@@ -219,6 +237,7 @@ actions:
     plant_nether_wart:
       target: "NETHER_WART"
       display-name: "Nether wart"
+      action-menu-priority: 19
       lore:
       - "<gray>Plant nether wart"
       xp: 1.0
@@ -227,6 +246,7 @@ actions:
     plant_pumpkin_seeds:
       target: "PUMPKIN_SEEDS"
       display-name: "Pumpkin seeds"
+      action-menu-priority: 20
       lore:
       - "<gray>Plant pumpkin seeds"
       xp: 1.0
@@ -235,6 +255,7 @@ actions:
     plant_melon_seeds:
       target: "MELON_SEEDS"
       display-name: "Melon seeds"
+      action-menu-priority: 21
       lore:
       - "<gray>Plant melon seeds"
       xp: 1.0
@@ -243,6 +264,7 @@ actions:
     plant_sugar_cane:
       target: "SUGAR_CANE"
       display-name: "Sugar cane"
+      action-menu-priority: 22
       lore:
       - "<gray>Plant sugar cane"
       xp: 0.5
@@ -251,6 +273,7 @@ actions:
     plant_bamboo:
       target: "BAMBOO"
       display-name: "Bamboo"
+      action-menu-priority: 23
       lore:
       - "<gray>Plant bamboo"
       xp: 0.3
@@ -259,6 +282,7 @@ actions:
     plant_cactus:
       target: "CACTUS"
       display-name: "Cactus"
+      action-menu-priority: 24
       lore:
       - "<gray>Plant cactus"
       xp: 0.5
@@ -267,6 +291,7 @@ actions:
     plant_sweet_berries:
       target: "SWEET_BERRIES"
       display-name: "Sweet berries"
+      action-menu-priority: 25
       lore:
       - "<gray>Plant sweet berries"
       xp: 0.8
@@ -275,6 +300,7 @@ actions:
     plant_kelp:
       target: "KELP"
       display-name: "Kelp"
+      action-menu-priority: 26
       lore:
       - "<gray>Plant kelp"
       xp: 0.3
@@ -283,6 +309,7 @@ actions:
     plant_sea_pickle:
       target: "SEA_PICKLE"
       display-name: "Sea pickle"
+      action-menu-priority: 27
       lore:
       - "<gray>Plant sea pickles"
       xp: 0.5
@@ -294,6 +321,7 @@ actions:
       target: "SHEEP"
       color: "WHITE"
       display-name: "White sheep"
+      action-menu-priority: 28
       lore:
       - "<gray>Shear white sheep for wool"
       xp: 3.0
@@ -302,6 +330,7 @@ actions:
     shear_sheep:
       target: "SHEEP"
       display-name: "All sheep"
+      action-menu-priority: 29
       lore:
       - "<gray>Shear All sheep for wool"
       xp: 1.0

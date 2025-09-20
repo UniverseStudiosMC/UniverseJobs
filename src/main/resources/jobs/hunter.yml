@@ -51,6 +51,7 @@ actions:
     kill_zombie:
       target: "ZOMBIE"
       display-name: "Zombie"
+      action-menu-priority: 1
       lore:
       - "<gray>Kill zombies"
       xp: 3.0
@@ -59,6 +60,7 @@ actions:
     kill_skeleton:
       target: "SKELETON"
       display-name: "Skeleton"
+      action-menu-priority: 2
       lore:
       - "<gray>Kill skeletons"
       xp: 3.5
@@ -67,6 +69,7 @@ actions:
     kill_creeper:
       target: "CREEPER"
       display-name: "Creeper"
+      action-menu-priority: 3
       lore:
       - "<gray>Kill creepers"
       xp: 4.0
@@ -75,6 +78,7 @@ actions:
     kill_spider:
       target: "SPIDER"
       display-name: "Spider"
+      action-menu-priority: 4
       lore:
       - "<gray>Kill spiders"
       xp: 2.5
@@ -83,6 +87,7 @@ actions:
     kill_enderman:
       target: "ENDERMAN"
       display-name: "Enderman"
+      action-menu-priority: 5
       lore:
       - "<gray>Kill endermen"
       xp: 8.0
@@ -91,6 +96,7 @@ actions:
     kill_witch:
       target: "WITCH"
       display-name: "Witch"
+      action-menu-priority: 6
       lore:
       - "<gray>Kill witches"
       xp: 6.0
@@ -100,6 +106,7 @@ actions:
     kill_zombie_pigman:
       target: "ZOMBIFIED_PIGLIN"
       display-name: "Zombified Piglin"
+      action-menu-priority: 7
       lore:
       - "<gray>Kill zombified piglins"
       xp: 4.5
@@ -108,6 +115,7 @@ actions:
     kill_blaze:
       target: "BLAZE"
       display-name: "Blaze"
+      action-menu-priority: 8
       lore:
       - "<gray>Kill blazes"
       xp: 7.0
@@ -116,6 +124,7 @@ actions:
     kill_ghast:
       target: "GHAST"
       display-name: "Ghast"
+      action-menu-priority: 9
       lore:
       - "<gray>Kill ghasts"
       xp: 10.0
@@ -124,6 +133,7 @@ actions:
     kill_wither_skeleton:
       target: "WITHER_SKELETON"
       display-name: "Wither Skeleton"
+      action-menu-priority: 10
       lore:
       - "<gray>Kill wither skeletons"
       xp: 8.0
@@ -133,6 +143,7 @@ actions:
     kill_cow:
       target: "COW"
       display-name: "Cow"
+      action-menu-priority: 11
       lore:
       - "<gray>Kill cows"
       xp: 1.5
@@ -141,6 +152,7 @@ actions:
     kill_pig:
       target: "PIG"
       display-name: "Pig"
+      action-menu-priority: 12
       lore:
       - "<gray>Kill pigs"
       xp: 1.5
@@ -149,6 +161,7 @@ actions:
     kill_sheep:
       target: "SHEEP"
       display-name: "Sheep"
+      action-menu-priority: 13
       lore:
       - "<gray>Kill sheep"
       xp: 1.5
@@ -157,6 +170,7 @@ actions:
     kill_chicken:
       target: "CHICKEN"
       display-name: "Chicken"
+      action-menu-priority: 14
       lore:
       - "<gray>Kill chickens"
       xp: 1.0
@@ -165,6 +179,7 @@ actions:
     kill_rabbit:
       target: "RABBIT"
       display-name: "Rabbit"
+      action-menu-priority: 15
       lore:
       - "<gray>Kill rabbits"
       xp: 1.2
@@ -174,6 +189,7 @@ actions:
     kill_squid:
       target: "SQUID"
       display-name: "Squid"
+      action-menu-priority: 16
       lore:
       - "<gray>Kill squids"
       xp: 2.0
@@ -182,6 +198,7 @@ actions:
     kill_guardian:
       target: "GUARDIAN"
       display-name: "Guardian"
+      action-menu-priority: 17
       lore:
       - "<gray>Kill guardians"
       xp: 6.0
@@ -190,6 +207,7 @@ actions:
     kill_elder_guardian:
       target: "ELDER_GUARDIAN"
       display-name: "Elder Guardian"
+      action-menu-priority: 18
       lore:
       - "<gray>Kill elder guardians"
       xp: 15.0
@@ -200,6 +218,7 @@ actions:
     catch_fish:
       target: "COD"
       display-name: "Cod"
+      action-menu-priority: 19
       lore:
       - "<gray>Catch cod"
       xp: 2.0
@@ -208,6 +227,7 @@ actions:
     catch_salmon:
       target: "SALMON"
       display-name: "Salmon"
+      action-menu-priority: 20
       lore:
       - "<gray>Catch salmon"
       xp: 2.5
@@ -216,6 +236,7 @@ actions:
     catch_tropical_fish:
       target: "TROPICAL_FISH"
       display-name: "Tropical Fish"
+      action-menu-priority: 21
       lore:
       - "<gray>Catch tropical fish"
       xp: 3.0
@@ -224,6 +245,7 @@ actions:
     catch_pufferfish:
       target: "PUFFERFISH"
       display-name: "Pufferfish"
+      action-menu-priority: 22
       lore:
       - "<gray>Catch pufferfish"
       xp: 4.0
