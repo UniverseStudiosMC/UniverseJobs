@@ -46,268 +46,188 @@ xp:
       show-progress: true
 
 actions:
-  BREAK:
-    # Wheat farming
-    harvest_wheat:
-      target: "WHEAT"
-      age: 7
-      display-name: "Wheat"
+  KILL:
+    # Hostile mobs
+    kill_zombie:
+      target: "ZOMBIE"
+      display-name: "Zombie"
       lore:
-      - "<gray>Harvest fully grown wheat"
-      xp: 2.0
-      money: 1.5
-
-    # Carrot farming
-    harvest_carrot:
-      target: "CARROTS"
-      age: 7
-      display-name: "Carrots"
-      display-material: "carrot"
-      lore:
-      - "<gray>Harvest fully grown carrots"
-      xp: 2.5
-      money: 2.0
-
-    # Potato farming
-    harvest_potato:
-      target: "POTATOES"
-      age: 7
-      display-name: "Potatoes"
-      display-material: "potato"
-      lore:
-      - "<gray>Harvest fully grown potatoes"
-      xp: 2.5
-      money: 2.0
-
-    # Beetroot farming
-    harvest_beetroot:
-      target: "BEETROOTS"
-      age: 3
-      display-name: "Beetroots"
-      display-material: "beetroot"
-      lore:
-      - "<gray>Harvest fully grown beetroots"
-      xp: 2.0
-      money: 1.8
-
-    # Nether wart farming
-    harvest_nether_wart:
-      target: "NETHER_WART"
-      age: 3
-      display-name: "Nether wart"
-      lore:
-      - "<gray>Harvest fully grown nether wart"
+      - "<gray>Kill zombies"
       xp: 3.0
       money: 2.5
 
-    # Pumpkin and melon
-    harvest_pumpkin:
-      target: "PUMPKIN"
-      display-name: "Pumpkin"
+    kill_skeleton:
+      target: "SKELETON"
+      display-name: "Skeleton"
       lore:
-      - "<gray>Harvest pumpkins"
+      - "<gray>Kill skeletons"
       xp: 3.5
       money: 3.0
 
-    harvest_melon:
-      target: "MELON"
-      display-name: "Melon"
+    kill_creeper:
+      target: "CREEPER"
+      display-name: "Creeper"
       lore:
-      - "<gray>Harvest melons"
-      xp: 3.5
-      money: 3.0
+      - "<gray>Kill creepers"
+      xp: 4.0
+      money: 4.0
 
-    # Sugar cane
-    harvest_sugar_cane:
-      target: "SUGAR_CANE"
-      display-name: "Sugar cane"
+    kill_spider:
+      target: "SPIDER"
+      display-name: "Spider"
       lore:
-      - "<gray>Harvest sugar cane"
-      xp: 1.5
-      money: 1.0
-
-    # Bamboo
-    harvest_bamboo:
-      target: "BAMBOO"
-      display-name: "Bamboo"
-      lore:
-      - "<gray>Harvest bamboo"
-      xp: 1.0
-      money: 0.8
-
-    # Cocoa beans
-    harvest_cocoa:
-      target: "COCOA"
-      age: 2
-      display-name: "Cocoa beans"
-      display-material: "COCOA_BEANS"
-      lore:
-      - "<gray>Harvest cocoa beans"
+      - "<gray>Kill spiders"
       xp: 2.5
-      money: 2.2
-
-    # Cactus
-    harvest_cactus:
-      target: "CACTUS"
-      display-name: "Cactus"
-      lore:
-      - "<gray>Harvest cactus"
-      xp: 1.5
-      money: 1.2
-
-    # Sweet berries
-    harvest_sweet_berries:
-      target: "SWEET_BERRY_BUSH"
-      age: 3
-      display-name: "Sweet berries"
-      display-material: "SWEET_BERRIES"
-      lore:
-      - "<gray>Harvest sweet berries"
-      xp: 2.0
-      money: 1.8
-
-    # Kelp
-    harvest_kelp:
-      target: "KELP"
-      display-name: "Kelp"
-      lore:
-      - "<gray>Harvest kelp"
-      xp: 1.0
-      money: 0.5
-
-    # Sea pickle
-    harvest_sea_pickle:
-      target: "SEA_PICKLE"
-      display-name: "Sea pickle"
-      lore:
-      - "<gray>Harvest sea pickles"
-      xp: 1.5
-      money: 1.5
-
-  PLACE:
-    # Planting crops
-    plant_wheat_seeds:
-      target: "WHEAT_SEEDS"
-      display-name: "Wheat seeds"
-      lore:
-      - "<gray>Plant wheat seeds"
-      xp: 0.5
-      money: 0.2
-
-    plant_carrot:
-      target: "CARROT"
-      display-name: "Carrot"
-      lore:
-      - "<gray>Plant carrots"
-      xp: 0.8
-      money: 0.3
-
-    plant_potato:
-      target: "POTATO"
-      display-name: "Potato"
-      lore:
-      - "<gray>Plant potatoes"
-      xp: 0.8
-      money: 0.3
-
-    plant_beetroot_seeds:
-      target: "BEETROOT_SEEDS"
-      display-name: "Beetroot seeds"
-      lore:
-      - "<gray>Plant beetroot seeds"
-      xp: 0.5
-      money: 0.2
-
-    plant_nether_wart:
-      target: "NETHER_WART"
-      display-name: "Nether wart"
-      lore:
-      - "<gray>Plant nether wart"
-      xp: 1.0
-      money: 0.5
-
-    plant_pumpkin_seeds:
-      target: "PUMPKIN_SEEDS"
-      display-name: "Pumpkin seeds"
-      lore:
-      - "<gray>Plant pumpkin seeds"
-      xp: 1.0
-      money: 0.4
-
-    plant_melon_seeds:
-      target: "MELON_SEEDS"
-      display-name: "Melon seeds"
-      lore:
-      - "<gray>Plant melon seeds"
-      xp: 1.0
-      money: 0.4
-
-    plant_sugar_cane:
-      target: "SUGAR_CANE"
-      display-name: "Sugar cane"
-      lore:
-      - "<gray>Plant sugar cane"
-      xp: 0.5
-      money: 0.2
-
-    plant_bamboo:
-      target: "BAMBOO"
-      display-name: "Bamboo"
-      lore:
-      - "<gray>Plant bamboo"
-      xp: 0.3
-      money: 0.1
-
-    plant_cactus:
-      target: "CACTUS"
-      display-name: "Cactus"
-      lore:
-      - "<gray>Plant cactus"
-      xp: 0.5
-      money: 0.2
-
-    plant_sweet_berries:
-      target: "SWEET_BERRIES"
-      display-name: "Sweet berries"
-      lore:
-      - "<gray>Plant sweet berries"
-      xp: 0.8
-      money: 0.3
-
-    plant_kelp:
-      target: "KELP"
-      display-name: "Kelp"
-      lore:
-      - "<gray>Plant kelp"
-      xp: 0.3
-      money: 0.1
-
-    plant_sea_pickle:
-      target: "SEA_PICKLE"
-      display-name: "Sea pickle"
-      lore:
-      - "<gray>Plant sea pickles"
-      xp: 0.5
-      money: 0.3
-
-  SHEAR:
-    # Sheep shearing
-    shear_white_sheep:
-      target: "SHEEP"
-      color: "WHITE"
-      display-name: "White sheep"
-      lore:
-      - "<gray>Shear white sheep for wool"
-      xp: 3.0
       money: 2.0
 
-    shear_sheep:
-      target: "SHEEP"
-      display-name: "All sheep"
+    kill_enderman:
+      target: "ENDERMAN"
+      display-name: "Enderman"
       lore:
-      - "<gray>Shear All sheep for wool"
+      - "<gray>Kill endermen"
+      xp: 8.0
+      money: 10.0
+
+    kill_witch:
+      target: "WITCH"
+      display-name: "Witch"
+      lore:
+      - "<gray>Kill witches"
+      xp: 6.0
+      money: 7.0
+
+    # Nether mobs
+    kill_zombie_pigman:
+      target: "ZOMBIFIED_PIGLIN"
+      display-name: "Zombified Piglin"
+      lore:
+      - "<gray>Kill zombified piglins"
+      xp: 4.5
+      money: 5.0
+
+    kill_blaze:
+      target: "BLAZE"
+      display-name: "Blaze"
+      lore:
+      - "<gray>Kill blazes"
+      xp: 7.0
+      money: 8.0
+
+    kill_ghast:
+      target: "GHAST"
+      display-name: "Ghast"
+      lore:
+      - "<gray>Kill ghasts"
+      xp: 10.0
+      money: 12.0
+
+    kill_wither_skeleton:
+      target: "WITHER_SKELETON"
+      display-name: "Wither Skeleton"
+      lore:
+      - "<gray>Kill wither skeletons"
+      xp: 8.0
+      money: 10.0
+
+    # Peaceful mobs
+    kill_cow:
+      target: "COW"
+      display-name: "Cow"
+      lore:
+      - "<gray>Kill cows"
+      xp: 1.5
+      money: 2.0
+
+    kill_pig:
+      target: "PIG"
+      display-name: "Pig"
+      lore:
+      - "<gray>Kill pigs"
+      xp: 1.5
+      money: 2.0
+
+    kill_sheep:
+      target: "SHEEP"
+      display-name: "Sheep"
+      lore:
+      - "<gray>Kill sheep"
+      xp: 1.5
+      money: 1.8
+
+    kill_chicken:
+      target: "CHICKEN"
+      display-name: "Chicken"
+      lore:
+      - "<gray>Kill chickens"
       xp: 1.0
+      money: 1.5
+
+    kill_rabbit:
+      target: "RABBIT"
+      display-name: "Rabbit"
+      lore:
+      - "<gray>Kill rabbits"
+      xp: 1.2
       money: 1.0
+
+    # Ocean mobs
+    kill_squid:
+      target: "SQUID"
+      display-name: "Squid"
+      lore:
+      - "<gray>Kill squids"
+      xp: 2.0
+      money: 1.5
+
+    kill_guardian:
+      target: "GUARDIAN"
+      display-name: "Guardian"
+      lore:
+      - "<gray>Kill guardians"
+      xp: 6.0
+      money: 8.0
+
+    kill_elder_guardian:
+      target: "ELDER_GUARDIAN"
+      display-name: "Elder Guardian"
+      lore:
+      - "<gray>Kill elder guardians"
+      xp: 15.0
+      money: 20.0
+
+  FISH:
+    # Fishing
+    catch_fish:
+      target: "COD"
+      display-name: "Cod"
+      lore:
+      - "<gray>Catch cod"
+      xp: 2.0
+      money: 1.5
+
+    catch_salmon:
+      target: "SALMON"
+      display-name: "Salmon"
+      lore:
+      - "<gray>Catch salmon"
+      xp: 2.5
+      money: 2.0
+
+    catch_tropical_fish:
+      target: "TROPICAL_FISH"
+      display-name: "Tropical Fish"
+      lore:
+      - "<gray>Catch tropical fish"
+      xp: 3.0
+      money: 2.5
+
+    catch_pufferfish:
+      target: "PUFFERFISH"
+      display-name: "Pufferfish"
+      lore:
+      - "<gray>Catch pufferfish"
+      xp: 4.0
+      money: 3.0
 
 levelup-actions:
   broadcast:
@@ -315,13 +235,13 @@ levelup-actions:
     min-level: 1
     level-interval: 10
     messages:
-    - "<#90db8a>{player} <#9a9c9a>has reached level <#32cd32>{level} <#9a9c9a>in <#32cd32>Farmer<#9a9c9a>!"
+    - "<#90db8a>{player} <#9a9c9a>has reached level <#ff6b47>{level} <#9a9c9a>in <#ff6b47>Hunter<#9a9c9a>!"
   title:
     type: "title"
     min-level: 1
     level-interval: 1
-    title: "<#32cd32>Reached level {level}"
-    subtitle: "<#9a9c9a>in <#32cd32>Farmer<#9a9c9a>!"
+    title: "<#ff6b47>Reached level {level}"
+    subtitle: "<#9a9c9a>in <#ff6b47>Hunter<#9a9c9a>!"
     fade-in: 5
     stay: 20
     fade-out: 10

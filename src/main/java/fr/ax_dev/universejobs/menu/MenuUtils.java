@@ -180,17 +180,14 @@ public class MenuUtils {
      */
     public static ItemStack createMenuItem(UniverseJobs plugin, Player player, MenuItemConfig itemConfig, Map<String, String> customPlaceholders) {
         if (itemConfig == null || !itemConfig.isEnabled()) {
-            plugin.getLogger().info("[DEBUG] MenuUtils.createMenuItem - itemConfig null or disabled");
             return null;
         }
 
         // Generate cache key for this item
         String cacheKey = generateItemCacheKey(player.getUniqueId(), itemConfig, customPlaceholders);
-        plugin.getLogger().info("[DEBUG] MenuUtils.createMenuItem - cache key: " + cacheKey);
 
         // Try to get from component cache first
         return plugin.getAccessor().getMenuManager().getComponentCache().getItem(cacheKey, () -> {
-            plugin.getLogger().info("[DEBUG] MenuUtils.createMenuItem - creating uncached item");
             return createMenuItemUncached(plugin, player, itemConfig, customPlaceholders);
         });
     }
@@ -199,16 +196,11 @@ public class MenuUtils {
      * Create menu item without caching - internal optimized version.
      */
     private static ItemStack createMenuItemUncached(UniverseJobs plugin, Player player, MenuItemConfig itemConfig, Map<String, String> customPlaceholders) {
-        plugin.getLogger().info("[DEBUG] createMenuItemUncached - material: " + itemConfig.getMaterial());
-
         // Pre-allocate builder
         ItemBuilder builder = ItemBuilder.fromMaterialName(plugin, itemConfig.getMaterial());
         if (builder == null) {
-            plugin.getLogger().warning("[DEBUG] createMenuItemUncached - ItemBuilder.fromMaterialName returned null for: " + itemConfig.getMaterial());
             return null; // Fail fast instead of fallback
         }
-
-        plugin.getLogger().info("[DEBUG] createMenuItemUncached - ItemBuilder created successfully");
 
         // Batch apply basic properties
         builder.amount(itemConfig.getAmount());
