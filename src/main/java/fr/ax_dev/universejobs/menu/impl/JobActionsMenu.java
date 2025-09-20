@@ -102,6 +102,14 @@ public class JobActionsMenu extends BaseMenu {
                     .add(new ActionInfo(actionType, action));
             }
         }
+
+        // Sort actions within each group by action-menu-priority
+        groupedActions.values().forEach(actions ->
+            actions.sort((a1, a2) -> Integer.compare(
+                a1.action.getActionMenuPriority(),
+                a2.action.getActionMenuPriority()
+            ))
+        );
     }
     
     @Override
@@ -137,11 +145,33 @@ public class JobActionsMenu extends BaseMenu {
      */
     private List<DisplayItem> createDisplayItems() {
         List<DisplayItem> displayItems = new ArrayList<>(groupedActions.size());
-        
+
         // Add grouped actions efficiently
         groupedActions.forEach((groupKey, actions) ->
             displayItems.add(new DisplayItem(ACTION_TYPE, new GroupedActionInfo(groupKey, actions))));
-        
+
+        // Sort display items by action-menu-priority
+        displayItems.sort((item1, item2) -> {
+            if (ACTION_TYPE.equals(item1.type) && ACTION_TYPE.equals(item2.type)) {
+                GroupedActionInfo info1 = (GroupedActionInfo) item1.data;
+                GroupedActionInfo info2 = (GroupedActionInfo) item2.data;
+
+                // Get the minimum priority from each group
+                int priority1 = info1.actions.stream()
+                    .mapToInt(action -> action.action.getActionMenuPriority())
+                    .min()
+                    .orElse(Integer.MAX_VALUE);
+
+                int priority2 = info2.actions.stream()
+                    .mapToInt(action -> action.action.getActionMenuPriority())
+                    .min()
+                    .orElse(Integer.MAX_VALUE);
+
+                return Integer.compare(priority1, priority2);
+            }
+            return 0;
+        });
+
         return displayItems;
     }
     

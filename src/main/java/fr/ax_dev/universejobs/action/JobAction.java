@@ -37,6 +37,7 @@ public class JobAction {
     private final List<String> potionTypes;
     private final List<String> blacklistedFurnaces;
     private final String age;
+    private final int actionMenuPriority;
     
     /**
      * Create a new JobAction from configuration.
@@ -72,6 +73,9 @@ public class JobAction {
         
         // Load age requirement for harvest actions
         this.age = config.getString("age", null);
+
+        // Load action menu priority for sorting
+        this.actionMenuPriority = config.getInt("action-menu-priority", Integer.MAX_VALUE);
         
         // Load message configuration
         ConfigurationSection messageSection = config.getConfigurationSection("message");
@@ -812,7 +816,17 @@ public class JobAction {
         
         return false;
     }
-    
+
+    /**
+     * Get the action menu priority for sorting.
+     * Lower values appear first in the menu.
+     *
+     * @return The priority value
+     */
+    public int getActionMenuPriority() {
+        return actionMenuPriority;
+    }
+
     @Override
     public String toString() {
         return "JobAction{target='" + target + "', xp=" + xp + ", money=" + money + ", hasRequirements=" + hasRequirements() + "}";

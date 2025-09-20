@@ -45,6 +45,7 @@ actions:
     break_oak_log:
       target: "OAK_LOG"
       display-name: "Oak log"
+      action-menu-priority: 1
       lore:
       - "<gray>Chop down oak logs"
       xp: 2.0
@@ -53,6 +54,7 @@ actions:
     break_oak_wood:
       target: "OAK_WOOD"
       display-name: "Oak wood"
+      action-menu-priority: 2
       lore:
       - "<gray>Chop down oak wood"
       xp: 2.0
@@ -61,6 +63,7 @@ actions:
     break_stripped_oak_log:
       target: "STRIPPED_OAK_LOG"
       display-name: "Stripped oak log"
+      action-menu-priority: 3
       lore:
       - "<gray>Chop down stripped oak logs"
       xp: 2.2
@@ -69,6 +72,7 @@ actions:
     break_stripped_oak_wood:
       target: "STRIPPED_OAK_WOOD"
       display-name: "Stripped oak wood"
+      action-menu-priority: 4
       lore:
       - "<gray>Chop down stripped oak wood"
       xp: 2.2
@@ -78,6 +82,7 @@ actions:
     break_birch_log:
       target: "BIRCH_LOG"
       display-name: "Birch log"
+      action-menu-priority: 5
       lore:
       - "<gray>Chop down birch logs"
       xp: 2.0
@@ -86,6 +91,7 @@ actions:
     break_birch_wood:
       target: "BIRCH_WOOD"
       display-name: "Birch wood"
+      action-menu-priority: 6
       lore:
       - "<gray>Chop down birch wood"
       xp: 2.0
@@ -94,6 +100,7 @@ actions:
     break_stripped_birch_log:
       target: "STRIPPED_BIRCH_LOG"
       display-name: "Stripped birch log"
+      action-menu-priority: 7
       lore:
       - "<gray>Chop down stripped birch logs"
       xp: 2.2
@@ -102,6 +109,7 @@ actions:
     break_stripped_birch_wood:
       target: "STRIPPED_BIRCH_WOOD"
       display-name: "Stripped birch wood"
+      action-menu-priority: 8
       lore:
       - "<gray>Chop down stripped birch wood"
       xp: 2.2
@@ -111,6 +119,7 @@ actions:
     break_spruce_log:
       target: "SPRUCE_LOG"
       display-name: "Spruce log"
+      action-menu-priority: 9
       lore:
       - "<gray>Chop down spruce logs"
       xp: 2.0
@@ -119,6 +128,7 @@ actions:
     break_spruce_wood:
       target: "SPRUCE_WOOD"
       display-name: "Spruce wood"
+      action-menu-priority: 10
       lore:
       - "<gray>Chop down spruce wood"
       xp: 2.0
@@ -127,6 +137,7 @@ actions:
     break_stripped_spruce_log:
       target: "STRIPPED_SPRUCE_LOG"
       display-name: "Stripped spruce log"
+      action-menu-priority: 11
       lore:
       - "<gray>Chop down stripped spruce logs"
       xp: 2.2
@@ -135,6 +146,7 @@ actions:
     break_stripped_spruce_wood:
       target: "STRIPPED_SPRUCE_WOOD"
       display-name: "Stripped spruce wood"
+      action-menu-priority: 12
       lore:
       - "<gray>Chop down stripped spruce wood"
       xp: 2.2
@@ -144,6 +156,7 @@ actions:
     break_jungle_log:
       target: "JUNGLE_LOG"
       display-name: "Jungle log"
+      action-menu-priority: 13
       lore:
       - "<gray>Chop down jungle logs"
       xp: 2.5
@@ -152,6 +165,7 @@ actions:
     break_jungle_wood:
       target: "JUNGLE_WOOD"
       display-name: "Jungle wood"
+      action-menu-priority: 14
       lore:
       - "<gray>Chop down jungle wood"
       xp: 2.5
@@ -160,6 +174,7 @@ actions:
     break_stripped_jungle_log:
       target: "STRIPPED_JUNGLE_LOG"
       display-name: "Stripped jungle log"
+      action-menu-priority: 15
       lore:
       - "<gray>Chop down stripped jungle logs"
       xp: 2.7
@@ -168,6 +183,7 @@ actions:
     break_stripped_jungle_wood:
       target: "STRIPPED_JUNGLE_WOOD"
       display-name: "Stripped jungle wood"
+      action-menu-priority: 16
       lore:
       - "<gray>Chop down stripped jungle wood"
       xp: 2.7
@@ -177,6 +193,7 @@ actions:
     break_acacia_log:
       target: "ACACIA_LOG"
       display-name: "Acacia log"
+      action-menu-priority: 17
       lore:
       - "<gray>Chop down acacia logs"
       xp: 2.0
@@ -185,6 +202,7 @@ actions:
     break_acacia_wood:
       target: "ACACIA_WOOD"
       display-name: "Acacia wood"
+      action-menu-priority: 18
       lore:
       - "<gray>Chop down acacia wood"
       xp: 2.0
@@ -193,6 +211,7 @@ actions:
     break_stripped_acacia_log:
       target: "STRIPPED_ACACIA_LOG"
       display-name: "Stripped acacia log"
+      action-menu-priority: 19
       lore:
       - "<gray>Chop down stripped acacia logs"
       xp: 2.2
@@ -201,6 +220,7 @@ actions:
     break_stripped_acacia_wood:
       target: "STRIPPED_ACACIA_WOOD"
       display-name: "Stripped acacia wood"
+      action-menu-priority: 20
       lore:
       - "<gray>Chop down stripped acacia wood"
       xp: 2.2
@@ -210,6 +230,7 @@ actions:
     break_dark_oak_log:
       target: "DARK_OAK_LOG"
       display-name: "Dark oak log"
+      action-menu-priority: 21
       lore:
       - "<gray>Chop down dark oak logs"
       xp: 2.3
@@ -218,6 +239,7 @@ actions:
     break_dark_oak_wood:
       target: "DARK_OAK_WOOD"
       display-name: "Dark oak wood"
+      action-menu-priority: 22
       lore:
       - "<gray>Chop down dark oak wood"
       xp: 2.3
@@ -226,6 +248,7 @@ actions:
     break_stripped_dark_oak_log:
       target: "STRIPPED_DARK_OAK_LOG"
       display-name: "Stripped dark oak log"
+      action-menu-priority: 23
       lore:
       - "<gray>Chop down stripped dark oak logs"
       xp: 2.5
@@ -234,6 +257,7 @@ actions:
     break_stripped_dark_oak_wood:
       target: "STRIPPED_DARK_OAK_WOOD"
       display-name: "Stripped dark oak wood"
+      action-menu-priority: 24
       lore:
       - "<gray>Chop down stripped dark oak wood"
       xp: 2.5
@@ -243,6 +267,7 @@ actions:
     break_mangrove_log:
       target: "MANGROVE_LOG"
       display-name: "Mangrove log"
+      action-menu-priority: 25
       lore:
       - "<gray>Chop down mangrove logs"
       xp: 2.8
@@ -251,6 +276,7 @@ actions:
     break_mangrove_wood:
       target: "MANGROVE_WOOD"
       display-name: "Mangrove wood"
+      action-menu-priority: 26
       lore:
       - "<gray>Chop down mangrove wood"
       xp: 2.8
@@ -259,6 +285,7 @@ actions:
     break_stripped_mangrove_log:
       target: "STRIPPED_MANGROVE_LOG"
       display-name: "Stripped mangrove log"
+      action-menu-priority: 27
       lore:
       - "<gray>Chop down stripped mangrove logs"
       xp: 3.0
@@ -267,6 +294,7 @@ actions:
     break_stripped_mangrove_wood:
       target: "STRIPPED_MANGROVE_WOOD"
       display-name: "Stripped mangrove wood"
+      action-menu-priority: 28
       lore:
       - "<gray>Chop down stripped mangrove wood"
       xp: 3.0
@@ -275,6 +303,7 @@ actions:
     break_mangrove_roots:
       target: "MANGROVE_ROOTS"
       display-name: "Mangrove roots"
+      action-menu-priority: 29
       lore:
       - "<gray>Harvest mangrove roots"
       xp: 1.5
@@ -283,6 +312,7 @@ actions:
     break_muddy_mangrove_roots:
       target: "MUDDY_MANGROVE_ROOTS"
       display-name: "Muddy mangrove roots"
+      action-menu-priority: 30
       lore:
       - "<gray>Harvest muddy mangrove roots"
       xp: 1.8
@@ -292,6 +322,7 @@ actions:
     break_cherry_log:
       target: "CHERRY_LOG"
       display-name: "Cherry log"
+      action-menu-priority: 31
       lore:
       - "<gray>Chop down cherry logs"
       xp: 3.0
@@ -300,6 +331,7 @@ actions:
     break_cherry_wood:
       target: "CHERRY_WOOD"
       display-name: "Cherry wood"
+      action-menu-priority: 32
       lore:
       - "<gray>Chop down cherry wood"
       xp: 3.0
@@ -308,6 +340,7 @@ actions:
     break_stripped_cherry_log:
       target: "STRIPPED_CHERRY_LOG"
       display-name: "Stripped cherry log"
+      action-menu-priority: 33
       lore:
       - "<gray>Chop down stripped cherry logs"
       xp: 3.2
@@ -316,6 +349,7 @@ actions:
     break_stripped_cherry_wood:
       target: "STRIPPED_CHERRY_WOOD"
       display-name: "Stripped cherry wood"
+      action-menu-priority: 34
       lore:
       - "<gray>Chop down stripped cherry wood"
       xp: 3.2
@@ -325,6 +359,7 @@ actions:
     break_crimson_stem:
       target: "CRIMSON_STEM"
       display-name: "Crimson stem"
+      action-menu-priority: 35
       lore:
       - "<gray>Chop down crimson stems"
       xp: 3.5
@@ -333,6 +368,7 @@ actions:
     break_crimson_hyphae:
       target: "CRIMSON_HYPHAE"
       display-name: "Crimson hyphae"
+      action-menu-priority: 36
       lore:
       - "<gray>Chop down crimson hyphae"
       xp: 3.5
@@ -341,6 +377,7 @@ actions:
     break_stripped_crimson_stem:
       target: "STRIPPED_CRIMSON_STEM"
       display-name: "Stripped crimson stem"
+      action-menu-priority: 37
       lore:
       - "<gray>Chop down stripped crimson stems"
       xp: 3.8
@@ -349,6 +386,7 @@ actions:
     break_stripped_crimson_hyphae:
       target: "STRIPPED_CRIMSON_HYPHAE"
       display-name: "Stripped crimson hyphae"
+      action-menu-priority: 38
       lore:
       - "<gray>Chop down stripped crimson hyphae"
       xp: 3.8
@@ -357,6 +395,7 @@ actions:
     break_warped_stem:
       target: "WARPED_STEM"
       display-name: "Warped stem"
+      action-menu-priority: 39
       lore:
       - "<gray>Chop down warped stems"
       xp: 3.5
@@ -365,6 +404,7 @@ actions:
     break_warped_hyphae:
       target: "WARPED_HYPHAE"
       display-name: "Warped hyphae"
+      action-menu-priority: 40
       lore:
       - "<gray>Chop down warped hyphae"
       xp: 3.5
@@ -373,6 +413,7 @@ actions:
     break_stripped_warped_stem:
       target: "STRIPPED_WARPED_STEM"
       display-name: "Stripped warped stem"
+      action-menu-priority: 41
       lore:
       - "<gray>Chop down stripped warped stems"
       xp: 3.8
@@ -381,6 +422,7 @@ actions:
     break_stripped_warped_hyphae:
       target: "STRIPPED_WARPED_HYPHAE"
       display-name: "Stripped warped hyphae"
+      action-menu-priority: 42
       lore:
       - "<gray>Chop down stripped warped hyphae"
       xp: 3.8
@@ -390,6 +432,7 @@ actions:
     break_oak_leaves:
       target: "OAK_LEAVES"
       display-name: "Oak leaves"
+      action-menu-priority: 43
       lore:
       - "<gray>Clear oak leaves"
       xp: 0.3
@@ -398,6 +441,7 @@ actions:
     break_birch_leaves:
       target: "BIRCH_LEAVES"
       display-name: "Birch leaves"
+      action-menu-priority: 44
       lore:
       - "<gray>Clear birch leaves"
       xp: 0.3
@@ -406,6 +450,7 @@ actions:
     break_spruce_leaves:
       target: "SPRUCE_LEAVES"
       display-name: "Spruce leaves"
+      action-menu-priority: 45
       lore:
       - "<gray>Clear spruce leaves"
       xp: 0.3
@@ -414,6 +459,7 @@ actions:
     break_jungle_leaves:
       target: "JUNGLE_LEAVES"
       display-name: "Jungle leaves"
+      action-menu-priority: 46
       lore:
       - "<gray>Clear jungle leaves"
       xp: 0.4
@@ -422,6 +468,7 @@ actions:
     break_acacia_leaves:
       target: "ACACIA_LEAVES"
       display-name: "Acacia leaves"
+      action-menu-priority: 47
       lore:
       - "<gray>Clear acacia leaves"
       xp: 0.3
@@ -430,6 +477,7 @@ actions:
     break_dark_oak_leaves:
       target: "DARK_OAK_LEAVES"
       display-name: "Dark oak leaves"
+      action-menu-priority: 48
       lore:
       - "<gray>Clear dark oak leaves"
       xp: 0.35
@@ -438,6 +486,7 @@ actions:
     break_mangrove_leaves:
       target: "MANGROVE_LEAVES"
       display-name: "Mangrove leaves"
+      action-menu-priority: 49
       lore:
       - "<gray>Clear mangrove leaves"
       xp: 0.4
@@ -446,6 +495,7 @@ actions:
     break_cherry_leaves:
       target: "CHERRY_LEAVES"
       display-name: "Cherry leaves"
+      action-menu-priority: 50
       lore:
       - "<gray>Clear cherry leaves"
       xp: 0.45
@@ -454,6 +504,7 @@ actions:
     break_azalea_leaves:
       target: "AZALEA_LEAVES"
       display-name: "Azalea leaves"
+      action-menu-priority: 51
       lore:
       - "<gray>Clear azalea leaves"
       xp: 0.4
@@ -462,6 +513,7 @@ actions:
     break_flowering_azalea_leaves:
       target: "FLOWERING_AZALEA_LEAVES"
       display-name: "Flowering azalea leaves"
+      action-menu-priority: 52
       lore:
       - "<gray>Clear flowering azalea leaves"
       xp: 0.5
@@ -471,6 +523,7 @@ actions:
     break_brown_mushroom_block:
       target: "BROWN_MUSHROOM_BLOCK"
       display-name: "Brown mushroom block"
+      action-menu-priority: 53
       lore:
       - "<gray>Harvest brown mushroom blocks"
       xp: 1.5
@@ -479,6 +532,7 @@ actions:
     break_red_mushroom_block:
       target: "RED_MUSHROOM_BLOCK"
       display-name: "Red mushroom block"
+      action-menu-priority: 54
       lore:
       - "<gray>Harvest red mushroom blocks"
       xp: 1.5
@@ -487,6 +541,7 @@ actions:
     break_mushroom_stem:
       target: "MUSHROOM_STEM"
       display-name: "Mushroom stem"
+      action-menu-priority: 55
       lore:
       - "<gray>Harvest mushroom stems"
       xp: 1.8
@@ -497,6 +552,7 @@ actions:
     plant_oak_sapling:
       target: "OAK_SAPLING"
       display-name: "Oak sapling"
+      action-menu-priority: 56
       lore:
       - "<gray>Plant oak saplings"
       xp: 1.0
@@ -505,6 +561,7 @@ actions:
     plant_birch_sapling:
       target: "BIRCH_SAPLING"
       display-name: "Birch sapling"
+      action-menu-priority: 57
       lore:
       - "<gray>Plant birch saplings"
       xp: 1.0
@@ -513,6 +570,7 @@ actions:
     plant_spruce_sapling:
       target: "SPRUCE_SAPLING"
       display-name: "Spruce sapling"
+      action-menu-priority: 58
       lore:
       - "<gray>Plant spruce saplings"
       xp: 1.0
@@ -521,6 +579,7 @@ actions:
     plant_jungle_sapling:
       target: "JUNGLE_SAPLING"
       display-name: "Jungle sapling"
+      action-menu-priority: 59
       lore:
       - "<gray>Plant jungle saplings"
       xp: 1.2
@@ -529,6 +588,7 @@ actions:
     plant_acacia_sapling:
       target: "ACACIA_SAPLING"
       display-name: "Acacia sapling"
+      action-menu-priority: 60
       lore:
       - "<gray>Plant acacia saplings"
       xp: 1.0
@@ -537,6 +597,7 @@ actions:
     plant_dark_oak_sapling:
       target: "DARK_OAK_SAPLING"
       display-name: "Dark oak sapling"
+      action-menu-priority: 61
       lore:
       - "<gray>Plant dark oak saplings"
       xp: 1.1
@@ -545,6 +606,7 @@ actions:
     plant_mangrove_propagule:
       target: "MANGROVE_PROPAGULE"
       display-name: "Mangrove propagule"
+      action-menu-priority: 62
       lore:
       - "<gray>Plant mangrove propagules"
       xp: 1.4
@@ -553,6 +615,7 @@ actions:
     plant_cherry_sapling:
       target: "CHERRY_SAPLING"
       display-name: "Cherry sapling"
+      action-menu-priority: 63
       lore:
       - "<gray>Plant cherry saplings"
       xp: 1.5
@@ -561,6 +624,7 @@ actions:
     plant_azalea:
       target: "AZALEA"
       display-name: "Azalea"
+      action-menu-priority: 64
       lore:
       - "<gray>Plant azalea bushes"
       xp: 1.2
@@ -569,6 +633,7 @@ actions:
     plant_flowering_azalea:
       target: "FLOWERING_AZALEA"
       display-name: "Flowering azalea"
+      action-menu-priority: 65
       lore:
       - "<gray>Plant flowering azalea bushes"
       xp: 1.3
@@ -578,6 +643,7 @@ actions:
     plant_brown_mushroom:
       target: "BROWN_MUSHROOM"
       display-name: "Brown mushroom"
+      action-menu-priority: 66
       lore:
       - "<gray>Plant brown mushrooms"
       xp: 0.8
@@ -586,6 +652,7 @@ actions:
     plant_red_mushroom:
       target: "RED_MUSHROOM"
       display-name: "Red mushroom"
+      action-menu-priority: 67
       lore:
       - "<gray>Plant red mushrooms"
       xp: 0.8
@@ -595,6 +662,7 @@ actions:
     plant_crimson_fungus:
       target: "CRIMSON_FUNGUS"
       display-name: "Crimson fungus"
+      action-menu-priority: 68
       lore:
       - "<gray>Plant crimson fungi"
       xp: 1.5
@@ -603,6 +671,7 @@ actions:
     plant_warped_fungus:
       target: "WARPED_FUNGUS"
       display-name: "Warped fungus"
+      action-menu-priority: 69
       lore:
       - "<gray>Plant warped fungi"
       xp: 1.5

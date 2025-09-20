@@ -48,6 +48,7 @@ actions:
     break_stone:
       target: "STONE"
       display-name: "Stone"
+      action-menu-priority: 1
       lore:
       - "<gray>Mine basic stone blocks"
       xp: 1.0
@@ -56,6 +57,7 @@ actions:
     break_cobblestone:
       target: "COBBLESTONE"
       display-name: "Cobblestone"
+      action-menu-priority: 2
       display-material: "COBBLESTONE:1001"  # Custom diamond with model data 1001
       lore:
       - "<gray>Mine cobblestone blocks"
@@ -65,6 +67,7 @@ actions:
     break_deepslate:
       target: "DEEPSLATE"
       display-name: "Deepslate"
+      action-menu-priority: 3
       lore:
       - "<gray>Mine deepslate blocks"
       xp: 1.2
@@ -74,6 +77,7 @@ actions:
     break_coal_ore:
       target: "COAL_ORE"
       display-name: "Coal ore"
+      action-menu-priority: 4
       lore:
       - "<gray>Extract coal from stone"
       xp: 2.0
@@ -82,6 +86,7 @@ actions:
     break_deepslate_coal_ore:
       target: "DEEPSLATE_COAL_ORE"
       display-name: "Deepslate coal ore"
+      action-menu-priority: 5
       lore:
       - "<gray>Extract coal from deepslate"
       xp: 2.5
@@ -91,6 +96,7 @@ actions:
     break_iron_ore:
       target: "IRON_ORE"
       display-name: "Iron ore"
+      action-menu-priority: 6
       lore:
       - "<gray>Extract iron from stone"
       xp: 3.0
@@ -99,6 +105,7 @@ actions:
     break_deepslate_iron_ore:
       target: "DEEPSLATE_IRON_ORE"
       display-name: "Deepslate iron ore"
+      action-menu-priority: 7
       lore:
       - "<gray>Extract iron from deepslate"
       xp: 3.5
@@ -108,6 +115,7 @@ actions:
     break_gold_ore:
       target: "GOLD_ORE"
       display-name: "Mine gold ore"
+      action-menu-priority: 14
       lore:
       - "<gray>Extract gold from stone"
       xp: 4.0
@@ -116,6 +124,7 @@ actions:
     break_deepslate_gold_ore:
       target: "DEEPSLATE_GOLD_ORE"
       display-name: "Deepslate gold ore"
+      action-menu-priority: 15
       lore:
       - "<gray>Extract gold from deepslate"
       xp: 4.5
@@ -124,6 +133,7 @@ actions:
     break_nether_gold_ore:
       target: "NETHER_GOLD_ORE"
       display-name: "Mine nether gold ore"
+      action-menu-priority: 16
       lore:
       - "<gray>Extract gold from netherrack"
       xp: 3.5
@@ -133,6 +143,7 @@ actions:
     break_diamond_ore:
       target: "DIAMOND_ORE"
       display-name: "Diamond ore"
+      action-menu-priority: 17
       lore:
       - "<gray>Extract precious diamonds"
       xp: 8.0
@@ -141,6 +152,7 @@ actions:
     break_deepslate_diamond_ore:
       target: "DEEPSLATE_DIAMOND_ORE"
       display-name: "Deepslate diamond ore"
+      action-menu-priority: 18
       lore:
       - "<gray>Extract diamonds from deepslate"
       xp: 9.0
@@ -150,6 +162,7 @@ actions:
     break_emerald_ore:
       target: "EMERALD_ORE"
       display-name: "Emerald ore"
+      action-menu-priority: 19
       lore:
       - "<gray>Extract rare emeralds"
       xp: 10.0
@@ -158,6 +171,7 @@ actions:
     break_deepslate_emerald_ore:
       target: "DEEPSLATE_EMERALD_ORE"
       display-name: "Deepslate emerald ore"
+      action-menu-priority: 20
       lore:
       - "<gray>Extract emeralds from deepslate"
       xp: 11.0
@@ -167,6 +181,7 @@ actions:
     break_redstone_ore:
       target: "REDSTONE_ORE"
       display-name: "Redstone ore"
+      action-menu-priority: 12
       lore:
       - "<gray>Extract redstone dust"
       xp: 3.5
@@ -175,6 +190,7 @@ actions:
     break_deepslate_redstone_ore:
       target: "DEEPSLATE_REDSTONE_ORE"
       display-name: "Deepslate redstone ore"
+      action-menu-priority: 13
       lore:
       - "<gray>Extract redstone from deepslate"
       xp: 4.0
@@ -184,6 +200,7 @@ actions:
     break_lapis_ore:
       target: "LAPIS_ORE"
       display-name: "Lapis ore"
+      action-menu-priority: 10
       lore:
       - "<gray>Extract lapis lazuli"
       xp: 3.0
@@ -192,6 +209,7 @@ actions:
     break_deepslate_lapis_ore:
       target: "DEEPSLATE_LAPIS_ORE"
       display-name: "Deepslate lapis ore"
+      action-menu-priority: 11
       lore:
       - "<gray>Extract lapis from deepslate"
       xp: 3.5
@@ -201,6 +219,7 @@ actions:
     break_copper_ore:
       target: "COPPER_ORE"
       display-name: "Copper ore"
+      action-menu-priority: 8
       lore:
       - "<gray>Extract copper ingots"
       xp: 2.5
@@ -209,6 +228,7 @@ actions:
     break_deepslate_copper_ore:
       target: "DEEPSLATE_COPPER_ORE"
       display-name: "Deepslate copper ore"
+      action-menu-priority: 9
       lore:
       - "<gray>Extract copper from deepslate"
       xp: 3.0
@@ -218,6 +238,7 @@ actions:
     break_netherrack:
       target: "NETHERRACK"
       display-name: "Netherrack"
+      action-menu-priority: 21
       lore:
       - "<gray>Extract nether stone"
       xp: 0.5
@@ -226,6 +247,7 @@ actions:
     break_nether_quartz_ore:
       target: "NETHER_QUARTZ_ORE"
       display-name: "Nether quartz ore"
+      action-menu-priority: 22
       lore:
       - "<gray>Extract nether quartz"
       xp: 4.0
@@ -234,6 +256,7 @@ actions:
     break_ancient_debris:
       target: "ANCIENT_DEBRIS"
       display-name: "Ancient debris"
+      action-menu-priority: 24
       lore:
       - "<gray>Extract the rarest material"
       xp: 25.0
@@ -243,6 +266,7 @@ actions:
     break_end_stone:
       target: "END_STONE"
       display-name: "End stone"
+      action-menu-priority: 25
       lore:
       - "<gray>Extract end dimension stone"
       xp: 1.5
@@ -251,6 +275,7 @@ actions:
     place_cobblestone:
       target: "COBBLESTONE"
       display-name: "Cobblestone"
+      action-menu-priority: 26
       lore:
       - "<gray>Place cobblestone blocks"
       xp: 2.2
