@@ -32,15 +32,11 @@ public class SingleJobMenu extends BaseMenu {
     public SingleJobMenu(UniverseJobs plugin, org.bukkit.entity.Player player, String jobId, SingleMenuConfig config) {
         super(plugin, player, config);
 
-        plugin.getLogger().info("[DEBUG] SingleJobMenu constructor - received jobId: " + jobId);
-
         // Initialize job and check if valid
         this.job = plugin.getJobManager().getJob(jobId);
         if (this.job == null) {
             throw new IllegalArgumentException("Job not found: " + jobId);
         }
-
-        plugin.getLogger().info("[DEBUG] SingleJobMenu constructor - initialized with job: " + this.job.getId());
         
         this.playerData = plugin.getJobManager().getPlayerData(player.getUniqueId());
         this.languageManager = plugin.getLanguageManager();

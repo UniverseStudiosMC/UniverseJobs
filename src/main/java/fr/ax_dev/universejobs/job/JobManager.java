@@ -78,20 +78,14 @@ public class JobManager {
         
         File[] jobFiles = jobsFolder.listFiles((dir, name) -> name.endsWith(".yml"));
         if (jobFiles == null || jobFiles.length == 0) {
-            // Only create default jobs if configured to do so (default: true for first startup)
-            boolean createExamples = plugin.getConfig().getBoolean("create-example-jobs", true);
-            if (createExamples) {
-                createDefaultJobs();
-                // Set the config to false after first creation to prevent re-creation on reload
-                plugin.getConfig().set("create-example-jobs", false);
-                plugin.saveConfig();
+            plugin.getLogger().info("Jobs folder is empty, creating default job files...");
+            createDefaultJobs();
 
-                // Reload after creating default jobs
-                jobFiles = jobsFolder.listFiles((dir, name) -> name.endsWith(".yml"));
-            }
+            // Reload after creating default jobs
+            jobFiles = jobsFolder.listFiles((dir, name) -> name.endsWith(".yml"));
 
             if (jobFiles == null || jobFiles.length == 0) {
-                plugin.getLogger().info("UniverseJobs started with no jobs. Add .yml files to " + jobsFolder.getPath() + " to create jobs.");
+                plugin.getLogger().warning("Failed to create default job files. Check plugin resources.");
                 return;
             }
         }

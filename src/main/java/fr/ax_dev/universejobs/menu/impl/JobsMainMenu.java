@@ -98,22 +98,17 @@ public class JobsMainMenu extends BaseMenu {
      * Populate job items using centralized slot management.
      */
     private void populateJobItems() {
-        plugin.getLogger().info("[DEBUG] Starting populateJobItems - Available jobs: " + availableJobs.size());
 
         List<Integer> contentSlots = config.getContentSlots();
         Map<String, Integer> configuredJobSlots = config.getJobSlots();
         Set<Integer> usedSlots = new HashSet<>();
 
-        plugin.getLogger().info("[DEBUG] Content slots: " + contentSlots);
-        plugin.getLogger().info("[DEBUG] Configured job slots: " + configuredJobSlots);
 
         // First, place jobs with specific slot configurations
         for (Job job : availableJobs) {
-            plugin.getLogger().info("[DEBUG] Processing job: " + job.getId() + " - Enabled: " + job.isEnabled());
 
             if (configuredJobSlots.containsKey(job.getId())) {
                 int slot = configuredJobSlots.get(job.getId());
-                plugin.getLogger().info("[DEBUG] Job " + job.getId() + " has configured slot: " + slot);
 
                 if (contentSlots.contains(slot) && !usedSlots.contains(slot)) {
                     try {
@@ -121,7 +116,6 @@ public class JobsMainMenu extends BaseMenu {
                         if (jobItem != null) {
                             inventory.setItem(slot, jobItem);
                             usedSlots.add(slot);
-                            plugin.getLogger().info("[DEBUG] Successfully placed job " + job.getId() + " in slot " + slot);
                             logDebugPlacement(job, slot);
                         } else {
                             plugin.getLogger().warning("[DEBUG] Failed to create item for job " + job.getId() + " - item was null");
@@ -131,49 +125,40 @@ public class JobsMainMenu extends BaseMenu {
                         e.printStackTrace();
                     }
                 } else {
-                    plugin.getLogger().info("[DEBUG] Job " + job.getId() + " slot " + slot + " not available (in content slots: " + contentSlots.contains(slot) + ", already used: " + usedSlots.contains(slot) + ")");
                 }
             } else {
-                plugin.getLogger().info("[DEBUG] Job " + job.getId() + " has no configured slot");
             }
         }
 
-        plugin.getLogger().info("[DEBUG] Used slots after configured jobs: " + usedSlots);
 
         // Then, place remaining jobs in available content slots with pagination
         List<Job> remainingJobs = availableJobs.stream()
             .filter(job -> !configuredJobSlots.containsKey(job.getId()))
             .collect(Collectors.toList());
 
-        plugin.getLogger().info("[DEBUG] Remaining jobs without configured slots: " + remainingJobs.size());
 
         List<Integer> availableContentSlots = contentSlots.stream()
             .filter(slot -> !usedSlots.contains(slot))
             .collect(Collectors.toList());
 
-        plugin.getLogger().info("[DEBUG] Available content slots: " + availableContentSlots);
 
         int itemsPerPage = availableContentSlots.size();
         int startIndex = currentPage * itemsPerPage;
         int endIndex = Math.min(startIndex + itemsPerPage, remainingJobs.size());
 
-        plugin.getLogger().info("[DEBUG] Pagination - Page: " + currentPage + ", Items per page: " + itemsPerPage + ", Start: " + startIndex + ", End: " + endIndex);
 
         for (int i = startIndex; i < endIndex; i++) {
             Job job = remainingJobs.get(i);
             int slotIndex = i - startIndex;
 
-            plugin.getLogger().info("[DEBUG] Processing remaining job: " + job.getId() + " at index " + i + " (slot index: " + slotIndex + ")");
 
             if (slotIndex < availableContentSlots.size()) {
                 int slot = availableContentSlots.get(slotIndex);
-                plugin.getLogger().info("[DEBUG] Placing remaining job " + job.getId() + " in slot " + slot);
 
                 try {
                     ItemStack jobItem = getJobItemOptimized(job);
                     if (jobItem != null) {
                         inventory.setItem(slot, jobItem);
-                        plugin.getLogger().info("[DEBUG] Successfully placed remaining job " + job.getId() + " in slot " + slot);
                         logDebugPlacement(job, slot);
                     } else {
                         plugin.getLogger().warning("[DEBUG] Failed to create item for remaining job " + job.getId() + " - item was null");
@@ -187,7 +172,6 @@ public class JobsMainMenu extends BaseMenu {
             }
         }
 
-        plugin.getLogger().info("[DEBUG] populateJobItems completed. Total slots used: " + usedSlots.size());
     }
     
     /**
@@ -211,14 +195,11 @@ public class JobsMainMenu extends BaseMenu {
      * Create optimized job item using proper API and error handling.
      */
     private ItemStack createJobItemOptimized(Job job) {
-        plugin.getLogger().info("[DEBUG] Creating job item for: " + job.getId());
 
         JobItemFormat format = config.getJobItemFormat();
-        plugin.getLogger().info("[DEBUG] JobItemFormat: " + (format != null ? "exists" : "null"));
 
         // Get material with proper error handling
         Material iconMaterial = getJobMaterial(job, format);
-        plugin.getLogger().info("[DEBUG] Icon material for " + job.getId() + ": " + iconMaterial);
 
         if (iconMaterial == null) {
             plugin.getLogger().warning("[DEBUG] Icon material is null for job " + job.getId() + ", returning null");
@@ -231,25 +212,19 @@ public class JobsMainMenu extends BaseMenu {
         int playerLevel = playerData.getLevel(job.getId());
         long playerXp = (long) playerData.getXp(job.getId());
 
-        plugin.getLogger().info("[DEBUG] Job " + job.getId() + " - hasJob: " + hasJob + ", level: " + playerLevel + ", xp: " + playerXp);
 
         // Create comprehensive placeholders for this specific job
         Map<String, String> jobPlaceholders = createJobPlaceholdersOptimized(job, hasJob, playerLevel, playerXp);
-        plugin.getLogger().info("[DEBUG] Created placeholders for " + job.getId() + ": " + jobPlaceholders.size() + " entries");
 
         // Build item using centralized configuration approach
         Map<String, Object> jobConfigMap = createJobConfigMap(job, format, iconMaterial, hasJob);
-        plugin.getLogger().info("[DEBUG] Created config map for " + job.getId() + ": " + jobConfigMap.size() + " entries");
 
         MenuItemConfig jobItemConfig = new MenuItemConfig(new SimpleConfigurationSection(jobConfigMap));
-        plugin.getLogger().info("[DEBUG] Created MenuItemConfig for " + job.getId() + " - enabled: " + jobItemConfig.isEnabled());
 
         ItemStack result = createMenuItem(jobItemConfig, jobPlaceholders);
-        plugin.getLogger().info("[DEBUG] createMenuItem result for " + job.getId() + ": " + (result != null ? "SUCCESS" : "NULL"));
 
         if (result != null) {
             result = addJobNBT(result, job.getId());
-            plugin.getLogger().info("[DEBUG] Added NBT data for job: " + job.getId());
         }
 
         return result;
@@ -259,11 +234,9 @@ public class JobsMainMenu extends BaseMenu {
      * Get job material with proper error handling and no fallbacks.
      */
     private Material getJobMaterial(Job job, JobItemFormat format) {
-        plugin.getLogger().info("[DEBUG] getJobMaterial for " + job.getId() + " - format.isUseJobIcon(): " + format.isUseJobIcon());
 
         if (format.isUseJobIcon()) {
             String iconMaterial = job.getIconMaterial();
-            plugin.getLogger().info("[DEBUG] Job " + job.getId() + " icon material: '" + iconMaterial + "'");
 
             if (iconMaterial == null || iconMaterial.isEmpty()) {
                 plugin.getLogger().severe("No material configured for job " + job.getId());
@@ -271,14 +244,12 @@ public class JobsMainMenu extends BaseMenu {
             }
 
             Material material = fr.ax_dev.universejobs.utils.EnumUtils.parseMaterial(iconMaterial, null);
-            plugin.getLogger().info("[DEBUG] Parsed material for " + job.getId() + ": " + material);
 
             if (material == null) {
                 plugin.getLogger().severe("Invalid material for job " + job.getId() + ": " + iconMaterial);
             }
             return material;
         } else {
-            plugin.getLogger().info("[DEBUG] Using default PAPER material for " + job.getId());
             // Default material when format doesn't specify one
             return Material.PAPER;
         }
@@ -359,13 +330,11 @@ public class JobsMainMenu extends BaseMenu {
         Job clickedJob = findJobFromItem(event.getCurrentItem());
         if (clickedJob == null) return;
 
-        plugin.getLogger().info("[DEBUG] handleJobClick - detected job: " + clickedJob.getId());
 
         // Handle different click types
         if (event.getClick() == ClickType.RIGHT) {
             handleQuickJobToggle(clickedJob);
         } else {
-            plugin.getLogger().info("[DEBUG] handleJobClick - opening job menu for: " + clickedJob.getId());
             plugin.getMenuManager().openJobMenu(player, clickedJob.getId());
         }
     }
@@ -377,11 +346,9 @@ public class JobsMainMenu extends BaseMenu {
         if (item == null) return null;
 
         String jobId = getJobIdFromNBT(item);
-        plugin.getLogger().info("[DEBUG] findJobFromItem - extracted job ID from NBT: " + jobId);
 
         if (jobId != null) {
             Job job = plugin.getJobManager().getJob(jobId);
-            plugin.getLogger().info("[DEBUG] findJobFromItem - found job: " + (job != null ? job.getId() : "null"));
             return job;
         }
 
