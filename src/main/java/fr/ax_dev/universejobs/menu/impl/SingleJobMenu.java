@@ -31,12 +31,16 @@ public class SingleJobMenu extends BaseMenu {
     
     public SingleJobMenu(UniverseJobs plugin, org.bukkit.entity.Player player, String jobId, SingleMenuConfig config) {
         super(plugin, player, config);
-        
+
+        plugin.getLogger().info("[DEBUG] SingleJobMenu constructor - received jobId: " + jobId);
+
         // Initialize job and check if valid
         this.job = plugin.getJobManager().getJob(jobId);
         if (this.job == null) {
             throw new IllegalArgumentException("Job not found: " + jobId);
         }
+
+        plugin.getLogger().info("[DEBUG] SingleJobMenu constructor - initialized with job: " + this.job.getId());
         
         this.playerData = plugin.getJobManager().getPlayerData(player.getUniqueId());
         this.languageManager = plugin.getLanguageManager();
@@ -53,17 +57,37 @@ public class SingleJobMenu extends BaseMenu {
     @Override
     protected void createInventory() {
         String title = config.getTitle();
-        
+
         // Replace custom placeholders first
         for (Map.Entry<String, String> entry : cachedPlaceholders.entrySet()) {
             title = title.replace(entry.getKey(), entry.getValue());
         }
-        
+
         // Then process PlaceholderAPI and other placeholders
         title = processPlaceholders(title);
-        
+
         net.kyori.adventure.text.Component titleComponent = MessageUtils.parseMessage(title);
-        this.inventory = org.bukkit.Bukkit.createInventory(this, config.getSize(), titleComponent);
+
+        // Use optimized menu holder for 2025 performance
+        fr.ax_dev.universejobs.menu.OptimizedMenuHolder holder = new fr.ax_dev.universejobs.menu.OptimizedMenuHolder(
+            player.getUniqueId(),
+            getClass().getSimpleName(),
+            getMenuId(),
+            this
+        );
+
+        this.inventory = plugin.getAccessor().getMenuManager().getInventoryFromPool(
+            config.getSize(),
+            titleComponent,
+            holder
+        );
+
+        holder.setInventory(this.inventory);
+    }
+
+    @Override
+    protected String getMenuId() {
+        return job != null ? job.getId() : "unknown";
     }
     
     @Override
@@ -236,7 +260,7 @@ public class SingleJobMenu extends BaseMenu {
                 case "toggle-job" -> handleJoinLeave();
                 case "open-actions" -> plugin.getMenuManager().openJobActionsMenu(player, job.getId());
                 case "open-rewards" -> plugin.getMenuManager().openRewardsMenu(player, job.getId());
-                case "open-rankings" -> plugin.getMenuManager().openGlobalRankingsMenu(player);
+                case "open-rankings" -> plugin.getMenuManager().openGlobalRankingsMenu(player, job.getId());
                 case "back" -> plugin.getMenuManager().openJobsMainMenu(player);
                 case "close" -> close();
             }

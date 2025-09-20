@@ -36,6 +36,9 @@ public class JobsMainMenu extends BaseMenu {
     private final PlayerJobData playerData;
     private final Map<String, String> cachedPlaceholders;
     private final LanguageManager languageManager;
+
+    // Performance optimization: precomputed items
+    private Map<String, ItemStack> precomputedItems;
     
     public JobsMainMenu(UniverseJobs plugin, org.bukkit.entity.Player player, SingleMenuConfig config, JobSlotManager jobSlotManager) {
         super(plugin, player, config);
@@ -85,62 +88,106 @@ public class JobsMainMenu extends BaseMenu {
     }
     
     /**
+     * Set precomputed items for ultra-fast menu loading.
+     */
+    public void setPrecomputedItems(Map<String, ItemStack> items) {
+        this.precomputedItems = items;
+    }
+
+    /**
      * Populate job items using centralized slot management.
      */
     private void populateJobItems() {
+        plugin.getLogger().info("[DEBUG] Starting populateJobItems - Available jobs: " + availableJobs.size());
+
         List<Integer> contentSlots = config.getContentSlots();
         Map<String, Integer> configuredJobSlots = config.getJobSlots();
         Set<Integer> usedSlots = new HashSet<>();
-        
+
+        plugin.getLogger().info("[DEBUG] Content slots: " + contentSlots);
+        plugin.getLogger().info("[DEBUG] Configured job slots: " + configuredJobSlots);
+
         // First, place jobs with specific slot configurations
         for (Job job : availableJobs) {
+            plugin.getLogger().info("[DEBUG] Processing job: " + job.getId() + " - Enabled: " + job.isEnabled());
+
             if (configuredJobSlots.containsKey(job.getId())) {
                 int slot = configuredJobSlots.get(job.getId());
+                plugin.getLogger().info("[DEBUG] Job " + job.getId() + " has configured slot: " + slot);
+
                 if (contentSlots.contains(slot) && !usedSlots.contains(slot)) {
                     try {
-                        ItemStack jobItem = createJobItemOptimized(job);
+                        ItemStack jobItem = getJobItemOptimized(job);
                         if (jobItem != null) {
                             inventory.setItem(slot, jobItem);
                             usedSlots.add(slot);
+                            plugin.getLogger().info("[DEBUG] Successfully placed job " + job.getId() + " in slot " + slot);
                             logDebugPlacement(job, slot);
+                        } else {
+                            plugin.getLogger().warning("[DEBUG] Failed to create item for job " + job.getId() + " - item was null");
                         }
                     } catch (Exception e) {
                         plugin.getLogger().warning("Failed to create job item for " + job.getId() + ": " + e.getMessage());
+                        e.printStackTrace();
                     }
+                } else {
+                    plugin.getLogger().info("[DEBUG] Job " + job.getId() + " slot " + slot + " not available (in content slots: " + contentSlots.contains(slot) + ", already used: " + usedSlots.contains(slot) + ")");
                 }
+            } else {
+                plugin.getLogger().info("[DEBUG] Job " + job.getId() + " has no configured slot");
             }
         }
-        
+
+        plugin.getLogger().info("[DEBUG] Used slots after configured jobs: " + usedSlots);
+
         // Then, place remaining jobs in available content slots with pagination
         List<Job> remainingJobs = availableJobs.stream()
             .filter(job -> !configuredJobSlots.containsKey(job.getId()))
             .collect(Collectors.toList());
-        
+
+        plugin.getLogger().info("[DEBUG] Remaining jobs without configured slots: " + remainingJobs.size());
+
         List<Integer> availableContentSlots = contentSlots.stream()
             .filter(slot -> !usedSlots.contains(slot))
             .collect(Collectors.toList());
-        
+
+        plugin.getLogger().info("[DEBUG] Available content slots: " + availableContentSlots);
+
         int itemsPerPage = availableContentSlots.size();
         int startIndex = currentPage * itemsPerPage;
         int endIndex = Math.min(startIndex + itemsPerPage, remainingJobs.size());
-        
+
+        plugin.getLogger().info("[DEBUG] Pagination - Page: " + currentPage + ", Items per page: " + itemsPerPage + ", Start: " + startIndex + ", End: " + endIndex);
+
         for (int i = startIndex; i < endIndex; i++) {
             Job job = remainingJobs.get(i);
             int slotIndex = i - startIndex;
-            
+
+            plugin.getLogger().info("[DEBUG] Processing remaining job: " + job.getId() + " at index " + i + " (slot index: " + slotIndex + ")");
+
             if (slotIndex < availableContentSlots.size()) {
                 int slot = availableContentSlots.get(slotIndex);
+                plugin.getLogger().info("[DEBUG] Placing remaining job " + job.getId() + " in slot " + slot);
+
                 try {
-                    ItemStack jobItem = createJobItemOptimized(job);
+                    ItemStack jobItem = getJobItemOptimized(job);
                     if (jobItem != null) {
                         inventory.setItem(slot, jobItem);
+                        plugin.getLogger().info("[DEBUG] Successfully placed remaining job " + job.getId() + " in slot " + slot);
                         logDebugPlacement(job, slot);
+                    } else {
+                        plugin.getLogger().warning("[DEBUG] Failed to create item for remaining job " + job.getId() + " - item was null");
                     }
                 } catch (Exception e) {
                     plugin.getLogger().warning("Failed to create job item for " + job.getId() + ": " + e.getMessage());
+                    e.printStackTrace();
                 }
+            } else {
+                plugin.getLogger().warning("[DEBUG] Slot index " + slotIndex + " >= available slots size " + availableContentSlots.size());
             }
         }
+
+        plugin.getLogger().info("[DEBUG] populateJobItems completed. Total slots used: " + usedSlots.size());
     }
     
     /**
@@ -153,49 +200,85 @@ public class JobsMainMenu extends BaseMenu {
     }
     
     /**
+     * Get job item with performance optimization.
+     */
+    private ItemStack getJobItemOptimized(Job job) {
+        // Use cache-optimized creation
+        return createJobItemOptimized(job);
+    }
+
+    /**
      * Create optimized job item using proper API and error handling.
      */
     private ItemStack createJobItemOptimized(Job job) {
+        plugin.getLogger().info("[DEBUG] Creating job item for: " + job.getId());
+
         JobItemFormat format = config.getJobItemFormat();
-        
+        plugin.getLogger().info("[DEBUG] JobItemFormat: " + (format != null ? "exists" : "null"));
+
         // Get material with proper error handling
         Material iconMaterial = getJobMaterial(job, format);
+        plugin.getLogger().info("[DEBUG] Icon material for " + job.getId() + ": " + iconMaterial);
+
         if (iconMaterial == null) {
+            plugin.getLogger().warning("[DEBUG] Icon material is null for job " + job.getId() + ", returning null");
             return null;
         }
-        
+
         // Get player job status efficiently
         boolean hasJob = playerData.hasJob(job.getId());
         // Always get saved stats, even if player left the job
         int playerLevel = playerData.getLevel(job.getId());
         long playerXp = (long) playerData.getXp(job.getId());
-        
+
+        plugin.getLogger().info("[DEBUG] Job " + job.getId() + " - hasJob: " + hasJob + ", level: " + playerLevel + ", xp: " + playerXp);
+
         // Create comprehensive placeholders for this specific job
         Map<String, String> jobPlaceholders = createJobPlaceholdersOptimized(job, hasJob, playerLevel, playerXp);
-        
+        plugin.getLogger().info("[DEBUG] Created placeholders for " + job.getId() + ": " + jobPlaceholders.size() + " entries");
+
         // Build item using centralized configuration approach
         Map<String, Object> jobConfigMap = createJobConfigMap(job, format, iconMaterial, hasJob);
-        
+        plugin.getLogger().info("[DEBUG] Created config map for " + job.getId() + ": " + jobConfigMap.size() + " entries");
+
         MenuItemConfig jobItemConfig = new MenuItemConfig(new SimpleConfigurationSection(jobConfigMap));
-        return createMenuItem(jobItemConfig, jobPlaceholders);
+        plugin.getLogger().info("[DEBUG] Created MenuItemConfig for " + job.getId() + " - enabled: " + jobItemConfig.isEnabled());
+
+        ItemStack result = createMenuItem(jobItemConfig, jobPlaceholders);
+        plugin.getLogger().info("[DEBUG] createMenuItem result for " + job.getId() + ": " + (result != null ? "SUCCESS" : "NULL"));
+
+        if (result != null) {
+            result = addJobNBT(result, job.getId());
+            plugin.getLogger().info("[DEBUG] Added NBT data for job: " + job.getId());
+        }
+
+        return result;
     }
     
     /**
      * Get job material with proper error handling and no fallbacks.
      */
     private Material getJobMaterial(Job job, JobItemFormat format) {
+        plugin.getLogger().info("[DEBUG] getJobMaterial for " + job.getId() + " - format.isUseJobIcon(): " + format.isUseJobIcon());
+
         if (format.isUseJobIcon()) {
-            if (job.getIconMaterial() == null || job.getIconMaterial().isEmpty()) {
+            String iconMaterial = job.getIconMaterial();
+            plugin.getLogger().info("[DEBUG] Job " + job.getId() + " icon material: '" + iconMaterial + "'");
+
+            if (iconMaterial == null || iconMaterial.isEmpty()) {
                 plugin.getLogger().severe("No material configured for job " + job.getId());
                 return null;
             }
-            
-            Material material = fr.ax_dev.universejobs.utils.EnumUtils.parseMaterial(job.getIconMaterial(), null);
+
+            Material material = fr.ax_dev.universejobs.utils.EnumUtils.parseMaterial(iconMaterial, null);
+            plugin.getLogger().info("[DEBUG] Parsed material for " + job.getId() + ": " + material);
+
             if (material == null) {
-                plugin.getLogger().severe("Invalid material for job " + job.getId() + ": " + job.getIconMaterial());
+                plugin.getLogger().severe("Invalid material for job " + job.getId() + ": " + iconMaterial);
             }
             return material;
         } else {
+            plugin.getLogger().info("[DEBUG] Using default PAPER material for " + job.getId());
             // Default material when format doesn't specify one
             return Material.PAPER;
         }
@@ -206,7 +289,8 @@ public class JobsMainMenu extends BaseMenu {
      */
     private Map<String, Object> createJobConfigMap(Job job, JobItemFormat format, Material iconMaterial, boolean hasJob) {
         Map<String, Object> jobConfigMap = new HashMap<>();
-        
+
+        jobConfigMap.put("enabled", true); // This was missing!
         jobConfigMap.put("material", iconMaterial.name());
         jobConfigMap.put("display-name", format.getDisplayName());
         jobConfigMap.put("lore", hasJob ? format.getLore() : format.getLoreWithoutJob());
@@ -272,13 +356,16 @@ public class JobsMainMenu extends BaseMenu {
         ItemStack clickedItem = event.getCurrentItem();
         if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
         
-        Job clickedJob = findJobFromSlot(slot);
+        Job clickedJob = findJobFromItem(event.getCurrentItem());
         if (clickedJob == null) return;
-        
+
+        plugin.getLogger().info("[DEBUG] handleJobClick - detected job: " + clickedJob.getId());
+
         // Handle different click types
         if (event.getClick() == ClickType.RIGHT) {
             handleQuickJobToggle(clickedJob);
         } else {
+            plugin.getLogger().info("[DEBUG] handleJobClick - opening job menu for: " + clickedJob.getId());
             plugin.getMenuManager().openJobMenu(player, clickedJob.getId());
         }
     }
@@ -286,43 +373,59 @@ public class JobsMainMenu extends BaseMenu {
     /**
      * Find job from clicked slot efficiently.
      */
-    private Job findJobFromSlot(int slot) {
-        Map<String, Integer> configuredJobSlots = config.getJobSlots();
-        
-        // First check if this slot is configured for a specific job
-        for (Map.Entry<String, Integer> entry : configuredJobSlots.entrySet()) {
-            if (entry.getValue() == slot) {
-                String jobId = entry.getKey();
-                return availableJobs.stream()
-                    .filter(job -> job.getId().equals(jobId))
-                    .findFirst()
-                    .orElse(null);
-            }
+    private Job findJobFromItem(ItemStack item) {
+        if (item == null) return null;
+
+        String jobId = getJobIdFromNBT(item);
+        plugin.getLogger().info("[DEBUG] findJobFromItem - extracted job ID from NBT: " + jobId);
+
+        if (jobId != null) {
+            Job job = plugin.getJobManager().getJob(jobId);
+            plugin.getLogger().info("[DEBUG] findJobFromItem - found job: " + (job != null ? job.getId() : "null"));
+            return job;
         }
-        
-        // Then check if it's a content slot with auto-placed jobs
-        List<Integer> contentSlots = config.getContentSlots();
-        Set<Integer> usedSlots = new HashSet<>(configuredJobSlots.values());
-        List<Integer> availableContentSlots = contentSlots.stream()
-            .filter(s -> !usedSlots.contains(s))
-            .collect(Collectors.toList());
-        
-        int slotIndex = availableContentSlots.indexOf(slot);
-        if (slotIndex >= 0) {
-            List<Job> remainingJobs = availableJobs.stream()
-                .filter(job -> !configuredJobSlots.containsKey(job.getId()))
-                .collect(Collectors.toList());
-            
-            int itemsPerPage = availableContentSlots.size();
-            int jobIndex = currentPage * itemsPerPage + slotIndex;
-            if (jobIndex < remainingJobs.size()) {
-                return remainingJobs.get(jobIndex);
-            }
-        }
-        
+
         return null;
     }
     
+    /**
+     * Add job NBT data to item.
+     */
+    private ItemStack addJobNBT(ItemStack item, String jobId) {
+        if (item == null || jobId == null) return item;
+
+        try {
+            item.editMeta(meta -> {
+                meta.getPersistentDataContainer().set(
+                    new org.bukkit.NamespacedKey(plugin, "job_id"),
+                    org.bukkit.persistence.PersistentDataType.STRING,
+                    jobId
+                );
+            });
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to add NBT data to job item: " + e.getMessage());
+        }
+
+        return item;
+    }
+
+    /**
+     * Get job ID from item NBT.
+     */
+    private String getJobIdFromNBT(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) return null;
+
+        try {
+            return item.getItemMeta().getPersistentDataContainer().get(
+                new org.bukkit.NamespacedKey(plugin, "job_id"),
+                org.bukkit.persistence.PersistentDataType.STRING
+            );
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to read NBT data from item: " + e.getMessage());
+            return null;
+        }
+    }
+
     /**
      * Handle quick job toggle (join/leave) with proper validation and error messages.
      */

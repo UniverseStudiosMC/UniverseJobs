@@ -59,7 +59,27 @@ public class JobActionsMenu extends BaseMenu {
         String title = config.getTitle().replace("{job_name}", job.getDisplayName());
         title = processPlaceholders(title);
         Component titleComponent = fr.ax_dev.universejobs.utils.MessageUtils.parseMessage(title);
-        this.inventory = org.bukkit.Bukkit.createInventory(this, config.getSize(), titleComponent);
+
+        // Use optimized menu holder for 2025 performance
+        fr.ax_dev.universejobs.menu.OptimizedMenuHolder holder = new fr.ax_dev.universejobs.menu.OptimizedMenuHolder(
+            player.getUniqueId(),
+            getClass().getSimpleName(),
+            getMenuId(),
+            this
+        );
+
+        this.inventory = plugin.getAccessor().getMenuManager().getInventoryFromPool(
+            config.getSize(),
+            titleComponent,
+            holder
+        );
+
+        holder.setInventory(this.inventory);
+    }
+
+    @Override
+    protected String getMenuId() {
+        return job != null ? job.getId() + "_actions" : "unknown_actions";
     }
     
     /**

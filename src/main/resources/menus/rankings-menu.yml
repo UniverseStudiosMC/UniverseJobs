@@ -66,14 +66,14 @@ static-items:
 # Job selection button configuration
 job-selection:
   default-format:
-    slots: 
-    - "17"
-    - "26"
-    - "35"
-    - "44"
+    slots:
+    - 17
+    - 26
+    - 35
+    - 44
     selected:
       material: "{job_material}"
-      customodeldata: "{job_custom-model-data}"
+      custom-model-data: "{job_custom-model-data}"
       display-name: "<#FFD700>{job_name}"
       lore:
         - ""
@@ -83,11 +83,14 @@ job-selection:
         - ""
         - "<gray>Top Player: <#abffb3>{top_player}"
         - "<gray>Top Level: <#abffb3>{top_level}"
+      amount: 1
       glow: true
+      hide-attributes: true
+      hide-enchants: false
 
     not_selected:
       material: "{job_material}"
-      customodeldata: "{job_custom-model-data}"
+      custom-model-data: "{job_custom-model-data}"
       display-name: "<#FFD700>{job_name}"
       lore:
         - ""
@@ -97,6 +100,10 @@ job-selection:
         - ""
         - "<gray>Top Player: <#abffb3>{top_player}"
         - "<gray>Top Level: <#abffb3>{top_level}"
+      amount: 1
+      glow: false
+      hide-attributes: true
+      hide-enchants: false
 
 # Navigation items
 navigation-items:

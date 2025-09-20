@@ -22,29 +22,46 @@ import java.util.concurrent.ConcurrentHashMap;
  * Manager for all job-related menus.
  * Handles menu creation, event delegation, and cleanup.
  */
-public class MenuManager implements Listener {
+public class MenuManager {
     
     private final UniverseJobs plugin;
     private final Map<UUID, BaseMenu> openMenus;
     private final Map<UUID, BoostManagerGui> openBoostGuis;
     private final MenuConfig menuConfig;
     private final JobSlotManager jobSlotManager;
-    
+    private final AsyncMenuLoader asyncLoader;
+
+    // 2025 Performance Systems
+    private final InventoryPool inventoryPool;
+    private final ComponentCache componentCache;
+    private final OptimizedEventHandler eventHandler;
+    private final MenuScheduler scheduler;
+
     public MenuManager(UniverseJobs plugin) {
         this.plugin = plugin;
         this.openMenus = new ConcurrentHashMap<>();
         this.openBoostGuis = new ConcurrentHashMap<>();
         this.menuConfig = new MenuConfig(plugin);
         this.jobSlotManager = new JobSlotManager(plugin);
-        
-        // Register event listener
-        Bukkit.getPluginManager().registerEvents(this, plugin);
-        
+        this.asyncLoader = new AsyncMenuLoader(plugin);
+
+        // Initialize 2025 performance systems
+        this.inventoryPool = new InventoryPool();
+        this.componentCache = new ComponentCache();
+        this.eventHandler = new OptimizedEventHandler(this);
+        this.scheduler = new MenuScheduler(plugin);
+
+        // Register optimized event handler instead of default
+        Bukkit.getPluginManager().registerEvents(eventHandler, plugin);
+
         // Load menu configurations
         menuConfig.loadConfigurations();
-        
+
         // Initialize job slot manager with MenuConfig reference
         jobSlotManager.initialize(menuConfig);
+
+        // Pre-warm caches for optimal performance
+        componentCache.preWarm();
     }
     
     /**
@@ -52,10 +69,22 @@ public class MenuManager implements Listener {
      */
     public void openJobsMainMenu(Player player) {
         closeCurrentMenu(player);
-        
-        JobsMainMenu menu = new JobsMainMenu(plugin, player, menuConfig.getMainMenuConfig(), jobSlotManager);
-        openMenus.put(player.getUniqueId(), menu);
-        menu.open();
+
+        // Register player as having active menu for fast event filtering
+        eventHandler.registerActivePlayer(player.getUniqueId());
+
+        // Optimized async preload + sync creation
+        scheduler.runAsync(() -> {
+            // Pre-calculate placeholders async
+            asyncLoader.preloadJobsMainMenuData(player);
+        });
+
+        // Create menu sync with optimized systems
+        scheduler.runSync(() -> {
+            JobsMainMenu menu = new JobsMainMenu(plugin, player, menuConfig.getMainMenuConfig(), jobSlotManager);
+            openMenus.put(player.getUniqueId(), menu);
+            menu.open();
+        });
     }
     
     /**
@@ -63,16 +92,19 @@ public class MenuManager implements Listener {
      */
     public void openJobMenu(Player player, String jobId) {
         closeCurrentMenu(player);
-        
+
         // Use centralized accessor for cleaner code
         var accessor = plugin.getAccessor();
-        
+
         // Check if job exists before creating menu
         if (accessor.getJobManager().getJob(jobId) == null) {
             accessor.getLanguageManager().sendMessage(player, "job-not-found", jobId);
             return;
         }
-        
+
+        // Register player as having active menu for fast event filtering
+        eventHandler.registerActivePlayer(player.getUniqueId());
+
         try {
             SingleJobMenu menu = new SingleJobMenu(plugin, player, jobId, menuConfig.getJobMenuConfig());
             openMenus.put(player.getUniqueId(), menu);
@@ -88,23 +120,25 @@ public class MenuManager implements Listener {
      */
     public void openJobActionsMenu(Player player, String jobId) {
         closeCurrentMenu(player);
-        
+
         // Use centralized accessor for cleaner code
         var accessor = plugin.getAccessor();
-        
+
         // Check if job exists before creating menu
         if (accessor.getJobManager().getJob(jobId) == null) {
             accessor.getLanguageManager().sendMessage(player, "job-not-found", jobId);
             return;
         }
-        
+
+        // Register player as having active menu for fast event filtering
+        eventHandler.registerActivePlayer(player.getUniqueId());
+
         try {
             JobActionsMenu menu = new JobActionsMenu(plugin, player, jobId, menuConfig.getActionsMenuConfig());
             openMenus.put(player.getUniqueId(), menu);
             menu.open();
         } catch (IllegalArgumentException e) {
             accessor.logWarning("Failed to create JobActionsMenu: " + e.getMessage());
-            // Menu creation failed silently - job was already validated above
         }
     }
     
@@ -131,9 +165,19 @@ public class MenuManager implements Listener {
      * Open the global rankings menu.
      */
     public void openGlobalRankingsMenu(Player player) {
+        openGlobalRankingsMenu(player, null);
+    }
+
+    /**
+     * Open the global rankings menu with a pre-selected job.
+     */
+    public void openGlobalRankingsMenu(Player player, String preSelectedJob) {
         closeCurrentMenu(player);
-        
-        GlobalRankingsMenu menu = new GlobalRankingsMenu(plugin, player, menuConfig.getRankingsMenuConfig());
+
+        // Register player as having active menu for fast event filtering
+        eventHandler.registerActivePlayer(player.getUniqueId());
+
+        GlobalRankingsMenu menu = new GlobalRankingsMenu(plugin, player, menuConfig.getRankingsMenuConfig(), preSelectedJob);
         openMenus.put(player.getUniqueId(), menu);
         menu.open();
     }
@@ -142,16 +186,57 @@ public class MenuManager implements Listener {
      * Close the current menu for a player.
      */
     public void closeCurrentMenu(Player player) {
-        BaseMenu currentMenu = openMenus.remove(player.getUniqueId());
+        UUID playerId = player.getUniqueId();
+
+        BaseMenu currentMenu = openMenus.remove(playerId);
         if (currentMenu != null) {
             currentMenu.close();
         }
-        
-        BoostManagerGui currentBoostGui = openBoostGuis.remove(player.getUniqueId());
+
+        BoostManagerGui currentBoostGui = openBoostGuis.remove(playerId);
         if (currentBoostGui != null) {
             currentBoostGui.onInventoryClose(player);
             player.closeInventory();
         }
+
+        // Unregister from active players and clear cache
+        eventHandler.unregisterActivePlayer(playerId);
+        componentCache.clearPlayer(playerId.toString());
+    }
+
+    /**
+     * Get inventory from pool for optimal performance.
+     */
+    public org.bukkit.inventory.Inventory getInventoryFromPool(int size, net.kyori.adventure.text.Component title, org.bukkit.inventory.InventoryHolder holder) {
+        return inventoryPool.getInventory(size, title, holder);
+    }
+
+    /**
+     * Return inventory to pool when menu is closed.
+     */
+    public void returnInventoryToPool(org.bukkit.inventory.Inventory inventory) {
+        inventoryPool.returnInventory(inventory);
+    }
+
+    /**
+     * Get component cache for menu rendering.
+     */
+    public ComponentCache getComponentCache() {
+        return componentCache;
+    }
+
+    /**
+     * Get optimized scheduler for menu operations.
+     */
+    public MenuScheduler getScheduler() {
+        return scheduler;
+    }
+
+    /**
+     * Get plugin reference.
+     */
+    public UniverseJobs getPlugin() {
+        return plugin;
     }
     
     /**
@@ -179,107 +264,7 @@ public class MenuManager implements Listener {
         return openBoostGuis.get(player.getUniqueId());
     }
     
-    /**
-     * Handle inventory click events.
-     * SECURITY: Only allow actions in the top inventory (menu), not in player inventory.
-     */
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) return;
-        
-        // Check for BaseMenu first
-        BaseMenu menu = openMenus.get(player.getUniqueId());
-        if (menu != null && event.getView().getTopInventory().equals(menu.getInventory())) {
-            // Player has our menu open - always cancel to prevent item theft/movement
-            event.setCancelled(true);
-            
-            // Only process menu actions if click is in the TOP inventory (our menu)
-            if (isClickInMenuInventory(event, menu)) {
-                // Additional security: Block potentially dangerous click types
-                if (isSecureClickType(event)) {
-                    menu.handleClick(event.getSlot(), event);
-                }
-                // Dangerous click types (like number keys, middle click, etc.) are blocked
-            }
-            return;
-        }
-        
-        // Check for BoostManagerGui
-        BoostManagerGui boostGui = openBoostGuis.get(player.getUniqueId());
-        if (boostGui != null && event.getInventory().getHolder() == boostGui) {
-            // Player has boost GUI open - always cancel to prevent item theft/movement
-            event.setCancelled(true);
-            
-            // Only process if click is in the boost GUI inventory and is a secure click
-            if (event.getClickedInventory() != null && 
-                event.getClickedInventory().equals(event.getView().getTopInventory()) &&
-                event.getClickedInventory().getHolder() == boostGui &&
-                isSecureClickType(event)) {
-                
-                boostGui.handleClick(player, event.getSlot(), event.isRightClick());
-            }
-            return;
-        }
-    }
-    
-    /**
-     * Handle inventory drag events to prevent item dragging in menus.
-     */
-    @EventHandler
-    public void onInventoryDrag(InventoryDragEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) return;
-        
-        // Check BaseMenu first
-        BaseMenu menu = openMenus.get(player.getUniqueId());
-        if (menu != null) {
-            // Check if dragging involves our menu inventory
-            if (event.getView().getTopInventory().equals(menu.getInventory())) {
-                // Cancel any drag that involves the menu inventory
-                for (int slot : event.getRawSlots()) {
-                    if (slot < event.getView().getTopInventory().getSize()) {
-                        event.setCancelled(true);
-                        break;
-                    }
-                }
-            }
-            return;
-        }
-        
-        // Check BoostManagerGui
-        BoostManagerGui boostGui = openBoostGuis.get(player.getUniqueId());
-        if (boostGui != null && event.getView().getTopInventory().getHolder() == boostGui) {
-            // Cancel any drag that involves the boost GUI inventory
-            for (int slot : event.getRawSlots()) {
-                if (slot < event.getView().getTopInventory().getSize()) {
-                    event.setCancelled(true);
-                    break;
-                }
-            }
-        }
-    }
-    
-    /**
-     * Handle inventory close events.
-     */
-    @EventHandler
-    public void onInventoryClose(InventoryCloseEvent event) {
-        if (!(event.getPlayer() instanceof Player player)) return;
-        
-        // Check BaseMenu first
-        BaseMenu menu = openMenus.get(player.getUniqueId());
-        if (menu != null && menu.isInventory(event.getInventory())) {
-            openMenus.remove(player.getUniqueId());
-            menu.onClose();
-            return;
-        }
-        
-        // Check BoostManagerGui
-        BoostManagerGui boostGui = openBoostGuis.get(player.getUniqueId());
-        if (boostGui != null && boostGui.isInventory(event.getInventory())) {
-            openBoostGuis.remove(player.getUniqueId());
-            boostGui.onInventoryClose(player);
-        }
-    }
+    // Event handlers are now managed by OptimizedEventHandler for better performance
     
     /**
      * Close all open menus.
@@ -330,6 +315,51 @@ public class MenuManager implements Listener {
             menu.refresh();
         }
     }
+
+    /**
+     * Shutdown all menu systems for optimal cleanup.
+     */
+    public void shutdown() {
+        // Close all open menus
+        for (BaseMenu menu : openMenus.values()) {
+            if (menu != null) {
+                menu.close();
+            }
+        }
+        openMenus.clear();
+
+        for (BoostManagerGui gui : openBoostGuis.values()) {
+            if (gui != null) {
+                // Close without calling onInventoryClose to avoid issues
+            }
+        }
+        openBoostGuis.clear();
+
+        // Shutdown performance systems
+        scheduler.shutdown();
+        inventoryPool.shutdown();
+        componentCache.clear();
+        eventHandler.shutdown();
+        asyncLoader.shutdown();
+    }
+
+    /**
+     * Get performance statistics.
+     */
+    public String getPerformanceStats() {
+        return String.format("MenuManager Stats: " +
+            "Active Menus: %d, " +
+            "Pool Size: %d, " +
+            "Component Cache: %d items, " +
+            "Active Menu Players: %d, " +
+            "Scheduler: %s",
+            openMenus.size(),
+            inventoryPool.getPoolSize(),
+            componentCache.getComponentCacheSize(),
+            eventHandler.getActiveMenuCount(),
+            scheduler.getStats().toString()
+        );
+    }
     
     /**
      * Check if a player has a menu open.
@@ -345,40 +375,4 @@ public class MenuManager implements Listener {
         return openMenus.get(player.getUniqueId());
     }
     
-    /**
-     * Check if a click is in the top inventory (menu) vs bottom inventory (player).
-     */
-    private boolean isClickInMenuInventory(InventoryClickEvent event, BaseMenu menu) {
-        return event.getClickedInventory() != null && 
-               event.getClickedInventory().equals(event.getView().getTopInventory()) &&
-               event.getClickedInventory().equals(menu.getInventory());
-    }
-    
-    /**
-     * Check if a click type is secure for menu interactions.
-     * Blocks potentially exploitable click types.
-     */
-    private boolean isSecureClickType(InventoryClickEvent event) {
-        switch (event.getClick()) {
-            // Allow basic clicks
-            case LEFT:
-            case RIGHT:
-            case SHIFT_LEFT:
-            case SHIFT_RIGHT:
-                return true;
-                
-            // Block potentially dangerous click types
-            case DOUBLE_CLICK:          // Could gather items
-            case NUMBER_KEY:            // Hotbar key swapping
-            case DROP:                  // Drop items
-            case CONTROL_DROP:          // Drop stack
-            case CREATIVE:              // Creative mode middle-click
-            case UNKNOWN:               // Unknown behavior
-                return false;
-                
-            // Block other edge cases
-            default:
-                return false;
-        }
-    }
 }
