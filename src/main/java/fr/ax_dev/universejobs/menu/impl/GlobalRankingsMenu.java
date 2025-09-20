@@ -8,6 +8,7 @@ import fr.ax_dev.universejobs.menu.config.MenuItemConfig;
 import fr.ax_dev.universejobs.menu.config.SingleMenuConfig;
 import fr.ax_dev.universejobs.menu.config.SimpleConfigurationSection;
 import fr.ax_dev.universejobs.menu.utils.MenuItemUtils;
+import fr.ax_dev.universejobs.utils.NBTItemUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -26,19 +27,32 @@ public class GlobalRankingsMenu extends BaseMenu {
     private String selectedJob;
     
     public GlobalRankingsMenu(UniverseJobs plugin, org.bukkit.entity.Player player, SingleMenuConfig config) {
+        this(plugin, player, config, null);
+    }
+
+    public GlobalRankingsMenu(UniverseJobs plugin, org.bukkit.entity.Player player, SingleMenuConfig config, String preSelectedJob) {
         super(plugin, player, config);
-        
+
         this.jobRankings = new HashMap<>();
         this.availableJobs = plugin.getJobManager().getJobs().values().stream()
             .filter(Job::isEnabled)
             .map(Job::getId)
             .sorted()
             .collect(Collectors.toList());
-        
-        this.selectedJob = availableJobs.isEmpty() ? null : availableJobs.get(0);
-        
+
+        // Use pre-selected job if provided and valid, otherwise select first non-example job
+        if (preSelectedJob != null && availableJobs.contains(preSelectedJob)) {
+            this.selectedJob = preSelectedJob;
+        } else {
+            this.selectedJob = availableJobs.isEmpty() ? null :
+                availableJobs.stream()
+                    .filter(jobId -> !jobId.startsWith("_"))
+                    .findFirst()
+                    .orElse(availableJobs.get(0));
+        }
+
         loadRankings();
-        
+
         // Initialize menu after all fields are set
         initialize();
     }
@@ -57,7 +71,7 @@ public class GlobalRankingsMenu extends BaseMenu {
      * Calculate rankings for a specific job.
      */
     private List<RankingEntry> calculateJobRankings(String jobId) {
-        List<RankingEntry> rankings = new ArrayList<>();
+        List<RankingEntry> rankings = new ArrayList<>(64);
         
         // Get all player data and calculate rankings
         Map<UUID, PlayerJobData> allPlayerData = plugin.getJobManager().getAllPlayerData();
@@ -261,17 +275,21 @@ public class GlobalRankingsMenu extends BaseMenu {
                 }
             }
 
-            // Use default slots if no specific slot configured
+            // Use default slots if no specific slot configured and slots available
             if (slot == null && slotIndex < defaultSlots.size()) {
                 slot = defaultSlots.get(slotIndex);
                 slotIndex++;
             }
 
+            // Only place button if we have a valid slot
             if (slot != null && slot >= 0 && slot < inventory.getSize()) {
                 ItemStack button = createJobSelectionButton(job, jobId.equals(selectedJob), selectionConfig, jobsConfig);
                 if (button != null) {
                     inventory.setItem(slot, button);
                 }
+            } else if (slot == null) {
+                // No more slots available, stop placing jobs
+                break;
             }
         }
     }
@@ -287,7 +305,7 @@ public class GlobalRankingsMenu extends BaseMenu {
         List<RankingEntry> rankings = jobRankings.getOrDefault(job.getId(), new ArrayList<>());
 
         // Create placeholders
-        Map<String, String> placeholders = new HashMap<>();
+        Map<String, String> placeholders = new HashMap<>(16);
         placeholders.put("{job_id}", job.getId());
         placeholders.put("{job_name}", job.getName());
         placeholders.put("{job_material}", job.getIconMaterial() != null ? job.getIconMaterial() : "PAPER");
@@ -326,12 +344,12 @@ public class GlobalRankingsMenu extends BaseMenu {
         }
 
         if (stateConfig == null) {
-            // Fallback to legacy method
             return createLegacyJobButton(job, selected, rankings.size());
         }
 
+
         // Build item configuration
-        Map<String, Object> configMap = new HashMap<>();
+        Map<String, Object> configMap = new HashMap<>(16);
 
         // Material
         String material = stateConfig.getString("material", job.getIconMaterial());
@@ -341,11 +359,11 @@ public class GlobalRankingsMenu extends BaseMenu {
         configMap.put("material", material);
 
         // Custom model data
-        String customModelStr = stateConfig.getString("customodeldata", "0");
+        String customModelStr = stateConfig.getString("custom-model-data", "0");
         if (customModelStr.equals("{job_custom-model-data}")) {
             configMap.put("custom-model-data", job.getCustomModelData());
         } else {
-            int customModelData = stateConfig.getInt("customodeldata", 0);
+            int customModelData = stateConfig.getInt("custom-model-data", 0);
             if (customModelData > 0) {
                 configMap.put("custom-model-data", customModelData);
             }
@@ -358,6 +376,7 @@ public class GlobalRankingsMenu extends BaseMenu {
         configMap.put("lore", stateConfig.getStringList("lore"));
 
         // Item settings
+        configMap.put("enabled", true);
         configMap.put("amount", stateConfig.getInt("amount", 1));
         configMap.put("glow", stateConfig.getBoolean("glow", false));
         configMap.put("hide-attributes", stateConfig.getBoolean("hide-attributes", true));
@@ -367,7 +386,13 @@ public class GlobalRankingsMenu extends BaseMenu {
         configMap.put("action-value", job.getId());
 
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig, placeholders);
+        ItemStack item = createMenuItem(itemConfig, placeholders);
+
+        if (item != null) {
+            item = NBTItemUtils.setStringNBT(item, "universe_job_id", job.getId());
+        }
+
+        return item;
     }
 
     /**
@@ -385,9 +410,16 @@ public class GlobalRankingsMenu extends BaseMenu {
         Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
             job.getIconMaterial(), "&e" + job.getName(), lore, selected
         );
+        configMap.put("enabled", true);
 
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig, new HashMap<>());
+        ItemStack item = createMenuItem(itemConfig, new HashMap<>());
+
+        if (item != null) {
+            item = NBTItemUtils.setStringNBT(item, "universe_job_id", job.getId());
+        }
+
+        return item;
     }
     
     /**
@@ -400,7 +432,7 @@ public class GlobalRankingsMenu extends BaseMenu {
         if (rankings.isEmpty()) return;
 
         List<Integer> contentSlots = new ArrayList<>(config.getContentSlots());
-        Set<Integer> usedSlots = new HashSet<>();
+        Set<Integer> usedSlots = new HashSet<>(contentSlots.size());
 
         // First, place entries with specific slots
         for (RankingEntry entry : rankings) {
@@ -456,7 +488,7 @@ public class GlobalRankingsMenu extends BaseMenu {
         Map<String, String> placeholders = createRankingPlaceholders(entry);
 
         // Build item configuration from config
-        Map<String, Object> configMap = new HashMap<>();
+        Map<String, Object> configMap = new HashMap<>(16);
 
         // Material
         String material = rankConfig.getString("material", "PLAYER_HEAD");
@@ -486,6 +518,7 @@ public class GlobalRankingsMenu extends BaseMenu {
         configMap.put("lore", lore);
 
         // General item settings
+        configMap.put("enabled", true);
         configMap.put("amount", rankConfig.getInt("amount", 1));
         configMap.put("glow", rankConfig.getBoolean("glow", false) ||
             (entry.playerId.equals(player.getUniqueId()) && entry.rank <= 3));
@@ -543,6 +576,7 @@ public class GlobalRankingsMenu extends BaseMenu {
         Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
             "PLAYER_HEAD", "#{rank} - {player}", lore, false
         );
+        configMap.put("enabled", true);
 
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
         return createMenuItem(itemConfig, placeholders);
@@ -552,7 +586,7 @@ public class GlobalRankingsMenu extends BaseMenu {
      * Create placeholders for ranking entry.
      */
     private Map<String, String> createRankingPlaceholders(RankingEntry entry) {
-        Map<String, String> placeholders = new HashMap<>();
+        Map<String, String> placeholders = new HashMap<>(8);
         placeholders.put("{rank}", String.valueOf(entry.rank));
         placeholders.put("{player}", entry.playerName);
         placeholders.put("{player_name}", entry.playerName);
@@ -639,15 +673,16 @@ public class GlobalRankingsMenu extends BaseMenu {
             return;
         }
         
-        // Handle job selection buttons using dynamic slot detection
-        String clickedJobId = getJobIdBySlot(slot);
-        if (clickedJobId != null) {
-            if (!clickedJobId.equals(selectedJob)) {
-                selectedJob = clickedJobId;
-                currentPage = 0; // Reset to first page
+        // Handle job selection buttons using NBT detection
+        ItemStack clickedItem = inventory.getItem(slot);
+        if (clickedItem != null) {
+            String jobId = NBTItemUtils.getStringNBT(clickedItem, "universe_job_id");
+            if (jobId != null && !jobId.equals(selectedJob)) {
+                selectedJob = jobId;
+                currentPage = 0;
                 refresh();
+                return;
             }
-            return;
         }
         
         // Handle ranking item clicks (for future expansion - maybe show player details)
@@ -670,80 +705,6 @@ public class GlobalRankingsMenu extends BaseMenu {
         plugin.getMenuManager().openJobsMainMenu(player);
     }
 
-    /**
-     * Get the job ID that corresponds to the clicked slot.
-     */
-    private String getJobIdBySlot(int clickedSlot) {
-        org.bukkit.configuration.ConfigurationSection selectionConfig =
-            config.getRawConfig().getConfigurationSection("job-selection");
-
-        if (selectionConfig == null) {
-            return null;
-        }
-
-        // Get default slots
-        org.bukkit.configuration.ConfigurationSection defaultFormat =
-            selectionConfig.getConfigurationSection("default-format");
-        List<Integer> defaultSlots = new ArrayList<>();
-
-        if (defaultFormat != null && defaultFormat.contains("slots")) {
-            List<?> slotsList = defaultFormat.getList("slots");
-            if (slotsList != null) {
-                for (Object slot : slotsList) {
-                    if (slot instanceof Integer) {
-                        defaultSlots.add((Integer) slot);
-                    } else if (slot instanceof String) {
-                        try {
-                            defaultSlots.add(Integer.parseInt((String) slot));
-                        } catch (NumberFormatException e) {
-                            // Skip invalid slots
-                        }
-                    }
-                }
-            }
-        }
-
-        org.bukkit.configuration.ConfigurationSection jobsConfig =
-            selectionConfig.getConfigurationSection("jobs");
-
-        // Check specific job slot configurations first
-        if (jobsConfig != null) {
-            for (String jobId : availableJobs) {
-                if (jobsConfig.contains(jobId)) {
-                    org.bukkit.configuration.ConfigurationSection jobConfig = jobsConfig.getConfigurationSection(jobId);
-                    if (jobConfig != null && jobConfig.contains("slot")) {
-                        int jobSlot = jobConfig.getInt("slot");
-                        if (jobSlot == clickedSlot) {
-                            return jobId;
-                        }
-                    }
-                }
-            }
-        }
-
-        // Check default slots
-        int slotIndex = 0;
-        for (String jobId : availableJobs) {
-            // Skip jobs that have specific slot configuration
-            boolean hasSpecificSlot = false;
-            if (jobsConfig != null && jobsConfig.contains(jobId)) {
-                org.bukkit.configuration.ConfigurationSection jobConfig = jobsConfig.getConfigurationSection(jobId);
-                if (jobConfig != null && jobConfig.contains("slot")) {
-                    hasSpecificSlot = true;
-                }
-            }
-
-            if (!hasSpecificSlot && slotIndex < defaultSlots.size()) {
-                int defaultSlot = defaultSlots.get(slotIndex);
-                if (defaultSlot == clickedSlot) {
-                    return jobId;
-                }
-                slotIndex++;
-            }
-        }
-
-        return null;
-    }
     
     /**
      * Get navigation placeholders.

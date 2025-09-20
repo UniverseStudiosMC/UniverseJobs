@@ -21,11 +21,18 @@ import java.util.UUID;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import net.kyori.adventure.text.Component;
 
 /**
  * Utility class for menu-related operations.
  */
 public class MenuUtils {
+
+    // Cache for processed strings to avoid repeated operations
+    private static final Map<String, String> PLACEHOLDER_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, List<Component>> LORE_CACHE = new ConcurrentHashMap<>();
+    private static final int MAX_CACHE_SIZE = 1000;
     
     /**
      * Process PlaceholderAPI placeholders in a string.
@@ -106,115 +113,355 @@ public class MenuUtils {
     public static ItemStack createMenuItem(UniverseJobs plugin, Player player, MenuItemConfig itemConfig) {
         return createMenuItem(plugin, player, itemConfig, null);
     }
-    
+
     /**
-     * Create an ItemStack from a MenuItemConfig with custom placeholders using existing ItemBuilder.
+     * Create an ItemStack async-safe (without player-specific operations).
+     * This can be called from async threads safely.
      */
-    public static ItemStack createMenuItem(UniverseJobs plugin, Player player, MenuItemConfig itemConfig, Map<String, String> customPlaceholders) {
+    public static ItemStack createMenuItemAsync(UniverseJobs plugin, Player player, MenuItemConfig itemConfig, Map<String, String> customPlaceholders) {
+        // Create base item without player-specific operations
         ItemBuilder builder = ItemBuilder.fromMaterialName(plugin, itemConfig.getMaterial());
         if (builder == null) {
-            plugin.getLogger().severe("Failed to create item from material: " + itemConfig.getMaterial() + ". Using STONE as fallback.");
             builder = new ItemBuilder(plugin, Material.STONE);
         }
         builder.amount(itemConfig.getAmount());
-        
-        // Process display name
+
+        // Process display name with pre-calculated placeholders
         String displayName = itemConfig.getDisplayName();
         if (customPlaceholders != null) {
             displayName = replacePlaceholders(displayName, customPlaceholders);
         }
-        displayName = processPlaceholders(player, displayName);
         builder.name(displayName);
-        
-        // Process lore with multi-line placeholder support
+
+        // Process lore with pre-calculated placeholders
         List<String> lore = new ArrayList<>();
         for (String loreLine : itemConfig.getLore()) {
-            List<String> processedLines = processLoreLineWithMultiLine(loreLine, customPlaceholders, player);
-            lore.addAll(processedLines);
+            if (loreLine.contains("{job_description}") && customPlaceholders != null && customPlaceholders.containsKey("job_description_lines")) {
+                String[] descriptionLines = customPlaceholders.get("job_description_lines").split("\n");
+                String baseFormat = loreLine.replace("{job_description}", "");
+
+                for (String descLine : descriptionLines) {
+                    if (descLine.trim().isEmpty()) {
+                        lore.add("");
+                    } else {
+                        String processedLine = baseFormat + descLine;
+                        if (customPlaceholders != null) {
+                            processedLine = replacePlaceholders(processedLine, customPlaceholders);
+                        }
+                        lore.add(processedLine);
+                    }
+                }
+            } else {
+                String processedLore = loreLine;
+                if (customPlaceholders != null) {
+                    processedLore = replacePlaceholders(processedLore, customPlaceholders);
+                }
+                lore.add(processedLore);
+            }
         }
         builder.lore(lore);
-        
+
         // Custom model data
         if (itemConfig.getCustomModelData() > 0) {
             builder.customModelData(itemConfig.getCustomModelData());
         }
-        
+
         // Item flags
         if (itemConfig.isHideAttributes() || itemConfig.isHideEnchants()) {
             builder.hideAttributes();
         }
-        
+
+        return builder.build();
+    }
+    
+    /**
+     * Create an ItemStack from a MenuItemConfig with custom placeholders using existing ItemBuilder.
+     * Ultra-optimized version with caching and minimal allocations.
+     */
+    public static ItemStack createMenuItem(UniverseJobs plugin, Player player, MenuItemConfig itemConfig, Map<String, String> customPlaceholders) {
+        if (itemConfig == null || !itemConfig.isEnabled()) {
+            plugin.getLogger().info("[DEBUG] MenuUtils.createMenuItem - itemConfig null or disabled");
+            return null;
+        }
+
+        // Generate cache key for this item
+        String cacheKey = generateItemCacheKey(player.getUniqueId(), itemConfig, customPlaceholders);
+        plugin.getLogger().info("[DEBUG] MenuUtils.createMenuItem - cache key: " + cacheKey);
+
+        // Try to get from component cache first
+        return plugin.getAccessor().getMenuManager().getComponentCache().getItem(cacheKey, () -> {
+            plugin.getLogger().info("[DEBUG] MenuUtils.createMenuItem - creating uncached item");
+            return createMenuItemUncached(plugin, player, itemConfig, customPlaceholders);
+        });
+    }
+
+    /**
+     * Create menu item without caching - internal optimized version.
+     */
+    private static ItemStack createMenuItemUncached(UniverseJobs plugin, Player player, MenuItemConfig itemConfig, Map<String, String> customPlaceholders) {
+        plugin.getLogger().info("[DEBUG] createMenuItemUncached - material: " + itemConfig.getMaterial());
+
+        // Pre-allocate builder
+        ItemBuilder builder = ItemBuilder.fromMaterialName(plugin, itemConfig.getMaterial());
+        if (builder == null) {
+            plugin.getLogger().warning("[DEBUG] createMenuItemUncached - ItemBuilder.fromMaterialName returned null for: " + itemConfig.getMaterial());
+            return null; // Fail fast instead of fallback
+        }
+
+        plugin.getLogger().info("[DEBUG] createMenuItemUncached - ItemBuilder created successfully");
+
+        // Batch apply basic properties
+        builder.amount(itemConfig.getAmount());
+
+        // Process display name with original working method
+        String displayName = itemConfig.getDisplayName();
+        if (displayName != null && !displayName.isEmpty()) {
+            if (customPlaceholders != null) {
+                displayName = replacePlaceholders(displayName, customPlaceholders);
+            }
+            displayName = processPlaceholders(player, displayName);
+            builder.name(displayName);
+        }
+
+        // Process lore with original working method
+        List<String> originalLore = itemConfig.getLore();
+        if (originalLore != null && !originalLore.isEmpty()) {
+            List<String> processedLore = new ArrayList<>();
+            for (String loreLine : originalLore) {
+                if (customPlaceholders != null) {
+                    loreLine = replacePlaceholders(loreLine, customPlaceholders);
+                }
+                loreLine = processPlaceholders(player, loreLine);
+                processedLore.add(loreLine);
+            }
+            builder.lore(processedLore);
+        }
+
+        // Batch apply visual properties
+        if (itemConfig.getCustomModelData() > 0) {
+            builder.customModelData(itemConfig.getCustomModelData());
+        }
+
+        if (itemConfig.isHideAttributes() || itemConfig.isHideEnchants()) {
+            builder.hideAttributes();
+        }
+
+        // Build base item
         ItemStack item = builder.build();
-        
-        // Add enchantments, glow effect, and skull owner after building
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            // Handle skull owner for player heads
-            if (item.getType() == Material.PLAYER_HEAD) {
-                if (meta instanceof SkullMeta) {
-                    SkullMeta skullMeta = (SkullMeta) meta;
-                    
-                    // Priority to player-head over skull-owner
-                    if (!itemConfig.getPlayerHead().isEmpty()) {
-                        String playerHead = itemConfig.getPlayerHead();
-                        if (customPlaceholders != null) {
-                            playerHead = replacePlaceholders(playerHead, customPlaceholders);
-                        }
-                        playerHead = processPlaceholders(player, playerHead);
-                        
-                        try {
-                            // Check if it's a texture value (base64)
-                            if (playerHead.length() > 20 && isValidBase64(playerHead)) {
-                                setSkullTexture(skullMeta, playerHead);
-                            } else {
-                                // It's a player name
-                                skullMeta.setOwningPlayer(plugin.getServer().getOfflinePlayer(playerHead));
-                            }
-                        } catch (Exception e) {
-                            plugin.getLogger().warning("Failed to set player head: " + playerHead);
-                        }
-                    } else if (!itemConfig.getSkullOwner().isEmpty()) {
-                        String skullOwner = itemConfig.getSkullOwner();
-                        if (customPlaceholders != null) {
-                            skullOwner = replacePlaceholders(skullOwner, customPlaceholders);
-                        }
-                        skullOwner = processPlaceholders(player, skullOwner);
-                        try {
-                            skullMeta.setOwningPlayer(plugin.getServer().getOfflinePlayer(skullOwner));
-                        } catch (Exception e) {
-                            plugin.getLogger().warning("Failed to set skull owner: " + skullOwner);
-                        }
-                    }
+
+        // Apply meta modifications in single operation
+        applyItemMetaOptimized(item, itemConfig, customPlaceholders, player, plugin);
+
+        return item;
+    }
+
+    /**
+     * Generate optimized cache key for items.
+     */
+    private static String generateItemCacheKey(UUID playerId, MenuItemConfig itemConfig, Map<String, String> customPlaceholders) {
+        StringBuilder key = new StringBuilder(128); // Pre-allocate
+        key.append(playerId.toString()).append(':')
+           .append(itemConfig.getMaterial()).append(':')
+           .append(itemConfig.getDisplayName() != null ? itemConfig.getDisplayName().hashCode() : 0).append(':')
+           .append(itemConfig.getLore() != null ? itemConfig.getLore().hashCode() : 0);
+
+        if (customPlaceholders != null && !customPlaceholders.isEmpty()) {
+            // Include job_id from placeholders for unique cache keys
+            String jobId = customPlaceholders.get("{job_id}");
+            if (jobId != null) {
+                key.append(':').append(jobId);
+            }
+            key.append(':').append(customPlaceholders.hashCode());
+        }
+
+        return key.toString();
+    }
+
+    /**
+     * Optimized placeholder processing with caching and minimal string operations.
+     */
+    private static String processPlaceholdersOptimized(String text, Map<String, String> customPlaceholders, Player player) {
+        if (text == null || text.isEmpty()) return text;
+
+        // Check cache first
+        String cacheKey = text + ":" + (customPlaceholders != null ? customPlaceholders.hashCode() : 0) + ":" + player.getUniqueId();
+        String cached = PLACEHOLDER_CACHE.get(cacheKey);
+        if (cached != null) {
+            return cached;
+        }
+
+        String result = text;
+
+        // Apply custom placeholders first (most efficient)
+        if (customPlaceholders != null && !customPlaceholders.isEmpty()) {
+            for (Map.Entry<String, String> entry : customPlaceholders.entrySet()) {
+                String key = entry.getKey();
+                if (result.contains(key)) { // Pre-check before replace
+                    result = result.replace(key, entry.getValue());
                 }
             }
-            
-            // Enchantments
-            for (Map.Entry<String, Integer> entry : itemConfig.getEnchantments().entrySet()) {
+        }
+
+        // Only process PlaceholderAPI if needed
+        if (result.contains("%")) {
+            result = processPlaceholders(player, result);
+        }
+
+        // Cache result if not too large
+        if (PLACEHOLDER_CACHE.size() < MAX_CACHE_SIZE) {
+            PLACEHOLDER_CACHE.put(cacheKey, result);
+        }
+
+        return result;
+    }
+
+    /**
+     * Optimized lore processing with bulk operations and pre-allocation.
+     */
+    private static List<String> processLoreOptimized(List<String> lore, Map<String, String> customPlaceholders, Player player) {
+        if (lore == null || lore.isEmpty()) return new ArrayList<>();
+
+        // Pre-allocate with expected size (accounting for multi-line expansion)
+        List<String> processedLore = new ArrayList<>(lore.size() * 2);
+
+        for (String loreLine : lore) {
+            if (loreLine.contains("{job_description}") && customPlaceholders != null && customPlaceholders.containsKey("job_description_lines")) {
+                // Handle multi-line descriptions efficiently
+                processMultiLineDescription(loreLine, customPlaceholders, player, processedLore);
+            } else {
+                // Standard single-line processing
+                String processed = processPlaceholdersOptimized(loreLine, customPlaceholders, player);
+                processedLore.add(processed);
+            }
+        }
+
+        return processedLore;
+    }
+
+    /**
+     * Process multi-line descriptions efficiently.
+     */
+    private static void processMultiLineDescription(String loreLine, Map<String, String> customPlaceholders, Player player, List<String> output) {
+        String[] descriptionLines = customPlaceholders.get("job_description_lines").split("\n");
+        String baseFormat = loreLine.replace("{job_description}", "");
+
+        for (String descLine : descriptionLines) {
+            if (descLine.trim().isEmpty()) {
+                output.add("");
+            } else {
+                String processedLine = baseFormat + descLine;
+                if (customPlaceholders != null) {
+                    processedLine = replacePlaceholders(processedLine, customPlaceholders);
+                }
+                processedLine = processPlaceholders(player, processedLine);
+                output.add(processedLine);
+            }
+        }
+    }
+
+    /**
+     * Apply item meta modifications in optimized batch operation.
+     */
+    private static void applyItemMetaOptimized(ItemStack item, MenuItemConfig itemConfig, Map<String, String> customPlaceholders, Player player, UniverseJobs plugin) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return;
+
+        boolean metaModified = false;
+
+        // Handle skull owner for player heads
+        if (item.getType() == Material.PLAYER_HEAD && meta instanceof SkullMeta) {
+            SkullMeta skullMeta = (SkullMeta) meta;
+
+            if (!itemConfig.getPlayerHead().isEmpty()) {
+                String playerHead = itemConfig.getPlayerHead();
+                if (customPlaceholders != null) {
+                    playerHead = replacePlaceholders(playerHead, customPlaceholders);
+                }
+                playerHead = processPlaceholders(player, playerHead);
+
+                try {
+                    if (playerHead.length() > 20 && isValidBase64(playerHead)) {
+                        setSkullTexture(skullMeta, playerHead);
+                        metaModified = true;
+                    } else {
+                        skullMeta.setOwningPlayer(plugin.getServer().getOfflinePlayer(playerHead));
+                        metaModified = true;
+                    }
+                } catch (Exception e) {
+                    // Silently fail for performance
+                }
+            } else if (!itemConfig.getSkullOwner().isEmpty()) {
+                String skullOwner = itemConfig.getSkullOwner();
+                if (customPlaceholders != null) {
+                    skullOwner = replacePlaceholders(skullOwner, customPlaceholders);
+                }
+                skullOwner = processPlaceholders(player, skullOwner);
+                try {
+                    skullMeta.setOwningPlayer(plugin.getServer().getOfflinePlayer(skullOwner));
+                    metaModified = true;
+                } catch (Exception e) {
+                    // Silently fail for performance
+                }
+            }
+        }
+
+        // Batch apply enchantments
+        Map<String, Integer> enchantments = itemConfig.getEnchantments();
+        if (enchantments != null && !enchantments.isEmpty()) {
+            for (Map.Entry<String, Integer> entry : enchantments.entrySet()) {
                 try {
                     Enchantment enchantment = Enchantment.getByKey(org.bukkit.NamespacedKey.minecraft(entry.getKey().toLowerCase()));
                     if (enchantment != null) {
                         meta.addEnchant(enchantment, entry.getValue(), true);
+                        metaModified = true;
                     }
                 } catch (Exception e) {
-                    plugin.getLogger().warning("Invalid enchantment: " + entry.getKey());
+                    // Silently fail for performance
                 }
             }
-            
-            // Glow effect
-            if (itemConfig.isGlow() && itemConfig.getEnchantments().isEmpty()) {
-                meta.addEnchant(Enchantment.LURE, 1, true);
-                meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-            }
-            
-            // Hide tooltip (all item information)
-            if (itemConfig.isHideToolTip()) {
-                meta.setHideTooltip(true);
-            }
-            
+        }
+
+        // Glow effect
+        if (itemConfig.isGlow() && (enchantments == null || enchantments.isEmpty())) {
+            meta.addEnchant(Enchantment.LURE, 1, true);
+            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            metaModified = true;
+        }
+
+        // Hide tooltip
+        if (itemConfig.isHideToolTip()) {
+            meta.setHideTooltip(true);
+            metaModified = true;
+        }
+
+        // Only apply meta if it was actually modified
+        if (metaModified) {
             item.setItemMeta(meta);
         }
-        
-        return item;
+    }
+
+    /**
+     * Clear caches to prevent memory leaks.
+     */
+    public static void clearCaches() {
+        PLACEHOLDER_CACHE.clear();
+        LORE_CACHE.clear();
+    }
+
+    /**
+     * Process lore line with multi-line support (legacy method for compatibility).
+     */
+    public static List<Component> processLoreLineWithMultiLine(String loreLine) {
+        List<Component> result = new ArrayList<>();
+        result.add(parseMessage(loreLine));
+        return result;
+    }
+
+    /**
+     * Parse message to Component (placeholder for MessageUtils).
+     */
+    private static Component parseMessage(String message) {
+        return fr.ax_dev.universejobs.utils.MessageUtils.parseMessage(message);
     }
     
     private static boolean isValidBase64(String str) {

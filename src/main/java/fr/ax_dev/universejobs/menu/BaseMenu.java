@@ -49,7 +49,22 @@ public abstract class BaseMenu implements InventoryHolder {
     protected void createInventory() {
         String title = processPlaceholders(config.getTitle());
         Component titleComponent = MessageUtils.parseMessage(title);
-        this.inventory = Bukkit.createInventory(this, config.getSize(), titleComponent);
+
+        // Use optimized menu holder for 2025 performance
+        OptimizedMenuHolder holder = new OptimizedMenuHolder(
+            player.getUniqueId(),
+            getClass().getSimpleName(),
+            getMenuId(),
+            this
+        );
+
+        this.inventory = plugin.getAccessor().getMenuManager().getInventoryFromPool(
+            config.getSize(),
+            titleComponent,
+            holder
+        );
+
+        holder.setInventory(this.inventory);
     }
     
     /**
@@ -68,6 +83,13 @@ public abstract class BaseMenu implements InventoryHolder {
      */
     public void open() {
         player.openInventory(inventory);
+    }
+
+    /**
+     * Get menu identifier for tracking.
+     */
+    protected String getMenuId() {
+        return null;
     }
     
     /**
