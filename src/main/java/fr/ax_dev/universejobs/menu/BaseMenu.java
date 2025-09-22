@@ -237,24 +237,28 @@ public abstract class BaseMenu implements InventoryHolder {
     protected boolean handleNavigationClickWithSound(int slot) {
         // Check navigation items for this slot
         for (MenuItemConfig navItem : config.getNavigationItems().values()) {
+            if (!navItem.isEnabled()) {
+                continue;
+            }
+
             if (navItem.getSlots().contains(slot)) {
                 String action = navItem.getAction();
                 String sound = navItem.getSound();
-                
+
                 // Play sound if specified
                 if (sound != null && !sound.isEmpty()) {
                     playSound(sound);
                 }
-                
+
                 // Execute commands if present
                 if (navItem.getCommands() != null && !navItem.getCommands().isEmpty()) {
                     executeCommands(navItem.getCommands());
                 }
-                
+
                 return handleActionClick(action);
             }
         }
-        
+
         return false;
     }
     
