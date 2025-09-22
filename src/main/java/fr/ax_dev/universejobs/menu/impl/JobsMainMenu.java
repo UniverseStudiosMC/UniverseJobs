@@ -361,36 +361,16 @@ public class JobsMainMenu extends BaseMenu {
     private ItemStack addJobNBT(ItemStack item, String jobId) {
         if (item == null || jobId == null) return item;
 
-        try {
-            item.editMeta(meta -> {
-                meta.getPersistentDataContainer().set(
-                    new org.bukkit.NamespacedKey(plugin, "job_id"),
-                    org.bukkit.persistence.PersistentDataType.STRING,
-                    jobId
-                );
-            });
-        } catch (Exception e) {
-            plugin.getLogger().warning("Failed to add NBT data to job item: " + e.getMessage());
-        }
-
-        return item;
+        return fr.ax_dev.universejobs.utils.NBTItemUtils.setStringNBT(item, "universe_job_id", jobId);
     }
 
     /**
      * Get job ID from item NBT.
      */
     private String getJobIdFromNBT(ItemStack item) {
-        if (item == null || !item.hasItemMeta()) return null;
+        if (item == null) return null;
 
-        try {
-            return item.getItemMeta().getPersistentDataContainer().get(
-                new org.bukkit.NamespacedKey(plugin, "job_id"),
-                org.bukkit.persistence.PersistentDataType.STRING
-            );
-        } catch (Exception e) {
-            plugin.getLogger().warning("Failed to read NBT data from item: " + e.getMessage());
-            return null;
-        }
+        return fr.ax_dev.universejobs.utils.NBTItemUtils.getStringNBT(item, "universe_job_id");
     }
 
     /**

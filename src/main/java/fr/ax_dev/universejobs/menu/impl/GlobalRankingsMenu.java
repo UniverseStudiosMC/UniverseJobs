@@ -112,22 +112,19 @@ public class GlobalRankingsMenu extends BaseMenu {
     protected void populateInventory() {
         // Clear inventory first
         inventory.clear();
-        
-        // Add header with job selection
-        addHeader();
-        
+
         // Add job selection buttons
         addJobSelectionButtons();
-        
+
         // Add ranking entries
         addRankingEntries();
-        
+
         // Add navigation items
         addNavigationItems();
-        
+
         // Add static items
         addStaticItems();
-        
+
         // Fill empty slots
         addFillItems();
     }
@@ -136,17 +133,8 @@ public class GlobalRankingsMenu extends BaseMenu {
      * Add header information.
      */
     private void addHeader() {
-        if (selectedJob == null) {
-            ItemStack noJobsItem = createNoJobsItem();
-            inventory.setItem(4, noJobsItem);
-            return;
-        }
-        
-        Job job = plugin.getJobManager().getJob(selectedJob);
-        if (job == null) return;
-        
-        ItemStack headerItem = createHeaderItem(job);
-        inventory.setItem(4, headerItem);
+        // This method is now deprecated - header items should be configured via static-items
+        // Keeping for potential future use
     }
     
     /**

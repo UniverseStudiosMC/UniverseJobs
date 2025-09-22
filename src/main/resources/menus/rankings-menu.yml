@@ -27,7 +27,7 @@ content-slots: [13, 21, 22, 23, 29, 30, 31, 32, 33]
 # Static items
 static-items:
   trophy:
-    enabled: true
+    enabled: false
     material: GOLDEN_APPLE
     display-name: "<#FFD700><bold>Top Players</bold>"
     lore:
@@ -65,12 +65,15 @@ static-items:
 
 # Job selection button configuration
 job-selection:
+  jobs:
+    miner:
+      slot: 14
+    lumberjack:
+      slot: 15
+    hunter:
+      slot: 16
   default-format:
-    slots:
-    - 17
-    - 26
-    - 35
-    - 44
+    slots: []
     selected:
       material: "{job_material}"
       custom-model-data: "{job_custom-model-data}"
@@ -156,7 +159,7 @@ navigation-items:
     action: back
     
   close:
-    enabled: true
+    enabled: false
     material: BARRIER
     display-name: "<#FF6B6B>Close Menu"
     lore:
