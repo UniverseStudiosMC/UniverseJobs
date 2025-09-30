@@ -65,15 +65,9 @@ static-items:
 
 # Job selection button configuration
 job-selection:
-  jobs:
-    miner:
-      slot: 14
-    lumberjack:
-      slot: 15
-    hunter:
-      slot: 16
+  jobs: {}
   default-format:
-    slots: []
+    slots:
     selected:
       material: "{job_material}"
       custom-model-data: "{job_custom-model-data}"

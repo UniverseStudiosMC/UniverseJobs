@@ -76,20 +76,12 @@ public class CustomRewardGui implements InventoryHolder {
      * Populate the inventory with items.
      */
     private void populateInventory() {
-        // Clear inventory
         inventory.clear();
-        
-        // Add fill items if configured
-        addFillItems();
-        
-        // Add custom items
+
         addCustomItems();
-        
-        // Add navigation items
         addNavigationItems();
-        
-        // Add reward items
         addRewardItems();
+        addFillItems();
     }
     
     /**
