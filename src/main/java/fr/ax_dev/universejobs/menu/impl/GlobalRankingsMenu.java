@@ -129,78 +129,6 @@ public class GlobalRankingsMenu extends BaseMenu {
         addFillItems();
     }
     
-    /**
-     * Add header information.
-     */
-    private void addHeader() {
-        // This method is now deprecated - header items should be configured via static-items
-        // Keeping for potential future use
-    }
-    
-    /**
-     * Create header item for selected job.
-     */
-    private ItemStack createHeaderItem(Job job) {
-        List<RankingEntry> rankings = jobRankings.getOrDefault(selectedJob, new ArrayList<>());
-        
-        List<String> lore = new ArrayList<>();
-        lore.add("&7Global rankings for this job");
-        lore.add("");
-        lore.add("&7Total Players: &e" + rankings.size());
-        
-        if (!rankings.isEmpty()) {
-            RankingEntry topPlayer = rankings.get(0);
-            lore.add("&7Top Player: &a" + topPlayer.playerName);
-            lore.add("&7Top Level: &e" + topPlayer.level);
-        }
-        
-        // Find player's rank
-        UUID playerUUID = player.getUniqueId();
-        Optional<RankingEntry> playerRanking = rankings.stream()
-            .filter(entry -> entry.playerId.equals(playerUUID))
-            .findFirst();
-        
-        if (playerRanking.isPresent()) {
-            RankingEntry entry = playerRanking.get();
-            lore.add("");
-            lore.add("&6Your Ranking:");
-            lore.add("&7Rank: &e#" + entry.rank);
-            lore.add("&7Level: &a" + entry.level);
-            lore.add("&7XP: &b" + entry.xp);
-        } else {
-            lore.add("");
-            lore.add("&6Your Ranking:");
-            lore.add("&7You don't have this job");
-        }
-        
-        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
-            job.getIconMaterial(), "&6&l" + job.getName() + " Rankings", lore, true
-        );
-        
-        // Apply custom model data if set
-        if (job.getCustomModelData() > 0) {
-            configMap.put("custom-model-data", job.getCustomModelData());
-        }
-        
-        MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig, MenuItemUtils.createJobPlaceholders(job.getId(), job.getName(), job.getDescription()));
-    }
-    
-    /**
-     * Create no jobs available item.
-     */
-    private ItemStack createNoJobsItem() {
-        List<String> lore = Arrays.asList(
-            "&7No jobs available to show rankings for"
-        );
-        
-        Map<String, Object> configMap = MenuItemUtils.createItemConfigMap(
-            "BARRIER", "&c&lNo Jobs Available", lore, false
-        );
-        
-        MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
-        return createMenuItem(itemConfig);
-    }
     
     /**
      * Add job selection buttons using configuration.
@@ -216,46 +144,17 @@ public class GlobalRankingsMenu extends BaseMenu {
             return;
         }
 
-        // Get default slots
-        org.bukkit.configuration.ConfigurationSection defaultFormat =
-            selectionConfig.getConfigurationSection("default-format");
-
-        List<Integer> defaultSlots = new ArrayList<>();
-        if (defaultFormat != null && defaultFormat.contains("slots")) {
-            // Handle both string and integer lists
-            List<?> slotsList = defaultFormat.getList("slots");
-            if (slotsList != null) {
-                for (Object slot : slotsList) {
-                    if (slot instanceof Integer) {
-                        defaultSlots.add((Integer) slot);
-                    } else if (slot instanceof String) {
-                        try {
-                            defaultSlots.add(Integer.parseInt((String) slot));
-                        } catch (NumberFormatException e) {
-                            plugin.getLogger().warning("Invalid slot number: " + slot);
-                        }
-                    }
-                }
-            }
-        }
-
-        // Fallback if no slots configured
-        if (defaultSlots.isEmpty()) {
-            defaultSlots = Arrays.asList(19, 28, 37, 46);
-        }
-
-
         org.bukkit.configuration.ConfigurationSection jobsConfig =
             selectionConfig.getConfigurationSection("jobs");
 
-        int slotIndex = 0;
+        Map<String, Integer> jobSlots = plugin.getMenuManager().getJobSlotManager().getAllJobSlots();
+
         for (String jobId : availableJobs) {
             Job job = plugin.getJobManager().getJob(jobId);
             if (job == null) continue;
 
             Integer slot = null;
 
-            // Check for specific job slot configuration
             if (jobsConfig != null && jobsConfig.contains(jobId)) {
                 org.bukkit.configuration.ConfigurationSection jobConfig = jobsConfig.getConfigurationSection(jobId);
                 if (jobConfig != null && jobConfig.contains("slot")) {
@@ -263,21 +162,15 @@ public class GlobalRankingsMenu extends BaseMenu {
                 }
             }
 
-            // Use default slots if no specific slot configured and slots available
-            if (slot == null && slotIndex < defaultSlots.size()) {
-                slot = defaultSlots.get(slotIndex);
-                slotIndex++;
+            if (slot == null && jobSlots.containsKey(jobId)) {
+                slot = jobSlots.get(jobId);
             }
 
-            // Only place button if we have a valid slot
             if (slot != null && slot >= 0 && slot < inventory.getSize()) {
                 ItemStack button = createJobSelectionButton(job, jobId.equals(selectedJob), selectionConfig, jobsConfig);
                 if (button != null) {
                     inventory.setItem(slot, button);
                 }
-            } else if (slot == null) {
-                // No more slots available, stop placing jobs
-                break;
             }
         }
     }
@@ -349,11 +242,15 @@ public class GlobalRankingsMenu extends BaseMenu {
         // Custom model data
         String customModelStr = stateConfig.getString("custom-model-data", "0");
         if (customModelStr.equals("{job_custom-model-data}")) {
-            configMap.put("custom-model-data", job.getCustomModelData());
+            if (job.getCustomModelData() > 0) {
+                configMap.put("custom-model-data", job.getCustomModelData());
+            }
         } else {
             int customModelData = stateConfig.getInt("custom-model-data", 0);
             if (customModelData > 0) {
                 configMap.put("custom-model-data", customModelData);
+            } else if (job.getCustomModelData() > 0) {
+                configMap.put("custom-model-data", job.getCustomModelData());
             }
         }
 
@@ -399,6 +296,10 @@ public class GlobalRankingsMenu extends BaseMenu {
             job.getIconMaterial(), "&e" + job.getName(), lore, selected
         );
         configMap.put("enabled", true);
+
+        if (job.getCustomModelData() > 0) {
+            configMap.put("custom-model-data", job.getCustomModelData());
+        }
 
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
         ItemStack item = createMenuItem(itemConfig, new HashMap<>());
@@ -584,27 +485,6 @@ public class GlobalRankingsMenu extends BaseMenu {
         return placeholders;
     }
 
-    /**
-     * Get rank material from configuration.
-     */
-    private String getRankMaterialFromConfig(int rank, org.bukkit.configuration.ConfigurationSection config) {
-        org.bukkit.configuration.ConfigurationSection materials = config.getConfigurationSection("rank-materials");
-        if (materials == null) {
-            return "PLAYER_HEAD";
-        }
-
-        if (rank == 1 && materials.contains("1")) {
-            return materials.getString("1");
-        } else if (rank == 2 && materials.contains("2")) {
-            return materials.getString("2");
-        } else if (rank == 3 && materials.contains("3")) {
-            return materials.getString("3");
-        } else if (rank <= 10 && materials.contains("top-10")) {
-            return materials.getString("top-10");
-        } else {
-            return materials.getString("default", "PLAYER_HEAD");
-        }
-    }
 
     /**
      * Get rank color from configuration.
@@ -708,30 +588,6 @@ public class GlobalRankingsMenu extends BaseMenu {
         return placeholders;
     }
     
-    
-    /**
-     * Get material for ranking position.
-     */
-    private String getRankMaterial(int rank) {
-        return switch (rank) {
-            case 1 -> "GOLD_INGOT";
-            case 2 -> "IRON_INGOT";
-            case 3 -> "COPPER_INGOT";
-            default -> rank <= 10 ? "EMERALD" : "PLAYER_HEAD";
-        };
-    }
-    
-    /**
-     * Get color for ranking position.
-     */
-    private String getRankColor(int rank) {
-        return switch (rank) {
-            case 1 -> "&6&l";
-            case 2 -> "&7&l";
-            case 3 -> "&c&l";
-            default -> rank <= 10 ? "&a" : "&f";
-        };
-    }
     
     
     /**

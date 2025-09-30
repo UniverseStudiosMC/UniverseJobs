@@ -215,16 +215,12 @@ public class MenuUtils {
             builder.name(displayName);
         }
 
-        // Process lore with original working method
+        // Process lore with multi-line description support
         List<String> originalLore = itemConfig.getLore();
         if (originalLore != null && !originalLore.isEmpty()) {
             List<String> processedLore = new ArrayList<>();
             for (String loreLine : originalLore) {
-                if (customPlaceholders != null) {
-                    loreLine = replacePlaceholders(loreLine, customPlaceholders);
-                }
-                loreLine = processPlaceholders(player, loreLine);
-                processedLore.add(loreLine);
+                processedLore.addAll(processLoreLineWithMultiLine(loreLine, customPlaceholders, player));
             }
             builder.lore(processedLore);
         }
