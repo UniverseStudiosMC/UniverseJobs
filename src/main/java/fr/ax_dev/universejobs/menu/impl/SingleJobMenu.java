@@ -517,16 +517,19 @@ public class SingleJobMenu extends BaseMenu {
     private void calculateAndAddProgressPlaceholders(Map<String, String> placeholders, int playerLevel, long playerXp) {
         int effectiveMaxLevel = playerData.getMaxLevel(job.getId());
         if (playerLevel < effectiveMaxLevel && job.getXpCurve() != null) {
+            long currentLevelXp = (long) job.getXpCurve().getXpForLevel(playerLevel);
             long nextLevelXp = (long) job.getXpCurve().getXpForLevel(playerLevel + 1);
+            long currentXpInLevel = Math.max(0, playerXp - currentLevelXp);
+            long xpNeededForNext = nextLevelXp - currentLevelXp;
             long xpToNext = Math.max(0, nextLevelXp - playerXp);
-            double progress = Math.min(1.0, (double) playerXp / nextLevelXp);
-            
+            double progress = xpNeededForNext > 0 ? Math.min(1.0, (double) currentXpInLevel / xpNeededForNext) : 1.0;
+
             placeholders.put("{xp_to_next}", String.valueOf(xpToNext));
-            placeholders.put("{next_level_xp}", String.valueOf(nextLevelXp));
+            placeholders.put("{next_level_xp}", String.valueOf(xpNeededForNext));
+            placeholders.put("{current_xp}", String.valueOf(currentXpInLevel));
             placeholders.put("{progress_percent}", String.format("%.1f", progress * 100));
             placeholders.put("{progress_bar}", createProgressBar(progress));
         } else {
-            // Max level reached
             addDefaultProgressPlaceholders(placeholders);
             placeholders.put("{progress_percent}", "100.0");
             placeholders.put("{progress_bar}", createProgressBar(1.0));

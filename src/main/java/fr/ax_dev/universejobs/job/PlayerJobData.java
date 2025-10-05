@@ -438,7 +438,15 @@ public class PlayerJobData {
         int calculatedLevel = getLevelFromXp(jobId, totalXp);
         int maxLevel = getEffectiveMaxLevel(jobId);
 
-        // Cap the calculated level to the effective max level
+        if (jobManager != null && jobManager.getPlugin() != null) {
+            jobManager.getPlugin().getLogger().info("[DEBUG] CheckLevelUp - Job: " + jobId + ", TotalXP: " + totalXp + ", CurrentLevel: " + currentLevel + ", CalculatedLevel: " + calculatedLevel);
+            if (jobManager.getJob(jobId) != null && jobManager.getJob(jobId).getXpCurve() != null) {
+                double xpForCurrentLevel = jobManager.getJob(jobId).getXpCurve().getXpForLevel(currentLevel);
+                double xpForNextLevel = jobManager.getJob(jobId).getXpCurve().getXpForLevel(currentLevel + 1);
+                jobManager.getPlugin().getLogger().info("[DEBUG] XP Curve - Level " + currentLevel + " requires: " + xpForCurrentLevel + " XP, Level " + (currentLevel + 1) + " requires: " + xpForNextLevel + " XP");
+            }
+        }
+
         if (calculatedLevel > maxLevel) {
             calculatedLevel = maxLevel;
         }
@@ -453,11 +461,13 @@ public class PlayerJobData {
                     org.bukkit.entity.Player player = org.bukkit.Bukkit.getPlayer(playerUuid);
                     if (player != null && player.isOnline()) {
                         // Get the level up action manager from the plugin
-                        SimpleLevelUpActionManager actionManager = 
+                        SimpleLevelUpActionManager actionManager =
                             jobManager.getPlugin().getLevelUpActionManager();
                         if (actionManager != null) {
                             actionManager.executeLevelUpActions(player, jobId, currentLevel, calculatedLevel, totalXp, xpGained);
                         }
+
+                        jobManager.getPlugin().getMenuManager().refreshPlayerMenu(player);
                     }
                 } catch (Exception e) {
                     // Log error but don't fail the level up

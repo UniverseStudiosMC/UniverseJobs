@@ -111,12 +111,16 @@ public class AsyncMenuLoader {
 
             // Calculate progress
             if (level < maxLevel && job.getXpCurve() != null) {
+                long currentLevelXp = (long) job.getXpCurve().getXpForLevel(level);
                 long nextLevelXp = (long) job.getXpCurve().getXpForLevel(level + 1);
+                long currentXpInLevel = Math.max(0, (long) xp - currentLevelXp);
+                long xpNeededForNext = nextLevelXp - currentLevelXp;
                 long xpToNext = Math.max(0, nextLevelXp - (long) xp);
-                double progress = Math.min(1.0, xp / nextLevelXp);
+                double progress = xpNeededForNext > 0 ? Math.min(1.0, (double) currentXpInLevel / xpNeededForNext) : 1.0;
 
                 placeholders.put("{xp_to_next}", String.valueOf(xpToNext));
-                placeholders.put("{next_level_xp}", String.valueOf(nextLevelXp));
+                placeholders.put("{next_level_xp}", String.valueOf(xpNeededForNext));
+                placeholders.put("{current_xp}", String.valueOf(currentXpInLevel));
                 placeholders.put("{progress_percent}", String.format("%.1f", progress * 100));
             }
         } else {
