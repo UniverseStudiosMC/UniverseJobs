@@ -438,15 +438,6 @@ public class PlayerJobData {
         int calculatedLevel = getLevelFromXp(jobId, totalXp);
         int maxLevel = getEffectiveMaxLevel(jobId);
 
-        if (jobManager != null && jobManager.getPlugin() != null) {
-            jobManager.getPlugin().getLogger().info("[DEBUG] CheckLevelUp - Job: " + jobId + ", TotalXP: " + totalXp + ", CurrentLevel: " + currentLevel + ", CalculatedLevel: " + calculatedLevel);
-            if (jobManager.getJob(jobId) != null && jobManager.getJob(jobId).getXpCurve() != null) {
-                double xpForCurrentLevel = jobManager.getJob(jobId).getXpCurve().getXpForLevel(currentLevel);
-                double xpForNextLevel = jobManager.getJob(jobId).getXpCurve().getXpForLevel(currentLevel + 1);
-                jobManager.getPlugin().getLogger().info("[DEBUG] XP Curve - Level " + currentLevel + " requires: " + xpForCurrentLevel + " XP, Level " + (currentLevel + 1) + " requires: " + xpForNextLevel + " XP");
-            }
-        }
-
         if (calculatedLevel > maxLevel) {
             calculatedLevel = maxLevel;
         }
