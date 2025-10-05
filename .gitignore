@@ -357,3 +357,7 @@ _deps
 # ================================
 # End of .gitignore
 # ================================
+
+#Ignore cursor AI rules
+.cursor
+.github

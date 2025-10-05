@@ -34,25 +34,30 @@ public class XpCurve {
      */
     public static XpCurve fromFile(String name, File file) {
         YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-        TreeMap<Integer, Double> curve = new TreeMap<>();
-        
-        // Simple format - direct level mappings
+        TreeMap<Integer, Double> perLevelXp = new TreeMap<>();
+
         for (String key : config.getKeys(false)) {
             try {
                 int level = Integer.parseInt(key);
                 double xp = config.getDouble(key);
-                curve.put(level, xp);
+                perLevelXp.put(level, xp);
             } catch (NumberFormatException e) {
-                // Skip non-numeric keys (like comments)
             }
         }
-        
-        // Ensure level 1 starts at 0 XP if not specified
-        if (!curve.containsKey(1)) {
-            curve.put(1, 0.0);
+
+        if (!perLevelXp.containsKey(1)) {
+            perLevelXp.put(1, 0.0);
         }
-        
-        return new XpCurve(name, curve);
+
+        TreeMap<Integer, Double> cumulativeCurve = new TreeMap<>();
+        double totalXp = 0.0;
+
+        for (Map.Entry<Integer, Double> entry : perLevelXp.entrySet()) {
+            cumulativeCurve.put(entry.getKey(), totalXp);
+            totalXp += entry.getValue();
+        }
+
+        return new XpCurve(name, cumulativeCurve);
     }
     
     /**

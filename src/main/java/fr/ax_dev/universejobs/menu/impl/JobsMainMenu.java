@@ -518,12 +518,12 @@ public class JobsMainMenu extends BaseMenu {
         long xpToNext = Math.max(0, nextLevelXp - playerXp);
         long xpProgress = playerXp - currentLevelXp;
         long xpRequired = nextLevelXp - currentLevelXp;
-        
+
         placeholders.put("xp_to_next", String.valueOf(xpToNext));
-        placeholders.put("next_level_xp", String.valueOf(nextLevelXp));
+        placeholders.put("next_level_xp", String.valueOf(xpRequired));
         placeholders.put("current_level_xp", String.valueOf(currentLevelXp));
-        
-        // Calculate progress percentage efficiently
+        placeholders.put("current_xp", String.valueOf(xpProgress));
+
         double progressPercent = xpRequired > 0 ? (double) xpProgress / xpRequired * 100 : 0;
         placeholders.put("progress_percent", String.format("%.1f", progressPercent));
         placeholders.put("progress_bar", createProgressBarOptimized(progressPercent));
