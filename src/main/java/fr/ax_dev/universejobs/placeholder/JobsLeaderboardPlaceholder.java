@@ -107,7 +107,7 @@ public class JobsLeaderboardPlaceholder extends PlaceholderExpansion {
                 return String.valueOf(getPlayerRank(player.getUniqueId(), jobId));
             case "progress":
                 double[] progress = playerData.getXpProgress(jobId);
-                return String.format("%.1f/%.1f", progress[0], progress[1]);
+                return String.format("%.1f<gray>/</gray>%.1f", progress[0], progress[1]);
             case "progresspercent":
                 double[] progressPercent = playerData.getXpProgress(jobId);
                 double percentage = (progressPercent[0] / progressPercent[1]) * 100;
