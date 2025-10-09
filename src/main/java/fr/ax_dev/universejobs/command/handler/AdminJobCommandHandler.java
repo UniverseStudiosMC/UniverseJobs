@@ -117,33 +117,67 @@ public class AdminJobCommandHandler extends JobCommandHandler {
             MessageUtils.sendMessage(sender, "&cUsage: /jobs admin give custom <action> <player> <job> <exp> [money] [silent]");
             return true;
         }
-        
-        
+
+
         if (!sender.hasPermission("universejobs.admin.givecustom")) {
             sendMessage(sender, "no-permission");
             return true;
         }
-        
+
         final String action = args[3];
         final String playerName = args[4];
         final String jobId = args[5];
-        
+
         final double xp;
         double tempMoney = 0;
         boolean tempSilent = false;
-        
+
         try {
-            xp = Double.parseDouble(args[6]);
-            
-            // Check for money parameter
+            String xpStr = args[6];
+            if (xpStr.contains("-")) {
+                String[] parts = xpStr.split("-");
+                if (parts.length != 2) {
+                    MessageUtils.sendMessage(sender, "&cInvalid XP range format. Use: min-max");
+                    return true;
+                }
+
+                double min = Double.parseDouble(parts[0]);
+                double max = Double.parseDouble(parts[1]);
+
+                if (min > max) {
+                    MessageUtils.sendMessage(sender, "&cInvalid XP range. Min cannot be greater than max.");
+                    return true;
+                }
+
+                xp = min + (Math.random() * (max - min));
+            } else {
+                xp = Double.parseDouble(xpStr);
+            }
+
             if (args.length >= 8) {
-                // Try to parse as money first
+                String moneyStr = args[7];
                 try {
-                    tempMoney = Double.parseDouble(args[7]);
-                    // Check for silent parameter after money
+                    if (moneyStr.contains("-")) {
+                        String[] parts = moneyStr.split("-");
+                        if (parts.length != 2) {
+                            MessageUtils.sendMessage(sender, "&cInvalid money range format. Use: min-max");
+                            return true;
+                        }
+
+                        double min = Double.parseDouble(parts[0]);
+                        double max = Double.parseDouble(parts[1]);
+
+                        if (min > max) {
+                            MessageUtils.sendMessage(sender, "&cInvalid money range. Min cannot be greater than max.");
+                            return true;
+                        }
+
+                        tempMoney = min + (Math.random() * (max - min));
+                    } else {
+                        tempMoney = Double.parseDouble(moneyStr);
+                    }
                     tempSilent = args.length >= 9 && "silent".equalsIgnoreCase(args[8]);
                 } catch (NumberFormatException e) {
-                    // If args[7] is not a number, maybe it's "silent"
                     if ("silent".equalsIgnoreCase(args[7])) {
                         tempMoney = 0;
                         tempSilent = true;
@@ -154,10 +188,10 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                 }
             }
         } catch (NumberFormatException e) {
-            MessageUtils.sendMessage(sender, "&cInvalid amounts. Use numbers.");
+            MessageUtils.sendMessage(sender, "&cInvalid amounts. Use numbers or ranges (min-max).");
             return true;
         }
-        
+
         final double money = tempMoney;
         final boolean silent = tempSilent;
         
@@ -521,23 +555,49 @@ public class AdminJobCommandHandler extends JobCommandHandler {
             sendMessage(sender, "usage.xp");
             return true;
         }
-        
+
         String action = args[2].toLowerCase();
         String playerName = args[3];
         String jobId = args[4];
-        
+        String amountStr = args[5];
+
         double amount;
+        boolean isRange = amountStr.contains("-");
+
         try {
-            amount = Double.parseDouble(args[5]);
-            if (amount < 0 && !action.equals("remove")) {
-                sendMessage(sender, "invalid-amount", "amount", args[5]);
-                return true;
+            if (isRange) {
+                String[] parts = amountStr.split("-");
+                if (parts.length != 2) {
+                    sendMessage(sender, "invalid-amount", "amount", amountStr);
+                    return true;
+                }
+
+                double min = Double.parseDouble(parts[0]);
+                double max = Double.parseDouble(parts[1]);
+
+                if (min > max) {
+                    sendMessage(sender, "invalid-amount", "amount", amountStr);
+                    return true;
+                }
+
+                if ((min < 0 || max < 0) && !action.equals("remove")) {
+                    sendMessage(sender, "invalid-amount", "amount", amountStr);
+                    return true;
+                }
+
+                amount = min + (Math.random() * (max - min));
+            } else {
+                amount = Double.parseDouble(amountStr);
+                if (amount < 0 && !action.equals("remove")) {
+                    sendMessage(sender, "invalid-amount", "amount", amountStr);
+                    return true;
+                }
             }
         } catch (NumberFormatException e) {
-            sendMessage(sender, "invalid-amount", "amount", args[5]);
+            sendMessage(sender, "invalid-amount", "amount", amountStr);
             return true;
         }
-        
+
         return switch (action) {
             case "give" -> handleGiveXp(sender, playerName, jobId, amount);
             case "set" -> handleSetXpDirect(sender, playerName, jobId, amount);
