@@ -435,7 +435,6 @@ public class ActionProcessor {
 
         if (xp == 0 && money == 0) return;
 
-        // Craft multiplier
         Object craftMultiplierObj = context.get("craft_multiplier");
         if (craftMultiplierObj instanceof Integer) {
             int craftMultiplier = (Integer) craftMultiplierObj;
@@ -443,7 +442,20 @@ public class ActionProcessor {
             money *= craftMultiplier;
         }
 
-        // Apply mcMMO multipliers if enabled
+        Object spawnerMultiplierObj = context.get("spawner_multiplier");
+        if (spawnerMultiplierObj instanceof Double) {
+            double spawnerMultiplier = (Double) spawnerMultiplierObj;
+            xp *= spawnerMultiplier;
+            money *= spawnerMultiplier;
+        }
+
+        Object stackMultiplierObj = context.get("stack_multiplier");
+        if (stackMultiplierObj instanceof Integer) {
+            int stackMultiplier = (Integer) stackMultiplierObj;
+            xp *= stackMultiplier;
+            money *= stackMultiplier;
+        }
+
         if (mcmmoHandler.isEnabled() && job.getMcmmoConfig() != null && !job.getMcmmoConfig().isEmpty()) {
             double mcmmoMoneyMultiplier = mcmmoHandler.getActiveAbilityMultiplier(player, job.getMcmmoConfig(), true);
             double mcmmoXpMultiplier = mcmmoHandler.getActiveAbilityMultiplier(player, job.getMcmmoConfig(), false);

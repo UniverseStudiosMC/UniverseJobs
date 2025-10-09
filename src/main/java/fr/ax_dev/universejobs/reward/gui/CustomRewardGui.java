@@ -308,28 +308,24 @@ public class CustomRewardGui implements InventoryHolder {
         // Create lore from status-specific template
         List<String> lore = new ArrayList<>();
         for (String line : rewardConfig.getLoreTemplate(statusKey)) {
-            // Process all placeholders in the line
             String processedLine = line;
 
-            // Replace reward-specific placeholders
             processedLine = processedLine.replace("{level}", String.valueOf(reward.getRequiredLevel()));
             processedLine = processedLine.replace("{reward_name}", reward.getName());
             processedLine = processedLine.replace("{description}", reward.getDescription());
+            processedLine = processedLine.replace("{reward_description}", reward.getDescription());
 
-            // Get player level for comparison
             if (processedLine.contains("{player_level}")) {
                 int playerLevel = plugin.getJobManager().getLevel(player, reward.getJobId());
                 processedLine = processedLine.replace("{player_level}", String.valueOf(playerLevel));
             }
 
-            // Add claim date for retrieved rewards
             if (processedLine.contains("{claim_date}") && status == RewardStatus.RETRIEVED) {
                 long claimTime = rewardManager.getLastClaimTime(player, reward);
                 String claimDate = new java.text.SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date(claimTime));
                 processedLine = processedLine.replace("{claim_date}", claimDate);
             }
 
-            // Process with MenuUtils for PlaceholderAPI and other placeholders
             processedLine = MenuUtils.processPlaceholders(player, processedLine);
             lore.add(processedLine);
         }

@@ -121,44 +121,45 @@ public class ActionLimitCommandHandler extends JobCommandHandler {
             MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.player-not-found", "player", playerName));
             return;
         }
-        
+
         String jobId = args[3];
         String target = args[4];
-        
+
         ActionLimitManager.ActionLimitStatus status = limitManager.getPlayerLimitStatus(targetPlayer, jobId, target);
-        
+
         if (status == null) {
-            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.no-limits", "job", jobId, "target", target));
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.no-limits", "job", jobId, "target", target, "player", targetPlayer.getName()));
             return;
         }
-        
-        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.header"));
+
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.header", "player", targetPlayer.getName()));
         MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.player", "player", targetPlayer.getName()));
-        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.job", "job", jobId));
-        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.target", "target", target));
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.job", "job", jobId, "player", targetPlayer.getName()));
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.target", "target", target, "player", targetPlayer.getName()));
         
         if (status.isOnCooldown()) {
             long remainingSeconds = status.getRemainingCooldownSeconds();
             long minutes = remainingSeconds / 60;
             long seconds = remainingSeconds % 60;
-            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.cooldown", "minutes", String.valueOf(minutes), "seconds", String.valueOf(seconds)));
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.cooldown", "minutes", String.valueOf(minutes), "seconds", String.valueOf(seconds), "player", targetPlayer.getName()));
         } else {
-            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.available"));
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.available", "player", targetPlayer.getName()));
         }
-        
-        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.actions", 
+
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.actions",
             "current", String.valueOf(status.getCurrentActionsPerformed()),
             "max", String.valueOf(status.getLimit().getMaxActionsPerPeriod()),
-            "remaining", String.valueOf(status.getRemainingActions())));
-        
+            "remaining", String.valueOf(status.getRemainingActions()),
+            "player", targetPlayer.getName()));
+
         if (status.getLimit().isBlockExp() && status.getLimit().isBlockMoney()) {
-            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.blocking-both"));
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.blocking-both", "player", targetPlayer.getName()));
         } else if (status.getLimit().isBlockExp()) {
-            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.blocking-xp"));
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.blocking-xp", "player", targetPlayer.getName()));
         } else if (status.getLimit().isBlockMoney()) {
-            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.blocking-money"));
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.blocking-money", "player", targetPlayer.getName()));
         } else {
-            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.blocking-none"));
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.actionlimit.status.blocking-none", "player", targetPlayer.getName()));
         }
     }
     

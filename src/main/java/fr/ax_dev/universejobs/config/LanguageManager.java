@@ -130,12 +130,11 @@ public class LanguageManager {
      */
     public String getMessage(String key, Object... placeholders) {
         String message = getRawMessage(key);
-        
+
         if (message == null) {
             return MISSING_MESSAGE_PREFIX + key + MISSING_MESSAGE_SUFFIX;
         }
-        
-        // Replace placeholders
+
         if (placeholders.length > 0) {
             for (int i = 0; i < placeholders.length - 1; i += 2) {
                 String placeholder = "{" + placeholders[i] + "}";
@@ -143,8 +142,14 @@ public class LanguageManager {
                 message = message.replace(placeholder, value);
             }
         }
-        
-        // Parse the message and convert to legacy string for backward compatibility
+
+        String prefix = getRawMessage("general.prefix");
+        if (prefix != null && !message.contains(prefix)) {
+            Component prefixComponent = MessageUtils.parseMessage(prefix);
+            String prefixStr = LegacyComponentSerializer.legacySection().serialize(prefixComponent);
+            message = prefixStr + " " + message;
+        }
+
         Component component = MessageUtils.parseMessage(message);
         return LegacyComponentSerializer.legacySection().serialize(component);
     }
@@ -179,12 +184,11 @@ public class LanguageManager {
      */
     public String getMessage(String key, Map<String, Object> placeholders) {
         String message = getRawMessage(key);
-        
+
         if (message == null) {
             return MISSING_MESSAGE_PREFIX + key + MISSING_MESSAGE_SUFFIX;
         }
-        
-        // Replace placeholders
+
         if (placeholders != null) {
             for (Map.Entry<String, Object> entry : placeholders.entrySet()) {
                 String placeholder = "{" + entry.getKey() + "}";
@@ -192,8 +196,14 @@ public class LanguageManager {
                 message = message.replace(placeholder, value);
             }
         }
-        
-        // Parse the message and convert to legacy string for backward compatibility
+
+        String prefix = getRawMessage("general.prefix");
+        if (prefix != null && !message.contains(prefix)) {
+            Component prefixComponent = MessageUtils.parseMessage(prefix);
+            String prefixStr = LegacyComponentSerializer.legacySection().serialize(prefixComponent);
+            message = prefixStr + " " + message;
+        }
+
         Component component = MessageUtils.parseMessage(message);
         return LegacyComponentSerializer.legacySection().serialize(component);
     }
