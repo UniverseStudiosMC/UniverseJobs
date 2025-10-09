@@ -257,11 +257,11 @@ commands:
 rewards:
   claim:
     usage: "&cUsage: /jobs rewards claim <job> <rewardId>"
-    success: "&aReward '{reward}' claimed successfully!"
+    success: "&aReward '{reward}' (level {level}) claimed successfully!"
     failed: "&cFailed to claim reward '{reward}'!"
     already-claimed: "&7You have already claimed this reward."
     no-job: "&cYou must have the {job} job to claim this reward!"
-    level-requirement: "&cYou must be level {level} in the {job} job to claim this reward!"
+    level-requirement: "&cYou must be level {required} in the {job} job to claim this reward! (Current: {current})"
     no-permission: "&cYou don't have the '{permission}' permission required for this reward!"
     requirements-not-met: "&cYou don't meet all requirements to claim this reward!"
     cooldown: "&cYou must wait {time} before claiming this reward again!"

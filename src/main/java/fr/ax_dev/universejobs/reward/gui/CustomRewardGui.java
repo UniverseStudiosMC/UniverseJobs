@@ -406,17 +406,15 @@ public class CustomRewardGui implements InventoryHolder {
      */
     private void handleRewardClick(Reward reward) {
         RewardStatus status = rewardManager.getRewardStatus(player, reward);
-        
+
         if (status == RewardStatus.RETRIEVABLE) {
             if (rewardManager.claimReward(player, reward)) {
-                MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.success", "reward", reward.getName()));
-                // Refresh GUI to update status
+                MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.success", "reward", reward.getName(), "level", String.valueOf(reward.getRequiredLevel())));
                 populateInventory();
             } else {
                 MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.failed", "reward", reward.getName()));
             }
         } else if (status == RewardStatus.BLOCKED) {
-            // Use the new feedback system with custom messages and sounds
             rewardManager.canClaimReward(player, reward, true);
         } else {
             MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.already-claimed"));

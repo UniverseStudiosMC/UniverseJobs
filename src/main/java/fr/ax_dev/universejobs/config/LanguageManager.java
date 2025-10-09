@@ -145,13 +145,10 @@ public class LanguageManager {
 
         String prefix = getRawMessage("general.prefix");
         if (prefix != null && !message.contains(prefix)) {
-            Component prefixComponent = MessageUtils.parseMessage(prefix);
-            String prefixStr = LegacyComponentSerializer.legacySection().serialize(prefixComponent);
-            message = prefixStr + " " + message;
+            message = prefix + " " + message;
         }
 
-        Component component = MessageUtils.parseMessage(message);
-        return LegacyComponentSerializer.legacySection().serialize(component);
+        return message;
     }
     
     /**
@@ -199,13 +196,10 @@ public class LanguageManager {
 
         String prefix = getRawMessage("general.prefix");
         if (prefix != null && !message.contains(prefix)) {
-            Component prefixComponent = MessageUtils.parseMessage(prefix);
-            String prefixStr = LegacyComponentSerializer.legacySection().serialize(prefixComponent);
-            message = prefixStr + " " + message;
+            message = prefix + " " + message;
         }
 
-        Component component = MessageUtils.parseMessage(message);
-        return LegacyComponentSerializer.legacySection().serialize(component);
+        return message;
     }
     
     /**

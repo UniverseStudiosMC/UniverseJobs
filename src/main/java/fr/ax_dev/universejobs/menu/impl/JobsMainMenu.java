@@ -418,21 +418,47 @@ public class JobsMainMenu extends BaseMenu {
      * Validate job join requirements with proper error messages.
      */
     private boolean validateJobJoinRequirements(Job job) {
-        // Permission check
         if (job.getPermission() != null && !player.hasPermission(job.getPermission())) {
             MessageUtils.sendMessage(player, languageManager.getMessage("commands.join.no-permission", "job", job.getName()));
             return false;
         }
-        
-        // Max jobs limit check using centralized approach
-        int maxJobs = plugin.getConfigManager().getMaxJobsPerPlayer();
+
+        int maxJobs = calculateMaxJobsForPlayer();
         int currentJobs = playerData.getJobs().size();
         if (currentJobs >= maxJobs) {
             MessageUtils.sendMessage(player, languageManager.getMessage("commands.join.max-jobs-reached", "max", String.valueOf(maxJobs)));
             return false;
         }
-        
+
         return true;
+    }
+
+    private int calculateMaxJobsForPlayer() {
+        int maxJobs = plugin.getConfigManager().getMaxJobsPerPlayer();
+
+        for (org.bukkit.permissions.PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
+            String permission = permInfo.getPermission();
+
+            if (permInfo.getValue() && (permission.startsWith("universejobs.max_join.") || permission.startsWith("universejobs.maxjobs."))) {
+                try {
+                    String numberPart;
+                    if (permission.startsWith("universejobs.max_join.")) {
+                        numberPart = permission.substring("universejobs.max_join.".length());
+                    } else {
+                        numberPart = permission.substring("universejobs.maxjobs.".length());
+                    }
+
+                    int permissionValue = Integer.parseInt(numberPart);
+
+                    if (permissionValue > maxJobs) {
+                        maxJobs = permissionValue;
+                    }
+                } catch (NumberFormatException e) {
+                }
+            }
+        }
+
+        return maxJobs;
     }
     
     /**
@@ -444,7 +470,7 @@ public class JobsMainMenu extends BaseMenu {
             currentPage, availableJobs.size(), itemsPerPage);
         placeholders.put("total_jobs", String.valueOf(availableJobs.size()));
         placeholders.put("player_jobs", String.valueOf(playerData.getJobs().size()));
-        placeholders.put("{max_jobs}", String.valueOf(plugin.getConfigManager().getMaxJobsPerPlayer()));
+        placeholders.put("{max_jobs}", String.valueOf(calculateMaxJobsForPlayer()));
         return placeholders;
     }
     
@@ -455,7 +481,7 @@ public class JobsMainMenu extends BaseMenu {
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put("total_jobs", String.valueOf(availableJobs.size()));
         placeholders.put("player_jobs", String.valueOf(playerData.getJobs().size()));
-        placeholders.put("{max_jobs}", String.valueOf(plugin.getConfigManager().getMaxJobsPerPlayer()));
+        placeholders.put("{max_jobs}", String.valueOf(calculateMaxJobsForPlayer()));
         return placeholders;
     }
     
@@ -493,7 +519,7 @@ public class JobsMainMenu extends BaseMenu {
         placeholders.put("player_xp", String.valueOf(playerXp));
         placeholders.put("has_job", hasJob ? "Yes" : "No");
         placeholders.put("job_status", plugin.getConfigManager().getJobStatus(hasJob));
-        placeholders.put("{max_jobs}", String.valueOf(plugin.getConfigManager().getMaxJobsPerPlayer()));
+        placeholders.put("{max_jobs}", String.valueOf(calculateMaxJobsForPlayer()));
     }
     
     /**

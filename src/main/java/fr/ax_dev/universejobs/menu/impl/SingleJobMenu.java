@@ -348,12 +348,32 @@ public class SingleJobMenu extends BaseMenu {
         return true;
     }
     
-    /**
-     * Calculate max jobs for player using proper permission API.
-     */
     private int calculateMaxJobsForPlayer() {
-        // Use ConfigManager to get max jobs instead of hardcoded permission parsing
-        return plugin.getConfigManager().getMaxJobsPerPlayer();
+        int maxJobs = plugin.getConfigManager().getMaxJobsPerPlayer();
+
+        for (org.bukkit.permissions.PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
+            String permission = permInfo.getPermission();
+
+            if (permInfo.getValue() && (permission.startsWith("universejobs.max_join.") || permission.startsWith("universejobs.maxjobs."))) {
+                try {
+                    String numberPart;
+                    if (permission.startsWith("universejobs.max_join.")) {
+                        numberPart = permission.substring("universejobs.max_join.".length());
+                    } else {
+                        numberPart = permission.substring("universejobs.maxjobs.".length());
+                    }
+
+                    int permissionValue = Integer.parseInt(numberPart);
+
+                    if (permissionValue > maxJobs) {
+                        maxJobs = permissionValue;
+                    }
+                } catch (NumberFormatException e) {
+                }
+            }
+        }
+
+        return maxJobs;
     }
     
     /**
@@ -495,16 +515,15 @@ public class SingleJobMenu extends BaseMenu {
     private void addPlayerPlaceholders(Map<String, String> placeholders) {
         placeholders.put("{player_name}", player.getName());
         placeholders.put("{job_status}", plugin.getConfigManager().getJobStatus(hasJob));
-        placeholders.put("{max_jobs}", String.valueOf(plugin.getConfigManager().getMaxJobsPerPlayer()));
-        
+        placeholders.put("{max_jobs}", String.valueOf(calculateMaxJobsForPlayer()));
+
         if (hasJob) {
             int playerLevel = playerData.getLevel(job.getId());
             long playerXp = (long) playerData.getXp(job.getId());
-            
+
             placeholders.put("{player_level}", String.valueOf(playerLevel));
             placeholders.put("{player_xp}", String.valueOf(playerXp));
-            
-            // Calculate progress efficiently
+
             calculateAndAddProgressPlaceholders(placeholders, playerLevel, playerXp);
         } else {
             addDefaultProgressPlaceholders(placeholders);

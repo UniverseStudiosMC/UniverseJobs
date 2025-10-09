@@ -29,6 +29,7 @@ import org.bukkit.block.data.Ageable;
 import org.bukkit.event.entity.EntityBreedEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTameEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -141,7 +142,7 @@ public class JobActionListener implements Listener {
             mythicMobsHandler.populateMythicMobContext(killed, context);
 
             double spawnerMultiplier = 1.0;
-            if (killed.hasMetadata("spawner") || (killed instanceof LivingEntity && ((LivingEntity) killed).getMetadata("spawner").size() > 0)) {
+            if (isSpawnerMob(killed)) {
                 spawnerMultiplier = getSpawnerMultiplier(killer);
                 if (spawnerMultiplier <= 0) {
                     return;
@@ -155,6 +156,18 @@ public class JobActionListener implements Listener {
         } catch (Exception e) {
             plugin.getLogger().warning("Error processing KILL action for player " + killer.getName() + ": " + e.getMessage());
         }
+    }
+
+    private boolean isSpawnerMob(Entity entity) {
+        if (!(entity instanceof LivingEntity)) {
+            return false;
+        }
+
+        if (entity.getEntitySpawnReason() == CreatureSpawnEvent.SpawnReason.SPAWNER) {
+            return true;
+        }
+
+        return false;
     }
 
     private double getSpawnerMultiplier(Player player) {
