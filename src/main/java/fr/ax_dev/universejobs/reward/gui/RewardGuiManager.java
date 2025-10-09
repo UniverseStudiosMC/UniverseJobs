@@ -544,11 +544,8 @@ public class RewardGuiManager implements Listener {
             RewardStatus status = rewardManager.getRewardStatus(player, reward);
             
             if (status == RewardStatus.RETRIEVABLE) {
-                // Try to claim the reward
                 if (rewardManager.claimReward(player, reward)) {
-                    MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.success", "reward", reward.getName()));
-                    
-                    // Refresh the GUI to update status
+                    MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.success", "reward", reward.getName(), "level", String.valueOf(reward.getRequiredLevel())));
                     setupGui();
                 } else {
                     MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.failed", "reward", reward.getName()));
@@ -560,7 +557,7 @@ public class RewardGuiManager implements Listener {
                     long lastClaim = rewardManager.getLastClaimTime(player, reward);
                     long nextClaim = lastClaim + (reward.getCooldownHours() * 3600000L);
                     long timeLeft = nextClaim - System.currentTimeMillis();
-                    
+
                     if (timeLeft > 0) {
                         String timeString = formatTimeSimple(timeLeft);
                         MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.cooldown", "time", timeString));

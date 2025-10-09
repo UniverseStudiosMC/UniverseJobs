@@ -259,11 +259,11 @@ commands:
 rewards:
   claim:
     usage: "&cUtilisation : /jobs rewards claim <métier> <idRécompense>"
-    success: "&aRécompense '{reward}' réclamée avec succès !"
+    success: "&aRécompense '{reward}' (niveau {level}) réclamée avec succès !"
     failed: "&cÉchec de réclamation de la récompense '{reward}' !"
     already-claimed: "&7Vous avez déjà réclamé cette récompense."
     no-job: "&cVous devez avoir le métier {job} pour réclamer cette récompense !"
-    level-requirement: "&cVous devez être niveau {level} dans le métier {job} pour réclamer cette récompense !"
+    level-requirement: "&cVous devez être niveau {required} dans le métier {job} pour réclamer cette récompense ! (Actuel: {current})"
     no-permission: "&cVous n'avez pas la permission '{permission}' requise pour cette récompense !"
     requirements-not-met: "&cVous ne remplissez pas toutes les conditions pour réclamer cette récompense !"
     cooldown: "&cVous devez attendre {time} avant de pouvoir réclamer cette récompense à nouveau !"

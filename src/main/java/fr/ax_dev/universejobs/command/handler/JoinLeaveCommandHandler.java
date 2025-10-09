@@ -193,7 +193,6 @@ public class JoinLeaveCommandHandler extends JobCommandHandler {
      */
     private int getMaxJobsForPlayer(Player player) {
         int maxJobs = plugin.getConfigManager().getMaxJobsPerPlayer();
-        boolean hasPermission = false;
 
         for (org.bukkit.permissions.PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
             String permission = permInfo.getPermission();
@@ -212,14 +211,9 @@ public class JoinLeaveCommandHandler extends JobCommandHandler {
                     if (permissionValue > maxJobs) {
                         maxJobs = permissionValue;
                     }
-                    hasPermission = true;
                 } catch (NumberFormatException e) {
                 }
             }
-        }
-
-        if (!hasPermission) {
-            maxJobs = plugin.getConfigManager().getMaxJobsPerPlayer();
         }
 
         return maxJobs;

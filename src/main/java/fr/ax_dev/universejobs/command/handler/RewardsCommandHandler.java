@@ -130,10 +130,10 @@ public class RewardsCommandHandler extends JobCommandHandler {
         }
         
         if (rewardManager.claimReward(player, reward)) {
-            MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.success", 
-                "reward", reward.getName()));
+            MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.success",
+                "reward", reward.getName(), "level", String.valueOf(reward.getRequiredLevel())));
         } else {
-            MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.failed", 
+            MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.failed",
                 "reward", reward.getName()));
         }
     }
