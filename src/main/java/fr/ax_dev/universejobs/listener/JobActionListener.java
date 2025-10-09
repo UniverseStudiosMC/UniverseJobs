@@ -124,33 +124,56 @@ public class JobActionListener implements Listener {
     public void onEntityDeath(EntityDeathEvent event) {
         Entity killed = event.getEntity();
         Player killer = null;
-        
-        // getKiller() is only available on LivingEntity
+
         if (killed instanceof LivingEntity) {
             killer = ((LivingEntity) killed).getKiller();
         }
-        
+
         if (killer == null) return;
-        
-        // Rate limiting check
+
         totalEvents.incrementAndGet();
-        
+
         try {
-            // Create context
             ConditionContext context = new ConditionContext()
                     .setEntity(killed)
                     .set(TARGET_KEY, killed.getType().name());
-            
-            // Check for MythicMobs using official API (this will override target if it's a MythicMob)
+
             mythicMobsHandler.populateMythicMobContext(killed, context);
-            
-            // Process the action
+
+            double spawnerMultiplier = 1.0;
+            if (killed.hasMetadata("spawner") || (killed instanceof LivingEntity && ((LivingEntity) killed).getMetadata("spawner").size() > 0)) {
+                spawnerMultiplier = getSpawnerMultiplier(killer);
+                if (spawnerMultiplier <= 0) {
+                    return;
+                }
+                context.set("spawner_multiplier", spawnerMultiplier);
+            }
+
             actionProcessor.processAction(killer, ActionType.KILL, event, context);
             processedEvents.incrementAndGet();
-            
+
         } catch (Exception e) {
             plugin.getLogger().warning("Error processing KILL action for player " + killer.getName() + ": " + e.getMessage());
         }
+    }
+
+    private double getSpawnerMultiplier(Player player) {
+        double highestMultiplier = 0.0;
+
+        for (org.bukkit.permissions.PermissionAttachmentInfo permInfo : player.getEffectivePermissions()) {
+            if (permInfo.getValue() && permInfo.getPermission().startsWith("universejobs.spawnerpayment.")) {
+                try {
+                    String percentStr = permInfo.getPermission().substring("universejobs.spawnerpayment.".length());
+                    double percent = Double.parseDouble(percentStr);
+                    if (percent > highestMultiplier) {
+                        highestMultiplier = percent;
+                    }
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+
+        return highestMultiplier / 100.0;
     }
     
     
@@ -213,19 +236,24 @@ public class JobActionListener implements Listener {
                 }
             }
             
-            // Create context
             ConditionContext context = new ConditionContext()
                     .setBlock(event.getBlock())
                     .set(TARGET_KEY, event.getBlock().getType().name());
-            
-            // Add age data for ageable blocks (crops, etc.)
+
             if (event.getBlock().getBlockData() instanceof Ageable) {
                 Ageable ageable = (Ageable) event.getBlock().getBlockData();
                 context.set("age", String.valueOf(ageable.getAge()));
                 context.set("max_age", String.valueOf(ageable.getMaximumAge()));
-                
+
                 if (configCache.isDebugEnabled()) {
                     plugin.getLogger().info("Block " + event.getBlock().getType().name() + " has age " + ageable.getAge() + "/" + ageable.getMaximumAge());
+                }
+            }
+
+            if (isStackedBlock(event.getBlock())) {
+                int stackHeight = getStackHeight(event.getBlock());
+                if (stackHeight > 1) {
+                    context.set("stack_multiplier", stackHeight);
                 }
             }
             
@@ -1505,9 +1533,35 @@ public class JobActionListener implements Listener {
             
             return false;
         } catch (Exception e) {
-            // If any error occurs, assume it's not an Oraxen block
             return false;
         }
     }
-    
+
+    private boolean isStackedBlock(org.bukkit.block.Block block) {
+        Material type = block.getType();
+        return type == Material.SUGAR_CANE ||
+               type == Material.CACTUS ||
+               type == Material.BAMBOO ||
+               type == Material.KELP_PLANT ||
+               type == Material.KELP;
+    }
+
+    private int getStackHeight(org.bukkit.block.Block block) {
+        if (!isStackedBlock(block)) {
+            return 1;
+        }
+
+        int height = 1;
+        org.bukkit.block.Block current = block.getRelative(org.bukkit.block.BlockFace.UP);
+        Material blockType = block.getType();
+
+        while (current.getType() == blockType ||
+               (blockType == Material.KELP && current.getType() == Material.KELP_PLANT) ||
+               (blockType == Material.KELP_PLANT && current.getType() == Material.KELP_PLANT)) {
+            height++;
+            current = current.getRelative(org.bukkit.block.BlockFace.UP);
+        }
+
+        return height;
+    }
 }

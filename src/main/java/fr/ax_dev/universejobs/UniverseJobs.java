@@ -165,10 +165,15 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
             return;
         }
         
-        // Register commands
         JobCommand jobCommand = new JobCommand(this, jobManager);
-        getCommand("jobs").setExecutor(jobCommand);
-        getCommand("jobs").setTabCompleter(jobCommand);
+        String commandName = getConfig().getString("command.name", "jobs");
+        if (getCommand(commandName) != null) {
+            getCommand(commandName).setExecutor(jobCommand);
+            getCommand(commandName).setTabCompleter(jobCommand);
+        } else {
+            getCommand("jobs").setExecutor(jobCommand);
+            getCommand("jobs").setTabCompleter(jobCommand);
+        }
         
         // Register event listeners avec cache ultra-rapide
         getServer().getPluginManager().registerEvents(

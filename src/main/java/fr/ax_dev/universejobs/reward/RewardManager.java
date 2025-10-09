@@ -254,27 +254,26 @@ public class RewardManager {
         // Check if player has the job
         if (!plugin.getJobManager().hasJob(player, reward.getJobId())) {
             if (showFeedback) {
-                MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.no-job", "job", reward.getJobId()));
+                MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.no-job", "job", reward.getJobId(), "player", player.getName()));
             }
             return false;
         }
-        
-        // Check level requirement
+
         int playerLevel = plugin.getJobManager().getLevel(player, reward.getJobId());
         if (playerLevel < reward.getRequiredLevel()) {
             if (showFeedback) {
-                MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.level-requirement", 
-                    "required", String.valueOf(reward.getRequiredLevel()), 
-                    "job", reward.getJobId(), 
-                    "current", String.valueOf(playerLevel)));
+                MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.level-requirement",
+                    "required", String.valueOf(reward.getRequiredLevel()),
+                    "job", reward.getJobId(),
+                    "current", String.valueOf(playerLevel),
+                    "player", player.getName()));
             }
             return false;
         }
-        
-        // Check permission
+
         if (reward.getPermission() != null && !player.hasPermission(reward.getPermission())) {
             if (showFeedback) {
-                MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.no-permission", "permission", reward.getPermission()));
+                MessageUtils.sendMessage(player, languageManager.getMessage("rewards.claim.no-permission", "permission", reward.getPermission(), "player", player.getName()));
             }
             return false;
         }

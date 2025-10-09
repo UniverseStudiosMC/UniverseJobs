@@ -3,6 +3,9 @@ debug: false
 language:
   locale: en_US
 
+command:
+  name: jobs
+
 # Auto-save settings  
 settings:
   save-interval: 300 # Auto-save interval in seconds
