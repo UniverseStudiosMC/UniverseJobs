@@ -167,12 +167,31 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         
         JobCommand jobCommand = new JobCommand(this, jobManager);
         String commandName = getConfig().getString("command.name", "jobs");
-        if (getCommand(commandName) != null) {
-            getCommand(commandName).setExecutor(jobCommand);
-            getCommand(commandName).setTabCompleter(jobCommand);
-        } else {
-            getCommand("jobs").setExecutor(jobCommand);
-            getCommand("jobs").setTabCompleter(jobCommand);
+
+        org.bukkit.command.PluginCommand jobsCommand = getCommand("jobs");
+        if (jobsCommand != null) {
+            jobsCommand.setExecutor(jobCommand);
+            jobsCommand.setTabCompleter(jobCommand);
+        }
+
+        org.bukkit.command.PluginCommand jobCommand2 = getCommand("job");
+        if (jobCommand2 != null) {
+            jobCommand2.setExecutor(jobCommand);
+            jobCommand2.setTabCompleter(jobCommand);
+        }
+
+        if (!commandName.equals("jobs") && !commandName.equals("job")) {
+            try {
+                org.bukkit.command.PluginCommand customCommand = getCommand(commandName);
+                if (customCommand != null) {
+                    customCommand.setExecutor(jobCommand);
+                    customCommand.setTabCompleter(jobCommand);
+                } else {
+                    getLogger().warning("Cannot register custom command '" + commandName + "' - command not found in plugin.yml");
+                }
+            } catch (Exception e) {
+                getLogger().warning("Failed to register custom command '" + commandName + "': " + e.getMessage());
+            }
         }
         
         // Register event listeners avec cache ultra-rapide
