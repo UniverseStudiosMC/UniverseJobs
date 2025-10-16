@@ -105,7 +105,7 @@ public class McMMOHandler {
             return 1.0;
         }
 
-        double multiplier = 1.0;
+        double multiplier = 0.0;
 
         for (Map.Entry<String, McMMOAbilityConfig> entry : mcmmoConfig.entrySet()) {
             McMMOAbilityConfig config = entry.getValue();
