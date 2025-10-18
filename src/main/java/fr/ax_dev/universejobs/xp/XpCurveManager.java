@@ -72,7 +72,7 @@ public class XpCurveManager {
      */
     private void createExampleCurves() {
         // Copy example curve file from resources
-        plugin.saveResource("xp-curves/example.yml", false);
+        plugin.saveResource("xp-curves/default.yml", false);
     }
     
     
