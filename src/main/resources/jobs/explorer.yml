@@ -1,0 +1,68 @@
+id: explorer
+enabled: true
+name: "&aExplorer"
+description: "Explore new chunks and earn rewards"
+icon: COMPASS
+max-level: 100
+permission: universejobs.job.explorer
+
+lore:
+  - "&7Explore new chunks"
+  - "&7Discover new territories"
+  - "&7Each chunk pays up to 5 times"
+
+xp-formula: "150 * {level} + 75 * ({level} - 1)"
+
+actions:
+  EXPLORE:
+    FIRST_EXPLORATION:
+      target: "1"
+      xp: 100.0
+      money: 50.0
+      requirements:
+        conditions:
+          - type: "placeholder"
+            placeholder: "%universejobs_player_job_level_explorer%"
+            operator: ">="
+            value: "1"
+
+    SECOND_EXPLORATION:
+      target: "2"
+      xp: 75.0
+      money: 40.0
+
+    THIRD_EXPLORATION:
+      target: "3"
+      xp: 50.0
+      money: 30.0
+
+    FOURTH_EXPLORATION:
+      target: "4"
+      xp: 30.0
+      money: 20.0
+
+    FIFTH_EXPLORATION:
+      target: "5"
+      xp: 20.0
+      money: 10.0
+
+level-up:
+  actions:
+    "1":
+      - "broadcast: &a{player} &7is now a &aLevel {level} Explorer&7!"
+    "10":
+      - "broadcast: &a{player} &7has explored many lands and reached &aLevel 10&7!"
+      - "give-item: COMPASS 1 display_name:&aExplorer's Compass"
+    "25":
+      - "broadcast: &a{player} &7is a seasoned explorer at &aLevel 25&7!"
+      - "give-item: MAP 5"
+    "50":
+      - "broadcast: &a{player} &7is an &aExpert Explorer &7at Level 50!"
+      - "give-item: ENDER_PEARL 16"
+    "75":
+      - "broadcast: &a{player} &7is a &aLegendary Explorer &7at Level 75!"
+      - "give-item: ELYTRA 1"
+    "100":
+      - "broadcast: &a{player} &7has reached &aMAX LEVEL &7in Exploring!"
+      - "give-item: TOTEM_OF_UNDYING 1"
+      - "command: give {player} minecraft:filled_map 1"

@@ -244,6 +244,7 @@ public class MenuManager {
      */
     public void registerBoostGui(Player player, BoostManagerGui boostGui) {
         closeCurrentMenu(player);
+        eventHandler.registerActivePlayer(player.getUniqueId());
         openBoostGuis.put(player.getUniqueId(), boostGui);
     }
     

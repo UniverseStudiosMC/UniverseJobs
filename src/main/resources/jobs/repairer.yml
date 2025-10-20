@@ -1,0 +1,185 @@
+id: repairer
+enabled: true
+name: "&bRepairer"
+description: "Repair items and earn rewards"
+icon: ANVIL
+max-level: 100
+permission: universejobs.job.repairer
+
+lore:
+  - "&7Repair items at an anvil"
+  - "&7Maintain tools and armor"
+  - "&7Become a master craftsman"
+
+xp-formula: "120 * {level} + 60 * ({level} - 1)"
+
+actions:
+  REPAIR:
+    DIAMOND_PICKAXE:
+      target: "DIAMOND_PICKAXE"
+      xp: 20.0
+      money: 15.0
+
+    DIAMOND_SWORD:
+      target: "DIAMOND_SWORD"
+      xp: 18.0
+      money: 13.0
+
+    DIAMOND_AXE:
+      target: "DIAMOND_AXE"
+      xp: 19.0
+      money: 14.0
+
+    DIAMOND_SHOVEL:
+      target: "DIAMOND_SHOVEL"
+      xp: 16.0
+      money: 12.0
+
+    DIAMOND_HOE:
+      target: "DIAMOND_HOE"
+      xp: 15.0
+      money: 11.0
+
+    DIAMOND_HELMET:
+      target: "DIAMOND_HELMET"
+      xp: 17.0
+      money: 12.5
+
+    DIAMOND_CHESTPLATE:
+      target: "DIAMOND_CHESTPLATE"
+      xp: 22.0
+      money: 16.0
+
+    DIAMOND_LEGGINGS:
+      target: "DIAMOND_LEGGINGS"
+      xp: 20.0
+      money: 15.0
+
+    DIAMOND_BOOTS:
+      target: "DIAMOND_BOOTS"
+      xp: 16.0
+      money: 12.0
+
+    NETHERITE_PICKAXE:
+      target: "NETHERITE_PICKAXE"
+      xp: 35.0
+      money: 25.0
+
+    NETHERITE_SWORD:
+      target: "NETHERITE_SWORD"
+      xp: 33.0
+      money: 23.0
+
+    NETHERITE_AXE:
+      target: "NETHERITE_AXE"
+      xp: 34.0
+      money: 24.0
+
+    NETHERITE_SHOVEL:
+      target: "NETHERITE_SHOVEL"
+      xp: 30.0
+      money: 20.0
+
+    NETHERITE_HOE:
+      target: "NETHERITE_HOE"
+      xp: 28.0
+      money: 19.0
+
+    NETHERITE_HELMET:
+      target: "NETHERITE_HELMET"
+      xp: 32.0
+      money: 22.0
+
+    NETHERITE_CHESTPLATE:
+      target: "NETHERITE_CHESTPLATE"
+      xp: 40.0
+      money: 28.0
+
+    NETHERITE_LEGGINGS:
+      target: "NETHERITE_LEGGINGS"
+      xp: 38.0
+      money: 26.0
+
+    NETHERITE_BOOTS:
+      target: "NETHERITE_BOOTS"
+      xp: 30.0
+      money: 21.0
+
+    IRON_PICKAXE:
+      target: "IRON_PICKAXE"
+      xp: 8.0
+      money: 5.0
+
+    IRON_SWORD:
+      target: "IRON_SWORD"
+      xp: 7.0
+      money: 4.5
+
+    IRON_AXE:
+      target: "IRON_AXE"
+      xp: 7.5
+      money: 4.8
+
+    IRON_SHOVEL:
+      target: "IRON_SHOVEL"
+      xp: 6.0
+      money: 4.0
+
+    IRON_HOE:
+      target: "IRON_HOE"
+      xp: 5.5
+      money: 3.5
+
+    IRON_HELMET:
+      target: "IRON_HELMET"
+      xp: 6.5
+      money: 4.2
+
+    IRON_CHESTPLATE:
+      target: "IRON_CHESTPLATE"
+      xp: 9.0
+      money: 6.0
+
+    IRON_LEGGINGS:
+      target: "IRON_LEGGINGS"
+      xp: 8.0
+      money: 5.5
+
+    IRON_BOOTS:
+      target: "IRON_BOOTS"
+      xp: 6.0
+      money: 4.0
+
+    BOW:
+      target: "BOW"
+      xp: 10.0
+      money: 7.0
+
+    ELYTRA:
+      target: "ELYTRA"
+      xp: 50.0
+      money: 35.0
+
+    TRIDENT:
+      target: "TRIDENT"
+      xp: 45.0
+      money: 30.0
+
+    SHIELD:
+      target: "SHIELD"
+      xp: 8.0
+      money: 5.5
+
+level-up:
+  actions:
+    "1":
+      - "broadcast: &b{player} &7is now a &bLevel {level} Repairer&7!"
+    "25":
+      - "broadcast: &b{player} &7has mastered repairing and reached &bLevel 25&7!"
+      - "give-item: ANVIL 2"
+    "50":
+      - "broadcast: &b{player} &7is an &bExpert Repairer &7at Level 50!"
+      - "give-item: DIAMOND 10"
+    "100":
+      - "broadcast: &b{player} &7has reached &bMAX LEVEL &7in Repairing!"
+      - "give-item: NETHERITE_INGOT 5"
