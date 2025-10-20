@@ -19,6 +19,9 @@ import fr.ax_dev.universejobs.job.PlayerJobData;
 import fr.ax_dev.universejobs.levelup.SimpleLevelUpActionManager;
 import fr.ax_dev.universejobs.listener.JobActionListener;
 import fr.ax_dev.universejobs.listener.EnchantEventListener;
+import fr.ax_dev.universejobs.listener.BrewEventListener;
+import fr.ax_dev.universejobs.listener.RepairEventListener;
+import fr.ax_dev.universejobs.listener.ExploreEventListener;
 import fr.ax_dev.universejobs.protection.BlockProtectionManager;
 import fr.ax_dev.universejobs.reward.RewardManager;
 import fr.ax_dev.universejobs.reward.gui.RewardGuiManager;
@@ -65,6 +68,7 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
     private fr.ax_dev.universejobs.utils.PluginAccessor accessor;
     private UpdateChecker updateChecker;
     private fr.ax_dev.universejobs.job.InactivityDecayManager inactivityDecayManager;
+    private ExploreEventListener exploreEventListener;
     
     // ========== STORAGE SYSTEM ==========
     private DataStorage dataStorage;
@@ -198,6 +202,10 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(
             new JobActionListener(this, actionProcessor, protectionManager, mythicMobsHandler, configCache, playerCache), this);
         getServer().getPluginManager().registerEvents(new EnchantEventListener(this, actionProcessor), this);
+        getServer().getPluginManager().registerEvents(new BrewEventListener(this, actionProcessor), this);
+        getServer().getPluginManager().registerEvents(new RepairEventListener(this, actionProcessor), this);
+        this.exploreEventListener = new ExploreEventListener(this, actionProcessor);
+        getServer().getPluginManager().registerEvents(exploreEventListener, this);
         getServer().getPluginManager().registerEvents(this, this);
         
         // Register MythicMobs event listener if available

@@ -95,7 +95,17 @@ public enum ActionType {
      * Milking cows
      */
     MILK,
-    
+
+    /**
+     * Repairing items
+     */
+    REPAIR,
+
+    /**
+     * Exploring chunks
+     */
+    EXPLORE,
+
     /**
      * Custom action for plugin integrations
      */
