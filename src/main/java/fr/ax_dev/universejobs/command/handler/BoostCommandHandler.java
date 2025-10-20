@@ -391,7 +391,7 @@ public class BoostCommandHandler extends JobCommandHandler {
         String jobDisplay = jobId.equals("*") ? languageManager.getMessage("commands.admin.boost-info-all-jobs") : jobId;
         String actionDisplay = actionType.equals("*") ? languageManager.getMessage("commands.admin.boost-info-all-actions") : actionType;
         String actionIdDisplay = actionId.equals("*") ? "" : " (" + actionId + ")";
-        sender.sendMessage(languageManager.getMessage("commands.admin.boost-applied",
+        MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.boost-applied",
                 "type", boostType,
                 "multiplier", String.valueOf(multiplier),
                 "duration", String.valueOf(duration),

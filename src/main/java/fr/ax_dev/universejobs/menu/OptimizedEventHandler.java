@@ -29,33 +29,35 @@ public class OptimizedEventHandler implements Listener {
      */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
-        // Fast exit if not a player
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
         UUID playerId = player.getUniqueId();
 
-        // Ultra-fast check: if player not in active set, ignore
         if (!activeMenuPlayers.contains(playerId)) return;
 
         InventoryHolder holder = event.getInventory().getHolder();
 
-        // Fast type check with optimized holder
-        if (!(holder instanceof OptimizedMenuHolder menuHolder)) return;
+        if (holder instanceof OptimizedMenuHolder menuHolder) {
+            if (!menuHolder.belongsTo(playerId)) return;
 
-        // Verify this event belongs to this player
-        if (!menuHolder.belongsTo(playerId)) return;
+            event.setCancelled(true);
 
-        // Cancel event immediately to prevent item manipulation
-        event.setCancelled(true);
+            BaseMenu menu = menuHolder.getMenu();
+            if (menu != null) {
+                try {
+                    menu.handleClick(event.getSlot(), event);
+                } catch (Exception e) {
+                    menuManager.getPlugin().getLogger().severe("Error handling menu click: " + e.getMessage());
+                }
+            }
+        } else if (holder instanceof BoostManagerGui boostGui) {
+            event.setCancelled(true);
 
-        // Route to specific menu handler
-        BaseMenu menu = menuHolder.getMenu();
-        if (menu != null) {
+            boolean isRightClick = event.getClick() == ClickType.RIGHT;
             try {
-                menu.handleClick(event.getSlot(), event);
+                boostGui.handleClick(player, event.getSlot(), isRightClick);
             } catch (Exception e) {
-                // Log error but don't crash
-                menuManager.getPlugin().getLogger().severe("Error handling menu click: " + e.getMessage());
+                menuManager.getPlugin().getLogger().severe("Error handling boost GUI click: " + e.getMessage());
             }
         }
     }
@@ -66,7 +68,6 @@ public class OptimizedEventHandler implements Listener {
 
         UUID playerId = player.getUniqueId();
 
-        // Remove from active set immediately
         activeMenuPlayers.remove(playerId);
 
         InventoryHolder holder = event.getInventory().getHolder();
@@ -77,9 +78,10 @@ public class OptimizedEventHandler implements Listener {
                     menu.onClose();
                 }
 
-                // Return inventory to pool
                 menuManager.returnInventoryToPool(event.getInventory());
             }
+        } else if (holder instanceof BoostManagerGui boostGui) {
+            boostGui.onInventoryClose(player);
         }
     }
 
@@ -95,6 +97,8 @@ public class OptimizedEventHandler implements Listener {
             if (menuHolder.belongsTo(playerId)) {
                 event.setCancelled(true);
             }
+        } else if (holder instanceof BoostManagerGui) {
+            event.setCancelled(true);
         }
     }
 

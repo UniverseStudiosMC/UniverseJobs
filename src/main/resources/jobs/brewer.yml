@@ -1,0 +1,126 @@
+id: brewer
+enabled: true
+name: "&6Brewer"
+description: "Brew potions and earn rewards"
+icon: BREWING_STAND
+max-level: 100
+permission: universejobs.job.brewer
+
+lore:
+  - "&7Brew potions to earn XP and money"
+  - "&7Craft different types of potions"
+  - "&7Master the art of alchemy"
+
+xp-formula: "100 * {level} + 50 * ({level} - 1)"
+
+actions:
+  BREW:
+    AWKWARD_POTION:
+      target: "POTION"
+      ingredient: "NETHER_WART"
+      xp: 5.0
+      money: 2.0
+
+    THICK_POTION:
+      target: "POTION"
+      ingredient: "GLOWSTONE_DUST"
+      xp: 3.0
+      money: 1.0
+
+    MUNDANE_POTION:
+      target: "POTION"
+      ingredient: "REDSTONE"
+      xp: 3.0
+      money: 1.0
+
+    SPEED_POTION:
+      target: "POTION"
+      ingredient: "SUGAR"
+      xp: 10.0
+      money: 5.0
+
+    STRENGTH_POTION:
+      target: "POTION"
+      ingredient: "BLAZE_POWDER"
+      xp: 15.0
+      money: 7.5
+
+    HEALING_POTION:
+      target: "POTION"
+      ingredient: "GLISTERING_MELON_SLICE"
+      xp: 12.0
+      money: 6.0
+
+    FIRE_RESISTANCE:
+      target: "POTION"
+      ingredient: "MAGMA_CREAM"
+      xp: 20.0
+      money: 10.0
+
+    REGENERATION:
+      target: "POTION"
+      ingredient: "GHAST_TEAR"
+      xp: 25.0
+      money: 12.5
+
+    NIGHT_VISION:
+      target: "POTION"
+      ingredient: "GOLDEN_CARROT"
+      xp: 15.0
+      money: 7.5
+
+    WATER_BREATHING:
+      target: "POTION"
+      ingredient: "PUFFERFISH"
+      xp: 18.0
+      money: 9.0
+
+    INVISIBILITY:
+      target: "POTION"
+      ingredient: "FERMENTED_SPIDER_EYE"
+      xp: 30.0
+      money: 15.0
+
+    POISON:
+      target: "POTION"
+      ingredient: "SPIDER_EYE"
+      xp: 10.0
+      money: 5.0
+
+    WEAKNESS:
+      target: "POTION"
+      ingredient: "FERMENTED_SPIDER_EYE"
+      xp: 8.0
+      money: 4.0
+
+    SLOWNESS:
+      target: "POTION"
+      ingredient: "FERMENTED_SPIDER_EYE"
+      xp: 8.0
+      money: 4.0
+
+    TURTLE_MASTER:
+      target: "POTION"
+      ingredient: "TURTLE_SHELL"
+      xp: 35.0
+      money: 17.5
+
+    SLOW_FALLING:
+      target: "POTION"
+      ingredient: "PHANTOM_MEMBRANE"
+      xp: 22.0
+      money: 11.0
+
+level-up:
+  actions:
+    "1":
+      - "broadcast: &6{player} &7is now a &6Level {level} Brewer&7!"
+    "25":
+      - "broadcast: &6{player} &7has mastered brewing and reached &6Level 25&7!"
+      - "give-item: POTION 5 display_name:&6Master Brewer's Elixir"
+    "50":
+      - "broadcast: &6{player} &7is an &6Expert Brewer &7at Level 50!"
+      - "give-item: BREWING_STAND 1"
+    "100":
+      - "broadcast: &6{player} &7has reached &6MAX LEVEL &7in Brewing!"
+      - "give-item: DRAGON_BREATH 10"
