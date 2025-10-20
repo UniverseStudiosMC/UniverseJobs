@@ -28,9 +28,8 @@ public abstract class JobCommandHandler {
     protected final RewardGuiManager rewardGuiManager;
     protected final ActionLimitManager limitManager;
     
-    // Security patterns for input validation
-    protected static final Pattern SAFE_JOB_ID_PATTERN = Pattern.compile("^[a-zA-Z0-9_-]{1,32}$");
-    protected static final Pattern SAFE_PLAYER_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_]{1,16}$");
+    protected static final Pattern SAFE_JOB_ID_PATTERN = Pattern.compile("^[\\p{L}\\p{N}_-]{1,64}$");
+    protected static final Pattern SAFE_PLAYER_NAME_PATTERN = Pattern.compile("^[\\p{L}\\p{N}_]{1,16}$");
     protected static final Pattern COMMAND_INJECTION_PATTERN = Pattern.compile("[;&|`$(){}\\[\\]<>\"'\\\\]");
     
     public JobCommandHandler(UniverseJobs plugin) {
@@ -72,9 +71,8 @@ public abstract class JobCommandHandler {
         if (input == null) {
             return "";
         }
-        
-        // Remove dangerous characters and limit length
-        String sanitized = input.replaceAll("[^a-zA-Z0-9_-]", "");
+
+        String sanitized = input.replaceAll("[;&|`$(){}\\[\\]<>\"'\\\\]", "");
         return sanitized.substring(0, Math.min(sanitized.length(), 64));
     }
     
@@ -82,9 +80,8 @@ public abstract class JobCommandHandler {
         if (input == null) {
             return "";
         }
-        
-        // Allow * wildcard in addition to normal characters
-        String sanitized = input.replaceAll("[^a-zA-Z0-9_\\-*]", "");
+
+        String sanitized = input.replaceAll("[;&|`$(){}\\[\\]<>\"'\\\\]", "");
         return sanitized.substring(0, Math.min(sanitized.length(), 64));
     }
     

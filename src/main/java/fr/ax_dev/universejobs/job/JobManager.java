@@ -834,6 +834,8 @@ public class JobManager {
                 int levelsToLose = Math.max(1, (int) Math.floor(currentLevel * penaltyPercentage));
                 int newLevel = Math.max(1, currentLevel - levelsToLose);
                 data.setLevel(jobId, newLevel);
+                double requiredXpForNewLevel = getXpRequiredForLevel(jobId, newLevel);
+                data.setXp(jobId, requiredXpForNewLevel);
             }
         } else if ("xp".equalsIgnoreCase(penaltyType)) {
             double currentXp = data.getXp(jobId);
