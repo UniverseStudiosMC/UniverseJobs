@@ -11,6 +11,7 @@ import fr.ax_dev.universejobs.menu.config.SingleMenuConfig;
 import fr.ax_dev.universejobs.menu.config.SimpleConfigurationSection;
 import fr.ax_dev.universejobs.menu.utils.MaterialUtils;
 import fr.ax_dev.universejobs.menu.utils.MenuItemUtils;
+import fr.ax_dev.universejobs.utils.EquationEvaluator;
 import net.kyori.adventure.text.Component;
 
 import org.bukkit.Material;
@@ -332,17 +333,31 @@ public class JobActionsMenu extends BaseMenu {
                         }
                     }
                     
-                    // Base values (without boost)
-                    line = replacePlaceholder(line, "action_xp_base", String.valueOf(action.getXp()));
-                    line = replacePlaceholder(line, "action_money_base", String.valueOf(action.getMoney()));
-                    
-                    // Calculate boosted values
+                    EquationEvaluator evaluator = new EquationEvaluator(plugin);
+
+                    double baseXp;
+                    double baseMoney;
+
+                    if (action.hasXpEquation()) {
+                        baseXp = evaluator.evaluate(action.getXpEquation(), player, job, job.getId());
+                    } else {
+                        baseXp = action.getXp();
+                    }
+
+                    if (action.hasMoneyEquation()) {
+                        baseMoney = evaluator.evaluate(action.getMoneyEquation(), player, job, job.getId());
+                    } else {
+                        baseMoney = action.getMoney();
+                    }
+
+                    line = replacePlaceholder(line, "action_xp_base", String.valueOf(baseXp));
+                    line = replacePlaceholder(line, "action_money_base", String.valueOf(baseMoney));
+
                     double xpMultiplier = plugin.getBonusManager().getTotalMultiplier(player.getUniqueId(), job.getId());
                     double moneyMultiplier = plugin.getMoneyBonusManager().getTotalMultiplier(player.getUniqueId(), job.getId());
-                    
-                    // Values with boost
-                    double boostedXp = action.getXp() * xpMultiplier;
-                    double boostedMoney = action.getMoney() * moneyMultiplier;
+
+                    double boostedXp = baseXp * xpMultiplier;
+                    double boostedMoney = baseMoney * moneyMultiplier;
                     line = replacePlaceholder(line, "action_xp", String.format("%.1f", boostedXp));
                     line = replacePlaceholder(line, "action_money", String.format("%.2f", boostedMoney));
                     
@@ -400,13 +415,10 @@ public class JobActionsMenu extends BaseMenu {
         return lore;
     }
     
-    /**
-     * Apply hide_line logic on raw lore lines BEFORE any placeholder processing.
-     */
     private List<String> applyHideLineLogicRaw(List<String> rawLoreLines, JobAction action, ActionItemFormat format) {
         List<String> result = new ArrayList<>();
-        boolean hasNoMoney = action.getMoney() <= 0;
-        boolean hasNoXp = action.getXp() <= 0;
+        boolean hasNoMoney = !action.hasMoneyEquation() && action.getMoney() <= 0;
+        boolean hasNoXp = !action.hasXpEquation() && action.getXp() <= 0;
         
         List<Integer> hideWhenNoMoney = format.getHideWhenNoMoney();
         List<Integer> hideWhenNoXp = format.getHideWhenNoXp();
