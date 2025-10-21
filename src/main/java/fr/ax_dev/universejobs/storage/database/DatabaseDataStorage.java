@@ -80,7 +80,8 @@ public class DatabaseDataStorage implements DataStorage {
     @Override
     public CompletableFuture<Void> savePlayerDataAsync(UUID playerId, PlayerJobData data) {
         if (shutdown.get()) {
-            return CompletableFuture.failedFuture(new IllegalStateException("Storage is shutdown"));
+            plugin.getLogger().warning("Cannot save player data for " + playerId + " - storage is shutdown or readonly");
+            return CompletableFuture.completedFuture(null);
         }
         
         totalOperations++;

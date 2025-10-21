@@ -20,6 +20,8 @@ public class JobAction {
     private final String target;
     private final double xp;
     private final double money;
+    private final String xpEquation;
+    private final String moneyEquation;
     private final ConditionGroup requirements;
     private final String name;
     private final String description;
@@ -46,8 +48,23 @@ public class JobAction {
      */
     public JobAction(ConfigurationSection config) {
         this.target = config.getString("target", "");
-        this.xp = config.getDouble("xp", 0.0);
-        this.money = config.getDouble("money", 0.0);
+
+        if (config.isString("xp")) {
+            this.xpEquation = config.getString("xp");
+            this.xp = 0.0;
+        } else {
+            this.xp = config.getDouble("xp", 0.0);
+            this.xpEquation = null;
+        }
+
+        if (config.isString("money")) {
+            this.moneyEquation = config.getString("money");
+            this.money = 0.0;
+        } else {
+            this.money = config.getDouble("money", 0.0);
+            this.moneyEquation = null;
+        }
+
         this.name = config.getString("name", "");
         this.description = config.getString("description", "");
         this.displayName = applyDefaultFormatting(config.getString("display-name", ""));
@@ -239,14 +256,25 @@ public class JobAction {
     public double getXp() {
         return xp;
     }
-    
-    /**
-     * Get the money reward for this action.
-     * 
-     * @return The money amount
-     */
+
+    public String getXpEquation() {
+        return xpEquation;
+    }
+
+    public boolean hasXpEquation() {
+        return xpEquation != null && !xpEquation.isEmpty();
+    }
+
     public double getMoney() {
         return money;
+    }
+
+    public String getMoneyEquation() {
+        return moneyEquation;
+    }
+
+    public boolean hasMoneyEquation() {
+        return moneyEquation != null && !moneyEquation.isEmpty();
     }
     
     /**

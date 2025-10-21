@@ -17,7 +17,6 @@ commands:
   jobs:
     description: Main jobs command with rewards, XP bonus management, and action limits
     usage: /jobs <join|leave|info|list|rewards|actionlimit> [args...]
-    aliases: [job]
     permission: universejobs.use
 
 permissions:

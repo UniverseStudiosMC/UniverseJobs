@@ -38,39 +38,35 @@ public class EnchantEventListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEnchantItem(EnchantItemEvent event) {
         Player player = event.getEnchanter();
-        
+
         if (plugin.getConfigManager().isDebugEnabled()) {
-            plugin.getLogger().info("EnchantItemEvent: " + player.getName() + " enchanting " + 
+            plugin.getLogger().info("EnchantItemEvent: " + player.getName() + " enchanting " +
                                   event.getItem().getType() + " with " + event.getEnchantsToAdd().size() + " enchantments");
         }
-        
+
         int processedEnchantments = 0;
-        
-        // Process each enchantment being applied and cumulate rewards
+
         for (Enchantment enchantment : event.getEnchantsToAdd().keySet()) {
             int level = event.getEnchantsToAdd().get(enchantment);
-            
-            // Get enchantment key with namespace support
+
             String enchantmentKey = getEnchantmentKey(enchantment);
-            
-            // Create context for this specific enchantment
+            String enchantmentName = enchantment.getKey().getKey().toUpperCase();
+
             ConditionContext context = new ConditionContext()
-                    .set("target", enchantmentKey)
+                    .set("target", enchantmentName)
                     .set("enchantment", enchantmentKey)
                     .set("enchantment_level", String.valueOf(level))
                     .set("item_type", event.getItem().getType().name())
-                    .set("experience_cost", String.valueOf(event.getExpLevelCost()))
-                    .set("suppress_message", "true"); // Flag to suppress individual messages
-            
+                    .set("experience_cost", String.valueOf(event.getExpLevelCost()));
+
             if (plugin.getConfigManager().isDebugEnabled()) {
-                plugin.getLogger().info("Processing enchantment: " + enchantmentKey + " level " + level);
+                plugin.getLogger().info("Processing enchantment: " + enchantmentName + " (key: " + enchantmentKey + ") level " + level);
             }
-            
-            // Process the enchantment action (this will cumulate internally)
+
             actionProcessor.processAction(player, ActionType.ENCHANT, event, context);
             processedEnchantments++;
         }
-        
+
         if (plugin.getConfigManager().isDebugEnabled() && processedEnchantments > 0) {
             plugin.getLogger().info("Processed " + processedEnchantments + " enchantments for " + player.getName());
         }
