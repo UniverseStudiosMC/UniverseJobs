@@ -261,7 +261,7 @@ public class JobsMainMenu extends BaseMenu {
     private Map<String, Object> createJobConfigMap(Job job, JobItemFormat format, Material iconMaterial, boolean hasJob) {
         Map<String, Object> jobConfigMap = new HashMap<>();
 
-        jobConfigMap.put("enabled", true); // This was missing!
+        jobConfigMap.put("enabled", true);
         jobConfigMap.put("material", iconMaterial.name());
         jobConfigMap.put("display-name", format.getDisplayName());
         jobConfigMap.put("lore", hasJob ? format.getLore() : format.getLoreWithoutJob());
@@ -269,15 +269,18 @@ public class JobsMainMenu extends BaseMenu {
         jobConfigMap.put("glow", format.shouldGlow(hasJob));
         jobConfigMap.put("hide-attributes", format.isHideAttributes());
         jobConfigMap.put("hide-enchants", format.isHideEnchants());
-        
-        // Apply custom model data if set
+
         if (job.getCustomModelData() > 0) {
             jobConfigMap.put("custom-model-data", job.getCustomModelData());
         }
-        
+
+        if (job.hasIconTexture()) {
+            jobConfigMap.put("skull-texture", job.getIconTexture());
+        }
+
         jobConfigMap.put("action", "open_job");
         jobConfigMap.put("action-value", job.getId());
-        
+
         return jobConfigMap;
     }
     
