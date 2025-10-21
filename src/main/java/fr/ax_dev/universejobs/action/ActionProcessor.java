@@ -11,6 +11,7 @@ import fr.ax_dev.universejobs.job.Job;
 import fr.ax_dev.universejobs.job.JobManager;
 import fr.ax_dev.universejobs.utils.MessageUtils;
 import fr.ax_dev.universejobs.utils.AsyncXpMessageSender;
+import fr.ax_dev.universejobs.utils.EquationEvaluator;
 import fr.ax_dev.universejobs.cache.ConfigurationCache;
 import fr.ax_dev.universejobs.cache.PlayerJobCache;
 import fr.ax_dev.universejobs.rewards.BatchedRewardManager;
@@ -44,11 +45,11 @@ public class ActionProcessor {
     private final PlayerJobCache playerCache;
     private final BatchedRewardManager batchManager;
     private final McMMOHandler mcmmoHandler;
-    
-    // Permission cache for performance (cleared every 30 seconds)
+    private final EquationEvaluator equationEvaluator;
+
     private static final Map<UUID, Integer> PERMISSION_MULTIPLIER_CACHE = new ConcurrentHashMap<>();
     private static final Map<UUID, Long> PERMISSION_CACHE_TIMESTAMPS = new ConcurrentHashMap<>();
-    private static final long PERMISSION_CACHE_DURATION = 30000L; // 30 seconds
+    private static final long PERMISSION_CACHE_DURATION = 30000L;
     
     /**
      * Create a new ActionProcessor with ultra-fast caching.
@@ -76,6 +77,7 @@ public class ActionProcessor {
         this.playerCache = playerCache;
         this.batchManager = new BatchedRewardManager(plugin);
         this.mcmmoHandler = McMMOHandler.getInstance(plugin);
+        this.equationEvaluator = new EquationEvaluator(plugin);
     }
     
     /**
@@ -430,8 +432,20 @@ public class ActionProcessor {
      * Process action rewards with optimal performance and all features.
      */
     private void processActionRewardsFast(Player player, Job job, JobAction action, ConditionContext context) {
-        double xp = action.getXp();
-        double money = action.getMoney();
+        double xp;
+        double money;
+
+        if (action.hasXpEquation()) {
+            xp = equationEvaluator.evaluate(action.getXpEquation(), player, job, job.getId());
+        } else {
+            xp = action.getXp();
+        }
+
+        if (action.hasMoneyEquation()) {
+            money = equationEvaluator.evaluate(action.getMoneyEquation(), player, job, job.getId());
+        } else {
+            money = action.getMoney();
+        }
 
         if (xp == 0 && money == 0) return;
 
@@ -1036,13 +1050,21 @@ public class ActionProcessor {
         }
     }
     
-    /**
-     * Get the listener instance. This feature has been removed.
-     * 
-     * @return Always null (feature removed)
-     */
     public Object getListener() {
-        return null; // Performance listener feature removed
+        return null;
     }
-    
+
+    public void clearExpiredCaches() {
+        equationEvaluator.clearExpiredPapiCache();
+
+        long currentTime = System.currentTimeMillis();
+        PERMISSION_CACHE_TIMESTAMPS.entrySet().removeIf(entry ->
+            (currentTime - entry.getValue()) > PERMISSION_CACHE_DURATION);
+    }
+
+    public void clearPlayerCache(UUID playerId) {
+        equationEvaluator.clearCache(playerId);
+        PERMISSION_MULTIPLIER_CACHE.remove(playerId);
+        PERMISSION_CACHE_TIMESTAMPS.remove(playerId);
+    }
 }

@@ -44,13 +44,32 @@ public class RepairEventListener implements Listener {
         ItemStack firstItem = inventory.getItem(0);
         ItemStack secondItem = inventory.getItem(1);
 
-        if (firstItem == null || secondItem == null) {
+        if (firstItem == null) {
             return;
         }
 
-        if (firstItem.getType() == secondItem.getType() &&
-            firstItem.getType().getMaxDurability() > 0) {
-            pendingRepairs.put(player.getUniqueId(), event.getResult().clone());
+        if (firstItem.getType().getMaxDurability() > 0) {
+            boolean isRepair = false;
+
+            if (secondItem != null && firstItem.getType() == secondItem.getType()) {
+                isRepair = true;
+            }
+
+            if (secondItem != null && secondItem.getType().name().contains("_INGOT")) {
+                isRepair = true;
+            }
+
+            if (secondItem != null && secondItem.getType().name().contains("DIAMOND")) {
+                isRepair = true;
+            }
+
+            if (secondItem != null && secondItem.getType().name().contains("NETHERITE")) {
+                isRepair = true;
+            }
+
+            if (isRepair) {
+                pendingRepairs.put(player.getUniqueId(), event.getResult().clone());
+            }
         }
     }
 

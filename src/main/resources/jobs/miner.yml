@@ -58,7 +58,7 @@ actions:
       target: "COBBLESTONE"
       display-name: "Cobblestone"
       action-menu-priority: 2
-      display-material: "COBBLESTONE:1001"  # Custom diamond with model data 1001
+      display-material: "COBBLESTONE:1001"
       lore:
       - "<gray>Mine cobblestone blocks"
       xp: 0.8
@@ -70,18 +70,20 @@ actions:
       action-menu-priority: 3
       lore:
       - "<gray>Mine deepslate blocks"
-      xp: 1.2
-      money: 0.6
+      xp: "1 + {level} * 0.1"
+      money: "0.5 + {level} * 0.05"
 
-    # Coal mining
+    # Coal mining - Equation examples with PlaceholderAPI
     break_coal_ore:
       target: "COAL_ORE"
       display-name: "Coal ore"
       action-menu-priority: 4
       lore:
       - "<gray>Extract coal from stone"
-      xp: 2.0
-      money: 1.5
+      - "<yellow>XP: 2 + level/10"
+      - "<gold>Money: 1.5 * sqrt(level)"
+      xp: "2 + {level} / 10"
+      money: "1.5 + {level} * 0.1"
 
     break_deepslate_coal_ore:
       target: "DEEPSLATE_COAL_ORE"
@@ -139,15 +141,16 @@ actions:
       xp: 3.5
       money: 4.5
 
-    # Diamond mining
+    # Diamond mining - Advanced equation with power
     break_diamond_ore:
       target: "DIAMOND_ORE"
       display-name: "Diamond ore"
       action-menu-priority: 17
       lore:
       - "<gray>Extract precious diamonds"
-      xp: 8.0
-      money: 15.0
+      - "<yellow>XP scales with level²"
+      xp: "5 + {level} * 0.5 + ({level} / 10) ^ 2"
+      money: "10 + {level} * 0.8"
 
     break_deepslate_diamond_ore:
       target: "DEEPSLATE_DIAMOND_ORE"
@@ -155,18 +158,20 @@ actions:
       action-menu-priority: 18
       lore:
       - "<gray>Extract diamonds from deepslate"
-      xp: 9.0
-      money: 16.0
+      - "<yellow>Bonus for high levels"
+      xp: "6 + {level} * 0.6 + ({level} / 10) ^ 2"
+      money: "11 + {level} * 0.9"
 
-    # Emerald mining
+    # Emerald mining - With health-based bonus
     break_emerald_ore:
       target: "EMERALD_ORE"
       display-name: "Emerald ore"
       action-menu-priority: 19
       lore:
       - "<gray>Extract rare emeralds"
-      xp: 10.0
-      money: 20.0
+      - "<yellow>Health affects rewards!"
+      xp: "8 + {level} * 0.7 + {player_health} / 10"
+      money: "15 + {level} + {player_health} / 5"
 
     break_deepslate_emerald_ore:
       target: "DEEPSLATE_EMERALD_ORE"
@@ -253,14 +258,17 @@ actions:
       xp: 4.0
       money: 4.0
 
+    # Ancient debris - Progressive scaling with multiple jobs
     break_ancient_debris:
       target: "ANCIENT_DEBRIS"
       display-name: "Ancient debris"
       action-menu-priority: 24
       lore:
       - "<gray>Extract the rarest material"
-      xp: 25.0
-      money: 50.0
+      - "<yellow>Bonus for having multiple jobs!"
+      - "<gold>XP: 20 + level + jobs²"
+      xp: "20 + {level} + {job_count} ^ 2"
+      money: "40 + {level} * 2 + {job_count} * 5"
 
     # End materials
     break_end_stone:

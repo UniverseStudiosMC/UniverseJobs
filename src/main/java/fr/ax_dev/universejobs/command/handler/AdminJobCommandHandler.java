@@ -551,15 +551,16 @@ public class AdminJobCommandHandler extends JobCommandHandler {
     }
     
     private boolean handleXpCommand(CommandSender sender, String[] args) {
-        if (args.length < 6) {
+        if (args.length < 7) {
             sendMessage(sender, "usage.xp");
             return true;
         }
 
-        String action = args[2].toLowerCase();
-        String playerName = args[3];
-        String jobId = args[4];
-        String amountStr = args[5];
+        String subType = args[2].toLowerCase();
+        String action = args[3].toLowerCase();
+        String playerName = args[4];
+        String jobId = args[5];
+        String amountStr = args[6];
 
         double amount;
         boolean isRange = amountStr.contains("-");
@@ -610,27 +611,28 @@ public class AdminJobCommandHandler extends JobCommandHandler {
     }
     
     private boolean handleLevelCommand(CommandSender sender, String[] args) {
-        if (args.length < 6) {
+        if (args.length < 7) {
             sendMessage(sender, "usage.level");
             return true;
         }
-        
-        String action = args[2].toLowerCase();
-        String playerName = args[3];
-        String jobId = args[4];
-        
+
+        String subType = args[2].toLowerCase();
+        String action = args[3].toLowerCase();
+        String playerName = args[4];
+        String jobId = args[5];
+
         int amount;
         try {
-            amount = Integer.parseInt(args[5]);
+            amount = Integer.parseInt(args[6]);
             if (amount < 0 && !action.equals("remove")) {
-                sendMessage(sender, "invalid-amount", "amount", args[5]);
+                sendMessage(sender, "invalid-amount", "amount", args[6]);
                 return true;
             }
         } catch (NumberFormatException e) {
-            sendMessage(sender, "invalid-amount", "amount", args[5]);
+            sendMessage(sender, "invalid-amount", "amount", args[6]);
             return true;
         }
-        
+
         return switch (action) {
             case "give" -> handleAddLevel(sender, playerName, jobId, amount);
             case "set" -> handleSetLevel(sender, new String[]{"admin", "setlevel", playerName, jobId, String.valueOf(amount)});
