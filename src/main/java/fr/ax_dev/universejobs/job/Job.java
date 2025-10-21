@@ -25,6 +25,7 @@ public class Job {
     private final Map<ActionType, List<JobAction>> actions;
     private final String iconMaterial;
     private final int customModelData;
+    private final String iconTexture;
     private final boolean enabled;
     private final String xpType; // CURVE or EQUATION
     private final String xpValue; // curve name or equation
@@ -58,17 +59,26 @@ public class Job {
         this.permission = config.getString("permission", "universejobs.job." + id.toLowerCase());
         this.maxLevel = config.getInt("max-level", 100);
         
-        // Load icon configuration
         ConfigurationSection iconSection = config.getConfigurationSection("icon");
         if (iconSection != null) {
-            this.iconMaterial = iconSection.getString("material", "STONE");
+            String materialStr = iconSection.getString("material", "STONE");
+
+            if (materialStr.contains(":")) {
+                String[] parts = materialStr.split(":", 2);
+                this.iconMaterial = parts[0];
+                this.iconTexture = parts.length > 1 ? parts[1] : null;
+            } else {
+                this.iconMaterial = materialStr;
+                this.iconTexture = iconSection.getString("texture", null);
+            }
+
             String customModelStr = iconSection.getString("custom-model-data", "");
-            this.customModelData = customModelStr.isEmpty() ? 0 : 
+            this.customModelData = customModelStr.isEmpty() ? 0 :
                 Integer.parseInt(customModelStr.replaceAll("[^0-9]", "0"));
         } else {
-            // Fallback for old format
             this.iconMaterial = config.getString("icon", "STONE");
             this.customModelData = 0;
+            this.iconTexture = null;
         }
         
         this.enabled = config.getBoolean("enabled", true);
@@ -240,13 +250,15 @@ public class Job {
     public int getCustomModelData() {
         return customModelData;
     }
-    
-    /**
-     * Get the icon material for this job (backward compatibility).
-     * 
-     * @deprecated Use {@link #getIconMaterial()} instead
-     * @return The icon material name
-     */
+
+    public String getIconTexture() {
+        return iconTexture;
+    }
+
+    public boolean hasIconTexture() {
+        return iconTexture != null && !iconTexture.isEmpty();
+    }
+
     @Deprecated
     public String getIcon() {
         return iconMaterial;
