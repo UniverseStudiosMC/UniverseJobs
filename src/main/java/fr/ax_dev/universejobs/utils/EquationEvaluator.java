@@ -18,6 +18,14 @@ public class EquationEvaluator {
     private static final Pattern INTERNAL_PLACEHOLDER_PATTERN = Pattern.compile("\\{([^}]+)}");
     private static final long PAPI_CACHE_DURATION = 5000L;
 
+    private static final java.util.Set<String> DYNAMIC_PLACEHOLDERS = java.util.Set.of(
+        "level", "xp", "total_xp", "current_xp", "needed_xp",
+        "job_count",
+        "player_level", "player_exp", "player_total_exp",
+        "player_health", "player_max_health", "player_food",
+        "x", "y", "z"
+    );
+
     private final UniverseJobs plugin;
     private final Map<String, CachedValue> papiCache;
     private final Map<String, Double> internalCache;
@@ -41,7 +49,17 @@ public class EquationEvaluator {
 
         String processed = processPlaceholders(equation, player, job, jobId);
 
-        return evaluateExpression(processed);
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("Equation after placeholder processing: " + processed);
+        }
+
+        double result = evaluateExpression(processed);
+
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("Equation result: " + result);
+        }
+
+        return result;
     }
 
     private String processPlaceholders(String input, Player player, Job job, String jobId) {
@@ -64,14 +82,20 @@ public class EquationEvaluator {
             String placeholder = matcher.group(1).toLowerCase();
             String cacheKey = player.getUniqueId() + ":" + jobId + ":" + placeholder;
 
-            Double cachedValue = internalCache.get(cacheKey);
-            if (cachedValue != null) {
-                matcher.appendReplacement(sb, String.valueOf(cachedValue));
-                continue;
+            if (!DYNAMIC_PLACEHOLDERS.contains(placeholder)) {
+                Double cachedValue = internalCache.get(cacheKey);
+                if (cachedValue != null) {
+                    matcher.appendReplacement(sb, String.valueOf(cachedValue));
+                    continue;
+                }
             }
 
             double value = getInternalPlaceholderValue(placeholder, player, job, jobId);
-            internalCache.put(cacheKey, value);
+
+            if (!DYNAMIC_PLACEHOLDERS.contains(placeholder)) {
+                internalCache.put(cacheKey, value);
+            }
+
             matcher.appendReplacement(sb, String.valueOf(value));
         }
 
@@ -154,8 +178,14 @@ public class EquationEvaluator {
             if (c == ')') level++;
             else if (c == '(') level--;
             else if (level == 0 && (c == '+' || c == '-')) {
+                if (i == 0) {
+                    continue;
+                }
                 String left = expr.substring(0, i);
                 String right = expr.substring(i + 1);
+                if (left.isEmpty() || right.isEmpty()) {
+                    continue;
+                }
                 double leftVal = parseAddSubtract(left);
                 double rightVal = parseMultiplyDivide(right);
                 return c == '+' ? leftVal + rightVal : leftVal - rightVal;
