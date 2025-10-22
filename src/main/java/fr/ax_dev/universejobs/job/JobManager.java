@@ -1045,7 +1045,7 @@ public class JobManager {
     /**
      * Save all player data synchronously (used during shutdown).
      */
-    private void saveAllPlayerDataSync() {
+    public void saveAllPlayerDataSync() {
         dataLock.readLock().lock();
         try {
             for (Map.Entry<UUID, PlayerJobData> entry : playerData.entrySet()) {
@@ -1067,26 +1067,17 @@ public class JobManager {
         if (data == null) {
             return;
         }
-        
+
         try {
             if (plugin.isDatabaseEnabled()) {
                 DataStorage dataStorage = plugin.getDataStorage();
                 if (dataStorage != null) {
-                    try {
-                        dataStorage.savePlayerDataAsync(playerUuid, data).join();
-                    } catch (Exception e) {
-                        if (e.getMessage() != null && (e.getMessage().contains("Storage is shutdown") ||
-                            e.getMessage().contains("readonly database") ||
-                            e.getMessage().contains("database file has been moved"))) {
-                            plugin.getLogger().warning("Cannot save player data for " + playerUuid + " - storage is shutdown or readonly");
-                        } else {
-                            throw e;
-                        }
-                    }
-                } else {
-                    plugin.getLogger().warning("DataStorage is null, cannot save player data for " + playerUuid);
+                    dataStorage.savePlayerDataAsync(playerUuid, data).join();
                 }
             } else {
+                if (!dataFolder.exists()) {
+                    dataFolder.mkdirs();
+                }
                 File dataFile = new File(dataFolder, playerUuid.toString() + ".yml");
                 FileConfiguration config = new YamlConfiguration();
                 data.save(config);

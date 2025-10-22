@@ -275,9 +275,9 @@ public class JobsMainMenu extends BaseMenu {
         }
 
         if (job.hasIconTexture()) {
-            jobConfigMap.put("skull-texture", job.getIconTexture());
+            jobConfigMap.put("player-head", job.getIconTexture());
             if (plugin.getConfigManager().isDebugEnabled()) {
-                plugin.getLogger().info("Adding skull texture for job " + job.getId() + ": " + job.getIconTexture().substring(0, Math.min(50, job.getIconTexture().length())) + "...");
+                plugin.getLogger().info("Adding player-head texture for job " + job.getId() + ": " + job.getIconTexture().substring(0, Math.min(50, job.getIconTexture().length())) + "...");
             }
         }
 

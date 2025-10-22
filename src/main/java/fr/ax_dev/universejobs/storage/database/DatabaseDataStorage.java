@@ -80,19 +80,18 @@ public class DatabaseDataStorage implements DataStorage {
     @Override
     public CompletableFuture<Void> savePlayerDataAsync(UUID playerId, PlayerJobData data) {
         if (shutdown.get()) {
-            plugin.getLogger().warning("Cannot save player data for " + playerId + " - storage is shutdown or readonly");
             return CompletableFuture.completedFuture(null);
         }
-        
+
         totalOperations++;
         cache.put(playerId, data);
-        
+
         CompletableFuture<Void> saveFuture = playerDataDao.savePlayerData(playerId, data);
-        
+
         saveFuture.thenRun(() -> {
             String playerName = plugin.getServer().getOfflinePlayer(playerId).getName();
             if (playerName == null) playerName = "Unknown";
-            
+
             for (String jobId : data.getJobs()) {
                 double xp = data.getXp(jobId);
                 int level = data.getLevel(jobId);

@@ -61,16 +61,8 @@ public class Job {
         
         ConfigurationSection iconSection = config.getConfigurationSection("icon");
         if (iconSection != null) {
-            String materialStr = iconSection.getString("material", "STONE");
-
-            if (materialStr.contains(":")) {
-                String[] parts = materialStr.split(":", 2);
-                this.iconMaterial = parts[0];
-                this.iconTexture = parts.length > 1 ? parts[1] : null;
-            } else {
-                this.iconMaterial = materialStr;
-                this.iconTexture = iconSection.getString("texture", null);
-            }
+            this.iconMaterial = iconSection.getString("material", "STONE");
+            this.iconTexture = iconSection.getString("player-head", null);
 
             String customModelStr = iconSection.getString("custom-model-data", "");
             this.customModelData = customModelStr.isEmpty() ? 0 :
