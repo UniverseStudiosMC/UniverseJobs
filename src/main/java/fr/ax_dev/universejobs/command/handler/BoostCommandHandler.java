@@ -429,19 +429,18 @@ public class BoostCommandHandler extends JobCommandHandler {
             // Ouvrir le GUI pour les joueurs
             plugin.getBoostManagerGui().openGui(player);
         } else {
-            // Affichage texte pour la console
-            sender.sendMessage(languageManager.getMessage("commands.admin.boost-info-header"));
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.boost-info-header"));
 
             List<String> xpBoosts = plugin.getBonusManager().getAllActiveBoostIds();
             List<String> moneyBoosts = plugin.getMoneyBonusManager().getAllActiveBoostIds();
 
             if (xpBoosts.isEmpty() && moneyBoosts.isEmpty()) {
-                sender.sendMessage(languageManager.getMessage("commands.admin.boost-info-none"));
+                MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.boost-info-none"));
                 return;
             }
 
             if (!xpBoosts.isEmpty()) {
-                sender.sendMessage(languageManager.getMessage("commands.admin.boost-info-xp-header"));
+                MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.boost-info-xp-header"));
                 for (String boostId : xpBoosts) {
                     var boost = plugin.getBonusManager().getBoostById(boostId);
                     if (boost != null && boost.isActive()) {
@@ -467,7 +466,7 @@ public class BoostCommandHandler extends JobCommandHandler {
             }
 
             if (!moneyBoosts.isEmpty()) {
-                sender.sendMessage(languageManager.getMessage("commands.admin.boost-info-money-header"));
+                MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.boost-info-money-header"));
                 for (String boostId : moneyBoosts) {
                     var boost = plugin.getMoneyBonusManager().getBoostById(boostId);
                     if (boost != null && boost.isActive()) {
@@ -492,7 +491,7 @@ public class BoostCommandHandler extends JobCommandHandler {
                 }
             }
 
-            sender.sendMessage(languageManager.getMessage("commands.admin.boost-info-remove-tip"));
+            MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.boost-info-remove-tip"));
         }
     }
     

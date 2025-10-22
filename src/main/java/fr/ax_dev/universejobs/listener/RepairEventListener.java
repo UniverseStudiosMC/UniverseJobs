@@ -48,27 +48,29 @@ public class RepairEventListener implements Listener {
             return;
         }
 
-        if (firstItem.getType().getMaxDurability() > 0) {
+        if (firstItem.getType().getMaxDurability() > 0 && secondItem != null) {
             boolean isRepair = false;
+            ItemStack result = event.getResult();
 
-            if (secondItem != null && firstItem.getType() == secondItem.getType()) {
-                isRepair = true;
-            }
-
-            if (secondItem != null && secondItem.getType().name().contains("_INGOT")) {
-                isRepair = true;
-            }
-
-            if (secondItem != null && secondItem.getType().name().contains("DIAMOND")) {
-                isRepair = true;
-            }
-
-            if (secondItem != null && secondItem.getType().name().contains("NETHERITE")) {
-                isRepair = true;
+            if (result != null && result.getType() == firstItem.getType()) {
+                if (firstItem.getType() == secondItem.getType()) {
+                    isRepair = true;
+                } else {
+                    String secondItemName = secondItem.getType().name();
+                    if (secondItemName.endsWith("_INGOT") ||
+                        secondItemName.equals("DIAMOND") ||
+                        secondItemName.equals("NETHERITE_INGOT") ||
+                        secondItemName.equals("NETHERITE_SCRAP")) {
+                        isRepair = true;
+                    }
+                }
             }
 
             if (isRepair) {
-                pendingRepairs.put(player.getUniqueId(), event.getResult().clone());
+                pendingRepairs.put(player.getUniqueId(), result.clone());
+                if (plugin.getConfigManager().isDebugEnabled()) {
+                    plugin.getLogger().info("Pending repair for " + player.getName() + ": " + result.getType());
+                }
             }
         }
     }

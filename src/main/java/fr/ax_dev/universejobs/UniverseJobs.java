@@ -325,23 +325,30 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
 
             shutdownManagersExceptJobManager();
 
+            getLogger().info("Saving all player data...");
             savePlayerData();
 
+            getLogger().info("Waiting for save operations to complete...");
             try {
-                Thread.sleep(1000);
+                Thread.sleep(3000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
 
+            getLogger().info("Shutting down JobManager...");
             shutdownJobManager();
 
+            getLogger().info("Waiting for final cleanup...");
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
 
+            getLogger().info("Shutting down storage system...");
             shutdownStorageSystem();
+
+            getLogger().info("UniverseJobs shutdown complete!");
 
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Critical error during plugin shutdown", e);

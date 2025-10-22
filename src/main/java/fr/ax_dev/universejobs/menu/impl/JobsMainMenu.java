@@ -276,6 +276,9 @@ public class JobsMainMenu extends BaseMenu {
 
         if (job.hasIconTexture()) {
             jobConfigMap.put("skull-texture", job.getIconTexture());
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("Adding skull texture for job " + job.getId() + ": " + job.getIconTexture().substring(0, Math.min(50, job.getIconTexture().length())) + "...");
+            }
         }
 
         jobConfigMap.put("action", "open_job");
