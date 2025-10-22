@@ -834,12 +834,12 @@ public class JobManager {
                 int levelsToLose = Math.max(1, (int) Math.floor(currentLevel * penaltyPercentage));
                 int newLevel = Math.max(1, currentLevel - levelsToLose);
                 data.setLevel(jobId, newLevel);
-                double requiredXpForNewLevel = getXpRequiredForLevel(jobId, newLevel);
-                data.setXp(jobId, requiredXpForNewLevel);
+                data.setXp(jobId, 0.0);
 
                 UUID playerUuid = data.getPlayerUuid();
                 if (playerUuid != null) {
-                    plugin.getPlayerCache().updatePlayerXp(playerUuid, jobId, requiredXpForNewLevel, newLevel);
+                    plugin.getPlayerCache().updatePlayerXp(playerUuid, jobId, 0.0, newLevel);
+                    plugin.getActionProcessor().clearPlayerCache(playerUuid);
                 }
             }
         } else if ("xp".equalsIgnoreCase(penaltyType)) {
@@ -853,6 +853,7 @@ public class JobManager {
                 UUID playerUuid = data.getPlayerUuid();
                 if (playerUuid != null) {
                     plugin.getPlayerCache().updatePlayerXp(playerUuid, jobId, newXp, newLevel);
+                    plugin.getActionProcessor().clearPlayerCache(playerUuid);
                 }
             }
         }

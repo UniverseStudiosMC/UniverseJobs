@@ -52,16 +52,18 @@ public class EnchantEventListener implements Listener {
             String enchantmentKey = getEnchantmentKey(enchantment);
             String enchantmentName = enchantment.getKey().getKey().toUpperCase();
 
+            if (plugin.getConfigManager().isDebugEnabled()) {
+                plugin.getLogger().info("Processing enchantment: " + enchantmentName + " (key: " + enchantmentKey + ") level " + level);
+                plugin.getLogger().info("Item type: " + event.getItem().getType().name());
+                plugin.getLogger().info("Target will be: " + enchantmentName);
+            }
+
             ConditionContext context = new ConditionContext()
                     .set("target", enchantmentName)
                     .set("enchantment", enchantmentKey)
                     .set("enchantment_level", String.valueOf(level))
                     .set("item_type", event.getItem().getType().name())
                     .set("experience_cost", String.valueOf(event.getExpLevelCost()));
-
-            if (plugin.getConfigManager().isDebugEnabled()) {
-                plugin.getLogger().info("Processing enchantment: " + enchantmentName + " (key: " + enchantmentKey + ") level " + level);
-            }
 
             actionProcessor.processAction(player, ActionType.ENCHANT, event, context);
             processedEnchantments++;
