@@ -466,21 +466,19 @@ public class MenuUtils {
             String decodedTexture = new String(Base64.getDecoder().decode(textureValue));
             if (decodedTexture.contains("\"url\":\"")) {
                 String textureUrl = decodedTexture.split("\"url\":\"")[1].split("\"")[0];
-                
-                PlayerProfile profile = Bukkit.createPlayerProfile(UUID.randomUUID(), "");
+
+                UUID textureUuid = UUID.nameUUIDFromBytes(textureUrl.getBytes());
+                PlayerProfile profile = Bukkit.createPlayerProfile(textureUuid);
                 profile.getTextures().setSkin(new URL(textureUrl));
                 skullMeta.setOwnerProfile(profile);
             }
         } catch (Exception e) {
-            // Fallback: set texture directly without decoding
             try {
-                PlayerProfile profile = Bukkit.createPlayerProfile(UUID.randomUUID(), "");
-                // Create URL from texture value - assuming it's already a valid texture URL
+                PlayerProfile profile = Bukkit.createPlayerProfile(UUID.nameUUIDFromBytes(textureValue.getBytes()));
                 String textureUrl = "http://textures.minecraft.net/texture/" + textureValue;
                 profile.getTextures().setSkin(new URL(textureUrl));
                 skullMeta.setOwnerProfile(profile);
             } catch (Exception ex) {
-                // If all fails, log the error
                 throw new RuntimeException("Failed to set skull texture", ex);
             }
         }
