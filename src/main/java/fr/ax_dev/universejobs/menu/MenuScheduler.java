@@ -86,7 +86,7 @@ public class MenuScheduler {
         if (Bukkit.isPrimaryThread()) {
             task.run();
         } else {
-            Bukkit.getScheduler().runTask(plugin, task);
+            plugin.getServer().getGlobalRegionScheduler().run(plugin, scheduledTask -> task.run());
         }
     }
 
@@ -99,7 +99,7 @@ public class MenuScheduler {
         }
 
         CompletableFuture<T> future = new CompletableFuture<>();
-        Bukkit.getScheduler().runTask(plugin, () -> {
+        plugin.getServer().getGlobalRegionScheduler().run(plugin, scheduledTask -> {
             try {
                 future.complete(supplier.get());
             } catch (Exception e) {

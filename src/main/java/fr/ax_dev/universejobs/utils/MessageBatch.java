@@ -3,7 +3,6 @@ package fr.ax_dev.universejobs.utils;
 import fr.ax_dev.universejobs.UniverseJobs;
 import fr.ax_dev.universejobs.compatibility.FoliaCompatibilityManager;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Map;
 import java.util.Queue;
@@ -24,8 +23,7 @@ public class MessageBatch {
     // Queue of pending messages per player
     private final Map<UUID, Queue<PendingMessage>> pendingMessages = new ConcurrentHashMap<>();
     
-    // Single task that processes all batched messages
-    private BukkitRunnable batchProcessor;
+    private io.papermc.paper.threadedregions.scheduler.ScheduledTask batchProcessor;
     private boolean isRunning = false;
     
     public MessageBatch(UniverseJobs plugin) {
@@ -55,28 +53,21 @@ public class MessageBatch {
      */
     private void startBatchProcessor() {
         if (isRunning) return;
-        
+
         isRunning = true;
-        batchProcessor = new BukkitRunnable() {
-            @Override
-            public void run() {
-                if (pendingMessages.isEmpty()) {
-                    // Stop if no messages pending for 10 seconds
-                    if (System.currentTimeMillis() - lastProcessTime > 10000) {
-                        isRunning = false;
-                        cancel();
-                        return;
-                    }
+        batchProcessor = plugin.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, scheduledTask -> {
+            if (pendingMessages.isEmpty()) {
+                if (System.currentTimeMillis() - lastProcessTime > 10000) {
+                    isRunning = false;
+                    scheduledTask.cancel();
                     return;
                 }
-                
-                processBatch();
-                lastProcessTime = System.currentTimeMillis();
+                return;
             }
-        };
-        
-        // Run every 2 ticks (100ms) instead of immediately for each message
-        batchProcessor.runTaskTimer(plugin, 0, 2);
+
+            processBatch();
+            lastProcessTime = System.currentTimeMillis();
+        }, 2L, 2L);
     }
     
     private long lastProcessTime = System.currentTimeMillis();
