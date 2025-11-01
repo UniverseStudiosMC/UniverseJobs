@@ -4,7 +4,6 @@ import fr.ax_dev.universejobs.UniverseJobs;
 import fr.ax_dev.universejobs.cache.ConfigurationCache;
 
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -13,6 +12,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Manages action limits for players to prevent XP/money farming.
@@ -260,13 +260,9 @@ public class ActionLimitManager {
      * Start the automatic restore task based on configured schedule.
      */
     private void startAutoRestoreTask() {
-        // Check for scheduled restore every minute
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                checkScheduledRestore();
-            }
-        }.runTaskTimer(plugin, 20 * 60, 20 * 60); // Every minute
+        plugin.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, task -> {
+            checkScheduledRestore();
+        }, 60, 60, TimeUnit.SECONDS);
     }
 
     /**
