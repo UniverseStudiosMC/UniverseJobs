@@ -12,7 +12,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Manages action limits for players to prevent XP/money farming.
@@ -262,7 +261,7 @@ public class ActionLimitManager {
     private void startAutoRestoreTask() {
         plugin.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, task -> {
             checkScheduledRestore();
-        }, 60, 60, TimeUnit.SECONDS);
+        }, 1200L, 1200L);
     }
 
     /**
