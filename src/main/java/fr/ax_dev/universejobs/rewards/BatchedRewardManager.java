@@ -104,8 +104,7 @@ public class BatchedRewardManager {
      */
     public void batchCommand(String command, int delay) {
         if (othersBatchTicks <= 0) {
-            // Batching disabled, process immediately
-            Bukkit.getScheduler().runTaskLater(plugin, () -> 
+            plugin.getServer().getGlobalRegionScheduler().runDelayed(plugin, scheduledTask ->
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command), delay);
             return;
         }
@@ -198,22 +197,19 @@ public class BatchedRewardManager {
         Map<String, BatchedReward> toProcess = new ConcurrentHashMap<>(xpBatch);
         xpBatch.clear();
         
-        // Process on main thread for thread safety
-        Bukkit.getScheduler().runTask(plugin, () -> {
+        plugin.getServer().getGlobalRegionScheduler().run(plugin, scheduledTask -> {
             for (BatchedReward reward : toProcess.values()) {
                 PlayerJobData data = jobManager.getPlayerData(reward.playerUuid);
                 if (data != null) {
                     data.addXp(reward.jobId, reward.amount);
-                    
-                    // Log batch processing if debug
+
                     if (plugin.getConfigManager().isDebugEnabled()) {
-                        plugin.getLogger().info("[BATCH] Processed " + reward.amount + " XP for " + 
+                        plugin.getLogger().info("[BATCH] Processed " + reward.amount + " XP for " +
                             reward.playerName + " in job " + reward.jobId);
                     }
                 }
             }
-            
-            // Save all at once
+
             toProcess.values().stream()
                 .map(r -> r.playerUuid)
                 .distinct()
@@ -230,8 +226,7 @@ public class BatchedRewardManager {
         Map<UUID, Double> toProcess = new ConcurrentHashMap<>(moneyBatch);
         moneyBatch.clear();
         
-        // Process on main thread
-        Bukkit.getScheduler().runTask(plugin, () -> {
+        plugin.getServer().getGlobalRegionScheduler().run(plugin, scheduledTask -> {
             if (economy != null) {
                 for (Map.Entry<UUID, Double> entry : toProcess.entrySet()) {
                     Player player = Bukkit.getPlayer(entry.getKey());
@@ -242,10 +237,9 @@ public class BatchedRewardManager {
                         } else if (amount < 0) {
                             economy.withdrawPlayer(player, Math.abs(amount));
                         }
-                        
-                        // Log batch processing if debug
+
                         if (plugin.getConfigManager().isDebugEnabled()) {
-                            plugin.getLogger().info("[BATCH] Processed $" + entry.getValue() + 
+                            plugin.getLogger().info("[BATCH] Processed $" + entry.getValue() +
                                 " for " + player.getName());
                         }
                     }
@@ -263,12 +257,12 @@ public class BatchedRewardManager {
         Map<String, BatchedCommand> toProcess = new ConcurrentHashMap<>(commandBatch);
         commandBatch.clear();
         
-        // Process commands
         for (BatchedCommand cmd : toProcess.values()) {
             for (int i = 0; i < cmd.count; i++) {
-                Bukkit.getScheduler().runTaskLater(plugin, () -> 
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.command), 
-                    cmd.delay + (i * 2)); // Slight delay between multiple same commands
+                long delayTicks = cmd.delay + (i * 2L);
+                plugin.getServer().getGlobalRegionScheduler().runDelayed(plugin, scheduledTask ->
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.command),
+                    delayTicks);
             }
         }
     }

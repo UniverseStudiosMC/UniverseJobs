@@ -731,9 +731,8 @@ public class JobActionListener implements Listener {
     private void schedulePostDetection(Player player, org.bukkit.inventory.ItemStack compareItem, org.bukkit.inventory.ItemStack resultStack) {
         final org.bukkit.inventory.ItemStack[] preInv = cloneInventoryContents(player.getInventory().getContents());
         
-        // Schedule comparison for next tick
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> 
-            processPostDetectionComparison(player, compareItem, resultStack, preInv), 1L);
+        plugin.getFoliaManager().runAtEntity(player, () ->
+            processPostDetectionComparison(player, compareItem, resultStack, preInv));
     }
     
     /**

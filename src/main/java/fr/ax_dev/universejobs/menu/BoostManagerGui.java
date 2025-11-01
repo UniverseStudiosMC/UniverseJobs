@@ -13,7 +13,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitTask;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 
@@ -24,7 +24,7 @@ public class BoostManagerGui implements InventoryHolder {
     
     private final UniverseJobs plugin;
     private final MiniMessage miniMessage;
-    private final Map<UUID, BukkitTask> autoUpdateTasks;
+    private final Map<UUID, ScheduledTask> autoUpdateTasks;
     private final BoostMenuConfig config;
     
     public BoostManagerGui(UniverseJobs plugin) {
@@ -308,20 +308,20 @@ public class BoostManagerGui implements InventoryHolder {
         
         long interval = config.getAutoRefreshConfig().interval;
         
-        // Créer une nouvelle tâche d'actualisation
-        BukkitTask task = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+        long intervalTicks = interval / 50L;
+        ScheduledTask task = plugin.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, scheduledTask -> {
             if (player.isOnline() && player.getOpenInventory().getTopInventory().equals(gui)) {
                 updateGuiContent(gui);
             } else {
                 stopAutoUpdate(player);
             }
-        }, interval, interval);
-        
+        }, intervalTicks, intervalTicks);
+
         autoUpdateTasks.put(player.getUniqueId(), task);
     }
     
     private void stopAutoUpdate(Player player) {
-        BukkitTask task = autoUpdateTasks.remove(player.getUniqueId());
+        ScheduledTask task = autoUpdateTasks.remove(player.getUniqueId());
         if (task != null) {
             task.cancel();
         }
