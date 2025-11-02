@@ -245,7 +245,24 @@ commands:
 
     # Give custom
     givecustom-success: "&aGave &e{player} &acustom rewards for &e{job}&a: &b{xp} XP &aand &6${money}"
-    
+
+    # XP Commands
+    xp-given: "&aGave &e{amount} XP &ato &e{player} &ain job &e{job}"
+    xp-received: "&aYou received &e{amount} XP &ain job &e{job}"
+    xp-set: "&aSet &e{player}'s &aXP to &e{amount} &ain job &e{job}"
+    xp-set-notify: "&aYour XP in job &e{job} &awas set to &e{amount}"
+    xp-taken: "&aRemoved &e{amount} XP &afrom &e{player} &ain job &e{job}"
+    xp-lost: "&cYou lost &e{amount} XP &cin job &e{job}"
+    xp-error: "&cError while modifying XP: {error}"
+
+    # Level Commands
+    level-given: "&aGave &e{amount} level(s) &ato &e{player} &ain job &e{job} &a(New level: &e{level}&a)"
+    level-received: "&aYou received &e{amount} level(s) &ain job &e{job}"
+    level-set: "&aSet &e{player}'s &alevel to &e{level} &ain job &e{job}"
+    level-taken: "&aRemoved &e{amount} level(s) &afrom &e{player} &ain job &e{job} &a(New level: &e{level}&a)"
+    level-lost: "&cYou lost &e{amount} level(s) &cin job &e{job}"
+    level-error: "&cError while modifying level: {error}"
+
     # Reload
     reload-start: "&6Reloading UniverseJobs..."
     reload-success: "&aUniverseJobs reloaded successfully!"
