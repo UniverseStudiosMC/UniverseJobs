@@ -829,17 +829,24 @@ public class JobManager {
             return;
         }
 
+        UUID playerUuid = data.getPlayerUuid();
+
         if ("level".equalsIgnoreCase(penaltyType)) {
             int currentLevel = data.getLevel(jobId);
             if (currentLevel > 1) {
                 int levelsToLose = Math.max(1, (int) Math.floor(currentLevel * penaltyPercentage));
                 int newLevel = Math.max(1, currentLevel - levelsToLose);
-                data.setLevel(jobId, newLevel);
-                data.setXp(jobId, 0.0);
 
-                UUID playerUuid = data.getPlayerUuid();
+                Job job = getJob(jobId);
+                double newXp = (job != null && job.getXpCurve() != null)
+                    ? job.getXpCurve().getXpForLevel(newLevel)
+                    : 0.0;
+
+                data.setLevel(jobId, newLevel);
+                data.setXp(jobId, newXp);
+
                 if (playerUuid != null) {
-                    plugin.getPlayerCache().updatePlayerXp(playerUuid, jobId, 0.0, newLevel);
+                    plugin.getPlayerCache().updatePlayerXp(playerUuid, jobId, newXp, newLevel);
                     plugin.getActionProcessor().clearPlayerCache(playerUuid);
                 }
             }
@@ -850,13 +857,22 @@ public class JobManager {
                 double newXp = Math.max(0, currentXp - xpToLose);
                 data.setXp(jobId, newXp);
 
-                int newLevel = data.getLevel(jobId);
-                UUID playerUuid = data.getPlayerUuid();
+                Job job = getJob(jobId);
+                int newLevel = (job != null && job.getXpCurve() != null)
+                    ? job.getXpCurve().getLevelForXp(newXp, job.getMaxLevel())
+                    : data.getLevel(jobId);
+
+                data.setLevel(jobId, newLevel);
+
                 if (playerUuid != null) {
                     plugin.getPlayerCache().updatePlayerXp(playerUuid, jobId, newXp, newLevel);
                     plugin.getActionProcessor().clearPlayerCache(playerUuid);
                 }
             }
+        }
+
+        if (playerUuid != null) {
+            savePlayerData(playerUuid);
         }
     }
 

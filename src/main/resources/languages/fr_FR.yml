@@ -247,7 +247,24 @@ commands:
     
     # Give custom
     givecustom-success: "&aDonné à &e{player} &ades récompenses personnalisées pour &e{job}&a : &b{xp} XP &aet &6{money}€"
-    
+
+    # Commandes XP
+    xp-given: "&aDonné &e{amount} XP &aà &e{player} &adans le métier &e{job}"
+    xp-received: "&aVous avez reçu &e{amount} XP &adans le métier &e{job}"
+    xp-set: "&aDéfini l'XP de &e{player} &aà &e{amount} &adans le métier &e{job}"
+    xp-set-notify: "&aVotre XP dans le métier &e{job} &aa été défini à &e{amount}"
+    xp-taken: "&aRetiré &e{amount} XP &aà &e{player} &adans le métier &e{job}"
+    xp-lost: "&cVous avez perdu &e{amount} XP &cdans le métier &e{job}"
+    xp-error: "&cErreur lors de la modification de l'XP : {error}"
+
+    # Commandes Level
+    level-given: "&aDonné &e{amount} niveau(x) &aà &e{player} &adans le métier &e{job} &a(Nouveau niveau : &e{level}&a)"
+    level-received: "&aVous avez reçu &e{amount} niveau(x) &adans le métier &e{job}"
+    level-set: "&aDéfini le niveau de &e{player} &aà &e{level} &adans le métier &e{job}"
+    level-taken: "&aRetiré &e{amount} niveau(x) &aà &e{player} &adans le métier &e{job} &a(Nouveau niveau : &e{level}&a)"
+    level-lost: "&cVous avez perdu &e{amount} niveau(x) &cdans le métier &e{job}"
+    level-error: "&cErreur lors de la modification du niveau : {error}"
+
     # Reload
     reload-start: "&6Rechargement d'UniverseJobs..."
     reload-success: "&aUniverseJobs rechargé avec succès !"

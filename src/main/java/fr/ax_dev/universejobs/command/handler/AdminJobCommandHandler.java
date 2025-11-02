@@ -707,58 +707,57 @@ public class AdminJobCommandHandler extends JobCommandHandler {
             sendMessage(sender, "no-permission");
             return true;
         }
-        
+
         OfflinePlayer target = Bukkit.getOfflinePlayer(playerName);
         if (target == null) {
             sendMessage(sender, "player-not-found", "player", playerName);
             return true;
         }
-        
+
         Job job = jobManager.getJob(jobId);
         if (job == null) {
             sendMessage(sender, "job-not-found", "job", jobId);
             return true;
         }
-        
+
         plugin.getFoliaManager().runAsync(() -> {
             try {
                 PlayerJobData playerData = jobManager.getPlayerData(target.getUniqueId());
-                
+
                 if (!playerData.hasJob(jobId)) {
-                    playerData.joinJob(jobId);
-                    if (target.isOnline()) {
-                        plugin.getPlayerCache().addPlayerJob(target.getUniqueId(), jobId);
-                    }
+                    plugin.getFoliaManager().runNextTick(() ->
+                        sendMessage(sender, "player-no-job", "player", target.getName(), "job", job.getName()));
+                    return;
                 }
-                
+
                 int currentLevel = playerData.getLevel(jobId);
                 int newLevel = Math.min(job.getMaxLevel(), currentLevel + levels);
                 double requiredXp = jobManager.getXpRequiredForLevel(jobId, newLevel);
-                
+
                 playerData.setLevel(jobId, newLevel);
                 playerData.setXp(jobId, requiredXp);
-                
+
                 jobManager.savePlayerData(target.getUniqueId());
-                
+
                 if (target.isOnline()) {
                     plugin.getPlayerCache().updatePlayerXp(target.getUniqueId(), jobId, requiredXp, newLevel);
                 }
-                
+
                 plugin.getFoliaManager().runNextTick(() -> {
                     sendMessage(sender, "level-given", "amount", String.valueOf(levels), "player", target.getName(), "job", job.getName(), "level", String.valueOf(newLevel));
-                    
+
                     if (target.isOnline()) {
-                        MessageUtils.sendMessage(target.getPlayer(), 
+                        MessageUtils.sendMessage(target.getPlayer(),
                             languageManager.getMessage("commands.admin.level-received", "amount", String.valueOf(levels), "job", job.getName()));
                     }
                 });
             } catch (Exception e) {
                 plugin.getLogger().warning("Erreur lors de l'ajout de niveau: " + e.getMessage());
-                plugin.getFoliaManager().runNextTick(() -> 
+                plugin.getFoliaManager().runNextTick(() ->
                     sendMessage(sender, "level-error", "error", e.getMessage()));
             }
         });
-        
+
         return true;
     }
     
@@ -836,31 +835,54 @@ public class AdminJobCommandHandler extends JobCommandHandler {
             sendMessage(sender, "player-not-found", "player", playerName);
             return true;
         }
-        
+
+        Job job = jobManager.getJob(jobId);
+        if (job == null) {
+            sendMessage(sender, "job-not-found", "job", jobId);
+            return true;
+        }
+
         plugin.getFoliaManager().runAsync(() -> {
             try {
                 PlayerJobData playerData = jobManager.getPlayerData(target.getUniqueId());
                 if (!playerData.hasJob(jobId)) {
-                    sendMessage(sender, "player-no-job", "player", playerName, "job", jobId);
+                    plugin.getFoliaManager().runNextTick(() ->
+                        sendMessage(sender, "player-no-job", "player", playerName, "job", job.getName()));
                     return;
                 }
-                
+
                 double currentXp = playerData.getXp(jobId);
-                playerData.setXp(jobId, currentXp + amount);
-                jobManager.savePlayerData(target.getUniqueId());
-                
-                sendMessage(sender, "xp-given", "amount", String.valueOf(amount), "player", playerName, "job", jobId);
-                
-                if (target.isOnline()) {
-                    Player onlinePlayer = target.getPlayer();
-                    MessageUtils.sendMessage(onlinePlayer, 
-                        languageManager.getMessage("commands.admin.xp-received", "amount", String.valueOf(amount), "job", jobId));
+                double newXp = currentXp + amount;
+                playerData.setXp(jobId, newXp);
+
+                int newLevel = jobManager.getLevel(target.getPlayer() != null ? target.getPlayer() : null, jobId);
+                if (target.getPlayer() == null) {
+                    newLevel = (job.getXpCurve() != null)
+                        ? job.getXpCurve().getLevelForXp(newXp, job.getMaxLevel())
+                        : playerData.getLevel(jobId);
                 }
+
+                jobManager.savePlayerData(target.getUniqueId());
+
+                if (target.isOnline()) {
+                    plugin.getPlayerCache().updatePlayerXp(target.getUniqueId(), jobId, newXp, newLevel);
+                }
+
+                plugin.getFoliaManager().runNextTick(() -> {
+                    sendMessage(sender, "xp-given", "amount", String.valueOf(amount), "player", playerName, "job", job.getName());
+
+                    if (target.isOnline()) {
+                        Player onlinePlayer = target.getPlayer();
+                        MessageUtils.sendMessage(onlinePlayer,
+                            languageManager.getMessage("commands.admin.xp-received", "amount", String.valueOf(amount), "job", job.getName()));
+                    }
+                });
             } catch (Exception e) {
-                sendMessage(sender, "xp-error", "error", e.getMessage());
+                plugin.getFoliaManager().runNextTick(() ->
+                    sendMessage(sender, "xp-error", "error", e.getMessage()));
             }
         });
-        
+
         return true;
     }
     
@@ -870,30 +892,51 @@ public class AdminJobCommandHandler extends JobCommandHandler {
             sendMessage(sender, "player-not-found", "player", playerName);
             return true;
         }
-        
+
+        Job job = jobManager.getJob(jobId);
+        if (job == null) {
+            sendMessage(sender, "job-not-found", "job", jobId);
+            return true;
+        }
+
         plugin.getFoliaManager().runAsync(() -> {
             try {
                 PlayerJobData playerData = jobManager.getPlayerData(target.getUniqueId());
                 if (!playerData.hasJob(jobId)) {
-                    sendMessage(sender, "player-no-job", "player", playerName, "job", jobId);
+                    plugin.getFoliaManager().runNextTick(() ->
+                        sendMessage(sender, "player-no-job", "player", playerName, "job", job.getName()));
                     return;
                 }
-                
+
                 playerData.setXp(jobId, amount);
+
+                int newLevel = (job.getXpCurve() != null)
+                    ? job.getXpCurve().getLevelForXp(amount, job.getMaxLevel())
+                    : playerData.getLevel(jobId);
+
+                playerData.setLevel(jobId, newLevel);
+
                 jobManager.savePlayerData(target.getUniqueId());
-                
-                sendMessage(sender, "xp-set", "amount", String.valueOf(amount), "player", playerName, "job", jobId);
-                
+
                 if (target.isOnline()) {
-                    Player onlinePlayer = target.getPlayer();
-                    MessageUtils.sendMessage(onlinePlayer, 
-                        languageManager.getMessage("commands.admin.xp-set-notify", "amount", String.valueOf(amount), "job", jobId));
+                    plugin.getPlayerCache().updatePlayerXp(target.getUniqueId(), jobId, amount, newLevel);
                 }
+
+                plugin.getFoliaManager().runNextTick(() -> {
+                    sendMessage(sender, "xp-set", "amount", String.valueOf(amount), "player", playerName, "job", job.getName());
+
+                    if (target.isOnline()) {
+                        Player onlinePlayer = target.getPlayer();
+                        MessageUtils.sendMessage(onlinePlayer,
+                            languageManager.getMessage("commands.admin.xp-set-notify", "amount", String.valueOf(amount), "job", job.getName()));
+                    }
+                });
             } catch (Exception e) {
-                sendMessage(sender, "xp-error", "error", e.getMessage());
+                plugin.getFoliaManager().runNextTick(() ->
+                    sendMessage(sender, "xp-error", "error", e.getMessage()));
             }
         });
-        
+
         return true;
     }
     
