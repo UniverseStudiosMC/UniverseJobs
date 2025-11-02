@@ -71,7 +71,10 @@ public abstract class BaseBonusManager<T extends BaseBonus> implements BonusMana
         }
         
         if (count > 0) {
-            String message = "Global " + getBonusTypeName() + " bonus started: " + multiplier + "x for " + formatDuration(duration);
+            String message = plugin.getLanguageManager().getMessage("boost-notification.global-started",
+                "type", getBonusTypeName(),
+                "multiplier", String.valueOf(multiplier),
+                "duration", formatDuration(duration));
             for (Player player : Bukkit.getOnlinePlayers()) {
                 MessageUtils.sendMessage(player, message);
             }
@@ -106,10 +109,13 @@ public abstract class BaseBonusManager<T extends BaseBonus> implements BonusMana
         
         Player player = Bukkit.getPlayer(bonus.getPlayerId());
         if (player != null) {
-            String message = getBonusTypeName() + " boost [" + bonus.getBoostId() + "] received: " + bonus.getMultiplier() + "x for " + bonus.getRemainingTimeFormatted();
-            if (bonus.getJobId() != null) {
-                message += " (Job: " + bonus.getJobId() + ")";
-            }
+            String messageKey = bonus.getJobId() != null ? "boost-notification.received-with-job" : "boost-notification.received";
+            String message = plugin.getLanguageManager().getMessage(messageKey,
+                "type", getBonusTypeName(),
+                "boost_id", bonus.getBoostId(),
+                "multiplier", String.valueOf(bonus.getMultiplier()),
+                "duration", bonus.getRemainingTimeFormatted(),
+                "job", bonus.getJobId() != null ? bonus.getJobId() : "");
             MessageUtils.sendMessage(player, message);
         }
     }

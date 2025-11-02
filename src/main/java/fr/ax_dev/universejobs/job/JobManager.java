@@ -69,8 +69,9 @@ public class JobManager {
      * Load all jobs from the jobs folder.
      */
     public void loadJobs() {
+        isShutdown.set(false);
         jobs.clear();
-        
+
         if (!jobsFolder.exists()) {
             plugin.getLogger().warning("Jobs folder does not exist, creating it...");
             jobsFolder.mkdirs();

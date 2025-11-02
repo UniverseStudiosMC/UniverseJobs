@@ -307,12 +307,11 @@ public class BoostCommandHandler extends JobCommandHandler {
     }
     
     private void handleGiveBoost(CommandSender sender, String[] args) {
-        // /jobs admin boost give <xp|money> <player/*> <job/*> <action_type> [id_in_action] <multiplier> <duration>
         if (args.length < 9) {
             MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.boost-usage-general"));
             return;
         }
-        
+
         String boostType = args[3].toLowerCase();
         if (!boostType.equals(TYPE_XP) && !boostType.equals(TYPE_MONEY)) {
             MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.boost-invalid-type"));
@@ -378,13 +377,13 @@ public class BoostCommandHandler extends JobCommandHandler {
                 return;
             }
         }
-        
+
         String reason = languageManager.getMessage("commands.admin.boost-reason-admin");
         String senderName = sender instanceof Player ? sender.getName() :
                 languageManager.getMessage("commands.admin.boost-sender-console");
-        
+
         applyBoost(boostType, target, multiplier, duration, jobId, actionType, actionId, reason, senderName);
-        
+
         String targetDisplay = target.equals("*") ? languageManager.getMessage("commands.admin.boost-info-all-players") : target;
         String jobDisplay = jobId.equals("*") ? languageManager.getMessage("commands.admin.boost-info-all-jobs") : jobId;
         String actionDisplay = actionType.equals("*") ? languageManager.getMessage("commands.admin.boost-info-all-actions") : actionType;
@@ -426,7 +425,6 @@ public class BoostCommandHandler extends JobCommandHandler {
     
     private void handleInfoBoost(CommandSender sender, String[] args) {
         if (sender instanceof Player player) {
-            // Ouvrir le GUI pour les joueurs
             plugin.getBoostManagerGui().openGui(player);
         } else {
             MessageUtils.sendMessage(sender, languageManager.getMessage("commands.admin.boost-info-header"));

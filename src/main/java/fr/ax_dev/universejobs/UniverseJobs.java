@@ -170,12 +170,7 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         }
         
         JobCommand jobCommand = new JobCommand(this, jobManager);
-
-        org.bukkit.command.PluginCommand jobsCommand = getCommand("jobs");
-        if (jobsCommand != null) {
-            jobsCommand.setExecutor(jobCommand);
-            jobsCommand.setTabCompleter(jobCommand);
-        }
+        registerDynamicCommand(jobCommand);
         
         // Register event listeners avec cache ultra-rapide
         getServer().getPluginManager().registerEvents(
@@ -778,11 +773,39 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         return levelUpActionManager;
     }
     
-    /**
-     * Get the plugin instance.
-     * 
-     * @return The plugin instance
-     */
+    private void registerDynamicCommand(JobCommand jobCommand) {
+        String commandName = getConfig().getString("main-command", "jobs");
+
+        try {
+            java.lang.reflect.Field commandMapField = org.bukkit.Bukkit.getServer().getClass().getDeclaredField("commandMap");
+            commandMapField.setAccessible(true);
+            org.bukkit.command.CommandMap commandMap = (org.bukkit.command.CommandMap) commandMapField.get(org.bukkit.Bukkit.getServer());
+
+            org.bukkit.command.defaults.BukkitCommand command = new org.bukkit.command.defaults.BukkitCommand(commandName) {
+                @Override
+                public boolean execute(org.bukkit.command.CommandSender sender, String label, String[] args) {
+                    return jobCommand.onCommand(sender, this, label, args);
+                }
+
+                @Override
+                public java.util.List<String> tabComplete(org.bukkit.command.CommandSender sender, String alias, String[] args) {
+                    return jobCommand.onTabComplete(sender, this, alias, args);
+                }
+            };
+
+            command.setDescription("Main jobs command with rewards, XP bonus management, and action limits");
+            command.setUsage("/" + commandName + " <join|leave|info|list|rewards|actionlimit> [args...]");
+            command.setPermission("universejobs.use");
+
+            commandMap.register("universejobs", command);
+
+            getLogger().info("Registered command: /" + commandName);
+        } catch (Exception e) {
+            getLogger().severe("Failed to register dynamic command: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     public static synchronized UniverseJobs getInstance() {
         return instance;
     }

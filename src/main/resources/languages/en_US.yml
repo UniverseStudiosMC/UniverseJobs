@@ -279,3 +279,8 @@ boost-gui:
   removed: "&aRemoved {type} boost: &e{boost_id}"
   no-permission: "&cYou don't have permission to do that!"
   refresh-clicked: "&bRefreshing boost list..."
+
+boost-notification:
+  received: "&a{type} boost [{boost_id}] received: &e{multiplier}x &afor &e{duration}"
+  received-with-job: "&a{type} boost [{boost_id}] received: &e{multiplier}x &afor &e{duration} &7(Job: &e{job}&7)"
+  global-started: "&aGlobal {type} bonus started: &e{multiplier}x &afor &e{duration}"

@@ -53,9 +53,14 @@ public class OptimizedEventHandler implements Listener {
         } else if (holder instanceof BoostManagerGui boostGui) {
             event.setCancelled(true);
 
+            int slot = event.getSlot();
+            if (slot < 0 || slot >= event.getInventory().getSize()) {
+                return;
+            }
+
             boolean isRightClick = event.getClick() == ClickType.RIGHT;
             try {
-                boostGui.handleClick(player, event.getSlot(), isRightClick);
+                boostGui.handleClick(player, slot, isRightClick);
             } catch (Exception e) {
                 menuManager.getPlugin().getLogger().severe("Error handling boost GUI click: " + e.getMessage());
             }

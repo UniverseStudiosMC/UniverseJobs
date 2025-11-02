@@ -51,6 +51,11 @@ public class UniversalPlaceholderExpansion extends PlaceholderExpansion {
             return String.valueOf(getEquippedJobsCount(player));
         }
 
+        if (params.equalsIgnoreCase("currentjobs")) {
+            if (player == null) return "No Jobs";
+            return getCurrentJobs(player);
+        }
+
         String[] args = params.split("_");
         if (args.length < 1) return null;
 
@@ -109,6 +114,31 @@ public class UniversalPlaceholderExpansion extends PlaceholderExpansion {
             return plugin.getJobManager().calculateUsageMultiplier(jobId, userCount);
         } catch (Exception e) {
             return 1.0;
+        }
+    }
+
+    private String getCurrentJobs(OfflinePlayer player) {
+        try {
+            var playerData = plugin.getDataStorage().getPlayerData(player.getUniqueId());
+            if (playerData == null || playerData.getJobs().isEmpty()) {
+                return "No Jobs";
+            }
+
+            java.util.List<String> jobNames = new java.util.ArrayList<>();
+            for (String jobId : playerData.getJobs()) {
+                var job = plugin.getJobManager().getJob(jobId);
+                if (job != null) {
+                    jobNames.add(job.getName());
+                }
+            }
+
+            if (jobNames.isEmpty()) {
+                return "No Jobs";
+            }
+
+            return String.join(", ", jobNames);
+        } catch (Exception e) {
+            return "No Jobs";
         }
     }
 }

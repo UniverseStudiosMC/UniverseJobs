@@ -38,11 +38,9 @@ public class BoostManagerGui implements InventoryHolder {
     private Inventory currentInventory;
     
     public void openGui(Player player) {
-        // Vérifier les permissions (utilise les permissions intégrées du plugin)
         if (!player.hasPermission("universejobs.admin.boost")) {
-            String message = plugin.getLanguageManager().getMessage("boost-gui.no-permission");
-            Component component = miniMessage.deserialize("<!italic>" + message);
-            player.sendMessage(component);
+            fr.ax_dev.universejobs.utils.MessageUtils.sendMessage(player,
+                plugin.getLanguageManager().getMessage("boost-gui.no-permission"));
             return;
         }
         
@@ -298,24 +296,30 @@ public class BoostManagerGui implements InventoryHolder {
     }
     
     private void startAutoUpdate(Player player, Inventory gui) {
-        // Annuler toute tâche précédente
         stopAutoUpdate(player);
-        
-        // Vérifier si l'auto-refresh est activé
+
+        if (!plugin.isEnabled()) {
+            return;
+        }
+
         if (config.getAutoRefreshConfig() == null || !config.getAutoRefreshConfig().enabled) {
             return;
         }
-        
-        long interval = config.getAutoRefreshConfig().interval;
-        
-        long intervalTicks = interval / 50L;
+
+        long intervalTicks = config.getAutoRefreshConfig().interval;
+
+        if (intervalTicks <= 0) {
+            intervalTicks = 20L;
+        }
+
+        final long finalIntervalTicks = intervalTicks;
         ScheduledTask task = plugin.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, scheduledTask -> {
-            if (player.isOnline() && player.getOpenInventory().getTopInventory().equals(gui)) {
+            if (plugin.isEnabled() && player.isOnline() && player.getOpenInventory().getTopInventory().equals(gui)) {
                 updateGuiContent(gui);
             } else {
                 stopAutoUpdate(player);
             }
-        }, intervalTicks, intervalTicks);
+        }, finalIntervalTicks, finalIntervalTicks);
 
         autoUpdateTasks.put(player.getUniqueId(), task);
     }
@@ -344,22 +348,18 @@ public class BoostManagerGui implements InventoryHolder {
             
             // Refresh button
             if (nav.refreshItem.enabled && nav.refreshItem.slots.contains(slot)) {
-                String message = plugin.getLanguageManager().getMessage("boost-gui.refresh-clicked");
-                Component component = miniMessage.deserialize("<!italic>" + message);
-                player.sendMessage(component);
+                fr.ax_dev.universejobs.utils.MessageUtils.sendMessage(player,
+                    plugin.getLanguageManager().getMessage("boost-gui.refresh-clicked"));
                 updateGuiContent(player.getOpenInventory().getTopInventory());
                 return;
             }
         }
-        
-        // Pour les boosts, seulement en clic droit
+
         if (!isRightClick) return;
-        
-        // Vérifier les permissions pour supprimer (utilise les permissions intégrées)
+
         if (!player.hasPermission("universejobs.admin.boost")) {
-            String message = plugin.getLanguageManager().getMessage("boost-gui.no-permission");
-            Component component = miniMessage.deserialize("<!italic>" + message);
-            player.sendMessage(component);
+            fr.ax_dev.universejobs.utils.MessageUtils.sendMessage(player,
+                plugin.getLanguageManager().getMessage("boost-gui.no-permission"));
             return;
         }
         
@@ -370,24 +370,19 @@ public class BoostManagerGui implements InventoryHolder {
         );
         
         if (boostId != null) {
-            // Supprimer le boost
             boolean removedXp = plugin.getBonusManager().removeBoostById(boostId);
             boolean removedMoney = plugin.getMoneyBonusManager().removeBoostById(boostId);
-            
+
             if (removedXp || removedMoney) {
                 String type = removedXp ? "XP" : "Money";
-                
-                // Son de suppression
+                updateGuiContent(player.getOpenInventory().getTopInventory());
+
                 playSound(player, config.getSoundsConfig().removeBoostSound);
-                
-                // Message de confirmation
-                String message = plugin.getLanguageManager().getMessage("boost-gui.removed")
-                    .replace("{type}", type)
-                    .replace("{boost_id}", boostId);
-                Component component = miniMessage.deserialize("<!italic>" + message);
-                player.sendMessage(component);
-                
-                // L'actualisation automatique mettra à jour le GUI
+
+                fr.ax_dev.universejobs.utils.MessageUtils.sendMessage(player,
+                    plugin.getLanguageManager().getMessage("boost-gui.removed",
+                        "type", type,
+                        "boost_id", boostId));
             }
         }
     }
