@@ -88,51 +88,55 @@ public class JoinLeaveCommandHandler extends JobCommandHandler {
      */
     private void handleJoinCommand(Player player, String[] args) {
         if (args.length < 2) {
-            player.sendMessage(languageManager.getMessage("commands.join.usage"));
+            fr.ax_dev.universejobs.utils.MessageUtils.sendMessage(player,
+                languageManager.getMessage("commands.join.usage"));
             return;
         }
-        
+
         String jobId = sanitizeInput(args[1]);
-        
-        // Validate job ID format
+
         if (!isValidJobId(jobId)) {
             return;
         }
-        
+
         Job job = jobManager.getJob(jobId);
-        
+
         if (job == null) {
-            player.sendMessage(languageManager.getMessage("commands.join.job-not-found", "job", jobId));
+            fr.ax_dev.universejobs.utils.MessageUtils.sendMessage(player,
+                languageManager.getMessage("commands.join.job-not-found", "job", jobId));
             return;
         }
-        
-        // Check if player already has the job
+
         if (jobManager.hasJob(player, jobId)) {
-            player.sendMessage(languageManager.getMessage("commands.join.already-have", "job", job.getName()));
+            fr.ax_dev.universejobs.utils.MessageUtils.sendMessage(player,
+                languageManager.getMessage("commands.join.already-have", "job", job.getName()));
             return;
         }
-        
+
         Set<String> playerJobs = jobManager.getPlayerJobs(player);
         int maxJobs = getMaxJobsForPlayer(player);
         if (playerJobs.size() >= maxJobs) {
-            fr.ax_dev.universejobs.utils.MessageUtils.sendMessage(player, languageManager.getMessage("commands.join.max-jobs-reached", "max", String.valueOf(maxJobs)));
+            fr.ax_dev.universejobs.utils.MessageUtils.sendMessage(player,
+                languageManager.getMessage("commands.join.max-jobs-reached", "max", String.valueOf(maxJobs)));
             return;
         }
-        
-        // Check permission
+
         if (!player.hasPermission(job.getPermission())) {
-            player.sendMessage(languageManager.getMessage("commands.join.no-permission", "job", job.getName()));
+            fr.ax_dev.universejobs.utils.MessageUtils.sendMessage(player,
+                languageManager.getMessage("commands.join.no-permission", "job", job.getName()));
             return;
         }
         
         // Join the job
         if (jobManager.joinJob(player, jobId)) {
-            player.sendMessage(languageManager.getMessage("commands.join.success", "job", job.getName()));
-            
+            fr.ax_dev.universejobs.utils.MessageUtils.sendMessage(player,
+                languageManager.getMessage("commands.join.success", "job", job.getName()));
+
             // Refresh any open menu to update button states
             plugin.getMenuManager().refreshPlayerMenu(player);
         } else {
-            player.sendMessage(languageManager.getMessage("commands.join.failed", "job", job.getName()));
+            fr.ax_dev.universejobs.utils.MessageUtils.sendMessage(player,
+                languageManager.getMessage("commands.join.failed", "job", job.getName()));
         }
     }
     
@@ -141,44 +145,47 @@ public class JoinLeaveCommandHandler extends JobCommandHandler {
      */
     private void handleLeaveCommand(Player player, String[] args) {
         if (args.length < 2) {
-            player.sendMessage(languageManager.getMessage("commands.leave.usage"));
+            fr.ax_dev.universejobs.utils.MessageUtils.sendMessage(player,
+                languageManager.getMessage("commands.leave.usage"));
             return;
         }
-        
+
         String jobId = sanitizeInput(args[1]);
-        
-        // Validate job ID format
+
         if (!isValidJobId(jobId)) {
             return;
         }
-        
+
         Job job = jobManager.getJob(jobId);
-        
+
         if (job == null) {
-            player.sendMessage(languageManager.getMessage("commands.leave.job-not-found", "job", jobId));
+            fr.ax_dev.universejobs.utils.MessageUtils.sendMessage(player,
+                languageManager.getMessage("commands.leave.job-not-found", "job", jobId));
             return;
         }
-        
-        // Check if player has the job
+
         if (!jobManager.hasJob(player, jobId)) {
-            player.sendMessage(languageManager.getMessage("commands.leave.dont-have", "job", job.getName()));
+            fr.ax_dev.universejobs.utils.MessageUtils.sendMessage(player,
+                languageManager.getMessage("commands.leave.dont-have", "job", job.getName()));
             return;
         }
-        
-        // Check if this is a default job
+
         if (plugin.getConfigManager().isDefaultJob(jobId)) {
-            player.sendMessage(languageManager.getMessage("commands.leave.default-job", "job", job.getName()));
+            fr.ax_dev.universejobs.utils.MessageUtils.sendMessage(player,
+                languageManager.getMessage("commands.leave.default-job", "job", job.getName()));
             return;
         }
         
         // Leave the job
         if (jobManager.leaveJob(player, jobId)) {
-            player.sendMessage(languageManager.getMessage("commands.leave.success", "job", job.getName()));
-            
+            fr.ax_dev.universejobs.utils.MessageUtils.sendMessage(player,
+                languageManager.getMessage("commands.leave.success", "job", job.getName()));
+
             // Refresh any open menu to update button states
             plugin.getMenuManager().refreshPlayerMenu(player);
         } else {
-            player.sendMessage(languageManager.getMessage("commands.leave.failed", "job", job.getName()));
+            fr.ax_dev.universejobs.utils.MessageUtils.sendMessage(player,
+                languageManager.getMessage("commands.leave.failed", "job", job.getName()));
         }
     }
     
