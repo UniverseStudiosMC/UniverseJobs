@@ -243,14 +243,19 @@ public class JobsMainMenu extends BaseMenu {
                 return null;
             }
 
-            Material material = fr.ax_dev.universejobs.utils.EnumUtils.parseMaterial(iconMaterial, null);
+            String materialPart = iconMaterial;
+            if (iconMaterial.contains(":")) {
+                materialPart = iconMaterial.split(":")[0];
+            }
+
+            Material material = fr.ax_dev.universejobs.utils.EnumUtils.parseMaterial(materialPart, Material.PLAYER_HEAD);
 
             if (material == null) {
                 plugin.getLogger().severe("Invalid material for job " + job.getId() + ": " + iconMaterial);
+                return Material.PLAYER_HEAD;
             }
             return material;
         } else {
-            // Default material when format doesn't specify one
             return Material.PAPER;
         }
     }
@@ -545,7 +550,7 @@ public class JobsMainMenu extends BaseMenu {
      * Calculate and add progress values efficiently.
      */
     private void calculateAndAddProgressValues(Map<String, String> placeholders, Job job, int playerLevel, long playerXp) {
-        long currentLevelXp = (long) job.getXpCurve().getXpForLevel(playerLevel);
+        long currentLevelXp = playerLevel == 1 ? 0 : (long) job.getXpCurve().getXpForLevel(playerLevel);
         long nextLevelXp = (long) job.getXpCurve().getXpForLevel(playerLevel + 1);
         long xpToNext = Math.max(0, nextLevelXp - playerXp);
         long xpProgress = playerXp - currentLevelXp;
@@ -553,6 +558,7 @@ public class JobsMainMenu extends BaseMenu {
 
         placeholders.put("xp_to_next", String.valueOf(xpToNext));
         placeholders.put("next_level_xp", String.valueOf(xpRequired));
+        placeholders.put("xp_required", String.valueOf(xpRequired));
         placeholders.put("current_level_xp", String.valueOf(currentLevelXp));
         placeholders.put("current_xp", String.valueOf(xpProgress));
 
@@ -567,8 +573,10 @@ public class JobsMainMenu extends BaseMenu {
     private void addDefaultProgressValues(Map<String, String> placeholders, Job job, int playerLevel) {
         placeholders.put("xp_to_next", "0");
         placeholders.put("next_level_xp", "0");
+        placeholders.put("xp_required", "0");
         placeholders.put("current_level_xp", "0");
-        
+        placeholders.put("current_xp", "0");
+
         boolean isMaxLevel = playerLevel >= playerData.getMaxLevel(job.getId());
         placeholders.put("progress_percent", isMaxLevel ? "100.0" : "0.0");
         placeholders.put("progress_bar", createProgressBarOptimized(isMaxLevel ? 100 : 0));

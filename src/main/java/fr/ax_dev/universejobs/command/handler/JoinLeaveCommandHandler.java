@@ -112,11 +112,10 @@ public class JoinLeaveCommandHandler extends JobCommandHandler {
             return;
         }
         
-        // Check max jobs limit based on permissions
         Set<String> playerJobs = jobManager.getPlayerJobs(player);
         int maxJobs = getMaxJobsForPlayer(player);
         if (playerJobs.size() >= maxJobs) {
-            player.sendMessage(languageManager.getMessage("commands.join.max-jobs-reached", "max", String.valueOf(maxJobs)));
+            fr.ax_dev.universejobs.utils.MessageUtils.sendMessage(player, languageManager.getMessage("commands.join.max-jobs-reached", "max", String.valueOf(maxJobs)));
             return;
         }
         

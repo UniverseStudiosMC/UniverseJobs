@@ -3,7 +3,11 @@ debug: false
 language:
   locale: en_US
 
-# Auto-save settings  
+# Main command name (default: jobs)
+# Change this to customize the main command (e.g., /work, /profession, etc.)
+main-command: "jobs"
+
+# Auto-save settings
 settings:
   save-interval: 300 # Auto-save interval in seconds
 

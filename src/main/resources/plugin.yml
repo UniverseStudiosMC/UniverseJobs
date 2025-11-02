@@ -13,11 +13,6 @@ libraries:
   - org.xerial:sqlite-jdbc:3.46.1.3
   - com.mysql:mysql-connector-j:9.0.0
 
-commands:
-  jobs:
-    description: Main jobs command with rewards, XP bonus management, and action limits
-    usage: /jobs <join|leave|info|list|rewards|actionlimit> [args...]
-    permission: universejobs.use
 
 permissions:
   universejobs.*:
