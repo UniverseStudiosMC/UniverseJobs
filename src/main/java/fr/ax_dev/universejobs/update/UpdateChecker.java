@@ -25,7 +25,7 @@ public class UpdateChecker {
      * Check Spigot for updates using the Spiget API.
      */
     public void checkForUpdates() {
-        plugin.getServer().getAsyncScheduler().runNow(plugin, task -> {
+        plugin.getFoliaManager().runAsync(() -> {
             try {
                 URL url = new URL(SPIGOT_API_URL);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();

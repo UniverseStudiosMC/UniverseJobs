@@ -350,7 +350,7 @@ public abstract class BaseBonusManager<T extends BaseBonus> implements BonusMana
     }
     
     private void startCleanupTask() {
-        plugin.getServer().getAsyncScheduler().runAtFixedRate(plugin, task -> cleanupExpiredBonuses(), 60L, 60L, java.util.concurrent.TimeUnit.SECONDS);
+        plugin.getFoliaManager().runTimerAsync(() -> cleanupExpiredBonuses(), 1200L, 1200L);
     }
     
     /**

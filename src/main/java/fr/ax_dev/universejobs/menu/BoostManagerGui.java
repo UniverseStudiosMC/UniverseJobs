@@ -13,7 +13,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 
@@ -24,13 +23,11 @@ public class BoostManagerGui implements InventoryHolder {
     
     private final UniverseJobs plugin;
     private final MiniMessage miniMessage;
-    private final Map<UUID, ScheduledTask> autoUpdateTasks;
     private final BoostMenuConfig config;
     
     public BoostManagerGui(UniverseJobs plugin) {
         this.plugin = plugin;
         this.miniMessage = MiniMessage.miniMessage();
-        this.autoUpdateTasks = new HashMap<>();
         // Utiliser la configuration centrale depuis MenuConfig
         this.config = plugin.getMenuManager().getMenuConfig().getBoostMenuConfig();
     }
@@ -313,22 +310,17 @@ public class BoostManagerGui implements InventoryHolder {
         }
 
         final long finalIntervalTicks = intervalTicks;
-        ScheduledTask task = plugin.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, scheduledTask -> {
+        plugin.getFoliaManager().getFoliaLib().getScheduler().runAtFixedRate(wrappedTask -> {
             if (plugin.isEnabled() && player.isOnline() && player.getOpenInventory().getTopInventory().equals(gui)) {
                 updateGuiContent(gui);
             } else {
                 stopAutoUpdate(player);
+                wrappedTask.cancel();
             }
         }, finalIntervalTicks, finalIntervalTicks);
-
-        autoUpdateTasks.put(player.getUniqueId(), task);
     }
     
     private void stopAutoUpdate(Player player) {
-        ScheduledTask task = autoUpdateTasks.remove(player.getUniqueId());
-        if (task != null) {
-            task.cancel();
-        }
     }
     
     public void handleClick(Player player, int slot, boolean isRightClick) {
