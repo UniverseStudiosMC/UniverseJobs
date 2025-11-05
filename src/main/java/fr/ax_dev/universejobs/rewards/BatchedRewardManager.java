@@ -104,7 +104,7 @@ public class BatchedRewardManager {
      */
     public void batchCommand(String command, int delay) {
         if (othersBatchTicks <= 0) {
-            plugin.getServer().getGlobalRegionScheduler().runDelayed(plugin, scheduledTask ->
+            plugin.getFoliaManager().runLater(() ->
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command), delay);
             return;
         }
@@ -197,7 +197,7 @@ public class BatchedRewardManager {
         Map<String, BatchedReward> toProcess = new ConcurrentHashMap<>(xpBatch);
         xpBatch.clear();
         
-        plugin.getServer().getGlobalRegionScheduler().run(plugin, scheduledTask -> {
+        plugin.getFoliaManager().runNextTick(() -> {
             for (BatchedReward reward : toProcess.values()) {
                 PlayerJobData data = jobManager.getPlayerData(reward.playerUuid);
                 if (data != null) {
@@ -226,7 +226,7 @@ public class BatchedRewardManager {
         Map<UUID, Double> toProcess = new ConcurrentHashMap<>(moneyBatch);
         moneyBatch.clear();
         
-        plugin.getServer().getGlobalRegionScheduler().run(plugin, scheduledTask -> {
+        plugin.getFoliaManager().runNextTick(() -> {
             if (economy != null) {
                 for (Map.Entry<UUID, Double> entry : toProcess.entrySet()) {
                     Player player = Bukkit.getPlayer(entry.getKey());
@@ -260,7 +260,7 @@ public class BatchedRewardManager {
         for (BatchedCommand cmd : toProcess.values()) {
             for (int i = 0; i < cmd.count; i++) {
                 long delayTicks = cmd.delay + (i * 2L);
-                plugin.getServer().getGlobalRegionScheduler().runDelayed(plugin, scheduledTask ->
+                plugin.getFoliaManager().runLater(() ->
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.command),
                     delayTicks);
             }

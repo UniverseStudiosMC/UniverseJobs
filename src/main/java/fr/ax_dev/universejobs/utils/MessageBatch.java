@@ -23,7 +23,6 @@ public class MessageBatch {
     // Queue of pending messages per player
     private final Map<UUID, Queue<PendingMessage>> pendingMessages = new ConcurrentHashMap<>();
     
-    private io.papermc.paper.threadedregions.scheduler.ScheduledTask batchProcessor;
     private boolean isRunning = false;
     
     public MessageBatch(UniverseJobs plugin) {
@@ -55,11 +54,11 @@ public class MessageBatch {
         if (isRunning) return;
 
         isRunning = true;
-        batchProcessor = plugin.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, scheduledTask -> {
+        plugin.getFoliaManager().getFoliaLib().getScheduler().runAtFixedRate(wrappedTask -> {
             if (pendingMessages.isEmpty()) {
                 if (System.currentTimeMillis() - lastProcessTime > 10000) {
                     isRunning = false;
-                    scheduledTask.cancel();
+                    wrappedTask.cancel();
                     return;
                 }
                 return;
