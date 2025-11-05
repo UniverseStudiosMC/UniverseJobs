@@ -54,11 +54,10 @@ public class MessageBatch {
         if (isRunning) return;
 
         isRunning = true;
-        plugin.getFoliaManager().getFoliaLib().getScheduler().runAtFixedRate(wrappedTask -> {
+        plugin.getFoliaManager().runTimer(() -> {
             if (pendingMessages.isEmpty()) {
                 if (System.currentTimeMillis() - lastProcessTime > 10000) {
                     isRunning = false;
-                    wrappedTask.cancel();
                     return;
                 }
                 return;
@@ -169,9 +168,6 @@ public class MessageBatch {
      * Shutdown the batch processor.
      */
     public void shutdown() {
-        if (batchProcessor != null) {
-            batchProcessor.cancel();
-        }
         pendingMessages.clear();
         isRunning = false;
     }
