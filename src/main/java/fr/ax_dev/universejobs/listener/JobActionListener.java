@@ -705,8 +705,10 @@ public class JobActionListener implements Listener {
             // Direct processing for normal clicks
             // The items are stored in the cursor. Make sure there's enough space.
             if (isStackSumLegal(toCraft, event.getCursor())) {
-                int craftCount = toCraft.getAmount() / resultStack.getAmount();
-                processCraftRewards(player, resultStack, craftCount);
+                if (resultStack.getAmount() > 0) {
+                    int craftCount = toCraft.getAmount() / resultStack.getAmount();
+                    processCraftRewards(player, resultStack, craftCount);
+                }
             }
         }
     }
@@ -751,12 +753,12 @@ public class JobActionListener implements Listener {
     /**
      * Process the comparison between pre and post crafting inventories.
      */
-    private void processPostDetectionComparison(Player player, org.bukkit.inventory.ItemStack compareItem, 
+    private void processPostDetectionComparison(Player player, org.bukkit.inventory.ItemStack compareItem,
                                               org.bukkit.inventory.ItemStack resultStack, org.bukkit.inventory.ItemStack[] preInv) {
         final org.bukkit.inventory.ItemStack[] postInv = player.getInventory().getContents();
         int newItemsCount = calculateNewItemsCount(preInv, postInv, compareItem);
-        
-        if (resultStack != null && newItemsCount > 0) {
+
+        if (resultStack != null && newItemsCount > 0 && resultStack.getAmount() > 0) {
             int craftCount = newItemsCount / resultStack.getAmount();
             debugLog("Post-detection: " + player.getName() + " crafted " + newItemsCount + " " + compareItem.getType() + " (" + craftCount + " crafts)");
             processCraftRewards(player, resultStack, craftCount);
