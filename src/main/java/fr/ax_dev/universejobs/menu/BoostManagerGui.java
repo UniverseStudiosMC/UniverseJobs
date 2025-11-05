@@ -310,12 +310,11 @@ public class BoostManagerGui implements InventoryHolder {
         }
 
         final long finalIntervalTicks = intervalTicks;
-        plugin.getFoliaManager().getFoliaLib().getScheduler().runAtFixedRate(wrappedTask -> {
+        plugin.getFoliaManager().runTimer(() -> {
             if (plugin.isEnabled() && player.isOnline() && player.getOpenInventory().getTopInventory().equals(gui)) {
                 updateGuiContent(gui);
             } else {
                 stopAutoUpdate(player);
-                wrappedTask.cancel();
             }
         }, finalIntervalTicks, finalIntervalTicks);
     }
