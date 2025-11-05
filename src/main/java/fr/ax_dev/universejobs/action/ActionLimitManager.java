@@ -259,7 +259,7 @@ public class ActionLimitManager {
      * Start the automatic restore task based on configured schedule.
      */
     private void startAutoRestoreTask() {
-        plugin.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, task -> {
+        plugin.getFoliaManager().runTimerAsync(() -> {
             checkScheduledRestore();
         }, 1200L, 1200L);
     }
