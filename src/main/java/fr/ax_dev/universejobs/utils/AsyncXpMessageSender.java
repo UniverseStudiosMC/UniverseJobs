@@ -101,6 +101,7 @@ public class AsyncXpMessageSender {
         String message = settings.processMessage(displayXp, displayMoney)
                 .replace("{job}", job.getName())
                 .replace("{level}", String.valueOf(currentLevel))
+                .replace("{max_level}", String.valueOf(job.getMaxLevel()))
                 .replace("{progress}", String.format("%.1f", progressPercent))
                 .replace("{current_xp}", String.format("%.1f", currentXpInLevel))
                 .replace("{needed_xp}", String.format("%.1f", xpNeededForNext))
