@@ -145,4 +145,13 @@ public interface DataStorage extends RewardStorage {
      * @return CompletableFuture that completes when deletion is done
      */
     CompletableFuture<Void> deletePlayerData(UUID playerId);
+
+    /**
+     * Get leaderboard entries for a specific job.
+     *
+     * @param jobId The job ID
+     * @param limit Maximum number of entries to return
+     * @return CompletableFuture containing list of leaderboard entries
+     */
+    CompletableFuture<java.util.List<fr.ax_dev.universejobs.storage.dao.LeaderboardDao.LeaderboardEntry>> getJobLeaderboard(String jobId, int limit);
 }

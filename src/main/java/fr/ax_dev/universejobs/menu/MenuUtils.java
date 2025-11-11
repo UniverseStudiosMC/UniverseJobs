@@ -372,8 +372,23 @@ public class MenuUtils {
                         setSkullTexture(skullMeta, playerHead);
                         metaModified = true;
                     } else {
-                        skullMeta.setOwningPlayer(plugin.getServer().getOfflinePlayer(playerHead));
-                        metaModified = true;
+                        org.bukkit.OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(playerHead);
+                        if (offlinePlayer.hasPlayedBefore() || offlinePlayer.isOnline()) {
+                            skullMeta.setOwningPlayer(offlinePlayer);
+                            metaModified = true;
+                        } else {
+                            try {
+                                UUID playerId = offlinePlayer.getUniqueId();
+                                PlayerProfile profile = fr.ax_dev.universejobs.utils.PlayerTextureCache
+                                    .getPlayerProfile(playerId, playerHead)
+                                    .get(3, java.util.concurrent.TimeUnit.SECONDS);
+                                skullMeta.setOwnerProfile(profile);
+                                metaModified = true;
+                            } catch (Exception profileEx) {
+                                skullMeta.setOwningPlayer(offlinePlayer);
+                                metaModified = true;
+                            }
+                        }
                     }
                 } catch (Exception e) {
                     // Silently fail for performance

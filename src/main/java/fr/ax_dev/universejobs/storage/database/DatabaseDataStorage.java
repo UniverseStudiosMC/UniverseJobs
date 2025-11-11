@@ -417,4 +417,9 @@ public class DatabaseDataStorage implements DataStorage {
             }
         });
     }
+
+    @Override
+    public CompletableFuture<java.util.List<fr.ax_dev.universejobs.storage.dao.LeaderboardDao.LeaderboardEntry>> getJobLeaderboard(String jobId, int limit) {
+        return leaderboardDao.getJobLeaderboard(jobId, limit);
+    }
 }
