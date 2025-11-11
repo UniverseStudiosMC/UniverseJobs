@@ -40,7 +40,6 @@ public class GlobalRankingsMenu extends BaseMenu {
             .sorted()
             .collect(Collectors.toList());
 
-        // Use pre-selected job if provided and valid, otherwise select first non-example job
         if (preSelectedJob != null && availableJobs.contains(preSelectedJob)) {
             this.selectedJob = preSelectedJob;
         } else {
@@ -51,26 +50,56 @@ public class GlobalRankingsMenu extends BaseMenu {
                     .orElse(availableJobs.get(0));
         }
 
-        loadRankings();
-
-        // Initialize menu after all fields are set
-        initialize();
-    }
-    
-    /**
-     * Load rankings for all jobs.
-     */
-    private void loadRankings() {
-        for (String jobId : availableJobs) {
-            List<RankingEntry> rankings = calculateJobRankings(jobId);
-            jobRankings.put(jobId, rankings);
+        if (!plugin.isDatabaseEnabled()) {
+            for (String jobId : availableJobs) {
+                jobRankings.put(jobId, calculateJobRankingsFromMemory(jobId));
+            }
+            initialize();
+        } else {
+            java.util.concurrent.CompletableFuture<Void> loadFuture = loadRankingsAsync();
+            loadFuture.thenRun(() -> plugin.getFoliaManager().runAtEntity(player, () -> initialize()));
         }
     }
     
     /**
-     * Calculate rankings for a specific job.
+     * Load rankings for all jobs asynchronously.
      */
-    private List<RankingEntry> calculateJobRankings(String jobId) {
+    private java.util.concurrent.CompletableFuture<Void> loadRankingsAsync() {
+        List<java.util.concurrent.CompletableFuture<Void>> futures = new ArrayList<>();
+
+        for (String jobId : availableJobs) {
+            java.util.concurrent.CompletableFuture<Void> future = plugin.getDataStorage()
+                .getJobLeaderboard(jobId, 100)
+                .thenAccept(entries -> {
+                    List<RankingEntry> rankings = new ArrayList<>(entries.size());
+                    for (int i = 0; i < entries.size(); i++) {
+                        var entry = entries.get(i);
+                        RankingEntry rankEntry = new RankingEntry(
+                            entry.getPlayerId(),
+                            entry.getPlayerName(),
+                            entry.getLevel(),
+                            (long) entry.getXp()
+                        );
+                        rankEntry.rank = i + 1;
+                        rankings.add(rankEntry);
+                    }
+                    jobRankings.put(jobId, rankings);
+                })
+                .exceptionally(ex -> {
+                    plugin.getLogger().warning("Failed to load rankings for " + jobId + ", using memory fallback: " + ex.getMessage());
+                    jobRankings.put(jobId, calculateJobRankingsFromMemory(jobId));
+                    return null;
+                });
+            futures.add(future);
+        }
+
+        return java.util.concurrent.CompletableFuture.allOf(futures.toArray(new java.util.concurrent.CompletableFuture[0]));
+    }
+    
+    /**
+     * Calculate rankings for a specific job from memory (fallback).
+     */
+    private List<RankingEntry> calculateJobRankingsFromMemory(String jobId) {
         List<RankingEntry> rankings = new ArrayList<>(64);
         
         // Get all player data and calculate rankings
