@@ -147,6 +147,20 @@ block-protection:
   # List of block materials that are exempt from protection (always give XP)
   blacklist:
     - "WHEAT"
+    - "CARROTS"
+    - "POTATOES"
+    - "BEETROOTS"
+    - "NETHER_WART"
+    - "MELON"
+    - "PUMPKIN"
+    - "SUGAR_CANE"
+    - "BAMBOO"
+    - "CACTUS"
+    - "SWEET_BERRY_BUSH"
+    - "KELP"
+    - "KELP_PLANT"
+    - "SEA_PICKLE"
+    - "COCOA"
 
 gui-default-settings:
   enabled: true
