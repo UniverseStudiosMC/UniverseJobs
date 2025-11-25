@@ -358,8 +358,8 @@ public class JobActionsMenu extends BaseMenu {
 
                     double boostedXp = baseXp * xpMultiplier;
                     double boostedMoney = baseMoney * moneyMultiplier;
-                    line = replacePlaceholder(line, "action_xp", String.format("%.1f", boostedXp));
-                    line = replacePlaceholder(line, "action_money", String.format("%.2f", boostedMoney));
+                    line = replacePlaceholder(line, "action_xp", formatDecimal(boostedXp));
+                    line = replacePlaceholder(line, "action_money", formatDecimal(boostedMoney));
                     
                     // Add {+-} placeholder for positive/negative indication
                     String xpSign = boostedXp >= 0 ? "+" : "";
@@ -630,10 +630,21 @@ public class JobActionsMenu extends BaseMenu {
     private static class DisplayItem {
         final String type;
         final Object data;
-        
+
         DisplayItem(String type, Object data) {
             this.type = type;
             this.data = data;
         }
+    }
+
+    private String formatDecimal(double value) {
+        if (value == (long) value) {
+            return String.valueOf((long) value);
+        }
+        String str = String.valueOf(value);
+        if (str.contains("E") || str.contains("e")) {
+            return String.format("%.10f", value).replaceAll("0+$", "").replaceAll("\\.$", "");
+        }
+        return str.replaceAll("0+$", "").replaceAll("\\.$", "");
     }
 }
