@@ -38,6 +38,8 @@ public class JobAction {
     private final List<String> nbtTags;
     private final List<String> potionTypes;
     private final List<String> blacklistedFurnaces;
+    private final List<String> blacklist;
+    private final String requiredTool;
     private final String age;
     private final int actionMenuPriority;
     
@@ -85,10 +87,12 @@ public class JobAction {
         // Load potion-type requirements for POTION actions
         this.potionTypes = loadPotionTypes(config);
         
-        // Load blacklisted furnaces for SMELT actions
         this.blacklistedFurnaces = config.getStringList("blacklisted-furnaces");
-        
-        // Load age requirement for harvest actions
+
+        this.blacklist = loadBlacklist(config);
+
+        this.requiredTool = config.getString("required-tool", null);
+
         this.age = config.getString("age", null);
 
         // Load action menu priority for sorting
@@ -238,7 +242,26 @@ public class JobAction {
         
         return result;
     }
-    
+
+    private List<String> loadBlacklist(ConfigurationSection config) {
+        List<String> result = new ArrayList<>();
+
+        if (config.isList("blacklist")) {
+            for (String item : config.getStringList("blacklist")) {
+                if (item != null && !item.trim().isEmpty()) {
+                    result.add(item.trim().toUpperCase());
+                }
+            }
+        } else if (config.isString("blacklist")) {
+            String item = config.getString("blacklist");
+            if (item != null && !item.trim().isEmpty()) {
+                result.add(item.trim().toUpperCase());
+            }
+        }
+
+        return result;
+    }
+
     /**
      * Get the target for this action (e.g., block type, entity type, etc.).
      * 
@@ -769,7 +792,59 @@ public class JobAction {
     public List<String> getBlacklistedFurnaces() {
         return blacklistedFurnaces;
     }
-    
+
+    public List<String> getBlacklist() {
+        return blacklist;
+    }
+
+    public boolean hasBlacklist() {
+        return blacklist != null && !blacklist.isEmpty();
+    }
+
+    public boolean isBlacklisted(String material) {
+        if (!hasBlacklist() || material == null) {
+            return false;
+        }
+        String materialUpper = material.toUpperCase();
+        for (String blacklisted : blacklist) {
+            if (blacklisted.equals("*")) {
+                return true;
+            }
+            if (blacklisted.endsWith("*")) {
+                String prefix = blacklisted.substring(0, blacklisted.length() - 1);
+                if (materialUpper.startsWith(prefix)) {
+                    return true;
+                }
+            } else if (blacklisted.startsWith("*")) {
+                String suffix = blacklisted.substring(1);
+                if (materialUpper.endsWith(suffix)) {
+                    return true;
+                }
+            } else if (blacklisted.equals(materialUpper)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public String getRequiredTool() {
+        return requiredTool;
+    }
+
+    public boolean hasRequiredTool() {
+        return requiredTool != null && !requiredTool.trim().isEmpty();
+    }
+
+    public boolean matchesRequiredTool(String toolType) {
+        if (!hasRequiredTool()) {
+            return true;
+        }
+        if (toolType == null) {
+            return false;
+        }
+        return requiredTool.equalsIgnoreCase(toolType);
+    }
+
     /**
      * Get the age requirement for harvest actions.
      * Supports ranges like "5-7" or single values like "7".

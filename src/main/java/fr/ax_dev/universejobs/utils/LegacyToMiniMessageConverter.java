@@ -23,6 +23,7 @@ public class LegacyToMiniMessageConverter {
     private static final Map<String, String> FORMAT_MAPPINGS = new HashMap<>();
     
     // Compiled regex patterns for maximum performance
+    private static final Pattern HEX_PATTERN_DIRECT = Pattern.compile("(?<!<)#([0-9a-fA-F]{6})(?!>)");
     private static final Pattern HEX_PATTERN_AMPERSAND = Pattern.compile("&#([0-9a-fA-F]{6})");
     private static final Pattern HEX_PATTERN_LEGACY = Pattern.compile("&x(&[0-9a-fA-F]){6}");
     private static final Pattern LEGACY_COLOR_PATTERN = Pattern.compile("&([0-9a-fklmnor])");
@@ -68,22 +69,35 @@ public class LegacyToMiniMessageConverter {
         }
         
         String result = input;
-        
-        // Step 1: Convert hex colors (&#RRGGBB format)
+
+        // Step 1: Convert direct hex colors (#RRGGBB format)
+        result = convertHexColorsDirect(result);
+
+        // Step 2: Convert hex colors (&#RRGGBB format)
         result = convertHexColorsAmpersand(result);
-        
-        // Step 2: Convert legacy hex colors (&x&R&R&G&G&B&B format)
+
+        // Step 3: Convert legacy hex colors (&x&R&R&G&G&B&B format)
         result = convertHexColorsLegacy(result);
-        
-        // Step 3: Convert legacy color and format codes
+
+        // Step 4: Convert legacy color and format codes
         result = convertLegacyCodes(result);
-        
-        // Step 4: Convert section symbol codes (§) if any remain
+
+        // Step 5: Convert section symbol codes (§) if any remain
         result = convertSectionCodes(result);
-        
+
         return result;
     }
     
+    /**
+     * Converts direct hex color codes in #RRGGBB format to MiniMessage.
+     */
+    private static String convertHexColorsDirect(String input) {
+        return HEX_PATTERN_DIRECT.matcher(input).replaceAll(matchResult -> {
+            String hex = matchResult.group(1);
+            return "<#" + hex + ">";
+        });
+    }
+
     /**
      * Converts hex color codes in &#RRGGBB format to MiniMessage.
      */
@@ -195,6 +209,7 @@ public class LegacyToMiniMessageConverter {
         
         return LEGACY_COLOR_PATTERN.matcher(input).find() ||
                SECTION_COLOR_PATTERN.matcher(input).find() ||
+               HEX_PATTERN_DIRECT.matcher(input).find() ||
                HEX_PATTERN_AMPERSAND.matcher(input).find() ||
                HEX_PATTERN_LEGACY.matcher(input).find();
     }

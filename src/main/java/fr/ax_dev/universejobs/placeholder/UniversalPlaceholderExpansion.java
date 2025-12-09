@@ -72,6 +72,36 @@ public class UniversalPlaceholderExpansion extends PlaceholderExpansion {
             return String.valueOf(getEquippedJobsOfTypeCount(player, args[1]));
         }
 
+        if (args[0].equalsIgnoreCase("equipped") && args.length >= 2) {
+            if (player == null) return "";
+            try {
+                int index = Integer.parseInt(args[1]);
+                var playerData = plugin.getDataStorage().getPlayerData(player.getUniqueId());
+                if (playerData == null) return "";
+                var jobs = new java.util.ArrayList<>(playerData.getJobs());
+                if (index < 1 || index > jobs.size()) return "";
+                String jobId = jobs.get(index - 1);
+                var job = plugin.getJobManager().getJob(jobId);
+                if (job == null) return "";
+
+                if (args.length == 2) {
+                    return job.getName();
+                }
+                if (args.length == 3 && args[2].equalsIgnoreCase("level")) {
+                    return String.valueOf(playerData.getLevel(jobId));
+                }
+                if (args.length == 3 && args[2].equalsIgnoreCase("xp")) {
+                    return String.valueOf((long) playerData.getXp(jobId));
+                }
+                if (args.length == 3 && args[2].equalsIgnoreCase("id")) {
+                    return jobId;
+                }
+            } catch (NumberFormatException e) {
+                return "";
+            }
+            return "";
+        }
+
         if (args[0].equalsIgnoreCase("multiplier") && args.length == 2) {
             if (player == null) return "1.0";
             return String.valueOf(getUsageMultiplier(args[1]));

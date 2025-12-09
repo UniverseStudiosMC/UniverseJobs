@@ -278,12 +278,13 @@ public class PlayerJobData {
         if (jobManager == null) {
             return fallbackLevelFromXp(totalXp);
         }
-        
+
         Job job = jobManager.getJob(jobId);
         if (job != null && job.getXpCurve() != null) {
-            return job.getXpCurve().getLevelForXp(totalXp, job.getMaxLevel());
+            int effectiveMaxLevel = getEffectiveMaxLevel(jobId);
+            return job.getXpCurve().getLevelForXp(totalXp, effectiveMaxLevel);
         }
-        
+
         return fallbackLevelFromXp(totalXp);
     }
     

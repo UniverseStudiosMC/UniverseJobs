@@ -174,12 +174,14 @@ public class MenuManager {
     public void openGlobalRankingsMenu(Player player, String preSelectedJob) {
         closeCurrentMenu(player);
 
-        // Register player as having active menu for fast event filtering
         eventHandler.registerActivePlayer(player.getUniqueId());
 
         GlobalRankingsMenu menu = new GlobalRankingsMenu(plugin, player, menuConfig.getRankingsMenuConfig(), preSelectedJob);
         openMenus.put(player.getUniqueId(), menu);
-        menu.open();
+
+        if (menu.isReady()) {
+            menu.open();
+        }
     }
     
     /**

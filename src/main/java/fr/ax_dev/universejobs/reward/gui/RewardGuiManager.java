@@ -96,12 +96,13 @@ public class RewardGuiManager implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
-        
+        if (event.getInventory() == null) return;
+
         Object guiObj = openGuis.get(player.getUniqueId());
         if (guiObj == null) return;
-        
+
         event.setCancelled(true);
-        
+
         if (guiObj instanceof CustomRewardGui customGui) {
             if (customGui.isInventory(event.getInventory())) {
                 customGui.handleClick(event.getSlot());
@@ -110,7 +111,7 @@ public class RewardGuiManager implements Listener {
             if (gui.isInventory(event.getInventory())) {
                 ItemStack clickedItem = event.getCurrentItem();
                 if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
-                
+
                 gui.handleClick(event.getSlot(), clickedItem);
             }
         }
@@ -122,17 +123,18 @@ public class RewardGuiManager implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         if (!(event.getPlayer() instanceof Player player)) return;
-        
+        if (event.getInventory() == null) return;
+
         Object guiObj = openGuis.get(player.getUniqueId());
         if (guiObj != null) {
             boolean shouldRemove = false;
-            
+
             if (guiObj instanceof CustomRewardGui customGui) {
                 shouldRemove = customGui.isInventory(event.getInventory());
             } else if (guiObj instanceof RewardGui gui) {
                 shouldRemove = gui.isInventory(event.getInventory());
             }
-            
+
             if (shouldRemove) {
                 openGuis.remove(player.getUniqueId());
             }

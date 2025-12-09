@@ -731,7 +731,8 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                 }
 
                 int currentLevel = playerData.getLevel(jobId);
-                int newLevel = Math.min(job.getMaxLevel(), currentLevel + levels);
+                int effectiveMaxLevel = playerData.getMaxLevel(jobId);
+                int newLevel = Math.min(effectiveMaxLevel, currentLevel + levels);
                 double requiredXp = jobManager.getXpRequiredForLevel(jobId, newLevel);
 
                 playerData.setLevel(jobId, newLevel);
@@ -857,8 +858,9 @@ public class AdminJobCommandHandler extends JobCommandHandler {
 
                 int newLevel = jobManager.getLevel(target.getPlayer() != null ? target.getPlayer() : null, jobId);
                 if (target.getPlayer() == null) {
+                    int effectiveMaxLevel = playerData.getMaxLevel(jobId);
                     newLevel = (job.getXpCurve() != null)
-                        ? job.getXpCurve().getLevelForXp(newXp, job.getMaxLevel())
+                        ? job.getXpCurve().getLevelForXp(newXp, effectiveMaxLevel)
                         : playerData.getLevel(jobId);
                 }
 
@@ -910,8 +912,9 @@ public class AdminJobCommandHandler extends JobCommandHandler {
 
                 playerData.setXp(jobId, amount);
 
+                int effectiveMaxLevel = playerData.getMaxLevel(jobId);
                 int newLevel = (job.getXpCurve() != null)
-                    ? job.getXpCurve().getLevelForXp(amount, job.getMaxLevel())
+                    ? job.getXpCurve().getLevelForXp(amount, effectiveMaxLevel)
                     : playerData.getLevel(jobId);
 
                 playerData.setLevel(jobId, newLevel);
