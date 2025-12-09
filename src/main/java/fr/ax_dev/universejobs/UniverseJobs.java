@@ -29,6 +29,7 @@ import fr.ax_dev.universejobs.rewards.BatchedRewardManager;
 import fr.ax_dev.universejobs.menu.MenuManager;
 import fr.ax_dev.universejobs.menu.BoostManagerGui;
 import fr.ax_dev.universejobs.utils.AsyncXpMessageSender;
+import fr.ax_dev.universejobs.utils.PlayerTextureCache;
 import fr.ax_dev.universejobs.placeholder.PlaceholderManager;
 import fr.ax_dev.universejobs.update.UpdateChecker;
 import org.bukkit.entity.Player;
@@ -97,7 +98,9 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         this.boostManagerGui = new BoostManagerGui(this);
         this.placeholderManager = new PlaceholderManager(this);
         this.mythicMobsHandler = new MythicMobsHandler(this);
-        
+
+        PlayerTextureCache.init();
+
         // Load configuration first
         try {
             configManager.loadConfig();

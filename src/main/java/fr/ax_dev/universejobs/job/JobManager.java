@@ -411,7 +411,8 @@ public class JobManager {
         Job job = getJob(jobId);
         if (job != null && job.getXpCurve() != null) {
             double xp = data.getXp(jobId);
-            return job.getXpCurve().getLevelForXp(xp, job.getMaxLevel());
+            int effectiveMaxLevel = data.getMaxLevel(jobId);
+            return job.getXpCurve().getLevelForXp(xp, effectiveMaxLevel);
         }
         return data.getLevel(jobId);
     }
@@ -858,8 +859,9 @@ public class JobManager {
                 data.setXp(jobId, newXp);
 
                 Job job = getJob(jobId);
+                int effectiveMaxLevel = data.getMaxLevel(jobId);
                 int newLevel = (job != null && job.getXpCurve() != null)
-                    ? job.getXpCurve().getLevelForXp(newXp, job.getMaxLevel())
+                    ? job.getXpCurve().getLevelForXp(newXp, effectiveMaxLevel)
                     : data.getLevel(jobId);
 
                 data.setLevel(jobId, newLevel);

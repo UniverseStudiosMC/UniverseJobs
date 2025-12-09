@@ -57,8 +57,15 @@ public class GlobalRankingsMenu extends BaseMenu {
             initialize();
         } else {
             java.util.concurrent.CompletableFuture<Void> loadFuture = loadRankingsAsync();
-            loadFuture.thenRun(() -> plugin.getFoliaManager().runAtEntity(player, () -> initialize()));
+            loadFuture.thenRun(() -> plugin.getFoliaManager().runAtEntity(player, () -> {
+                initialize();
+                open();
+            }));
         }
+    }
+
+    public boolean isReady() {
+        return inventory != null;
     }
     
     /**
@@ -82,6 +89,11 @@ public class GlobalRankingsMenu extends BaseMenu {
                         );
                         rankEntry.rank = i + 1;
                         rankings.add(rankEntry);
+
+                        if (i < 20) {
+                            fr.ax_dev.universejobs.utils.PlayerTextureCache.getPlayerProfile(
+                                entry.getPlayerId(), entry.getPlayerName());
+                        }
                     }
                     jobRankings.put(jobId, rankings);
                 })
@@ -412,17 +424,12 @@ public class GlobalRankingsMenu extends BaseMenu {
         String material = rankConfig.getString("material", "PLAYER_HEAD");
         configMap.put("material", material);
 
-        // Handle player head texture
         if (material.equalsIgnoreCase("PLAYER_HEAD")) {
             String headTexture = rankConfig.getString("player-head", "");
-            if (!headTexture.isEmpty()) {
-                if (headTexture.equals("{player_texture}") || headTexture.equals("{player_name}")) {
-                    // Use actual player's head name
-                    configMap.put("player-head", entry.playerName);
-                } else {
-                    // Use custom texture
-                    configMap.put("player-head", headTexture);
-                }
+            if (headTexture.isEmpty() || headTexture.equals("{player_texture}") || headTexture.equals("{player_name}")) {
+                configMap.put("player-head", entry.playerName);
+            } else {
+                configMap.put("player-head", headTexture);
             }
         }
 
@@ -479,9 +486,6 @@ public class GlobalRankingsMenu extends BaseMenu {
         return null;
     }
 
-    /**
-     * Create default ranking item (fallback).
-     */
     private ItemStack createDefaultRankingItem(RankingEntry entry) {
         Map<String, String> placeholders = createRankingPlaceholders(entry);
 
@@ -495,6 +499,7 @@ public class GlobalRankingsMenu extends BaseMenu {
             "PLAYER_HEAD", "#{rank} - {player}", lore, false
         );
         configMap.put("enabled", true);
+        configMap.put("player-head", entry.playerName);
 
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
         return createMenuItem(itemConfig, placeholders);
@@ -504,10 +509,11 @@ public class GlobalRankingsMenu extends BaseMenu {
      * Create placeholders for ranking entry.
      */
     private Map<String, String> createRankingPlaceholders(RankingEntry entry) {
-        Map<String, String> placeholders = new HashMap<>(8);
+        Map<String, String> placeholders = new HashMap<>(10);
         placeholders.put("{rank}", String.valueOf(entry.rank));
         placeholders.put("{player}", entry.playerName);
         placeholders.put("{player_name}", entry.playerName);
+        placeholders.put("{player_uuid}", entry.playerId.toString());
         placeholders.put("{level}", String.valueOf(entry.level));
         placeholders.put("{xp}", String.valueOf(entry.xp));
         placeholders.put("{rank_color}", getRankColorFromConfig(entry.rank));

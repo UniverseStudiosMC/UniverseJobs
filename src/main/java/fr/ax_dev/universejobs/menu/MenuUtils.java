@@ -367,26 +367,59 @@ public class MenuUtils {
                 }
                 playerHead = processPlaceholders(player, playerHead);
 
+                String playerUuidStr = customPlaceholders != null ? customPlaceholders.get("{player_uuid}") : null;
+
                 try {
                     if (playerHead.length() > 20 && isValidBase64(playerHead)) {
                         setSkullTexture(skullMeta, playerHead);
                         metaModified = true;
                     } else {
-                        org.bukkit.OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(playerHead);
-                        if (offlinePlayer.hasPlayedBefore() || offlinePlayer.isOnline()) {
-                            skullMeta.setOwningPlayer(offlinePlayer);
-                            metaModified = true;
-                        } else {
+                        UUID targetUuid = null;
+                        if (playerUuidStr != null && !playerUuidStr.isEmpty()) {
                             try {
-                                UUID playerId = offlinePlayer.getUniqueId();
-                                PlayerProfile profile = fr.ax_dev.universejobs.utils.PlayerTextureCache
-                                    .getPlayerProfile(playerId, playerHead)
-                                    .get(3, java.util.concurrent.TimeUnit.SECONDS);
-                                skullMeta.setOwnerProfile(profile);
-                                metaModified = true;
+                                targetUuid = UUID.fromString(playerUuidStr);
+                            } catch (IllegalArgumentException ignored) {}
+                        }
+
+                        if (targetUuid != null) {
+                            try {
+                                PlayerProfile cachedProfile = fr.ax_dev.universejobs.utils.PlayerTextureCache
+                                    .getPlayerProfile(targetUuid, playerHead)
+                                    .get(2, java.util.concurrent.TimeUnit.SECONDS);
+
+                                if (cachedProfile != null && cachedProfile.getTextures().getSkin() != null) {
+                                    skullMeta.setOwnerProfile(cachedProfile);
+                                    metaModified = true;
+                                } else {
+                                    org.bukkit.OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(targetUuid);
+                                    skullMeta.setOwningPlayer(offlinePlayer);
+                                    metaModified = true;
+                                }
                             } catch (Exception profileEx) {
+                                org.bukkit.OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(targetUuid);
                                 skullMeta.setOwningPlayer(offlinePlayer);
                                 metaModified = true;
+                            }
+                        } else {
+                            org.bukkit.OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(playerHead);
+                            if (offlinePlayer.hasPlayedBefore() || offlinePlayer.isOnline()) {
+                                skullMeta.setOwningPlayer(offlinePlayer);
+                                metaModified = true;
+                            } else {
+                                try {
+                                    PlayerProfile profile = fr.ax_dev.universejobs.utils.PlayerTextureCache
+                                        .getPlayerProfileByName(playerHead)
+                                        .get(5, java.util.concurrent.TimeUnit.SECONDS);
+                                    if (profile != null && profile.getTextures().getSkin() != null) {
+                                        skullMeta.setOwnerProfile(profile);
+                                    } else {
+                                        skullMeta.setOwningPlayer(offlinePlayer);
+                                    }
+                                    metaModified = true;
+                                } catch (Exception profileEx) {
+                                    skullMeta.setOwningPlayer(offlinePlayer);
+                                    metaModified = true;
+                                }
                             }
                         }
                     }

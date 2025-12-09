@@ -81,6 +81,8 @@ public class RepairEventListener implements Listener {
             return;
         }
 
+        if (event.getInventory() == null) return;
+
         Player player = (Player) event.getWhoClicked();
 
         if (event.getInventory().getType() != InventoryType.ANVIL) {

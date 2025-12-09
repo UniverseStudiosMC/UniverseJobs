@@ -313,12 +313,11 @@ public class LanguageManager {
      */
     public List<String> getMessageList(String key, Object... placeholders) {
         List<String> messages = getRawMessageList(key);
-        
+
         if (messages == null || messages.isEmpty()) {
             return List.of(MISSING_MESSAGE_PREFIX + key + MISSING_MESSAGE_SUFFIX);
         }
-        
-        // Replace placeholders in each line
+
         if (placeholders.length > 0) {
             return messages.stream().map(message -> {
                 String result = message;
@@ -327,18 +326,11 @@ public class LanguageManager {
                     String value = String.valueOf(placeholders[i + 1]);
                     result = result.replace(placeholder, value);
                 }
-                
-                // Parse the message and convert to legacy string for backward compatibility
-                Component component = MessageUtils.parseMessage(result);
-                return LegacyComponentSerializer.legacySection().serialize(component);
-            }).toList();
-        } else {
-            // Just parse colors without placeholders
-            return messages.stream().map(message -> {
-                Component component = MessageUtils.parseMessage(message);
-                return LegacyComponentSerializer.legacySection().serialize(component);
+                return result;
             }).toList();
         }
+
+        return messages;
     }
 
     /**

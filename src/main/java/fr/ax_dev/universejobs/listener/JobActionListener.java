@@ -253,6 +253,11 @@ public class JobActionListener implements Listener {
                     .setBlock(event.getBlock())
                     .set(TARGET_KEY, event.getBlock().getType().name());
 
+            String toolType = getToolType(player.getInventory().getItemInMainHand());
+            if (toolType != null) {
+                context.set("tool_type", toolType);
+            }
+
             if (event.getBlock().getBlockData() instanceof Ageable) {
                 Ageable ageable = (Ageable) event.getBlock().getBlockData();
                 context.set("age", String.valueOf(ageable.getAge()));
@@ -892,8 +897,9 @@ public class JobActionListener implements Listener {
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
-        // Only track furnace, blast furnace, smoker, and brewing stand inventories
-        if (event.getInventory().getType() != InventoryType.FURNACE && 
+        if (event.getInventory() == null) return;
+
+        if (event.getInventory().getType() != InventoryType.FURNACE &&
             event.getInventory().getType() != InventoryType.BLAST_FURNACE &&
             event.getInventory().getType() != InventoryType.SMOKER &&
             event.getInventory().getType() != InventoryType.BREWING) {
@@ -1204,7 +1210,8 @@ public class JobActionListener implements Listener {
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onMerchantTradeClick(InventoryClickEvent event) {
-        // Only handle merchant inventory (villager trading)
+        if (event.getInventory() == null) return;
+
         if (event.getInventory().getType() != InventoryType.MERCHANT) {
             return;
         }
@@ -1577,5 +1584,26 @@ public class JobActionListener implements Listener {
         }
 
         return height;
+    }
+
+    private String getToolType(ItemStack item) {
+        if (item == null || item.getType().isAir()) {
+            return null;
+        }
+        String materialName = item.getType().name();
+        if (materialName.endsWith("_PICKAXE")) {
+            return "PICKAXE";
+        } else if (materialName.endsWith("_SHOVEL")) {
+            return "SHOVEL";
+        } else if (materialName.endsWith("_AXE") && !materialName.equals("WAX_AXE")) {
+            return "AXE";
+        } else if (materialName.endsWith("_HOE")) {
+            return "HOE";
+        } else if (materialName.endsWith("_SWORD")) {
+            return "SWORD";
+        } else if (materialName.equals("SHEARS")) {
+            return "SHEARS";
+        }
+        return null;
     }
 }

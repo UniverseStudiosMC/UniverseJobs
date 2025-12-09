@@ -35,6 +35,8 @@ public class OptimizedEventHandler implements Listener {
 
         if (!activeMenuPlayers.contains(playerId)) return;
 
+        if (event.getInventory() == null) return;
+
         InventoryHolder holder = event.getInventory().getHolder();
 
         if (holder instanceof OptimizedMenuHolder menuHolder) {
@@ -75,6 +77,8 @@ public class OptimizedEventHandler implements Listener {
 
         activeMenuPlayers.remove(playerId);
 
+        if (event.getInventory() == null) return;
+
         InventoryHolder holder = event.getInventory().getHolder();
         if (holder instanceof OptimizedMenuHolder menuHolder) {
             if (menuHolder.belongsTo(playerId)) {
@@ -96,6 +100,8 @@ public class OptimizedEventHandler implements Listener {
 
         UUID playerId = player.getUniqueId();
         if (!activeMenuPlayers.contains(playerId)) return;
+
+        if (event.getInventory() == null) return;
 
         InventoryHolder holder = event.getInventory().getHolder();
         if (holder instanceof OptimizedMenuHolder menuHolder) {

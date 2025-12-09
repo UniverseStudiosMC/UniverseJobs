@@ -229,9 +229,6 @@ public class MaterialUtils {
         }
     }
     
-    /**
-     * Get material based on ActionType for better context.
-     */
     private static Material getMaterialForActionType(ActionType actionType, String target) {
         return switch (actionType) {
             case ENCHANT -> getEnchantmentMaterial(target.toLowerCase());
@@ -242,10 +239,52 @@ public class MaterialUtils {
             case SMELT -> Material.FURNACE;
             case MILK -> Material.MILK_BUCKET;
             case EAT -> Material.BREAD;
-            case TAME -> Material.BONE;
-            case BREED -> Material.WHEAT;
+            case TAME -> getTameMaterial(target);
+            case BREED -> getBreedingMaterial(target);
             case SHEAR -> Material.SHEARS;
             default -> null;
+        };
+    }
+
+    private static Material getBreedingMaterial(String entityName) {
+        if (entityName == null) return Material.WHEAT;
+        EntityType entityType = fr.ax_dev.universejobs.utils.EnumUtils.parseEntityType(entityName.trim(), null);
+        if (entityType == null) return Material.WHEAT;
+        return switch (entityType) {
+            case COW, SHEEP, GOAT -> Material.WHEAT;
+            case MOOSHROOM -> Material.WHEAT;
+            case PIG -> Material.CARROT;
+            case CHICKEN -> Material.WHEAT_SEEDS;
+            case RABBIT -> Material.DANDELION;
+            case WOLF -> Material.COOKED_BEEF;
+            case CAT, OCELOT -> Material.COD;
+            case HORSE, DONKEY, MULE, LLAMA, TRADER_LLAMA -> Material.GOLDEN_CARROT;
+            case TURTLE -> Material.SEAGRASS;
+            case PANDA -> Material.BAMBOO;
+            case FOX -> Material.SWEET_BERRIES;
+            case BEE -> Material.POPPY;
+            case STRIDER -> Material.WARPED_FUNGUS;
+            case HOGLIN -> Material.CRIMSON_FUNGUS;
+            case AXOLOTL -> Material.TROPICAL_FISH_BUCKET;
+            case FROG -> Material.SLIME_BALL;
+            case CAMEL -> Material.CACTUS;
+            case SNIFFER -> Material.TORCHFLOWER_SEEDS;
+            case ARMADILLO -> Material.SPIDER_EYE;
+            default -> Material.WHEAT;
+        };
+    }
+
+    private static Material getTameMaterial(String entityName) {
+        if (entityName == null) return Material.BONE;
+        EntityType entityType = fr.ax_dev.universejobs.utils.EnumUtils.parseEntityType(entityName.trim(), null);
+        if (entityType == null) return Material.BONE;
+        return switch (entityType) {
+            case WOLF -> Material.BONE;
+            case CAT, OCELOT -> Material.COD;
+            case PARROT -> Material.WHEAT_SEEDS;
+            case HORSE, DONKEY, MULE, LLAMA, TRADER_LLAMA -> Material.GOLDEN_APPLE;
+            case AXOLOTL -> Material.TROPICAL_FISH_BUCKET;
+            default -> Material.BONE;
         };
     }
     

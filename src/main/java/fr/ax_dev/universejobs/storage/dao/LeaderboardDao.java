@@ -260,6 +260,38 @@ public class LeaderboardDao {
             }
         });
     }
+
+    public CompletableFuture<Void> syncLeaderboardFromPlayerData(String playerDataTable) {
+        return CompletableFuture.runAsync(() -> {
+            String isMysql = plugin.getConfig().getString("database.type", "sqlite").equalsIgnoreCase("mysql") ? "mysql" : "sqlite";
+
+            String sql;
+            if (isMysql.equals("mysql")) {
+                sql = "INSERT INTO " + leaderboardCacheTable + " (player_uuid, player_name, job_id, xp, level, last_updated) " +
+                      "SELECT pd.player_uuid, COALESCE(lc.player_name, 'Unknown'), pd.job_id, pd.xp, pd.level, ? " +
+                      "FROM " + playerDataTable + " pd " +
+                      "LEFT JOIN " + leaderboardCacheTable + " lc ON pd.player_uuid = lc.player_uuid AND pd.job_id = lc.job_id " +
+                      "ON DUPLICATE KEY UPDATE xp = pd.xp, level = pd.level, last_updated = VALUES(last_updated)";
+            } else {
+                sql = "INSERT OR REPLACE INTO " + leaderboardCacheTable + " (player_uuid, player_name, job_id, xp, level, last_updated) " +
+                      "SELECT pd.player_uuid, COALESCE(lc.player_name, 'Unknown'), pd.job_id, pd.xp, pd.level, ? " +
+                      "FROM " + playerDataTable + " pd " +
+                      "LEFT JOIN " + leaderboardCacheTable + " lc ON pd.player_uuid = lc.player_uuid AND pd.job_id = lc.job_id";
+            }
+
+            try (Connection conn = connectionPool.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+                stmt.setLong(1, System.currentTimeMillis());
+                stmt.executeUpdate();
+                invalidateCache();
+
+                plugin.getLogger().info("Leaderboard synchronized with player data");
+            } catch (SQLException e) {
+                plugin.getLogger().warning("Failed to sync leaderboard from player data: " + e.getMessage());
+            }
+        });
+    }
     
     public static class LeaderboardEntry {
         private final UUID playerId;

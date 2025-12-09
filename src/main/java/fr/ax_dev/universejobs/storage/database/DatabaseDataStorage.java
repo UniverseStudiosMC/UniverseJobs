@@ -52,6 +52,11 @@ public class DatabaseDataStorage implements DataStorage {
                 try {
                     connectionPool.initialize();
                     schema.initializeSchema();
+
+                    String playerDataTable = fr.ax_dev.universejobs.storage.SqlIdentifierValidator.buildSafeTableName(
+                        config.getPrefix(), "player_data");
+                    leaderboardDao.syncLeaderboardFromPlayerData(playerDataTable).join();
+
                     plugin.getLogger().info("Database storage initialized successfully");
                 } catch (Exception e) {
                     initialized.set(false);

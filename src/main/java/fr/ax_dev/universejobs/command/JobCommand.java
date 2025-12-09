@@ -4,6 +4,7 @@ import fr.ax_dev.universejobs.UniverseJobs;
 import fr.ax_dev.universejobs.command.handler.*;
 import fr.ax_dev.universejobs.config.LanguageManager;
 import fr.ax_dev.universejobs.job.JobManager;
+import fr.ax_dev.universejobs.utils.MessageUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -264,16 +265,16 @@ public class JobCommand implements CommandExecutor, TabCompleter {
      */
     private void sendHelp(Player player) {
         for (String line : languageManager.getMessageList("commands.help.player")) {
-            player.sendMessage(line);
+            MessageUtils.sendMessage(player, line);
         }
 
         if (player.hasPermission("universejobs.rewards.use")) {
-            player.sendMessage(languageManager.getMessage("commands.help.rewards"));
+            MessageUtils.sendMessage(player, languageManager.getMessage("commands.help.rewards"));
         }
 
         if (player.hasPermission("universejobs.admin")) {
             for (String line : languageManager.getMessageList("commands.help.admin")) {
-                player.sendMessage(line);
+                MessageUtils.sendMessage(player, line);
             }
         }
     }

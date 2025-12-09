@@ -193,35 +193,39 @@ public class ActionProcessor {
         if (!validateActionTarget(action, context, job)) {
             return false;
         }
-        
+
+        if (!validateRequiredTool(action, context, job)) {
+            return false;
+        }
+
         if (!validateInteractType(action, context, job)) {
             return false;
         }
-        
+
         if (!validateProfession(action, context, job)) {
             return false;
         }
-        
+
         if (!validateColor(action, context, job)) {
             return false;
         }
-        
+
         if (!validateNbt(action, context, job)) {
             return false;
         }
-        
+
         if (!validatePotionType(action, context, job)) {
             return false;
         }
-        
+
         if (!validateEnchantLevel(action, context, job)) {
             return false;
         }
-        
+
         if (!validateAge(action, context, job)) {
             return false;
         }
-        
+
         ActionType actionType = job.getActionTypeForAction(action);
         if (!validateFurnaceType(action, context, actionType)) {
             return false;
@@ -276,8 +280,8 @@ public class ActionProcessor {
         
         boolean shouldCancel = false;
         for (JobAction action : actionsList) {
-            // Validation ultra-rapide avec toutes les conditions
             if (!validateActionTargetFast(action, context)) continue;
+            if (!validateRequiredToolFast(action, context)) continue;
             if (!validateInteractTypeFast(action, context, job)) continue;
             if (!validateProfessionFast(action, context)) continue;
             if (!validateColorFast(action, context)) continue;
@@ -312,9 +316,23 @@ public class ActionProcessor {
         return shouldCancel;
     }
     
-    // Fast validation methods (without debug logging for performance)
     private boolean validateActionTargetFast(JobAction action, ConditionContext context) {
-        return configCache.isValidTarget(action.getTarget(), context.getTarget());
+        String target = context.getTarget();
+        if (!configCache.isValidTarget(action.getTarget(), target)) {
+            return false;
+        }
+        if (action.hasBlacklist() && action.isBlacklisted(target)) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean validateRequiredToolFast(JobAction action, ConditionContext context) {
+        if (!action.hasRequiredTool()) {
+            return true;
+        }
+        String toolType = context.get("tool_type");
+        return action.matchesRequiredTool(toolType);
     }
     
     private boolean validateInteractTypeFast(JobAction action, ConditionContext context, Job job) {
@@ -540,17 +558,12 @@ public class ActionProcessor {
         }
     }
     
-    /**
-     * Validate target avec cache ultra-rapide.
-     */
     private boolean validateActionTarget(JobAction action, ConditionContext context, Job job) {
         String actionTarget = action.getTarget();
         String contextTarget = context.getTarget();
-        
-        // Cache lookup instantané
+
         boolean matches = configCache.isValidTarget(actionTarget, contextTarget);
-        
-        // Debug seulement si activé
+
         if (configCache.isDebugEnabled()) {
             if (matches) {
                 plugin.getLogger().info("Target matched! Processing action for player");
@@ -558,7 +571,34 @@ public class ActionProcessor {
                 plugin.getLogger().info("Target mismatch - action: " + actionTarget + ", context: " + contextTarget);
             }
         }
-        
+
+        if (!matches) {
+            return false;
+        }
+
+        if (action.hasBlacklist() && action.isBlacklisted(contextTarget)) {
+            if (configCache.isDebugEnabled()) {
+                plugin.getLogger().info("Target " + contextTarget + " is blacklisted");
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean validateRequiredTool(JobAction action, ConditionContext context, Job job) {
+        if (!action.hasRequiredTool()) {
+            return true;
+        }
+
+        String toolType = context.get("tool_type");
+        boolean matches = action.matchesRequiredTool(toolType);
+
+        if (configCache.isDebugEnabled()) {
+            plugin.getLogger().info("Required-tool check - required: " + action.getRequiredTool() +
+                    ", actual: " + toolType + MATCHES_SUFFIX + matches);
+        }
+
         return matches;
     }
     
