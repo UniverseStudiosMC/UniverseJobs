@@ -32,10 +32,12 @@ Actions define what activities give XP and money in a job. UniverseJobs supports
 
 ```yaml
 actions:
-  break:                            # Action type (lowercase)
-    - target: DIAMOND_ORE           # What to target
-      xp: 50                        # XP reward
-      money: 10                     # Money reward
+  BREAK:                              # Action type (UPPERCASE)
+    break_diamond_ore:                # Unique action key
+      target: "DIAMOND_ORE"           # What to target
+      display-name: "Diamond Ore"     # Display name in GUI
+      xp: 50                          # XP reward
+      money: 10                       # Money reward
 ```
 
 ## Action Properties
@@ -75,14 +77,20 @@ Use `*` to match multiple targets:
 
 ```yaml
 actions:
-  break:
-    - target: "*_ORE"               # All ores (DIAMOND_ORE, IRON_ORE, etc.)
+  BREAK:
+    break_any_ore:
+      target: "*_ORE"
+      display-name: "Any Ore"
       xp: 10
       money: 2
-    - target: "STONE_*"             # All stone variants
+    break_stone_variants:
+      target: "STONE_*"
+      display-name: "Stone Variants"
       xp: 5
       money: 1
-    - target: "*"                   # Everything
+    break_anything:
+      target: "*"
+      display-name: "Any Block"
       xp: 1
       money: 0.1
 ```
@@ -93,10 +101,12 @@ Use mathematical equations for dynamic rewards:
 
 ```yaml
 actions:
-  break:
-    - target: DIAMOND_ORE
-      xp: "10 + ({level} * 2)"      # XP increases with level
-      money: "5 * {level}"          # Money scales with level
+  BREAK:
+    break_diamond_ore:
+      target: "DIAMOND_ORE"
+      display-name: "Diamond Ore"
+      xp: "10 + ({level} * 2)"
+      money: "5 + {level} * 0.5"
 ```
 
 Available variables:
@@ -109,17 +119,22 @@ Available variables:
 
 ```yaml
 actions:
-  break:
-    - target: DIAMOND_ORE
+  BREAK:
+    break_diamond_ore:
+      target: "DIAMOND_ORE"
+      display-name: "<aqua>Diamond Ore"
       xp: 50
       money: 10
-      display-name: "<aqua>Diamond Ore"
 
-    - target: DEEPSLATE_DIAMOND_ORE
+    break_deepslate_diamond_ore:
+      target: "DEEPSLATE_DIAMOND_ORE"
+      display-name: "Deepslate Diamond Ore"
       xp: 60
       money: 12
 
-    - target: ANCIENT_DEBRIS
+    break_ancient_debris:
+      target: "ANCIENT_DEBRIS"
+      display-name: "Ancient Debris"
       xp: 100
       money: 25
       requirements:
@@ -130,12 +145,16 @@ actions:
 
 ```yaml
 actions:
-  place:
-    - target: WHEAT_SEEDS
+  PLACE:
+    place_wheat_seeds:
+      target: "WHEAT_SEEDS"
+      display-name: "Wheat Seeds"
       xp: 2
       money: 0.5
 
-    - target: "nexo:custom_seed"    # Nexo custom item
+    place_custom_seed:
+      target: "nexo:custom_seed"
+      display-name: "Custom Seed"
       xp: 5
       money: 1
 ```
@@ -144,20 +163,28 @@ actions:
 
 ```yaml
 actions:
-  kill:
-    - target: ZOMBIE
+  KILL:
+    kill_zombie:
+      target: "ZOMBIE"
+      display-name: "Zombie"
       xp: 10
       money: 2
 
-    - target: ENDER_DRAGON
+    kill_ender_dragon:
+      target: "ENDER_DRAGON"
+      display-name: "Ender Dragon"
       xp: 5000
       money: 1000
 
-    - target: "mythicmobs:custom_boss"  # MythicMobs
+    kill_mythic_boss:
+      target: "mythicmobs:custom_boss"
+      display-name: "Custom Boss"
       xp: 500
       money: 100
 
-    - target: PLAYER                # PvP
+    kill_player:
+      target: "PLAYER"
+      display-name: "Player Kill"
       xp: 50
       money: 20
 ```
@@ -166,18 +193,24 @@ actions:
 
 ```yaml
 actions:
-  harvest:
-    - target: WHEAT
-      xp: 5
-      money: 1
-      age: "7"                      # Only fully grown
-
-    - target: CARROTS
+  HARVEST:
+    harvest_wheat:
+      target: "WHEAT"
+      display-name: "Wheat"
       xp: 5
       money: 1
       age: "7"
 
-    - target: "customcrops:tomato"  # CustomCrops integration
+    harvest_carrots:
+      target: "CARROTS"
+      display-name: "Carrots"
+      xp: 5
+      money: 1
+      age: "7"
+
+    harvest_tomato:
+      target: "customcrops:tomato"
+      display-name: "Tomato"
       xp: 10
       money: 3
 ```
@@ -186,20 +219,28 @@ actions:
 
 ```yaml
 actions:
-  fish:
-    - target: COD
+  FISH:
+    fish_cod:
+      target: "COD"
+      display-name: "Cod"
       xp: 10
       money: 2
 
-    - target: SALMON
+    fish_salmon:
+      target: "SALMON"
+      display-name: "Salmon"
       xp: 15
       money: 3
 
-    - target: ENCHANTED_BOOK        # Treasure
+    fish_book:
+      target: "ENCHANTED_BOOK"
+      display-name: "Enchanted Book"
       xp: 50
       money: 20
 
-    - target: "customfishing:rare_fish"  # CustomFishing
+    fish_rare:
+      target: "customfishing:rare_fish"
+      display-name: "Rare Fish"
       xp: 100
       money: 50
 ```
@@ -208,16 +249,22 @@ actions:
 
 ```yaml
 actions:
-  craft:
-    - target: DIAMOND_SWORD
+  CRAFT:
+    craft_diamond_sword:
+      target: "DIAMOND_SWORD"
+      display-name: "Diamond Sword"
       xp: 30
       money: 5
 
-    - target: DIAMOND_CHESTPLATE
+    craft_diamond_chestplate:
+      target: "DIAMOND_CHESTPLATE"
+      display-name: "Diamond Chestplate"
       xp: 80
       money: 15
 
-    - target: "nexo:custom_item"    # Nexo crafting
+    craft_custom_item:
+      target: "nexo:custom_item"
+      display-name: "Custom Item"
       xp: 50
       money: 10
 ```
@@ -226,14 +273,18 @@ actions:
 
 ```yaml
 actions:
-  smelt:
-    - target: IRON_INGOT
+  SMELT:
+    smelt_iron:
+      target: "IRON_INGOT"
+      display-name: "Iron Ingot"
       xp: 10
       money: 2
-      blacklisted-furnaces:         # Exclude specific furnaces
+      blacklisted-furnaces:
         - "BLAST_FURNACE"
 
-    - target: GOLD_INGOT
+    smelt_gold:
+      target: "GOLD_INGOT"
+      display-name: "Gold Ingot"
       xp: 15
       money: 3
 ```
@@ -242,18 +293,24 @@ actions:
 
 ```yaml
 actions:
-  enchant:
-    - target: SHARPNESS
+  ENCHANT:
+    enchant_sharpness:
+      target: "SHARPNESS"
+      display-name: "Sharpness"
       xp: 20
       money: 5
-      enchant-level: "1-5"          # Level range
+      enchant-level: "1-5"
 
-    - target: EFFICIENCY
+    enchant_efficiency:
+      target: "EFFICIENCY"
+      display-name: "Efficiency V"
       xp: 15
       money: 4
-      enchant-level: "5"            # Specific level
+      enchant-level: "5"
 
-    - target: "excellentenchants:tunnel"  # Custom enchants
+    enchant_tunnel:
+      target: "excellentenchants:tunnel"
+      display-name: "Tunnel"
       xp: 50
       money: 15
 ```
@@ -262,31 +319,39 @@ actions:
 
 ```yaml
 actions:
-  brew:
-    - target: SPEED
+  BREW:
+    brew_speed:
+      target: "SPEED"
+      display-name: "Speed Potion"
       xp: 20
       money: 5
 
-    - target: STRENGTH
+    brew_strength:
+      target: "STRENGTH"
+      display-name: "Strength II"
       xp: 25
       money: 8
-      potion-type: "STRENGTH:2"     # Level 2 only
+      potion-type: "STRENGTH:2"
 ```
 
 ### TRADE - Villager Trading
 
 ```yaml
 actions:
-  trade:
-    - target: EMERALD
+  TRADE:
+    trade_emerald_armorer:
+      target: "EMERALD"
+      display-name: "Armorer Trade"
       xp: 10
       money: 0
-      profession: "ARMORER"         # Only armorers
+      profession: "ARMORER"
 
-    - target: ENCHANTED_BOOK
+    trade_book:
+      target: "ENCHANTED_BOOK"
+      display-name: "Book Trade"
       xp: 30
       money: 5
-      profession:                   # Multiple professions
+      profession:
         - "LIBRARIAN"
         - "CLERIC"
 ```
@@ -295,41 +360,53 @@ actions:
 
 ```yaml
 actions:
-  breed:
-    - target: COW
+  BREED:
+    breed_cow:
+      target: "COW"
+      display-name: "Cow"
+      display-material: "WHEAT"
       xp: 15
       money: 3
-      display-material: WHEAT       # Show wheat icon
 
-    - target: CHICKEN
+    breed_chicken:
+      target: "CHICKEN"
+      display-name: "Chicken"
+      display-material: "WHEAT_SEEDS"
       xp: 10
       money: 2
-      display-material: WHEAT_SEEDS
 
-    - target: WOLF
+    breed_wolf:
+      target: "WOLF"
+      display-name: "Wolf"
+      display-material: "COOKED_BEEF"
       xp: 25
       money: 5
-      display-material: COOKED_BEEF
 ```
 
 ### SHEAR - Shearing Sheep
 
 ```yaml
 actions:
-  shear:
-    - target: SHEEP
+  SHEAR:
+    shear_sheep:
+      target: "SHEEP"
+      display-name: "Sheep"
       xp: 5
       money: 1
 
-    - target: SHEEP
+    shear_pink_sheep:
+      target: "SHEEP"
+      display-name: "Pink Sheep"
       xp: 15
       money: 5
-      color: "PINK"                 # Pink sheep only
+      color: "PINK"
 
-    - target: SHEEP
+    shear_colored_sheep:
+      target: "SHEEP"
+      display-name: "Colored Sheep"
       xp: 10
       money: 3
-      color:                        # Multiple colors
+      color:
         - "RED"
         - "BLUE"
 ```
@@ -338,35 +415,47 @@ actions:
 
 ```yaml
 actions:
-  eat:
-    - target: GOLDEN_APPLE
+  EAT:
+    eat_golden_apple:
+      target: "GOLDEN_APPLE"
+      display-name: "Golden Apple"
       xp: 50
       money: 10
 
-    - target: COOKED_BEEF
+    eat_cooked_beef:
+      target: "COOKED_BEEF"
+      display-name: "Cooked Beef"
       xp: 5
       money: 1
 
-    - target: "*"                   # Any food
+    eat_custom_food:
+      target: "*"
+      display-name: "Custom Food"
       xp: 2
       money: 0.5
-      nbt: "mmoitems:custom_food"   # Custom item only
+      nbt: "mmoitems:custom_food"
 ```
 
 ### REPAIR - Repairing Items
 
 ```yaml
 actions:
-  repair:
-    - target: DIAMOND_PICKAXE
+  REPAIR:
+    repair_diamond_pickaxe:
+      target: "DIAMOND_PICKAXE"
+      display-name: "Diamond Pickaxe"
       xp: 30
       money: 5
 
-    - target: NETHERITE_SWORD
+    repair_netherite_sword:
+      target: "NETHERITE_SWORD"
+      display-name: "Netherite Sword"
       xp: 50
       money: 15
 
-    - target: "*_CHESTPLATE"        # Any chestplate
+    repair_any_chestplate:
+      target: "*_CHESTPLATE"
+      display-name: "Any Chestplate"
       xp: 40
       money: 10
 ```
@@ -375,12 +464,14 @@ actions:
 
 ```yaml
 actions:
-  explore:
-    - target: "*"                   # Any chunk
+  EXPLORE:
+    explore_overworld:
+      target: "*"
+      display-name: "Explore Chunk"
       xp: 5
       money: 1
       requirements:
-        world: "world"              # Overworld only
+        world: "world"
 ```
 
 ## Action Limits
@@ -389,15 +480,17 @@ Prevent farming/exploiting:
 
 ```yaml
 actions:
-  break:
-    - target: DIAMOND_ORE
+  BREAK:
+    break_diamond_ore:
+      target: "DIAMOND_ORE"
+      display-name: "Diamond Ore"
       xp: 50
       money: 10
       limits:
-        max-action-per-period: 100  # Max 100 per period
-        cooldown-minutes: 60        # Reset after 60 minutes
-        block-exp: true             # Block XP when limit reached
-        block-money: true           # Block money when limit reached
+        max-action-per-period: 100
+        cooldown-minutes: 60
+        block-exp: true
+        block-money: true
 ```
 
 ## Requirements
@@ -406,8 +499,10 @@ Add conditions to actions (see [Conditions](Conditions) page):
 
 ```yaml
 actions:
-  break:
-    - target: DIAMOND_ORE
+  BREAK:
+    break_diamond_ore:
+      target: "DIAMOND_ORE"
+      display-name: "Diamond Ore"
       xp: 50
       money: 10
       requirements:
@@ -422,14 +517,15 @@ actions:
 
 ```yaml
 actions:
-  break:
-    - target: DIAMOND_ORE
-      xp: 50
-      money: 10
+  BREAK:
+    break_diamond_ore:
+      target: "DIAMOND_ORE"
       display-name: "<gradient:#00FFFF:#0080FF>Diamond Mining</gradient>"
-      display-material: "DIAMOND:1001"  # Material:CustomModelData
+      display-material: "DIAMOND:1001"
+      action-menu-priority: 1
       lore:
         - "<gray>Mine diamond ore"
         - "<gray>to get rich!"
-      action-menu-priority: 1       # Show first in menu
+      xp: 50
+      money: 10
 ```

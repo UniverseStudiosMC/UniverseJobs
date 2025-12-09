@@ -54,11 +54,15 @@ gui-reward: "miner_rewards_gui"     # Reward GUI file name
 
 # Actions (see Actions page for details)
 actions:
-  break:
-    - target: DIAMOND_ORE
+  BREAK:
+    break_diamond_ore:
+      target: "DIAMOND_ORE"
+      display-name: "Diamond Ore"
       xp: 50
       money: 10
-    - target: IRON_ORE
+    break_iron_ore:
+      target: "IRON_ORE"
+      display-name: "Iron Ore"
       xp: 20
       money: 5
 ```
@@ -161,20 +165,30 @@ rewards: "fisherman_rewards"
 gui-reward: "fisherman_rewards_gui"
 
 actions:
-  fish:
-    - target: COD
+  FISH:
+    fish_cod:
+      target: "COD"
+      display-name: "Cod"
       xp: 10
       money: 2
-    - target: SALMON
+    fish_salmon:
+      target: "SALMON"
+      display-name: "Salmon"
       xp: 15
       money: 3
-    - target: TROPICAL_FISH
+    fish_tropical:
+      target: "TROPICAL_FISH"
+      display-name: "Tropical Fish"
       xp: 25
       money: 5
-    - target: PUFFERFISH
+    fish_pufferfish:
+      target: "PUFFERFISH"
+      display-name: "Pufferfish"
       xp: 20
       money: 4
-    - target: "*"                   # Wildcard for any fish
+    fish_any:
+      target: "*"
+      display-name: "Any Fish"
       xp: 5
       money: 1
 ```
