@@ -18,13 +18,11 @@ public class ExpressionEvaluator {
      * @return The result of the evaluation
      */
     public static double evaluate(String expression, String variableName, double variableValue) {
-        // Replace variable with value
-        String expr = expression.replace(variableName, String.valueOf(variableValue));
-        
-        // Handle Math functions
+        String expr = expression.replace("{" + variableName + "}", String.valueOf(variableValue));
+        expr = expr.replace(variableName, String.valueOf(variableValue));
+
         expr = processMathFunctions(expr);
-        
-        // Convert to postfix and evaluate
+
         return evaluatePostfix(infixToPostfix(expr));
     }
     

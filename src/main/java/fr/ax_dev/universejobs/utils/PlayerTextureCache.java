@@ -10,6 +10,7 @@ import org.bukkit.profile.PlayerProfile;
 import java.io.File;
 import java.io.FileReader;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
@@ -32,8 +33,48 @@ public class PlayerTextureCache {
     private static volatile long lastUserCacheLoad = 0;
     private static final long USER_CACHE_RELOAD_INTERVAL = TimeUnit.MINUTES.toMillis(5);
 
+    private static volatile Boolean hasPaperProfileApi = null;
+    private static Method paperCreateProfileMethod = null;
+    private static Method paperFillFromCacheMethod = null;
+
     public static void init() {
         loadUserCache();
+        detectPaperProfileApi();
+    }
+
+    private static void detectPaperProfileApi() {
+        if (hasPaperProfileApi != null) return;
+        try {
+            Class<?> serverClass = Bukkit.getServer().getClass();
+            paperCreateProfileMethod = serverClass.getMethod("createProfile", UUID.class, String.class);
+            Class<?> profileClass = Class.forName("com.destroystokyo.paper.profile.PlayerProfile");
+            paperFillFromCacheMethod = profileClass.getMethod("complete", boolean.class);
+            hasPaperProfileApi = true;
+            Bukkit.getLogger().info("[UniverseJobs] Paper PlayerProfile API detected - using optimized player head caching");
+        } catch (Exception e) {
+            hasPaperProfileApi = false;
+        }
+    }
+
+    private static PlayerProfile tryPaperCacheFirst(UUID playerId, String playerName) {
+        if (hasPaperProfileApi == null) detectPaperProfileApi();
+        if (!Boolean.TRUE.equals(hasPaperProfileApi)) return null;
+        try {
+            Object paperProfile = paperCreateProfileMethod.invoke(Bukkit.getServer(), playerId, playerName);
+            Boolean completed = (Boolean) paperFillFromCacheMethod.invoke(paperProfile, false);
+            if (completed) {
+                Method getTexturesMethod = paperProfile.getClass().getMethod("getTextures");
+                Object textures = getTexturesMethod.invoke(paperProfile);
+                Method getSkinMethod = textures.getClass().getMethod("getSkin");
+                Object skin = getSkinMethod.invoke(textures);
+                if (skin != null) {
+                    PlayerProfile bukkitProfile = Bukkit.createPlayerProfile(playerId, playerName);
+                    bukkitProfile.getTextures().setSkin((URL) skin);
+                    return bukkitProfile;
+                }
+            }
+        } catch (Exception ignored) {}
+        return null;
     }
 
     private static void loadUserCache() {
@@ -82,6 +123,12 @@ public class PlayerTextureCache {
             if (cached != null && cached.getTextures().getSkin() != null) {
                 return CompletableFuture.completedFuture(cached);
             }
+        }
+
+        PlayerProfile paperCached = tryPaperCacheFirst(playerId, playerName);
+        if (paperCached != null && paperCached.getTextures().getSkin() != null) {
+            cacheProfile(playerId, paperCached);
+            return CompletableFuture.completedFuture(paperCached);
         }
 
         return CompletableFuture.supplyAsync(() -> {
