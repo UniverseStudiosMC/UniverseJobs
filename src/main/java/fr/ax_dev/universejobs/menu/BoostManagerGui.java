@@ -139,108 +139,70 @@ public class BoostManagerGui implements InventoryHolder {
         item.setItemMeta(meta);
         return item;
     }
-    
+
     private void placeXpBoosts(Inventory gui, List<XpBonus> boosts) {
         List<Integer> slots = config.getXpBoostConfig().slots;
         for (int i = 0; i < Math.min(boosts.size(), slots.size()); i++) {
             XpBonus boost = boosts.get(i);
             int slot = slots.get(i);
-            ItemStack item = createXpBoostItem(boost);
+            ItemStack item = createBoostItem(boost, config.getXpBoostConfig());
             gui.setItem(slot, item);
         }
     }
-    
+
     private void placeMoneyBoosts(Inventory gui, List<MoneyBonus> boosts) {
         List<Integer> slots = config.getMoneyBoostConfig().slots;
         for (int i = 0; i < Math.min(boosts.size(), slots.size()); i++) {
             MoneyBonus boost = boosts.get(i);
             int slot = slots.get(i);
-            ItemStack item = createMoneyBoostItem(boost);
+            ItemStack item = createBoostItem(boost, config.getMoneyBoostConfig());
             gui.setItem(slot, item);
         }
     }
-    
-    private ItemStack createXpBoostItem(XpBonus boost) {
-        BoostMenuConfig.BoostItemConfig itemConfig = config.getXpBoostConfig();
+
+    private ItemStack createBoostItem(BaseBonus boost, BoostMenuConfig.BoostItemConfig itemConfig) {
         ItemStack item = new ItemStack(itemConfig.material);
         ItemMeta meta = item.getItemMeta();
-        
+
         // Préparer les variables pour le formatage
         Map<String, String> variables = createVariableMap(boost);
-        
+
         // Formater le nom avec <!italic>
         String formattedName = formatString(itemConfig.displayName, variables);
         Component displayName = miniMessage.deserialize("<!italic>" + formattedName);
         meta.displayName(displayName);
-        
+
         // Formater la lore avec <!italic>
         List<Component> lore = itemConfig.lore.stream()
-            .map(line -> formatString(line, variables))
-            .map(line -> miniMessage.deserialize("<!italic>" + line))
-            .collect(Collectors.toList());
+                .map(line -> formatString(line, variables))
+                .map(line -> miniMessage.deserialize("<!italic>" + line))
+                .collect(Collectors.toList());
         meta.lore(lore);
 
         if (itemConfig.modelData != null && !itemConfig.modelData.isEmpty()) {
             itemConfig.modelData.applyTo(meta);
         }
-        
-        // Glow effect
-        if (itemConfig.glow) {
-            meta.addEnchant(Enchantment.LURE, 1, true);
-            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        }
-        
-        // Stocker l'ID du boost dans les métadonnées personnalisées
-        meta.getPersistentDataContainer().set(
-            new org.bukkit.NamespacedKey(plugin, "boost_id"), 
-            org.bukkit.persistence.PersistentDataType.STRING, 
-            boost.getBoostId()
-        );
-        
-        item.setItemMeta(meta);
-        return item;
-    }
-    
-    private ItemStack createMoneyBoostItem(MoneyBonus boost) {
-        BoostMenuConfig.BoostItemConfig itemConfig = config.getMoneyBoostConfig();
-        ItemStack item = new ItemStack(itemConfig.material);
-        ItemMeta meta = item.getItemMeta();
-        
-        // Préparer les variables pour le formatage
-        Map<String, String> variables = createVariableMap(boost);
-        
-        // Formater le nom avec <!italic>
-        String formattedName = formatString(itemConfig.displayName, variables);
-        Component displayName = miniMessage.deserialize("<!italic>" + formattedName);
-        meta.displayName(displayName);
-        
-        // Formater la lore avec <!italic>
-        List<Component> lore = itemConfig.lore.stream()
-            .map(line -> formatString(line, variables))
-            .map(line -> miniMessage.deserialize("<!italic>" + line))
-            .collect(Collectors.toList());
-        meta.lore(lore);
 
-        if (itemConfig.modelData != null && !itemConfig.modelData.isEmpty()) {
-            itemConfig.modelData.applyTo(meta);
-        }
-        
         // Glow effect
         if (itemConfig.glow) {
             meta.addEnchant(Enchantment.LURE, 1, true);
             meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         }
-        
+
         // Stocker l'ID du boost dans les métadonnées personnalisées
         meta.getPersistentDataContainer().set(
-            new org.bukkit.NamespacedKey(plugin, "boost_id"), 
-            org.bukkit.persistence.PersistentDataType.STRING, 
-            boost.getBoostId()
+                new org.bukkit.NamespacedKey(plugin, "boost_id"),
+                org.bukkit.persistence.PersistentDataType.STRING,
+                boost.getBoostId()
         );
-        
+
         item.setItemMeta(meta);
         return item;
     }
+
+
+
+
     
     private Map<String, String> createVariableMap(BaseBonus boost) {
         Map<String, String> variables = new HashMap<>();
