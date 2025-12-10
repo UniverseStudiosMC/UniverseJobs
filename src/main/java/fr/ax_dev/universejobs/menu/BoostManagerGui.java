@@ -179,8 +179,7 @@ public class BoostManagerGui implements InventoryHolder {
             .map(line -> miniMessage.deserialize("<!italic>" + line))
             .collect(Collectors.toList());
         meta.lore(lore);
-        
-        // Custom model data
+
         if (itemConfig.modelData != null && !itemConfig.modelData.isEmpty()) {
             itemConfig.modelData.applyTo(meta);
         }
@@ -221,8 +220,7 @@ public class BoostManagerGui implements InventoryHolder {
             .map(line -> miniMessage.deserialize("<!italic>" + line))
             .collect(Collectors.toList());
         meta.lore(lore);
-        
-        // Custom model data
+
         if (itemConfig.modelData != null && !itemConfig.modelData.isEmpty()) {
             itemConfig.modelData.applyTo(meta);
         }
