@@ -38,7 +38,8 @@ static-items:
       - "<gray>view its rankings"
     amount: 1
     slots: [4]
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
     glow: true
     hide-attributes: true
     hide-enchants: true
@@ -57,7 +58,8 @@ static-items:
       - "<gray>- Total XP (secondary)"
     amount: 1
     slots: [8]
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
     glow: false
     hide-attributes: true
     hide-enchants: false
@@ -70,7 +72,8 @@ job-selection:
     slots:
     selected:
       material: "{job_material}"
-      custom-model-data: "{job_custom-model-data}"
+      model_data_component:
+        strings: [ "{job_model_data_component_strings}" ]
       display-name: "<#FFD700>{job_name}"
       lore:
         - ""
@@ -87,7 +90,8 @@ job-selection:
 
     not_selected:
       material: "{job_material}"
-      custom-model-data: "{job_custom-model-data}"
+      model_data_component:
+        strings: [ "{job_model_data_component_strings}" ]
       display-name: "<#FFD700>{job_name}"
       lore:
         - ""
@@ -115,7 +119,8 @@ navigation-items:
       - "<gray>Players: <#FFD700>{total_players}"
     amount: 1
     slots: [45]
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
     glow: false
     hide-attributes: true
     hide-enchants: false
@@ -132,7 +137,8 @@ navigation-items:
       - "<gray>Players: <#FFD700>{total_players}"
     amount: 1
     slots: [53]
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
     glow: false
     hide-attributes: true
     hide-enchants: false
@@ -146,7 +152,8 @@ navigation-items:
       - "<#FFD700>Click to go back to the main jobs menu"
     amount: 1
     slots: [48]
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
     glow: false
     hide-attributes: true
     hide-enchants: false
@@ -160,7 +167,8 @@ navigation-items:
       - "<#FFD700>Click to close this menu"
     amount: 1
     slots: [49]
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
     glow: false
     hide-attributes: true
     hide-enchants: false
@@ -179,7 +187,8 @@ navigation-items:
       - "<gray>if you have joined this job"
     amount: 1
     slots: [50]
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
     glow: false
     hide-attributes: true
     hide-enchants: false
@@ -206,7 +215,8 @@ ranking-entries:
     glow: true
     hide-attributes: true
     hide-enchants: false
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
 
   # Rank 2 - Second place
   rank-2:
@@ -224,7 +234,8 @@ ranking-entries:
     glow: false
     hide-attributes: true
     hide-enchants: false
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
 
   # Rank 3 - Third place
   rank-3:
@@ -242,7 +253,8 @@ ranking-entries:
     glow: false
     hide-attributes: true
     hide-enchants: false
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
 
   # Ranks 4-10 - Top 10
   rank-top10:
@@ -263,7 +275,8 @@ ranking-entries:
     glow: false
     hide-attributes: true
     hide-enchants: false
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
 
   # Default ranks (11+)
   rank-default:
@@ -282,7 +295,8 @@ ranking-entries:
     glow: false
     hide-attributes: true
     hide-enchants: false
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
 
 # Available placeholders for ranking entries:
 # {rank} - The player's rank number

@@ -1,6 +1,7 @@
 package fr.ax_dev.universejobs.reward;
 
 import fr.ax_dev.universejobs.condition.ConditionGroup;
+import fr.ax_dev.universejobs.item.ModelDataComponentConfig;
 import org.bukkit.configuration.ConfigurationSection;
 import java.util.ArrayList;
 import java.util.List;
@@ -267,7 +268,7 @@ public class Reward {
         private final int amount;
         private final String displayName;
         private final List<String> lore;
-        private final int customModelData;
+        private final ModelDataComponentConfig modelData;
         private final String nexoId;
         private final String itemsAdderId;
         
@@ -281,7 +282,7 @@ public class Reward {
             this.amount = config.getInt("amount", 1);
             this.displayName = config.getString("display-name");
             this.lore = config.getStringList("lore");
-            this.customModelData = config.getInt("custom-model-data", -1);
+            this.modelData = ModelDataComponentConfig.fromSection(config);
             this.nexoId = config.getString("nexo-id");
             this.itemsAdderId = config.getString("itemsadder-id");
         }
@@ -290,11 +291,11 @@ public class Reward {
         public int getAmount() { return amount; }
         public String getDisplayName() { return displayName; }
         public List<String> getLore() { return new ArrayList<>(lore); }
-        public int getCustomModelData() { return customModelData; }
+        public ModelDataComponentConfig getModelData() { return modelData; }
         public String getNexoId() { return nexoId; }
         public String getItemsAdderId() { return itemsAdderId; }
-        
-        public boolean hasCustomModelData() { return customModelData != -1; }
+
+        public boolean hasModelData() { return modelData != null && !modelData.isEmpty(); }
         public boolean isNexoItem() { return nexoId != null && !nexoId.isEmpty(); }
         public boolean isItemsAdderItem() { return itemsAdderId != null && !itemsAdderId.isEmpty(); }
     }

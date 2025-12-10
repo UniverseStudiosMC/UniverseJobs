@@ -7,7 +7,8 @@ max-level: 100
 permission: "UniverseJobs.job.lumberjack"
 icon:
   material: "DIAMOND_AXE"
-  custom-model-data: ""
+  model_data_component:
+    strings: [ ]
 
 rewards: "lumberjack_rewards"
 gui-reward: "lumberjack_rewards_gui"

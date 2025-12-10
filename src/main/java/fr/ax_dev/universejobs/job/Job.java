@@ -3,6 +3,7 @@ package fr.ax_dev.universejobs.job;
 import fr.ax_dev.universejobs.action.ActionType;
 import fr.ax_dev.universejobs.action.JobAction;
 import fr.ax_dev.universejobs.integration.McMMOHandler;
+import fr.ax_dev.universejobs.item.ModelDataComponentConfig;
 import fr.ax_dev.universejobs.xp.XpCurve;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -24,7 +25,6 @@ public class Job {
     private final int maxLevel;
     private final Map<ActionType, List<JobAction>> actions;
     private final String iconMaterial;
-    private final int customModelData;
     private final String iconTexture;
     private final boolean enabled;
     private final String xpType; // CURVE or EQUATION
@@ -35,6 +35,7 @@ public class Job {
     private final XpMessageSettings xpMessageSettings;
     private final String guiReward;
     private final String rewardsFile;
+    private final ModelDataComponentConfig iconModelData;
     private final ConfigurationSection config;
     private final Map<String, McMMOHandler.McMMOAbilityConfig> mcmmoConfig;
     
@@ -58,18 +59,15 @@ public class Job {
         this.lore = config.getStringList("lore");
         this.permission = config.getString("permission", "universejobs.job." + id.toLowerCase());
         this.maxLevel = config.getInt("max-level", 100);
-        
+
         ConfigurationSection iconSection = config.getConfigurationSection("icon");
         if (iconSection != null) {
             this.iconMaterial = iconSection.getString("material", "STONE");
             this.iconTexture = iconSection.getString("player-head", null);
-
-            String customModelStr = iconSection.getString("custom-model-data", "");
-            this.customModelData = customModelStr.isEmpty() ? 0 :
-                Integer.parseInt(customModelStr.replaceAll("[^0-9]", "0"));
+            this.iconModelData = ModelDataComponentConfig.fromSection(iconSection);
         } else {
             this.iconMaterial = config.getString("icon", "STONE");
-            this.customModelData = 0;
+            this.iconModelData = ModelDataComponentConfig.fromSection(config);
             this.iconTexture = null;
         }
         
@@ -239,8 +237,8 @@ public class Job {
      * 
      * @return The custom model data value, or 0 if not set
      */
-    public int getCustomModelData() {
-        return customModelData;
+    public ModelDataComponentConfig getIconModelData() {
+        return iconModelData;
     }
 
     public String getIconTexture() {

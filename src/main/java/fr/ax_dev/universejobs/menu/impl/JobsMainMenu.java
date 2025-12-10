@@ -275,8 +275,11 @@ public class JobsMainMenu extends BaseMenu {
         jobConfigMap.put("hide-attributes", format.isHideAttributes());
         jobConfigMap.put("hide-enchants", format.isHideEnchants());
 
-        if (job.getCustomModelData() > 0) {
-            jobConfigMap.put("custom-model-data", job.getCustomModelData());
+        if (job.getIconModelData() != null && !job.getIconModelData().isEmpty()) {
+            Map<String, Object> modelDataValues = job.getIconModelData().toConfigurationValues();
+            for (Map.Entry<String, Object> entry : modelDataValues.entrySet()) {
+                jobConfigMap.put(entry.getKey(), entry.getValue());
+            }
         }
 
         if (job.hasIconTexture()) {

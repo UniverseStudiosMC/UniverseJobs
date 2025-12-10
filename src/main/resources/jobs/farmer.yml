@@ -7,7 +7,8 @@ max-level: 100
 permission: "UniverseJobs.job.farmer"
 icon:
   material: "DIAMOND_HOE"
-  custom-model-data: ""
+  model_data_component:
+    strings: [ ]
 
 rewards: "farmer_rewards"
 gui-reward: "farmer_rewards_gui"

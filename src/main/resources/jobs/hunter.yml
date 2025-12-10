@@ -7,7 +7,8 @@ max-level: 100
 permission: "UniverseJobs.job.hunter"
 icon:
   material: "BOW"
-  custom-model-data: ""
+  model_data_component:
+    strings: [ ]
 
 rewards: "hunter_rewards"
 gui-reward: "hunter_rewards_gui"

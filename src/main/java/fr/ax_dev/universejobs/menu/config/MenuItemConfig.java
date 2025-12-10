@@ -1,5 +1,6 @@
 package fr.ax_dev.universejobs.menu.config;
 
+import fr.ax_dev.universejobs.item.ModelDataComponentConfig;
 import org.bukkit.configuration.ConfigurationSection;
 import fr.ax_dev.universejobs.UniverseJobs;
 
@@ -15,7 +16,7 @@ public class MenuItemConfig {
     private final int amount;
     private final String displayName;
     private List<String> lore;
-    private final int customModelData;
+    private final ModelDataComponentConfig modelData;
     private final Map<String, Integer> enchantments;
     private final boolean glow;
     private final boolean hideAttributes;
@@ -34,15 +35,16 @@ public class MenuItemConfig {
     private final String elseMaterial;
     private final String elseDisplayName;
     private final List<String> elseLore;
-    private final int elseCustomModelData;
+    private final ModelDataComponentConfig elseModelData;
     
     public MenuItemConfig(ConfigurationSection config) {
         this(config, null);
     }
 
     public MenuItemConfig(ConfigurationSection config, ConfigurationSection globalDefaults) {
+        ConfigurationSection defaultsSection = resolveDefaultsSection(globalDefaults);
         // Get global defaults
-        Map<String, Object> defaults = getGlobalDefaults(globalDefaults);
+        Map<String, Object> defaults = getGlobalDefaults(defaultsSection);
 
         this.enabled = config.getBoolean("enabled", (Boolean) defaults.getOrDefault("enabled", true));
         this.material = config.getString("material", (String) defaults.getOrDefault("material", "STONE"));
@@ -55,8 +57,12 @@ public class MenuItemConfig {
         if (this.lore.isEmpty() && !defaultLore.isEmpty()) {
             this.lore = new ArrayList<>(defaultLore);
         }
-        
-        this.customModelData = config.getInt("custom-model-data", (Integer) defaults.getOrDefault("custom-model-data", 0));
+
+        ModelDataComponentConfig defaultModelData = defaultsSection != null
+                ? ModelDataComponentConfig.fromSection(defaultsSection)
+                : ModelDataComponentConfig.empty();
+        ModelDataComponentConfig resolvedModelData = ModelDataComponentConfig.fromSection(config);
+        this.modelData = resolvedModelData.isEmpty() ? defaultModelData : resolvedModelData;
         this.glow = config.getBoolean("glow", (Boolean) defaults.getOrDefault("glow", false));
         this.hideAttributes = config.getBoolean("hide-attributes", (Boolean) defaults.getOrDefault("hide-attributes", false));
         this.hideEnchants = config.getBoolean("hide-enchants", (Boolean) defaults.getOrDefault("hide-enchants", false));
@@ -76,12 +82,12 @@ public class MenuItemConfig {
             this.elseMaterial = elseSection.getString("material", "");
             this.elseDisplayName = elseSection.getString("display-name", "");
             this.elseLore = elseSection.getStringList("lore");
-            this.elseCustomModelData = elseSection.getInt("custom-model-data", 0);
+            this.elseModelData = ModelDataComponentConfig.fromSection(elseSection);
         } else {
             this.elseMaterial = "";
             this.elseDisplayName = "";
             this.elseLore = new ArrayList<>();
-            this.elseCustomModelData = 0;
+            this.elseModelData = ModelDataComponentConfig.empty();
         }
         
         // Load enchantments
@@ -105,7 +111,6 @@ public class MenuItemConfig {
         configMap.put("amount", 1);
         configMap.put("display-name", displayName);
         configMap.put("lore", Arrays.asList(lore));
-        configMap.put("custom-model-data", 0);
         configMap.put("glow", false);
         configMap.put("hide-attributes", false);
         configMap.put("hide-enchants", false);
@@ -127,7 +132,6 @@ public class MenuItemConfig {
         configMap.put("amount", 1);
         configMap.put("display-name", displayName);
         configMap.put("lore", Arrays.asList(lore));
-        configMap.put("custom-model-data", 0);
         configMap.put("glow", false);
         configMap.put("hide-attributes", false);
         configMap.put("hide-enchants", false);
@@ -145,7 +149,7 @@ public class MenuItemConfig {
     public int getAmount() { return amount; }
     public String getDisplayName() { return displayName; }
     public List<String> getLore() { return new ArrayList<>(lore); }
-    public int getCustomModelData() { return customModelData; }
+    public ModelDataComponentConfig getModelData() { return modelData; }
     public Map<String, Integer> getEnchantments() { return new HashMap<>(enchantments); }
     public boolean isGlow() { return glow; }
     public boolean isHideAttributes() { return hideAttributes; }
@@ -164,22 +168,25 @@ public class MenuItemConfig {
     public String getElseMaterial() { return elseMaterial; }
     public String getElseDisplayName() { return elseDisplayName; }
     public List<String> getElseLore() { return new ArrayList<>(elseLore); }
-    public int getElseCustomModelData() { return elseCustomModelData; }
+    public ModelDataComponentConfig getElseModelData() { return elseModelData; }
     
     public boolean hasElseConfiguration() {
         return elseMaterial != null && !elseMaterial.isEmpty();
     }
-    
-    private static Map<String, Object> getGlobalDefaults(ConfigurationSection explicitDefaults) {
-        try {
-            ConfigurationSection defaultsSection = explicitDefaults;
 
-            if (defaultsSection == null) {
-                UniverseJobs plugin = UniverseJobs.getInstance();
-                if (plugin != null) {
-                    defaultsSection = plugin.getConfig().getConfigurationSection("gui-default-settings");
-                }
-            }
+    private static ConfigurationSection resolveDefaultsSection(ConfigurationSection explicitDefaults) {
+        if (explicitDefaults != null) {
+            return explicitDefaults;
+        }
+        UniverseJobs plugin = UniverseJobs.getInstance();
+        if (plugin != null) {
+            return plugin.getConfig().getConfigurationSection("gui-default-settings");
+        }
+        return null;
+    }
+
+    private static Map<String, Object> getGlobalDefaults(ConfigurationSection defaultsSection) {
+        try {
 
             if (defaultsSection != null) {
                 Map<String, Object> defaults = new HashMap<>();
@@ -192,7 +199,6 @@ public class MenuItemConfig {
                 defaults.put("hide-attributes", defaultsSection.getBoolean("hide-attributes", true));
                 defaults.put("hide-enchants", defaultsSection.getBoolean("hide-enchants", true));
                 defaults.put("sound", defaultsSection.getString("sound", ""));
-                defaults.put("custom-model-data", defaultsSection.getInt("custom-model-data", 0));
                 defaults.put("action", defaultsSection.getString("action", "none"));
                 return defaults;
             }
@@ -211,9 +217,7 @@ public class MenuItemConfig {
         defaults.put("hide-attributes", true);
         defaults.put("hide-enchants", true);
         defaults.put("sound", "");
-        defaults.put("custom-model-data", 0);
         defaults.put("action", "none");
         return defaults;
     }
-    
 }

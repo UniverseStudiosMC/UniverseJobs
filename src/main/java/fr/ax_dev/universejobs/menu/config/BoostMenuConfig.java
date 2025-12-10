@@ -1,6 +1,7 @@
 package fr.ax_dev.universejobs.menu.config;
 
 import fr.ax_dev.universejobs.UniverseJobs;
+import fr.ax_dev.universejobs.item.ModelDataComponentConfig;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
@@ -66,7 +67,7 @@ public class BoostMenuConfig {
                 xpBoostConfig.displayName = itemSection.getString("display-name", "<!italic><white>XP Boost <gold>{boost_id}</gold></white>");
                 xpBoostConfig.lore = itemSection.getStringList("lore");
                 xpBoostConfig.glow = itemSection.getBoolean("glow", false);
-                xpBoostConfig.customModelData = itemSection.getInt("custom-model-data", 0);
+                xpBoostConfig.modelData = ModelDataComponentConfig.fromSection(itemSection);
             }
         }
         
@@ -82,7 +83,7 @@ public class BoostMenuConfig {
                 moneyBoostConfig.displayName = itemSection.getString("display-name", "<!italic><white>Money Boost <gold>{boost_id}</gold></white>");
                 moneyBoostConfig.lore = itemSection.getStringList("lore");
                 moneyBoostConfig.glow = itemSection.getBoolean("glow", false);
-                moneyBoostConfig.customModelData = itemSection.getInt("custom-model-data", 0);
+                moneyBoostConfig.modelData = ModelDataComponentConfig.fromSection(itemSection);
             }
         }
     }
@@ -234,7 +235,7 @@ public class BoostMenuConfig {
         public String displayName = "";
         public List<String> lore = new ArrayList<>();
         public boolean glow = false;
-        public int customModelData = 0;
+        public ModelDataComponentConfig modelData = ModelDataComponentConfig.empty();
     }
     
     public static class FillerConfig {

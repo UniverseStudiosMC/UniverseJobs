@@ -162,8 +162,8 @@ public class MenuUtils {
         builder.lore(lore);
 
         // Custom model data
-        if (itemConfig.getCustomModelData() > 0) {
-            builder.customModelData(itemConfig.getCustomModelData());
+        if (itemConfig.getModelData() != null && !itemConfig.getModelData().isEmpty()) {
+            builder.modelData(itemConfig.getModelData());
         }
 
         // Item flags
@@ -226,8 +226,8 @@ public class MenuUtils {
         }
 
         // Batch apply visual properties
-        if (itemConfig.getCustomModelData() > 0) {
-            builder.customModelData(itemConfig.getCustomModelData());
+        if (itemConfig.getModelData() != null && !itemConfig.getModelData().isEmpty()) {
+            builder.modelData(itemConfig.getModelData());
         }
 
         if (itemConfig.isHideAttributes() || itemConfig.isHideEnchants()) {

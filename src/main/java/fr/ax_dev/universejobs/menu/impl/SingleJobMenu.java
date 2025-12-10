@@ -198,12 +198,18 @@ public class SingleJobMenu extends BaseMenu {
             leaveConfig.put("display-name", baseConfig.getElseDisplayName());
             leaveConfig.put("lore", baseConfig.getElseLore());
             leaveConfig.put("amount", baseConfig.getAmount());
-            leaveConfig.put("custom-model-data", baseConfig.getElseCustomModelData());
             leaveConfig.put("glow", baseConfig.isGlow());
             leaveConfig.put("hide-attributes", baseConfig.isHideAttributes());
             leaveConfig.put("hide-enchants", baseConfig.isHideEnchants());
             leaveConfig.put("slots", baseConfig.getSlots());
             leaveConfig.put("action", baseConfig.getAction());
+
+            if (baseConfig.getElseModelData() != null) {
+                Map<String, Object> modelDataValues = baseConfig.getElseModelData().toConfigurationValues();
+                for (Map.Entry<String, Object> entry : modelDataValues.entrySet()) {
+                    leaveConfig.put(entry.getKey(), entry.getValue());
+                }
+            }
             
             MenuItemConfig leaveItemConfig = new MenuItemConfig(new SimpleConfigurationSection(leaveConfig));
             return createMenuItem(leaveItemConfig, cachedPlaceholders);

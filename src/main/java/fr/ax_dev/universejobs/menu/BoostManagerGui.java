@@ -181,8 +181,8 @@ public class BoostManagerGui implements InventoryHolder {
         meta.lore(lore);
         
         // Custom model data
-        if (itemConfig.customModelData > 0) {
-            meta.setCustomModelData(itemConfig.customModelData);
+        if (itemConfig.modelData != null && !itemConfig.modelData.isEmpty()) {
+            itemConfig.modelData.applyTo(meta);
         }
         
         // Glow effect
@@ -223,8 +223,8 @@ public class BoostManagerGui implements InventoryHolder {
         meta.lore(lore);
         
         // Custom model data
-        if (itemConfig.customModelData > 0) {
-            meta.setCustomModelData(itemConfig.customModelData);
+        if (itemConfig.modelData != null && !itemConfig.modelData.isEmpty()) {
+            itemConfig.modelData.applyTo(meta);
         }
         
         // Glow effect

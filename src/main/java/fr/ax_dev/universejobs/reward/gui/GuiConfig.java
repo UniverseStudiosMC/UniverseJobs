@@ -1,6 +1,7 @@
 package fr.ax_dev.universejobs.reward.gui;
 
 import fr.ax_dev.universejobs.UniverseJobs;
+import fr.ax_dev.universejobs.item.ModelDataComponentConfig;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
@@ -144,7 +145,7 @@ public class GuiConfig {
         private final int amount;
         private final String displayName;
         private final List<String> lore;
-        private final int customModelData;
+        private final ModelDataComponentConfig modelData;
         private final Map<Enchantment, Integer> enchantments;
         private final List<Integer> slots;
         private final String action;
@@ -159,13 +160,18 @@ public class GuiConfig {
 
         public GuiItem(ConfigurationSection config, ConfigurationSection globalDefaults) {
             // Get global defaults
-            Map<String, Object> defaults = getGlobalDefaults(globalDefaults);
+            ConfigurationSection defaultsSection = resolveDefaultsSection(globalDefaults);
+            Map<String, Object> defaults = getGlobalDefaults(defaultsSection);
 
             this.materialName = config.getString("material", (String) defaults.getOrDefault("material", "BARRIER"));
             this.amount = config.getInt("amount", (Integer) defaults.getOrDefault("amount", 1));
             this.displayName = config.getString("display-name", config.getString("name", (String) defaults.getOrDefault("display-name", "")));
             this.lore = config.contains("lore") ? config.getStringList("lore") : (List<String>) defaults.getOrDefault("lore", new ArrayList<>());
-            this.customModelData = config.getInt("custom-model-data", (Integer) defaults.getOrDefault("custom-model-data", -1));
+            ModelDataComponentConfig defaultModelData = defaultsSection != null
+                    ? ModelDataComponentConfig.fromSection(defaultsSection)
+                    : ModelDataComponentConfig.empty();
+            ModelDataComponentConfig resolvedModelData = ModelDataComponentConfig.fromSection(config);
+            this.modelData = resolvedModelData.isEmpty() ? defaultModelData : resolvedModelData;
             this.enchantments = loadEnchantments(config);
             this.slots = config.getIntegerList("slots");
             this.action = config.getString("action", (String) defaults.getOrDefault("action", ""));
@@ -193,16 +199,19 @@ public class GuiConfig {
             return enchants;
         }
 
-        private static Map<String, Object> getGlobalDefaults(ConfigurationSection explicitDefaults) {
-            try {
-                ConfigurationSection defaultsSection = explicitDefaults;
+        private static ConfigurationSection resolveDefaultsSection(ConfigurationSection explicitDefaults) {
+            if (explicitDefaults != null) {
+                return explicitDefaults;
+            }
+            UniverseJobs plugin = UniverseJobs.getInstance();
+            if (plugin != null) {
+                return plugin.getConfig().getConfigurationSection("gui-default-settings");
+            }
+            return null;
+        }
 
-                if (defaultsSection == null) {
-                    UniverseJobs plugin = UniverseJobs.getInstance();
-                    if (plugin != null) {
-                        defaultsSection = plugin.getConfig().getConfigurationSection("gui-default-settings");
-                    }
-                }
+        private static Map<String, Object> getGlobalDefaults(ConfigurationSection defaultsSection) {
+            try {
 
                 if (defaultsSection != null) {
                     Map<String, Object> defaults = new HashMap<>();
@@ -215,7 +224,6 @@ public class GuiConfig {
                     defaults.put("hide-attributes", defaultsSection.getBoolean("hide-attributes", true));
                     defaults.put("hide-enchants", defaultsSection.getBoolean("hide-enchants", true));
                     defaults.put("sound", defaultsSection.getString("sound", ""));
-                    defaults.put("custom-model-data", defaultsSection.getInt("custom-model-data", 0));
                     defaults.put("action", defaultsSection.getString("action", "none"));
                     return defaults;
                 }
@@ -234,7 +242,6 @@ public class GuiConfig {
             defaults.put("hide-attributes", true);
             defaults.put("hide-enchants", true);
             defaults.put("sound", "");
-            defaults.put("custom-model-data", 0);
             defaults.put("action", "none");
             return defaults;
         }
@@ -244,7 +251,7 @@ public class GuiConfig {
         public int getAmount() { return amount; }
         public String getDisplayName() { return displayName; }
         public List<String> getLore() { return lore; }
-        public int getCustomModelData() { return customModelData; }
+        public ModelDataComponentConfig getModelData() { return modelData; }
         public Map<Enchantment, Integer> getEnchantments() { return enchantments; }
         public List<Integer> getSlots() { return slots; }
         public String getAction() { return action; }

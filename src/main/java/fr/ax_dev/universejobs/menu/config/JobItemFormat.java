@@ -68,8 +68,15 @@ public class JobItemFormat extends MenuItemConfig {
             lore = getDefaultLore();
         }
         configMap.put("lore", lore);
-        
-        configMap.put("custom-model-data", config.getInt("custom-model-data", 0));
+
+        if (config.contains("custom-model-data")) {
+            configMap.put("custom-model-data", config.get("custom-model-data"));
+        }
+
+        ConfigurationSection modelDataSection = config.getConfigurationSection("model_data_component");
+        if (modelDataSection != null) {
+            configMap.put("model_data_component", modelDataSection.getValues(false));
+        }
         configMap.put("glow", config.getBoolean("glow-when-joined", false));
         configMap.put("hide-attributes", config.getBoolean("hide-attributes", true));
         configMap.put("hide-enchants", config.getBoolean("hide-enchants", true));
@@ -90,7 +97,6 @@ public class JobItemFormat extends MenuItemConfig {
         configMap.put("amount", amount);
         configMap.put("display-name", displayName);
         configMap.put("lore", lore);
-        configMap.put("custom-model-data", 0);
         configMap.put("glow", glowWhenJoined);
         configMap.put("hide-attributes", hideAttributes);
         configMap.put("hide-enchants", hideEnchants);

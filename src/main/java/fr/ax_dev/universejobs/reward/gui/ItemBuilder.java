@@ -1,6 +1,7 @@
 package fr.ax_dev.universejobs.reward.gui;
 
 import fr.ax_dev.universejobs.UniverseJobs;
+import fr.ax_dev.universejobs.item.ModelDataComponentConfig;
 import fr.ax_dev.universejobs.reward.Reward;
 import fr.ax_dev.universejobs.utils.MessageUtils;
 import org.bukkit.Bukkit;
@@ -96,8 +97,8 @@ public class ItemBuilder {
                 .amount(rewardItem.getAmount());
         
         // Apply custom model data if specified
-        if (rewardItem.hasCustomModelData()) {
-            builder.customModelData(rewardItem.getCustomModelData());
+        if (rewardItem.hasModelData()) {
+            builder.modelData(rewardItem.getModelData());
         }
         
         // Apply display name and lore if specified
@@ -183,8 +184,12 @@ public class ItemBuilder {
      * @return This ItemBuilder instance
      */
     public ItemBuilder customModelData(int modelData) {
-        if (meta != null && modelData > 0) {
-            meta.setCustomModelData(modelData);
+        return modelData(ModelDataComponentConfig.fromLegacy(modelData));
+    }
+
+    public ItemBuilder modelData(ModelDataComponentConfig modelData) {
+        if (meta != null && modelData != null) {
+            modelData.applyTo(meta);
         }
         return this;
     }

@@ -24,7 +24,8 @@ xp-boosts:
       - ""
       - "<red>Right-click to remove</red>"
     glow: false
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
 
 # Money Boost Configuration
 money-boosts:
@@ -42,7 +43,8 @@ money-boosts:
       - ""
       - "<red>Right-click to remove</red>"
     glow: false
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
 
 # Filler Item Configuration
 filler:

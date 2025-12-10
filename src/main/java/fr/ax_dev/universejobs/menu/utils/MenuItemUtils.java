@@ -1,6 +1,7 @@
 package fr.ax_dev.universejobs.menu.utils;
 
 import fr.ax_dev.universejobs.action.ActionType;
+import fr.ax_dev.universejobs.item.ModelDataComponentConfig;
 import fr.ax_dev.universejobs.menu.config.MenuItemConfig;
 import fr.ax_dev.universejobs.menu.config.SimpleConfigurationSection;
 
@@ -15,26 +16,40 @@ public class MenuItemUtils {
      * Create a standard item configuration map.
      */
     public static Map<String, Object> createItemConfigMap(String material, String displayName, List<String> lore, boolean glow) {
-        return createItemConfigMap(material, displayName, lore, glow, 0);
+        return createItemConfigMap(material, displayName, lore, glow, ModelDataComponentConfig.empty());
     }
     
     /**
      * Create a standard item configuration map with custom model data.
      */
     public static Map<String, Object> createItemConfigMap(String material, String displayName, List<String> lore, boolean glow, int customModelData) {
+        return createItemConfigMap(material, displayName, lore, glow, ModelDataComponentConfig.fromLegacy(customModelData));
+    }
+
+    /**
+     * Create a standard item configuration map with a full model data definition.
+     */
+    public static Map<String, Object> createItemConfigMap(String material, String displayName, List<String> lore, boolean glow, ModelDataComponentConfig modelData) {
         Map<String, Object> configMap = new HashMap<>();
         configMap.put("enabled", true);
         configMap.put("material", material);
         configMap.put("amount", 1);
         configMap.put("display-name", displayName);
         configMap.put("lore", lore);
-        configMap.put("custom-model-data", customModelData);
         configMap.put("glow", glow);
         configMap.put("hide-attributes", false);
         configMap.put("hide-enchants", glow);
         configMap.put("slots", new ArrayList<Integer>());
         configMap.put("action", "none");
         configMap.put("action-value", "");
+
+        if (modelData != null) {
+            Map<String, Object> values = modelData.toConfigurationValues();
+            for (Map.Entry<String, Object> entry : values.entrySet()) {
+                configMap.put(entry.getKey(), entry.getValue());
+            }
+        }
+
         return configMap;
     }
     

@@ -15,7 +15,8 @@ fill-item:
   lore: []
   amount: 1
   slots: []  # Empty = use global fill-slots. Specify slots like [1, 2, 3, 9, 18] to override
-  custom-model-data: 0
+  model_data_component:
+    strings: [ ]
   glow: false
   hide-attributes: true
   hide-enchants: true
@@ -30,7 +31,8 @@ static-items:
     lore: []
     amount: 1
     slots: [0, 9, 18, 27, 36]
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
     glow: false
     hide-attributes: true
     hide-enchants: true
@@ -43,7 +45,8 @@ static-items:
     lore: []
     amount: 1
     slots: [8, 17, 26, 35, 44]
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
     glow: false
     hide-attributes: true
     hide-enchants: true
@@ -59,7 +62,8 @@ navigation-items:
       - "<#FFD700>Click to go back to the main jobs menu"
     amount: 1
     slots: [39]
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
     glow: false
     hide-attributes: true
     hide-enchants: false
@@ -73,7 +77,8 @@ navigation-items:
       - "<#FFD700>Click to close this menu"
     amount: 1
     slots: [41]
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
     glow: false
     hide-attributes: true
     hide-enchants: false
@@ -98,7 +103,8 @@ menu-items:
       - "<gray>Click for more details"
     amount: 1
     slots: [13]
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
     glow: true
     hide-attributes: true
     hide-enchants: false
@@ -121,7 +127,8 @@ menu-items:
       - "<gray>└ {progress_bar}"
     amount: 1
     slots: [22]
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
     glow: false
     hide-attributes: true
     hide-enchants: false
@@ -141,7 +148,8 @@ menu-items:
       - "<#FFD700>Requires: <white>{job_permission}"
     amount: 1
     slots: [29]
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
     glow: false
     hide-attributes: true
     hide-enchants: false
@@ -169,7 +177,8 @@ menu-items:
       - "<#FFD700>Click to view actions"
     amount: 1
     slots: [30]
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
     glow: false
     hide-attributes: true
     hide-enchants: false
@@ -189,7 +198,8 @@ menu-items:
       - "<#FFD700>Click to view rewards"
     amount: 1
     slots: [32]
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
     glow: false
     hide-attributes: true
     hide-enchants: false
@@ -210,7 +220,8 @@ menu-items:
       - "<#FFD700>Click to view rankings"
     amount: 1
     slots: [33]
-    custom-model-data: 0
+    model_data_component:
+      strings: [ ]
     glow: false
     hide-attributes: true
     hide-enchants: false

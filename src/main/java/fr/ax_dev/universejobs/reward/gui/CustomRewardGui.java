@@ -248,8 +248,8 @@ public class CustomRewardGui implements InventoryHolder {
         }
 
         // Custom model data
-        if (guiItem.getCustomModelData() > 0) {
-            builder.customModelData(guiItem.getCustomModelData());
+        if (guiItem.getModelData() != null && !guiItem.getModelData().isEmpty()) {
+            builder.modelData(guiItem.getModelData());
         }
         
         ItemStack item = builder.build();

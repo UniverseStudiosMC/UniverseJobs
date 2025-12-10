@@ -1,6 +1,7 @@
 package fr.ax_dev.universejobs.menu.impl;
 
 import fr.ax_dev.universejobs.UniverseJobs;
+import fr.ax_dev.universejobs.item.ModelDataComponentConfig;
 import fr.ax_dev.universejobs.job.Job;
 import fr.ax_dev.universejobs.job.PlayerJobData;
 import fr.ax_dev.universejobs.menu.BaseMenu;
@@ -11,6 +12,7 @@ import fr.ax_dev.universejobs.menu.utils.MenuItemUtils;
 import fr.ax_dev.universejobs.utils.NBTItemUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -21,6 +23,9 @@ import java.util.stream.Collectors;
  * Menu showing global job rankings for all jobs.
  */
 public class GlobalRankingsMenu extends BaseMenu {
+
+    private static final String JOB_MODEL_PLACEHOLDER = "{job_custom-model-data}";
+    private static final String JOB_MODEL_STRINGS_PLACEHOLDER = "{job_model_data_component_strings}";
     
     private final Map<String, List<RankingEntry>> jobRankings;
     private final List<String> availableJobs;
@@ -231,7 +236,19 @@ public class GlobalRankingsMenu extends BaseMenu {
         placeholders.put("{job_id}", job.getId());
         placeholders.put("{job_name}", job.getName());
         placeholders.put("{job_material}", job.getIconMaterial() != null ? job.getIconMaterial() : "PAPER");
-        placeholders.put("{job_custom-model-data}", String.valueOf(job.getCustomModelData()));
+
+        ModelDataComponentConfig jobModelData = job.getIconModelData();
+        String legacyModelValue = jobModelData != null
+                ? jobModelData.getLegacyCustomModelData()
+                .map(String::valueOf)
+                .orElseGet(() -> jobModelData.getFirstString().orElse("0"))
+                : "0";
+        placeholders.put("{job_custom-model-data}", legacyModelValue);
+        placeholders.put("{job_model_data_component_strings}",
+                jobModelData != null && !jobModelData.getStrings().isEmpty()
+                        ? String.join(",", jobModelData.getStrings())
+                        : "");
+
         placeholders.put("{player_count}", String.valueOf(rankings.size()));
 
         // Add top player info
@@ -281,19 +298,7 @@ public class GlobalRankingsMenu extends BaseMenu {
         configMap.put("material", material);
 
         // Custom model data
-        String customModelStr = stateConfig.getString("custom-model-data", "0");
-        if (customModelStr.equals("{job_custom-model-data}")) {
-            if (job.getCustomModelData() > 0) {
-                configMap.put("custom-model-data", job.getCustomModelData());
-            }
-        } else {
-            int customModelData = stateConfig.getInt("custom-model-data", 0);
-            if (customModelData > 0) {
-                configMap.put("custom-model-data", customModelData);
-            } else if (job.getCustomModelData() > 0) {
-                configMap.put("custom-model-data", job.getCustomModelData());
-            }
-        }
+        applyModelData(configMap, job.getIconModelData(), stateConfig);
 
         // Display name
         configMap.put("display-name", stateConfig.getString("display-name", job.getName()));
@@ -338,9 +343,7 @@ public class GlobalRankingsMenu extends BaseMenu {
         );
         configMap.put("enabled", true);
 
-        if (job.getCustomModelData() > 0) {
-            configMap.put("custom-model-data", job.getCustomModelData());
-        }
+        applyModelData(configMap, job.getIconModelData(), null);
 
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
         ItemStack item = createMenuItem(itemConfig, new HashMap<>());
@@ -450,10 +453,15 @@ public class GlobalRankingsMenu extends BaseMenu {
         configMap.put("hide-attributes", rankConfig.getBoolean("hide-attributes", true));
         configMap.put("hide-enchants", rankConfig.getBoolean("hide-enchants", false));
 
-        int customModelData = rankConfig.getInt("custom-model-data", 0);
-        if (customModelData > 0) {
-            configMap.put("custom-model-data", customModelData);
+        ModelDataComponentConfig fallbackModelData = ModelDataComponentConfig.empty();
+        if (selectedJob != null) {
+            Job selected = plugin.getJobManager().getJob(selectedJob);
+            if (selected != null) {
+                fallbackModelData = selected.getIconModelData();
+            }
         }
+
+        applyModelData(configMap, fallbackModelData, rankConfig);
 
         // Check for specific slot
         if (rankConfig.contains("slot")) {
@@ -503,6 +511,57 @@ public class GlobalRankingsMenu extends BaseMenu {
 
         MenuItemConfig itemConfig = new MenuItemConfig(new SimpleConfigurationSection(configMap));
         return createMenuItem(itemConfig, placeholders);
+    }
+
+    private void applyModelData(Map<String, Object> target, ModelDataComponentConfig fallback, ConfigurationSection overrides) {
+        ModelDataComponentConfig resolved = resolveModelData(fallback, overrides);
+        if (resolved != null && !resolved.isEmpty()) {
+            target.putAll(resolved.toConfigurationValues());
+        }
+    }
+
+    private ModelDataComponentConfig resolveModelData(ModelDataComponentConfig fallback, ConfigurationSection overrides) {
+        if (overrides == null) {
+            return fallback;
+        }
+
+        if (containsPlaceholder(overrides)) {
+            return fallback;
+        }
+
+        ModelDataComponentConfig overrideConfig = ModelDataComponentConfig.fromSection(overrides);
+        return overrideConfig.isEmpty() ? fallback : overrideConfig;
+    }
+
+    private boolean containsPlaceholder(ConfigurationSection section) {
+        if (section == null) {
+            return false;
+        }
+
+        String customModelValue = section.getString("custom-model-data");
+        if (isPlaceholder(customModelValue)) {
+            return true;
+        }
+
+        ConfigurationSection component = section.getConfigurationSection("model_data_component");
+        if (component != null) {
+            for (String value : component.getStringList("strings")) {
+                if (isPlaceholder(value)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isPlaceholder(String value) {
+        if (value == null) {
+            return false;
+        }
+
+        String trimmed = value.trim();
+        return JOB_MODEL_PLACEHOLDER.equalsIgnoreCase(trimmed)
+                || JOB_MODEL_STRINGS_PLACEHOLDER.equalsIgnoreCase(trimmed);
     }
 
     /**
