@@ -445,7 +445,7 @@ public class ActionProcessor {
         
         return !action.getBlacklistedFurnaces().contains(furnaceType);
     }
-    
+
     /**
      * Process action rewards with optimal performance and all features.
      */
@@ -466,6 +466,7 @@ public class ActionProcessor {
         }
 
         if (xp == 0 && money == 0) return;
+
 
         Object craftMultiplierObj = context.get("craft_multiplier");
         if (craftMultiplierObj instanceof Integer) {
@@ -488,6 +489,7 @@ public class ActionProcessor {
             money *= stackMultiplier;
         }
 
+
         if (mcmmoHandler.isEnabled() && job.getMcmmoConfig() != null && !job.getMcmmoConfig().isEmpty()) {
             double mcmmoMoneyMultiplier = mcmmoHandler.getActiveAbilityMultiplier(player, job.getMcmmoConfig(), true);
             double mcmmoXpMultiplier = mcmmoHandler.getActiveAbilityMultiplier(player, job.getMcmmoConfig(), false);
@@ -495,66 +497,112 @@ public class ActionProcessor {
             money *= mcmmoMoneyMultiplier;
             xp *= mcmmoXpMultiplier;
         }
-        
-        // Check action limits first (if any)
+
+
         if (action.hasLimits()) {
             ActionLimitManager.ActionGains allowedGains = limitManager.checkAndConsumeLimit(
-                player, job.getId(), action.getTarget(), xp, money);
-            
+                    player, job.getId(), action.getTarget(), xp, money);
+
             xp = allowedGains.getXp();
             money = allowedGains.getMoney();
-            
-            // If no gains allowed due to limits, return early
+
             if (!allowedGains.hasGains()) {
                 return;
             }
         }
-        
-        // XP processing (allow negative values for removal)
+
+
+        double finalXp = 0;
+        double finalMoney = 0;
+
+
         if (xp != 0) {
-            // Apply any XP multipliers
-            double finalXp = applyMultipliers(player, job, xp);
-            
-            // Apply bonus multipliers only if positive XP
-            if (xp > 0) {
+            finalXp = applyMultipliers(player, job, xp);
+
+
+            if (xp > 0 && bonusManager != null) {
                 double bonusMultiplier = bonusManager.getTotalMultiplier(player.getUniqueId(), job.getId());
                 finalXp *= bonusMultiplier;
             }
-            
-            // Add XP to batch for optimized processing
-            batchManager.batchXp(player, job.getId(), finalXp);
-            
-            // Check for level up only if positive XP
-            if (xp > 0) {
+
+
+            if (batchManager != null) {
+                batchManager.batchXp(player, job.getId(), finalXp);
+            }
+
+
+            if (xp > 0 && jobManager != null) {
                 int currentLevel = jobManager.getLevel(player, job.getId());
-                int newLevel = jobManager.getLevel(player, job.getId());
-                if (newLevel > currentLevel) {
-                    handleLevelUp(player, job, currentLevel, newLevel);
-                }
+                plugin.getFoliaManager().runLater(() -> {
+                    int newLevel = jobManager.getLevel(player, job.getId());
+                    if (newLevel > currentLevel) {
+                        handleLevelUp(player, job, currentLevel, newLevel);
+                    }
+                }, 2L);
             }
         }
-        
-        // Money processing (allow negative values for removal)
+
+
         if (money != 0) {
-            // Apply bonus multipliers only if positive money
-            double finalMoney = money;
-            if (money > 0) {
+            finalMoney = money;
+
+
+            if (money > 0 && moneyBonusManager != null) {
                 double moneyBonusMultiplier = moneyBonusManager.getTotalMultiplier(player.getUniqueId(), job.getId());
                 finalMoney = money * moneyBonusMultiplier;
             }
-            
-            // Add/remove money to/from the player
+
             addPlayerMoney(player, finalMoney);
         }
-        
-        // Message async seulement si activé (et si pas supprimé) - use final values
+
+
         boolean suppressMessage = "true".equals(context.get("suppress_message"));
-        double finalXp = xp != 0 ? (xp > 0 ? applyMultipliers(player, job, xp) * bonusManager.getTotalMultiplier(player.getUniqueId(), job.getId()) : applyMultipliers(player, job, xp)) : 0;
-        double finalMoney = money != 0 ? (money > 0 ? money * moneyBonusManager.getTotalMultiplier(player.getUniqueId(), job.getId()) : money) : 0;
-        
-        if (configCache.isShowXpGain() && (finalXp != 0 || finalMoney != 0) && !suppressMessage) {
-            fr.ax_dev.universejobs.job.PlayerJobData playerData = jobManager.getPlayerData(player);
-            messageSender.sendXpMessage(player, job, finalXp, finalMoney, playerData);
+        if (!suppressMessage && (finalXp != 0 || finalMoney != 0)) {
+            sendRewardNotification(player, finalXp, finalMoney, job);
+        }
+    }
+
+    private void sendRewardNotification(Player player, double xp, double money, Job job) {
+        try {
+            StringBuilder message = new StringBuilder();
+            boolean hasReward = false;
+
+
+            if (xp != 0) {
+                hasReward = true;
+                if (xp > 0) {
+                    message.append("&a+").append(String.format("%.1f", xp)).append(" XP");
+                } else {
+                    message.append("&c").append(String.format("%.1f", xp)).append(" XP");
+                }
+            }
+
+
+            if (money != 0) {
+                if (hasReward) {
+                    message.append(" &8| ");
+                }
+                hasReward = true;
+
+                if (money > 0) {
+                    message.append("&6+$").append(String.format("%.2f", money));
+                } else {
+                    message.append("&c-$").append(String.format("%.2f", Math.abs(money)));
+                }
+            }
+
+
+            if (hasReward) {
+                if (message.length() < 30) {
+                    message.append(" &7(").append(job.getName()).append(")");
+                }
+
+                String colorizedMessage = MessageUtils.colorize(message.toString());
+                player.sendActionBar(colorizedMessage);
+            }
+
+        } catch (Exception e) {
+            plugin.getLogger().warning("Error sending reward notification: " + e.getMessage());
         }
     }
     
