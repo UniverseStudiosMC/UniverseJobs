@@ -149,8 +149,8 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         this.batchedRewardManager = new BatchedRewardManager(this);
         
         // Initialize action processor with loaded cache
-        this.actionProcessor = new ActionProcessor(this, jobManager, bonusManager, moneyBonusManager, 
-                                                 messageSender, limitManager, configCache, playerCache);
+        this.actionProcessor = new ActionProcessor(this, jobManager, bonusManager, moneyBonusManager,
+                                                 messageSender, limitManager, configCache, playerCache, batchedRewardManager);
         
         // Load level up actions
         try {

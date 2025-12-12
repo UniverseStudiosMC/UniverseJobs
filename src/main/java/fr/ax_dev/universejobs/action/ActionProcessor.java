@@ -53,7 +53,7 @@ public class ActionProcessor {
     
     /**
      * Create a new ActionProcessor with ultra-fast caching.
-     * 
+     *
      * @param plugin The plugin instance
      * @param jobManager The job manager
      * @param bonusManager The XP bonus manager
@@ -62,11 +62,12 @@ public class ActionProcessor {
      * @param limitManager The action limit manager
      * @param configCache The configuration cache
      * @param playerCache The player cache
+     * @param batchManager The batched reward manager
      */
     public ActionProcessor(UniverseJobs plugin, JobManager jobManager, XpBonusManager bonusManager,
                           MoneyBonusManager moneyBonusManager, AsyncXpMessageSender messageSender,
                           ActionLimitManager limitManager, ConfigurationCache configCache,
-                          PlayerJobCache playerCache) {
+                          PlayerJobCache playerCache, BatchedRewardManager batchManager) {
         this.plugin = plugin;
         this.jobManager = jobManager;
         this.bonusManager = bonusManager;
@@ -75,7 +76,7 @@ public class ActionProcessor {
         this.limitManager = limitManager;
         this.configCache = configCache;
         this.playerCache = playerCache;
-        this.batchManager = new BatchedRewardManager(plugin);
+        this.batchManager = batchManager;
         this.mcmmoHandler = McMMOHandler.getInstance(plugin);
         this.equationEvaluator = new EquationEvaluator(plugin);
     }
