@@ -3,9 +3,9 @@ package fr.ax_dev.universejobs.rewards;
 import fr.ax_dev.universejobs.UniverseJobs;
 import fr.ax_dev.universejobs.job.JobManager;
 import fr.ax_dev.universejobs.job.PlayerJobData;
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.RegisteredServiceProvider;
 
 import java.util.Map;
 import java.util.UUID;
@@ -19,10 +19,11 @@ import java.util.concurrent.TimeUnit;
  * Accumulates rewards and processes them in batches for massive performance gains.
  */
 public class BatchedRewardManager {
-    
+
     private final UniverseJobs plugin;
     private final JobManager jobManager;
-    private final Economy economy;
+    private final Object economy; // Using Object to avoid direct Vault dependency
+    private final boolean vaultAvailable;
     
     // Batch accumulation maps
     private final Map<String, BatchedReward> xpBatch = new ConcurrentHashMap<>();
@@ -49,15 +50,28 @@ public class BatchedRewardManager {
     public BatchedRewardManager(UniverseJobs plugin) {
         this.plugin = plugin;
         this.jobManager = plugin.getJobManager();
-        this.economy = getVaultEconomy();
-        
+        this.vaultAvailable = isVaultPresent();
+        this.economy = vaultAvailable ? getVaultEconomy() : null;
+
+        if (!vaultAvailable) {
+            plugin.getLogger().warning("Vault is not installed! Money rewards will be disabled.");
+            plugin.getLogger().warning("Install Vault to enable economy features: https://www.spigotmc.org/resources/vault.34315/");
+        }
+
         // Load configuration
         this.xpBatchTicks = plugin.getConfig().getInt("performance.batching-xp", 60);
         this.moneyBatchTicks = plugin.getConfig().getInt("performance.batching-money", 60);
         this.othersBatchTicks = plugin.getConfig().getInt("performance.batching-others", 40);
-        
+
         // Start batch processors
         startBatchProcessors();
+    }
+
+    /**
+     * Check if Vault plugin is present on the server.
+     */
+    private boolean isVaultPresent() {
+        return plugin.getServer().getPluginManager().getPlugin("Vault") != null;
     }
     
     /**
@@ -137,12 +151,19 @@ public class BatchedRewardManager {
      * Process money immediately (no batching).
      */
     private void processMoneyImmediate(Player player, double money) {
-        if (economy != null && money != 0) {
+        if (!vaultAvailable || economy == null || money == 0) {
+            return;
+        }
+        try {
             if (money > 0) {
-                economy.depositPlayer(player, money);
+                economy.getClass().getMethod("depositPlayer", org.bukkit.OfflinePlayer.class, double.class)
+                    .invoke(economy, player, money);
             } else {
-                economy.withdrawPlayer(player, Math.abs(money));
+                economy.getClass().getMethod("withdrawPlayer", org.bukkit.OfflinePlayer.class, double.class)
+                    .invoke(economy, player, Math.abs(money));
             }
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to process money reward: " + e.getMessage());
         }
     }
     
@@ -221,27 +242,31 @@ public class BatchedRewardManager {
      * Flush all money in batch.
      */
     public void flushMoneyBatch() {
-        if (moneyBatch.isEmpty()) return;
-        
+        if (moneyBatch.isEmpty() || !vaultAvailable || economy == null) return;
+
         Map<UUID, Double> toProcess = new ConcurrentHashMap<>(moneyBatch);
         moneyBatch.clear();
-        
+
         plugin.getFoliaManager().runNextTick(() -> {
-            if (economy != null) {
-                for (Map.Entry<UUID, Double> entry : toProcess.entrySet()) {
-                    Player player = Bukkit.getPlayer(entry.getKey());
-                    if (player != null && player.isOnline()) {
-                        double amount = entry.getValue();
+            for (Map.Entry<UUID, Double> entry : toProcess.entrySet()) {
+                Player player = Bukkit.getPlayer(entry.getKey());
+                if (player != null && player.isOnline()) {
+                    double amount = entry.getValue();
+                    try {
                         if (amount > 0) {
-                            economy.depositPlayer(player, amount);
+                            economy.getClass().getMethod("depositPlayer", org.bukkit.OfflinePlayer.class, double.class)
+                                .invoke(economy, player, amount);
                         } else if (amount < 0) {
-                            economy.withdrawPlayer(player, Math.abs(amount));
+                            economy.getClass().getMethod("withdrawPlayer", org.bukkit.OfflinePlayer.class, double.class)
+                                .invoke(economy, player, Math.abs(amount));
                         }
 
                         if (plugin.getConfigManager().isDebugEnabled()) {
                             plugin.getLogger().info("[BATCH] Processed $" + entry.getValue() +
                                 " for " + player.getName());
                         }
+                    } catch (Exception e) {
+                        plugin.getLogger().warning("Failed to process batched money for " + player.getName() + ": " + e.getMessage());
                     }
                 }
             }
@@ -408,16 +433,29 @@ public class BatchedRewardManager {
     
     /**
      * Get Vault economy instance if available.
+     * Uses reflection to avoid direct class dependency on Vault.
      */
-    private Economy getVaultEconomy() {
+    private Object getVaultEconomy() {
         try {
-            if (plugin.getServer().getServicesManager().getRegistration(Economy.class) != null) {
-                return plugin.getServer().getServicesManager().getRegistration(Economy.class).getProvider();
+            Class<?> economyClass = Class.forName("net.milkbowl.vault.economy.Economy");
+            RegisteredServiceProvider<?> rsp = plugin.getServer().getServicesManager().getRegistration(economyClass);
+            if (rsp != null) {
+                return rsp.getProvider();
             }
+        } catch (ClassNotFoundException e) {
+            // Vault is not installed, this is expected
         } catch (Exception e) {
-            // Class not found or other error
+            plugin.getLogger().warning("Error getting Vault economy: " + e.getMessage());
         }
         return null;
+    }
+
+    /**
+     * Check if Vault economy is available.
+     * @return true if Vault is installed and economy is available
+     */
+    public boolean isVaultAvailable() {
+        return vaultAvailable && economy != null;
     }
     
     public static class BatchStatistics {

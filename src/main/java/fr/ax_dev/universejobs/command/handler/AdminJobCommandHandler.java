@@ -9,7 +9,7 @@ import fr.ax_dev.universejobs.storage.migration.DataMigrator;
 import fr.ax_dev.universejobs.storage.migration.JobsRebornConverter;
 import fr.ax_dev.universejobs.storage.migration.JobsRebornDataMigrator;
 import fr.ax_dev.universejobs.utils.MessageUtils;
-import net.milkbowl.vault.economy.Economy;
+import org.bukkit.plugin.RegisteredServiceProvider;
 
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
@@ -317,40 +317,46 @@ public class AdminJobCommandHandler extends JobCommandHandler {
     }
     
     private void addPlayerMoney(OfflinePlayer player, double amount) {
-        if (plugin.getServer().getPluginManager().isPluginEnabled("Vault")) {
-            try {
-                net.milkbowl.vault.economy.Economy economy = getVaultEconomy();
-                if (economy != null) {
-                    economy.depositPlayer(player, amount);
-                    return;
-                }
-            } catch (Exception e) {
-                plugin.getLogger().warning("Failed to use Vault for money reward: " + e.getMessage());
-            }
+        if (plugin.getServer().getPluginManager().getPlugin("Vault") == null) {
+            return;
         }
-    }
-    
-    private void removePlayerMoney(OfflinePlayer player, double amount) {
-        if (plugin.getServer().getPluginManager().isPluginEnabled("Vault")) {
-            try {
-                net.milkbowl.vault.economy.Economy economy = getVaultEconomy();
-                if (economy != null) {
-                    economy.withdrawPlayer(player, amount);
-                    return;
-                }
-            } catch (Exception e) {
-                plugin.getLogger().warning("Failed to use Vault for money removal: " + e.getMessage());
-            }
-        }
-    }
-    
-    private Economy getVaultEconomy() {
         try {
-            if (plugin.getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class) != null) {
-                return plugin.getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class).getProvider();
+            Object economy = getVaultEconomy();
+            if (economy != null) {
+                economy.getClass().getMethod("depositPlayer", OfflinePlayer.class, double.class)
+                    .invoke(economy, player, amount);
             }
         } catch (Exception e) {
-            // Class not found or other error
+            plugin.getLogger().warning("Failed to use Vault for money reward: " + e.getMessage());
+        }
+    }
+
+    private void removePlayerMoney(OfflinePlayer player, double amount) {
+        if (plugin.getServer().getPluginManager().getPlugin("Vault") == null) {
+            return;
+        }
+        try {
+            Object economy = getVaultEconomy();
+            if (economy != null) {
+                economy.getClass().getMethod("withdrawPlayer", OfflinePlayer.class, double.class)
+                    .invoke(economy, player, amount);
+            }
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to use Vault for money removal: " + e.getMessage());
+        }
+    }
+
+    private Object getVaultEconomy() {
+        try {
+            Class<?> economyClass = Class.forName("net.milkbowl.vault.economy.Economy");
+            RegisteredServiceProvider<?> rsp = plugin.getServer().getServicesManager().getRegistration(economyClass);
+            if (rsp != null) {
+                return rsp.getProvider();
+            }
+        } catch (ClassNotFoundException e) {
+            // Vault is not installed
+        } catch (Exception e) {
+            plugin.getLogger().warning("Error getting Vault economy: " + e.getMessage());
         }
         return null;
     }

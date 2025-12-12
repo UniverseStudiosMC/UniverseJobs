@@ -485,7 +485,13 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
      */
     private void checkDependencies() {
         StringBuilder dependencyStatus = new StringBuilder("Dependency status: ");
-        
+
+        if (getServer().getPluginManager().isPluginEnabled("Vault")) {
+            dependencyStatus.append("Vault (OK) ");
+        } else {
+            dependencyStatus.append("Vault (Missing) ");
+        }
+
         if (getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             dependencyStatus.append("PlaceholderAPI ✓ ");
         } else {
