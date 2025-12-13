@@ -114,6 +114,36 @@ public class PlayerTextureCache {
         });
     }
 
+    public static PlayerProfile getProfileFromCacheOnly(UUID playerId, String playerName) {
+        Long timestamp = CACHE_TIMESTAMPS.get(playerId);
+        if (timestamp != null && System.currentTimeMillis() - timestamp < CACHE_DURATION) {
+            PlayerProfile cached = PROFILE_CACHE.get(playerId);
+            if (cached != null && cached.getTextures().getSkin() != null) {
+                return cached;
+            }
+        }
+
+        PlayerProfile paperCached = tryPaperCacheFirst(playerId, playerName);
+        if (paperCached != null && paperCached.getTextures().getSkin() != null) {
+            cacheProfile(playerId, paperCached);
+            return paperCached;
+        }
+
+        return null;
+    }
+
+    public static void preloadProfileAsync(UUID playerId, String playerName) {
+        Long timestamp = CACHE_TIMESTAMPS.get(playerId);
+        if (timestamp != null && System.currentTimeMillis() - timestamp < CACHE_DURATION) {
+            PlayerProfile cached = PROFILE_CACHE.get(playerId);
+            if (cached != null && cached.getTextures().getSkin() != null) {
+                return;
+            }
+        }
+
+        getPlayerProfile(playerId, playerName);
+    }
+
     public static CompletableFuture<PlayerProfile> getPlayerProfile(UUID playerId, String playerName) {
         loadUserCache();
 
@@ -146,6 +176,18 @@ public class PlayerTextureCache {
                 return fetchFromMojangApi(playerId, playerName);
             }
         });
+    }
+
+    public static PlayerProfile getProfileByNameFromCacheOnly(String playerName) {
+        UUID cachedUuid = NAME_TO_UUID_CACHE.get(playerName.toLowerCase());
+        if (cachedUuid != null) {
+            return getProfileFromCacheOnly(cachedUuid, playerName);
+        }
+        return null;
+    }
+
+    public static void preloadProfileByNameAsync(String playerName) {
+        getPlayerProfileByName(playerName);
     }
 
     public static CompletableFuture<PlayerProfile> getPlayerProfileByName(String playerName) {

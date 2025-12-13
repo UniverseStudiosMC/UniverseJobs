@@ -347,16 +347,12 @@ public class MenuUtils {
         }
     }
 
-    /**
-     * Apply item meta modifications in optimized batch operation.
-     */
     private static void applyItemMetaOptimized(ItemStack item, MenuItemConfig itemConfig, Map<String, String> customPlaceholders, Player player, UniverseJobs plugin) {
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return;
 
         boolean metaModified = false;
 
-        // Handle skull owner for player heads
         if (item.getType() == Material.PLAYER_HEAD && meta instanceof SkullMeta) {
             SkullMeta skullMeta = (SkullMeta) meta;
 
@@ -382,49 +378,30 @@ public class MenuUtils {
                         }
 
                         if (targetUuid != null) {
-                            try {
-                                PlayerProfile cachedProfile = fr.ax_dev.universejobs.utils.PlayerTextureCache
-                                    .getPlayerProfile(targetUuid, playerHead)
-                                    .get(2, java.util.concurrent.TimeUnit.SECONDS);
+                            PlayerProfile cachedProfile = fr.ax_dev.universejobs.utils.PlayerTextureCache
+                                .getProfileFromCacheOnly(targetUuid, playerHead);
 
-                                if (cachedProfile != null && cachedProfile.getTextures().getSkin() != null) {
-                                    skullMeta.setOwnerProfile(cachedProfile);
-                                    metaModified = true;
-                                } else {
-                                    org.bukkit.OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(targetUuid);
-                                    skullMeta.setOwningPlayer(offlinePlayer);
-                                    metaModified = true;
-                                }
-                            } catch (Exception profileEx) {
-                                org.bukkit.OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(targetUuid);
-                                skullMeta.setOwningPlayer(offlinePlayer);
-                                metaModified = true;
-                            }
-                        } else {
-                            org.bukkit.OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(playerHead);
-                            if (offlinePlayer.hasPlayedBefore() || offlinePlayer.isOnline()) {
-                                skullMeta.setOwningPlayer(offlinePlayer);
-                                metaModified = true;
+                            if (cachedProfile != null && cachedProfile.getTextures().getSkin() != null) {
+                                skullMeta.setOwnerProfile(cachedProfile);
                             } else {
-                                try {
-                                    PlayerProfile profile = fr.ax_dev.universejobs.utils.PlayerTextureCache
-                                        .getPlayerProfileByName(playerHead)
-                                        .get(5, java.util.concurrent.TimeUnit.SECONDS);
-                                    if (profile != null && profile.getTextures().getSkin() != null) {
-                                        skullMeta.setOwnerProfile(profile);
-                                    } else {
-                                        skullMeta.setOwningPlayer(offlinePlayer);
-                                    }
-                                    metaModified = true;
-                                } catch (Exception profileEx) {
-                                    skullMeta.setOwningPlayer(offlinePlayer);
-                                    metaModified = true;
-                                }
+                                skullMeta.setOwningPlayer(plugin.getServer().getOfflinePlayer(targetUuid));
+                                fr.ax_dev.universejobs.utils.PlayerTextureCache.preloadProfileAsync(targetUuid, playerHead);
                             }
+                            metaModified = true;
+                        } else {
+                            PlayerProfile cachedProfile = fr.ax_dev.universejobs.utils.PlayerTextureCache
+                                .getProfileByNameFromCacheOnly(playerHead);
+
+                            if (cachedProfile != null && cachedProfile.getTextures().getSkin() != null) {
+                                skullMeta.setOwnerProfile(cachedProfile);
+                            } else {
+                                skullMeta.setOwningPlayer(plugin.getServer().getOfflinePlayer(playerHead));
+                                fr.ax_dev.universejobs.utils.PlayerTextureCache.preloadProfileByNameAsync(playerHead);
+                            }
+                            metaModified = true;
                         }
                     }
                 } catch (Exception e) {
-                    // Silently fail for performance
                 }
             } else if (!itemConfig.getSkullOwner().isEmpty()) {
                 String skullOwner = itemConfig.getSkullOwner();
@@ -436,12 +413,10 @@ public class MenuUtils {
                     skullMeta.setOwningPlayer(plugin.getServer().getOfflinePlayer(skullOwner));
                     metaModified = true;
                 } catch (Exception e) {
-                    // Silently fail for performance
                 }
             }
         }
 
-        // Batch apply enchantments
         Map<String, Integer> enchantments = itemConfig.getEnchantments();
         if (enchantments != null && !enchantments.isEmpty()) {
             for (Map.Entry<String, Integer> entry : enchantments.entrySet()) {
@@ -452,25 +427,21 @@ public class MenuUtils {
                         metaModified = true;
                     }
                 } catch (Exception e) {
-                    // Silently fail for performance
                 }
             }
         }
 
-        // Glow effect
         if (itemConfig.isGlow() && (enchantments == null || enchantments.isEmpty())) {
             meta.addEnchant(Enchantment.LURE, 1, true);
             meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
             metaModified = true;
         }
 
-        // Hide tooltip
         if (itemConfig.isHideToolTip()) {
             meta.setHideTooltip(true);
             metaModified = true;
         }
 
-        // Only apply meta if it was actually modified
         if (metaModified) {
             item.setItemMeta(meta);
         }

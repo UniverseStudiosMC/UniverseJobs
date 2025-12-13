@@ -44,10 +44,15 @@ public class OptimizedEventHandler implements Listener {
 
             event.setCancelled(true);
 
+            int slot = event.getSlot();
+            if (slot < 0 || slot >= event.getInventory().getSize()) {
+                return;
+            }
+
             BaseMenu menu = menuHolder.getMenu();
             if (menu != null) {
                 try {
-                    menu.handleClick(event.getSlot(), event);
+                    menu.handleClick(slot, event);
                 } catch (Exception e) {
                     menuManager.getPlugin().getLogger().severe("Error handling menu click: " + e.getMessage());
                 }
