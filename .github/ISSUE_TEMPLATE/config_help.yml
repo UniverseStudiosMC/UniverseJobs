@@ -6,8 +6,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        Need help configuring UniversePlayTime?
-        Make sure to check the [Wiki](https://github.com/UniverseStudiosMC/UniversePlayTime/wiki) first!
+        Need help configuring UniverseJobs?
+        Make sure to check the [Wiki](https://github.com/UniverseStudiosMC/UniverseJobs/wiki) first!
 
   - type: dropdown
     id: config-area
@@ -70,7 +70,7 @@ body:
     attributes:
       label: Checklist
       options:
-        - label: I have read the relevant [Wiki pages](https://github.com/UniverseStudiosMC/UniversePlayTime/wiki)
+        - label: I have read the relevant [Wiki pages](https://github.com/UniverseStudiosMC/UniverseJobs/wiki)
           required: true
         - label: I have used `/playtime reload` after making changes
           required: true
