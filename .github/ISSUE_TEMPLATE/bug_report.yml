@@ -1,0 +1,106 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+title: "[Bug] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug!
+        Please fill out the form below to help us understand and fix the issue.
+
+  - type: dropdown
+    id: server-software
+    attributes:
+      label: Server Software
+      description: What server software are you using?
+      options:
+        - Paper
+        - Spigot
+        - Purpur
+        - Folia
+        - Other (specify in description)
+    validations:
+      required: true
+
+  - type: input
+    id: minecraft-version
+    attributes:
+      label: Minecraft Version
+      description: What Minecraft version are you running?
+      placeholder: "1.21"
+    validations:
+      required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin Version
+      description: What version of UniversePlayTime are you using?
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: Clearly describe the bug and what you expected to happen
+      placeholder: |
+        What happened:
+
+        What I expected:
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this bug?
+      placeholder: |
+        1. Do this...
+        2. Then this...
+        3. Bug appears
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Logs
+      description: Paste any relevant error messages or stack traces
+      render: shell
+      placeholder: |
+        Paste your console errors here (if any)
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Relevant Configuration
+      description: Paste any relevant parts of your config.yml or rewards.yml
+      render: yaml
+      placeholder: |
+        # Paste relevant config here
+
+  - type: textarea
+    id: plugins
+    attributes:
+      label: Other Plugins
+      description: List other plugins that might be related to the issue
+      placeholder: |
+        - PlaceholderAPI
+        - Vault
+        - etc.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have checked the [Wiki](https://github.com/UniverseStudiosMC/UniversePlayTime/wiki) for solutions
+          required: true
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I am using the latest version of the plugin
+          required: false
