@@ -1,0 +1,74 @@
+name: Feature Request
+description: Suggest a new feature or improvement
+title: "[Feature] "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea to improve UniversePlayTime? We'd love to hear it!
+
+  - type: dropdown
+    id: feature-type
+    attributes:
+      label: Feature Type
+      description: What kind of feature is this?
+      options:
+        - New Reward Type
+        - New Command
+        - GUI Improvement
+        - Configuration Option
+        - API/Developer Feature
+        - Performance Improvement
+        - Integration (PlaceholderAPI, Vault, etc.)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or Use Case
+      description: What problem does this feature solve? Why do you need it?
+      placeholder: |
+        I want to be able to...
+        Currently I can't...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How would you like this feature to work?
+      placeholder: |
+        Describe your idea in detail...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered any alternative solutions or workarounds?
+      placeholder: |
+        Other ways this could be implemented...
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples
+      description: Provide examples of how this feature would be used (commands, config, etc.)
+      render: yaml
+      placeholder: |
+        # Example configuration or command usage
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have checked the [Wiki](https://github.com/UniverseStudiosMC/UniversePlayTime/wiki) to ensure this feature doesn't already exist
+          required: true
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
