@@ -1,0 +1,91 @@
+# Configuration for PR Labeler
+# https://github.com/actions/labeler
+
+# Documentation changes
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '*.md'
+          - 'wiki/**'
+          - 'docs/**'
+          - '.github/**/*.md'
+
+# Configuration files
+configuration:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/main/resources/*.yml'
+          - 'src/main/resources/*.yaml'
+
+# Core plugin code
+core:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/main/java/com/universe/playtime/*.java'
+          - 'src/main/java/com/universe/playtime/manager/**'
+
+# Commands
+commands:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/main/java/com/universe/playtime/command/**'
+
+# GUI related
+gui:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/main/java/com/universe/playtime/gui/**'
+
+# Storage/Database
+database:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/main/java/com/universe/playtime/storage/**'
+
+# Rewards system
+rewards:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/main/java/com/universe/playtime/reward/**'
+          - 'src/main/resources/rewards.yml'
+
+# PlaceholderAPI
+placeholders:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/main/java/com/universe/playtime/placeholder/**'
+
+# Build/Dependencies
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'pom.xml'
+          - 'dependency-reduced-pom.xml'
+
+# GitHub Actions / CI
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/workflows/**'
+          - '.github/labeler.yml'
+
+# Bug fixes (by branch name)
+bug:
+  - head-branch:
+      - '^fix'
+      - '^bug'
+      - '^hotfix'
+
+# Features (by branch name)
+enhancement:
+  - head-branch:
+      - '^feat'
+      - '^feature'
+      - '^add'
+
+# Refactoring (by branch name)
+refactor:
+  - head-branch:
+      - '^refactor'
+      - '^clean'
+      - '^improve'
