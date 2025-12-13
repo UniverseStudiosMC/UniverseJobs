@@ -476,7 +476,9 @@ actions:
 
 ## Action Limits
 
-Prevent farming/exploiting:
+Prevent farming/exploiting by limiting how many times a player can perform an action.
+
+### Basic Configuration
 
 ```yaml
 actions:
@@ -487,10 +489,99 @@ actions:
       xp: 50
       money: 10
       limits:
-        max-action-per-period: 100
+        max-actions-per-period: 100    # Max actions before cooldown
+        cooldown-minutes: 60           # Cooldown duration in minutes
+        block-exp: true                # Block XP when limit reached
+        block-money: true              # Block money when limit reached
+```
+
+### Limit Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `max-actions-per-period` | Integer | - | Maximum actions allowed before cooldown |
+| `cooldown-minutes` | Integer | 60 | Cooldown duration in minutes |
+| `block-exp` | Boolean | false | Whether to block XP when limit reached |
+| `block-money` | Boolean | false | Whether to block money when limit reached |
+| `message` | Object | - | Message configuration (see below) |
+
+### Limit Messages
+
+Configure a message to inform players when they reach their action limit:
+
+```yaml
+actions:
+  BREAK:
+    break_diamond_ore:
+      target: "DIAMOND_ORE"
+      xp: 50
+      money: 10
+      limits:
+        max-actions-per-period: 100
         cooldown-minutes: 60
         block-exp: true
         block-money: true
+        message:
+          enabled: true
+          type: actionbar
+          text: "&cLimit reached! {actions}/{max} - Wait {time}"
+```
+
+### Message Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `enabled` | Boolean | true | Enable/disable the limit message |
+| `type` | String | actionbar | Message display type |
+| `text` | String | `&cLimit reached! Wait {time} to continue.` | The message text |
+
+### Message Types
+
+| Type | Description |
+|------|-------------|
+| `chat` | Sends message in player's chat |
+| `actionbar` | Displays above hotbar (default) |
+| `bossbar` | Displays as a red boss bar at top of screen |
+
+### Message Placeholders
+
+| Placeholder | Description | Example |
+|-------------|-------------|---------|
+| `{actions}` | Number of actions performed | `100` |
+| `{max}` | Maximum actions allowed | `100` |
+| `{time}` | Formatted cooldown time remaining | `1h 0m`, `30m 15s`, `45s` |
+
+### Complete Example
+
+```yaml
+actions:
+  BREAK:
+    break_diamond_ore:
+      target: "DIAMOND_ORE"
+      display-name: "Diamond Ore"
+      xp: 50
+      money: 10
+      limits:
+        max-actions-per-period: 100
+        cooldown-minutes: 60
+        block-exp: false
+        block-money: false
+        message:
+          enabled: true
+          type: bossbar
+          text: "&c&lMining Limit! &7{actions}/{max} diamonds mined. Wait &e{time}&7."
+
+    break_any_ore:
+      target: "*_ORE"
+      xp: 10
+      money: 2
+      limits:
+        max-actions-per-period: 500
+        cooldown-minutes: 120
+        message:
+          enabled: true
+          type: actionbar
+          text: "&eOre limit reached! Cooldown: {time}"
 ```
 
 ## Requirements
