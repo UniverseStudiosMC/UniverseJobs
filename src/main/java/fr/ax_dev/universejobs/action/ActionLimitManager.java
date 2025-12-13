@@ -110,6 +110,10 @@ public class ActionLimitManager {
             return new ActionGains(0, 0, true, data.getCurrentActionsPerformed(), maxActions, remainingMs, msgConfig);
         }
 
+        if (data.getCooldownEndTime() > 0 && data.getCurrentActionsPerformed() >= maxActions) {
+            data.reset();
+        }
+
         if (data.getCurrentActionsPerformed() >= maxActions) {
             long cooldownMs = limit.getCooldownMinutes() * 60 * 1000L;
             data.setCooldownEndTime(currentTime + cooldownMs);
