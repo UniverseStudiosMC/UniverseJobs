@@ -6,8 +6,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        Have a question about UniversePlayTime?
-        Check the [Wiki](https://github.com/UniverseStudiosMC/UniversePlayTime/wiki) first - your answer might already be there!
+        Have a question about UniverseJobs?
+        Check the [Wiki](https://github.com/UniverseStudiosMC/UniverseJobs/wiki) first - your answer might already be there!
 
   - type: dropdown
     id: topic
@@ -53,7 +53,7 @@ body:
     attributes:
       label: Checklist
       options:
-        - label: I have checked the [Wiki](https://github.com/UniverseStudiosMC/UniversePlayTime/wiki)
+        - label: I have checked the [Wiki](https://github.com/UniverseStudiosMC/UniverseJobs/wiki)
           required: true
         - label: I have searched existing issues for similar questions
           required: true
