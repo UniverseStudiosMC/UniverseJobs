@@ -1,0 +1,76 @@
+name: Configuration Help
+description: Get help with plugin configuration
+title: "[Config] "
+labels: ["help wanted", "configuration"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Need help configuring UniversePlayTime?
+        Make sure to check the [Wiki](https://github.com/UniverseStudiosMC/UniversePlayTime/wiki) first!
+
+  - type: dropdown
+    id: config-area
+    attributes:
+      label: Configuration Area
+      description: What part of the configuration do you need help with?
+      options:
+        - General Settings (config.yml)
+        - Rewards Configuration
+        - GUI Configuration
+        - Messages/Localization
+        - MySQL/Database Setup
+        - Multi-Server Setup
+        - PlaceholderAPI Integration
+        - Permissions
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: What are you trying to achieve?
+      description: Describe what you want to accomplish
+      placeholder: |
+        I want to set up rewards so that...
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-config
+    attributes:
+      label: Current Configuration
+      description: Paste your current configuration (relevant parts)
+      render: yaml
+      placeholder: |
+        # Paste your current config here
+    validations:
+      required: true
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: What have you tried?
+      description: What solutions have you already attempted?
+      placeholder: |
+        I tried changing X to Y but...
+
+  - type: textarea
+    id: errors
+    attributes:
+      label: Errors or Issues
+      description: Are you getting any errors or unexpected behavior?
+      render: shell
+      placeholder: |
+        Any error messages...
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have read the relevant [Wiki pages](https://github.com/UniverseStudiosMC/UniversePlayTime/wiki)
+          required: true
+        - label: I have used `/playtime reload` after making changes
+          required: true
