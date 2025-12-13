@@ -1,0 +1,32 @@
+name: Auto Assign Issues
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  auto-assign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add needs-triage label if not present
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const labels = issue.labels.map(l => l.name);
+
+            // If no priority labels, add needs-triage
+            const priorityLabels = ['needs-triage', 'priority: high', 'priority: low', 'priority: critical'];
+            const hasPriority = labels.some(l => priorityLabels.includes(l));
+
+            if (!hasPriority && !labels.includes('needs-triage')) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: ['needs-triage']
+              });
+            }
