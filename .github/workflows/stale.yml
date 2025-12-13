@@ -1,0 +1,65 @@
+name: Stale Issues Manager
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight
+  workflow_dispatch:  # Allow manual trigger
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Manage stale issues and PRs
+        uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+          # Stale timing
+          days-before-stale: 30
+          days-before-close: 7
+
+          # Issue settings
+          stale-issue-label: 'stale'
+          stale-issue-message: |
+            👋 This issue has been automatically marked as stale because it has not had any activity in the last 30 days.
+
+            It will be closed in 7 days if no further activity occurs.
+
+            If this issue is still relevant:
+            - Comment to let us know it's still needed
+            - Provide any additional information that might help
+
+            Thank you for your contributions to UniversePlayTime!
+          close-issue-message: |
+            🔒 This issue has been automatically closed due to inactivity.
+
+            If you believe this issue is still relevant, feel free to reopen it or create a new issue with updated information.
+
+          # PR settings
+          stale-pr-label: 'stale'
+          stale-pr-message: |
+            👋 This pull request has been automatically marked as stale because it has not had any activity in the last 30 days.
+
+            It will be closed in 7 days if no further activity occurs.
+
+            If you're still working on this:
+            - Push new commits or comment to keep it active
+            - Let us know if you need help or feedback
+          close-pr-message: |
+            🔒 This pull request has been automatically closed due to inactivity.
+
+            Feel free to reopen it if you'd like to continue working on it.
+
+          # Exempt labels (won't be marked stale)
+          exempt-issue-labels: 'pinned,security,help wanted,good first issue'
+          exempt-pr-labels: 'pinned,security,work in progress'
+
+          # Only process open items
+          only-labels: ''
+
+          # Operations per run (to avoid rate limits)
+          operations-per-run: 50
