@@ -78,6 +78,25 @@ public class ActionLimitManager {
         if (limit == null) {
             return new ActionGains(xpGain, moneyGain);
         }
+        return checkAndConsumeLimit(player, jobId, target, xpGain, moneyGain, limit);
+    }
+
+    /**
+     * Check if a player can perform an action and consume from their limit.
+     * This overload accepts the ActionLimit directly from the JobAction.
+     *
+     * @param player The player
+     * @param jobId The job ID
+     * @param target The action target
+     * @param xpGain The XP that would be gained
+     * @param moneyGain The money that would be gained
+     * @param limit The action limit configuration from the JobAction
+     * @return The modified gains (may be reduced or zero if limit reached)
+     */
+    public ActionGains checkAndConsumeLimit(Player player, String jobId, String target, double xpGain, double moneyGain, ActionLimit limit) {
+        if (limit == null) {
+            return new ActionGains(xpGain, moneyGain);
+        }
 
         UUID playerId = player.getUniqueId();
         ActionLimitData data = getOrCreateLimitData(playerId, jobId, target, limit);
@@ -99,15 +118,23 @@ public class ActionLimitManager {
 
         data.consumeAction();
 
-        double finalXp = limit.isBlockExp() ? 0 : xpGain;
-        double finalMoney = limit.isBlockMoney() ? 0 : moneyGain;
-
         boolean justReachedLimit = data.getCurrentActionsPerformed() >= maxActions;
         long remainingMs = 0;
+
+        double finalXp = xpGain;
+        double finalMoney = moneyGain;
+
         if (justReachedLimit) {
             long cooldownMs = limit.getCooldownMinutes() * 60 * 1000L;
             data.setCooldownEndTime(currentTime + cooldownMs);
             remainingMs = cooldownMs;
+
+            if (limit.isBlockExp()) {
+                finalXp = 0;
+            }
+            if (limit.isBlockMoney()) {
+                finalMoney = 0;
+            }
         }
 
         return new ActionGains(finalXp, finalMoney, justReachedLimit, data.getCurrentActionsPerformed(), maxActions, remainingMs, msgConfig);

@@ -501,7 +501,7 @@ public class ActionProcessor {
         // Check action limits first (if any)
         if (action.hasLimits()) {
             ActionLimitManager.ActionGains allowedGains = limitManager.checkAndConsumeLimit(
-                player, job.getId(), action.getTarget(), xp, money);
+                player, job.getId(), action.getTarget(), xp, money, action.getActionLimit());
 
             xp = allowedGains.getXp();
             money = allowedGains.getMoney();

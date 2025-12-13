@@ -2,6 +2,8 @@ package fr.ax_dev.universejobs.job;
 
 import fr.ax_dev.universejobs.UniverseJobs;
 import fr.ax_dev.universejobs.action.ActionLimitManager;
+import fr.ax_dev.universejobs.action.ActionType;
+import fr.ax_dev.universejobs.action.JobAction;
 import fr.ax_dev.universejobs.config.ConfigManager;
 import fr.ax_dev.universejobs.storage.DataStorage;
 import fr.ax_dev.universejobs.xp.XpCurve;
@@ -103,10 +105,18 @@ public class JobManager {
                     
                     if (job.isEnabled()) {
                         jobs.put(jobId, job);
-                        
-                        // Configure auto-restore for action limits if enabled
+
+                        ActionLimitManager limitManager = plugin.getLimitManager();
+
+                        for (ActionType actionType : job.getActionTypes()) {
+                            for (JobAction action : job.getActions(actionType)) {
+                                if (action.hasLimits()) {
+                                    limitManager.setActionLimit(jobId, action.getTarget(), action.getActionLimit());
+                                }
+                            }
+                        }
+
                         if (job.isAutoRestoreEnabled()) {
-                            ActionLimitManager limitManager = plugin.getLimitManager();
                             limitManager.setAutoRestoreConfig(jobId, true, job.getAutoRestoreTime());
                         }
                     } else {
