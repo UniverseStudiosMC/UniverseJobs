@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Have an idea to improve UniversePlayTime? We'd love to hear it!
+        Have an idea to improve UniverseJobs? We'd love to hear it!
 
   - type: dropdown
     id: feature-type
@@ -68,7 +68,7 @@ body:
     attributes:
       label: Checklist
       options:
-        - label: I have checked the [Wiki](https://github.com/UniverseStudiosMC/UniversePlayTime/wiki) to ensure this feature doesn't already exist
+        - label: I have checked the [Wiki](https://github.com/UniverseStudiosMC/UniverseJobs/wiki) to ensure this feature doesn't already exist
           required: true
         - label: I have searched existing issues to ensure this is not a duplicate
           required: true
