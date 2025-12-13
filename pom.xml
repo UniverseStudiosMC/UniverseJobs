@@ -6,7 +6,7 @@
 
     <groupId>fr.ax_dev</groupId>
     <artifactId>UniverseJobs</artifactId>
-    <version>0.6.5-DEV</version>
+    <version>0.6.3-DEVBUILD-3</version>
     <packaging>jar</packaging>
 
     <name>UniverseJobs</name>
