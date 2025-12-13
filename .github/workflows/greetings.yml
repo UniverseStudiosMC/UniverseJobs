@@ -1,0 +1,39 @@
+name: Greetings
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  greeting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Greet new contributors
+        uses: actions/first-interaction@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-message: |
+            👋 Hello @${{ github.actor }}, thank you for opening your first issue!
+
+            We'll review it as soon as possible. In the meantime:
+            - Make sure you've checked the [Wiki](https://github.com/UniverseStudiosMC/UniversePlayTime/wiki)
+            - Provide as much detail as possible to help us understand the issue
+
+            Thanks for contributing to UniversePlayTime! 🎮
+          pr-message: |
+            👋 Hello @${{ github.actor }}, thank you for your first pull request!
+
+            We appreciate your contribution to UniversePlayTime. A maintainer will review your changes soon.
+
+            Please make sure:
+            - Your code follows the project's coding style
+            - You've tested your changes
+            - The build passes (`mvn clean package`)
+
+            Thanks for helping improve the plugin! 🚀
