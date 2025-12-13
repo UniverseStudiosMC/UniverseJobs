@@ -32,6 +32,7 @@ import fr.ax_dev.universejobs.utils.AsyncXpMessageSender;
 import fr.ax_dev.universejobs.utils.PlayerTextureCache;
 import fr.ax_dev.universejobs.placeholder.PlaceholderManager;
 import fr.ax_dev.universejobs.update.UpdateChecker;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -310,6 +311,10 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         // Check for updates
         this.updateChecker = new UpdateChecker(this);
         updateChecker.checkForUpdates();
+
+        // Initialize bStats metrics
+        int pluginId = 28326;
+        new Metrics(this, pluginId);
 
         // Plugin enabled successfully
     }
