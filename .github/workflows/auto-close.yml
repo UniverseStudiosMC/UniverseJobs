@@ -1,0 +1,48 @@
+name: Auto Close Incomplete Issues
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+
+jobs:
+  check-template:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for empty required fields
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const body = issue.body || '';
+            const title = issue.title || '';
+
+            // Check for default/empty templates
+            const emptyIndicators = [
+              'No response',
+              '_No response_',
+              '<!-- Please fill',
+            ];
+
+            // Check if issue body is too short (likely incomplete)
+            if (body.length < 50) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `⚠️ @${issue.user.login}, your issue appears to be incomplete.
+
+            Please provide more details to help us understand and resolve your issue. Use one of our [issue templates](https://github.com/UniverseStudiosMC/UniversePlayTime/issues/new/choose) for guidance.
+
+            Issues without sufficient information may be closed.`
+              });
+
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: ['needs-info']
+              });
+            }
