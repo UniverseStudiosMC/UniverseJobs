@@ -1,0 +1,59 @@
+name: Question
+description: Ask a general question about the plugin
+title: "[Question] "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a question about UniversePlayTime?
+        Check the [Wiki](https://github.com/UniverseStudiosMC/UniversePlayTime/wiki) first - your answer might already be there!
+
+  - type: dropdown
+    id: topic
+    attributes:
+      label: Topic
+      description: What is your question about?
+      options:
+        - General Usage
+        - Commands & Permissions
+        - Rewards System
+        - GUI System
+        - PlaceholderAPI
+        - MySQL / Database
+        - Multi-Server / BungeeCord
+        - API / Development
+        - Compatibility
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: Ask your question clearly
+      placeholder: |
+        How do I...?
+        Is it possible to...?
+        What does X mean...?
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any additional information that might help answer your question
+      placeholder: |
+        Server version, other plugins, what you're trying to achieve...
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have checked the [Wiki](https://github.com/UniverseStudiosMC/UniversePlayTime/wiki)
+          required: true
+        - label: I have searched existing issues for similar questions
+          required: true
