@@ -246,4 +246,19 @@ public class AsyncXpMessageSender {
             );
         }
     }
+
+    /**
+     * Send limit reached bossbar message.
+     */
+    public void sendLimitBossbar(Player player, String message) {
+        if (player.isOnline()) {
+            String processedMessage = processPlaceholderAPI(player, message);
+            PacketUtils.sendBossBarAsync(
+                player, processedMessage,
+                org.bukkit.boss.BarColor.RED,
+                org.bukkit.boss.BarStyle.SOLID,
+                1.0, 60
+            );
+        }
+    }
 }

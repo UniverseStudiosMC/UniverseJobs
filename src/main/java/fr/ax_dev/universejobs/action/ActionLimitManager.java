@@ -65,7 +65,7 @@ public class ActionLimitManager {
     
     /**
      * Check if a player can perform an action and consume from their limit.
-     * 
+     *
      * @param player The player
      * @param jobId The job ID
      * @param target The action target
@@ -76,38 +76,41 @@ public class ActionLimitManager {
     public ActionGains checkAndConsumeLimit(Player player, String jobId, String target, double xpGain, double moneyGain) {
         ActionLimit limit = getActionLimit(jobId, target);
         if (limit == null) {
-            return new ActionGains(xpGain, moneyGain); // No limits configured
+            return new ActionGains(xpGain, moneyGain);
         }
-        
+
         UUID playerId = player.getUniqueId();
         ActionLimitData data = getOrCreateLimitData(playerId, jobId, target, limit);
-        
-        // Check if action is on cooldown
+
         long currentTime = System.currentTimeMillis();
+        int maxActions = limit.getMaxActionsPerPeriod();
+        LimitMessageConfig msgConfig = limit.getMessageConfig();
+
         if (currentTime < data.getCooldownEndTime()) {
-            return new ActionGains(0, 0); // Action on cooldown
+            long remainingMs = data.getCooldownEndTime() - currentTime;
+            return new ActionGains(0, 0, true, data.getCurrentActionsPerformed(), maxActions, remainingMs, msgConfig);
         }
-        
-        // Check if action limit reached
-        if (data.getCurrentActionsPerformed() >= limit.getMaxActionsPerPeriod()) {
-            // Set cooldown and return no gains
-            data.setCooldownEndTime(currentTime + (limit.getCooldownMinutes() * 60 * 1000L));
-            return new ActionGains(0, 0);
+
+        if (data.getCurrentActionsPerformed() >= maxActions) {
+            long cooldownMs = limit.getCooldownMinutes() * 60 * 1000L;
+            data.setCooldownEndTime(currentTime + cooldownMs);
+            return new ActionGains(0, 0, true, data.getCurrentActionsPerformed(), maxActions, cooldownMs, msgConfig);
         }
-        
-        // Consume one action
+
         data.consumeAction();
-        
-        // Apply blocking rules
+
         double finalXp = limit.isBlockExp() ? 0 : xpGain;
         double finalMoney = limit.isBlockMoney() ? 0 : moneyGain;
-        
-        // Check if we've reached the limit after this action
-        if (data.getCurrentActionsPerformed() >= limit.getMaxActionsPerPeriod()) {
-            data.setCooldownEndTime(currentTime + (limit.getCooldownMinutes() * 60 * 1000L));
+
+        boolean justReachedLimit = data.getCurrentActionsPerformed() >= maxActions;
+        long remainingMs = 0;
+        if (justReachedLimit) {
+            long cooldownMs = limit.getCooldownMinutes() * 60 * 1000L;
+            data.setCooldownEndTime(currentTime + cooldownMs);
+            remainingMs = cooldownMs;
         }
-        
-        return new ActionGains(finalXp, finalMoney);
+
+        return new ActionGains(finalXp, finalMoney, justReachedLimit, data.getCurrentActionsPerformed(), maxActions, remainingMs, msgConfig);
     }
     
     /**
@@ -373,17 +376,64 @@ public class ActionLimitManager {
     public static class ActionGains {
         private final double xp;
         private final double money;
-        
+        private final boolean limitReached;
+        private final int actionsUsed;
+        private final int maxActions;
+        private final long cooldownRemainingMs;
+        private final LimitMessageConfig messageConfig;
+
         public ActionGains(double xp, double money) {
+            this(xp, money, false, 0, 0, 0, null);
+        }
+
+        public ActionGains(double xp, double money, boolean limitReached, int actionsUsed, int maxActions, long cooldownRemainingMs, LimitMessageConfig messageConfig) {
             this.xp = xp;
             this.money = money;
+            this.limitReached = limitReached;
+            this.actionsUsed = actionsUsed;
+            this.maxActions = maxActions;
+            this.cooldownRemainingMs = cooldownRemainingMs;
+            this.messageConfig = messageConfig;
         }
-        
+
         public double getXp() { return xp; }
         public double getMoney() { return money; }
-        
+        public boolean isLimitReached() { return limitReached; }
+        public int getActionsUsed() { return actionsUsed; }
+        public int getMaxActions() { return maxActions; }
+        public long getCooldownRemainingMs() { return cooldownRemainingMs; }
+        public LimitMessageConfig getMessageConfig() { return messageConfig; }
+
         public boolean hasGains() {
             return xp > 0 || money > 0;
+        }
+
+        public boolean shouldSendMessage() {
+            return limitReached && messageConfig != null && messageConfig.isEnabled();
+        }
+
+        public String getFormattedTime() {
+            long seconds = cooldownRemainingMs / 1000;
+            long minutes = seconds / 60;
+            long hours = minutes / 60;
+
+            if (hours > 0) {
+                return hours + "h " + (minutes % 60) + "m";
+            } else if (minutes > 0) {
+                return minutes + "m " + (seconds % 60) + "s";
+            } else {
+                return seconds + "s";
+            }
+        }
+
+        public String getFormattedMessage() {
+            if (messageConfig == null || messageConfig.getText() == null) {
+                return "";
+            }
+            return messageConfig.getText()
+                    .replace("{actions}", String.valueOf(actionsUsed))
+                    .replace("{max}", String.valueOf(maxActions))
+                    .replace("{time}", getFormattedTime());
         }
     }
     
@@ -395,18 +445,45 @@ public class ActionLimitManager {
         private final int cooldownMinutes;
         private final boolean blockExp;
         private final boolean blockMoney;
-        
+        private final LimitMessageConfig messageConfig;
+
         public ActionLimit(int maxActionsPerPeriod, int cooldownMinutes, boolean blockExp, boolean blockMoney) {
+            this(maxActionsPerPeriod, cooldownMinutes, blockExp, blockMoney, null);
+        }
+
+        public ActionLimit(int maxActionsPerPeriod, int cooldownMinutes, boolean blockExp, boolean blockMoney, LimitMessageConfig messageConfig) {
             this.maxActionsPerPeriod = maxActionsPerPeriod;
             this.cooldownMinutes = cooldownMinutes;
             this.blockExp = blockExp;
             this.blockMoney = blockMoney;
+            this.messageConfig = messageConfig;
         }
-        
+
         public int getMaxActionsPerPeriod() { return maxActionsPerPeriod; }
         public int getCooldownMinutes() { return cooldownMinutes; }
         public boolean isBlockExp() { return blockExp; }
         public boolean isBlockMoney() { return blockMoney; }
+        public LimitMessageConfig getMessageConfig() { return messageConfig; }
+        public boolean hasMessageConfig() { return messageConfig != null && messageConfig.isEnabled(); }
+    }
+
+    /**
+     * Configuration for limit reached message.
+     */
+    public static class LimitMessageConfig {
+        private final boolean enabled;
+        private final String type;
+        private final String text;
+
+        public LimitMessageConfig(boolean enabled, String type, String text) {
+            this.enabled = enabled;
+            this.type = type != null ? type.toUpperCase() : "ACTIONBAR";
+            this.text = text != null ? text : "&cLimit reached! Wait {time} to continue.";
+        }
+
+        public boolean isEnabled() { return enabled; }
+        public String getType() { return type; }
+        public String getText() { return text; }
     }
     
     /**

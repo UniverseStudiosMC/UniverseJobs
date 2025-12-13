@@ -11,6 +11,7 @@ import fr.ax_dev.universejobs.job.Job;
 import fr.ax_dev.universejobs.job.JobManager;
 import fr.ax_dev.universejobs.utils.MessageUtils;
 import fr.ax_dev.universejobs.utils.AsyncXpMessageSender;
+import fr.ax_dev.universejobs.utils.PacketUtils;
 import fr.ax_dev.universejobs.utils.EquationEvaluator;
 import fr.ax_dev.universejobs.cache.ConfigurationCache;
 import fr.ax_dev.universejobs.cache.PlayerJobCache;
@@ -501,11 +502,14 @@ public class ActionProcessor {
         if (action.hasLimits()) {
             ActionLimitManager.ActionGains allowedGains = limitManager.checkAndConsumeLimit(
                 player, job.getId(), action.getTarget(), xp, money);
-            
+
             xp = allowedGains.getXp();
             money = allowedGains.getMoney();
-            
-            // If no gains allowed due to limits, return early
+
+            if (allowedGains.shouldSendMessage()) {
+                sendLimitMessage(player, allowedGains);
+            }
+
             if (!allowedGains.hasGains()) {
                 return;
             }
@@ -1044,8 +1048,37 @@ public class ActionProcessor {
     }
     
     /**
+     * Send limit reached message to the player (async).
+     *
+     * @param player The player
+     * @param gains The action gains containing message config
+     */
+    private void sendLimitMessage(Player player, ActionLimitManager.ActionGains gains) {
+        ActionLimitManager.LimitMessageConfig config = gains.getMessageConfig();
+        if (config == null || !config.isEnabled()) {
+            return;
+        }
+
+        String message = gains.getFormattedMessage();
+        String type = config.getType();
+
+        switch (type) {
+            case "CHAT":
+                PacketUtils.sendChatAsync(player, message);
+                break;
+            case "BOSSBAR":
+                messageSender.sendLimitBossbar(player, message);
+                break;
+            case "ACTIONBAR":
+            default:
+                PacketUtils.sendActionBarAsync(player, message, 60);
+                break;
+        }
+    }
+
+    /**
      * Execute action-level message and commands.
-     * 
+     *
      * @param player The player
      * @param action The job action
      */

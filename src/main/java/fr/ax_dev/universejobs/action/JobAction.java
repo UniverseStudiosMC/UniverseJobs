@@ -120,9 +120,18 @@ public class JobAction {
             int cooldownMinutes = limitsSection.getInt("cooldown-minutes", 60);
             boolean blockExp = limitsSection.getBoolean("block-exp", false);
             boolean blockMoney = limitsSection.getBoolean("block-money", false);
-            
+
+            ActionLimitManager.LimitMessageConfig limitMsgConfig = null;
+            ConfigurationSection msgSection = limitsSection.getConfigurationSection("message");
+            if (msgSection != null) {
+                boolean msgEnabled = msgSection.getBoolean("enabled", true);
+                String msgType = msgSection.getString("type", "actionbar");
+                String msgText = msgSection.getString("text", "&cLimit reached! {actions}/{max} - Wait {time}");
+                limitMsgConfig = new ActionLimitManager.LimitMessageConfig(msgEnabled, msgType, msgText);
+            }
+
             if (maxActionsPerPeriod > 0) {
-                this.actionLimit = new ActionLimitManager.ActionLimit(maxActionsPerPeriod, cooldownMinutes, blockExp, blockMoney);
+                this.actionLimit = new ActionLimitManager.ActionLimit(maxActionsPerPeriod, cooldownMinutes, blockExp, blockMoney, limitMsgConfig);
             } else {
                 this.actionLimit = null;
             }
