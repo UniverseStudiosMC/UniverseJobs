@@ -18,10 +18,10 @@ import java.util.regex.Pattern;
  * Handles the main job command and its subcommands using modular handlers.
  */
 public class JobCommand implements CommandExecutor, TabCompleter {
-    
+
     private final UniverseJobs plugin;
     private final LanguageManager languageManager;
-    
+
     // Command handlers
     private final JoinLeaveCommandHandler joinLeaveHandler;
     private final InfoStatsCommandHandler infoStatsHandler;
@@ -29,6 +29,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     private final ActionLimitCommandHandler actionLimitHandler;
     private final AdminJobCommandHandler adminJobHandler;
     private final MenuCommandHandler menuHandler;
+    private final DatabaseCommandHandler databaseHandler;
     // Command constants
     private static final String CMD_JOIN = "join";
     private static final String CMD_LEAVE = "leave";
@@ -40,24 +41,24 @@ public class JobCommand implements CommandExecutor, TabCompleter {
     private static final String CMD_MENU = "menu";
     private static final String CMD_ADMIN = "admin";
     private static final String CMD_DATABASE = "database";
-    
+
     // Security patterns for input validation
     private static final Pattern COMMAND_INJECTION_PATTERN = Pattern.compile("[;&|`$(){}\\[\\]<>\"'\\\\]");
-    
+
     // Rate limiting for commands (per player)
     private final Map<UUID, Long> lastCommandTime = new HashMap<>();
     private static final long COMMAND_COOLDOWN_MS = 100; // 100ms between commands
-    
+
     /**
      * Create a new JobCommand.
-     * 
+     *
      * @param plugin The plugin instance
      * @param jobManager The job manager
      */
     public JobCommand(UniverseJobs plugin, JobManager jobManager) {
         this.plugin = plugin;
         this.languageManager = plugin.getLanguageManager();
-        
+
         // Initialize command handlers
         this.joinLeaveHandler = new JoinLeaveCommandHandler(plugin);
         this.infoStatsHandler = new InfoStatsCommandHandler(plugin);
@@ -65,15 +66,15 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         this.actionLimitHandler = new ActionLimitCommandHandler(plugin);
         this.adminJobHandler = new AdminJobCommandHandler(plugin, jobManager);
         this.menuHandler = new MenuCommandHandler(plugin);
-        new DatabaseCommandHandler(plugin);
+        this.databaseHandler = new DatabaseCommandHandler(plugin);
     }
-    
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!validateCommandStructure(args)) {
             return true;
         }
-        
+
         if (args.length == 0) {
             // If sender is a player, open main menu; otherwise show help
             if (sender instanceof Player player) {
@@ -83,25 +84,25 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 return true;
             }
         }
-        
+
         String subCommand = sanitizeInput(args[0].toLowerCase());
-        
+
         if (!isValidSubCommand(subCommand)) {
             sendHelpBasedOnSender(sender);
             return true;
         }
-        
+
         if (!validatePlayerRequirement(sender, subCommand)) {
             return true;
         }
-        
+
         if (sender instanceof Player player && !checkRateLimit(player)) {
             return true;
         }
-        
+
         try {
             boolean handled = false;
-            
+
             switch (subCommand) {
                 case CMD_JOIN, CMD_LEAVE -> handled = joinLeaveHandler.handleCommand(sender, args);
                 case CMD_INFO, CMD_LIST, CMD_STATS -> handled = infoStatsHandler.handleCommand(sender, args);
@@ -109,9 +110,10 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 case CMD_ACTION_LIMIT -> handled = actionLimitHandler.handleCommand(sender, args);
                 case CMD_ADMIN -> handled = adminJobHandler.handleAdminCommand(sender, args);
                 case CMD_MENU -> handled = menuHandler.handleCommand(sender, Arrays.copyOfRange(args, 1, args.length));
+                case CMD_DATABASE -> handled = this.databaseHandler.handleDatabaseCommand(sender, args);
                 default -> handled = false;
             }
-            
+
             if (!handled) {
                 if (sender instanceof Player player) {
                     sendHelp(player);
@@ -123,18 +125,18 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             String senderName = sender instanceof Player ? sender.getName() : "Console";
             plugin.getLogger().warning("Error executing command for " + senderName + ": " + e.getMessage());
         }
-        
+
         return true;
     }
-    
+
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> completions = new ArrayList<>();
-        
+
         if (args.length == 1) {
             // Main subcommands
             List<String> subCommands = new ArrayList<>();
-            
+
             // Commands available to players
             if (sender instanceof Player) {
                 subCommands.addAll(Arrays.asList(CMD_JOIN, CMD_LEAVE, CMD_INFO, CMD_LIST, CMD_STATS, CMD_MENU));
@@ -142,7 +144,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                     subCommands.add(CMD_REWARDS);
                 }
             }
-            
+
             // Admin commands available to both console and players
             if (sender.hasPermission("universejobs.admin")) {
                 subCommands.add(CMD_ADMIN); // All admin commands under /jobs admin
@@ -151,7 +153,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             if (sender.hasPermission("universejobs.admin.actionlimits")) {
                 subCommands.add(CMD_ACTION_LIMIT);
             }
-            
+
             String input = args[0].toLowerCase();
             for (String subCommand : subCommands) {
                 if (subCommand.startsWith(input)) {
@@ -161,7 +163,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         } else {
             // Delegate to appropriate handler for tab completion
             String subCommand = args[0].toLowerCase();
-            
+
             switch (subCommand) {
                 case CMD_JOIN, CMD_LEAVE -> completions.addAll(joinLeaveHandler.getTabCompletions(sender, args));
                 case CMD_INFO, CMD_LIST, CMD_STATS -> completions.addAll(infoStatsHandler.getTabCompletions(sender, args));
@@ -174,31 +176,31 @@ public class JobCommand implements CommandExecutor, TabCompleter {
                 }
             }
         }
-        
+
         return completions;
     }
-    
+
     /**
      * Check rate limiting for command execution.
-     * 
+     *
      * @param player The player executing the command
      * @return true if command should be processed, false if rate limited
      */
     private boolean checkRateLimit(Player player) {
         long currentTime = System.currentTimeMillis();
         Long lastTime = lastCommandTime.get(player.getUniqueId());
-        
+
         if (lastTime != null && (currentTime - lastTime) < COMMAND_COOLDOWN_MS) {
             return false;
         }
-        
+
         lastCommandTime.put(player.getUniqueId(), currentTime);
         return true;
     }
-    
+
     /**
      * Validate the basic structure of command arguments.
-     * 
+     *
      * @param args The command arguments
      * @return true if structure is valid
      */
@@ -206,24 +208,24 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         if (args.length > 10) {
             return false; // Too many arguments
         }
-        
+
         for (String arg : args) {
             if (arg == null || arg.length() > 256) {
                 return false; // Null or excessively long argument
             }
-            
+
             // Check for potential command injection
             if (COMMAND_INJECTION_PATTERN.matcher(arg).find()) {
                 return false;
             }
         }
-        
+
         return true;
     }
-    
+
     /**
      * Sanitize input string to prevent injection attacks.
-     * 
+     *
      * @param input The input string
      * @return Sanitized string
      */
@@ -235,21 +237,21 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         String sanitized = input.replaceAll("[;&|`$(){}\\[\\]<>\"'\\\\]", "");
         return sanitized.substring(0, Math.min(sanitized.length(), 64));
     }
-    
+
     /**
      * Check if subcommand is valid.
-     * 
+     *
      * @param subCommand The subcommand to validate
      * @return true if valid
      */
     private boolean isValidSubCommand(String subCommand) {
-        Set<String> validCommands = Set.of(CMD_JOIN, CMD_LEAVE, CMD_INFO, CMD_LIST, CMD_STATS, CMD_REWARDS, CMD_ACTION_LIMIT, CMD_MENU, CMD_ADMIN);
+        Set<String> validCommands = Set.of(CMD_JOIN, CMD_LEAVE, CMD_INFO, CMD_LIST, CMD_STATS, CMD_REWARDS, CMD_ACTION_LIMIT, CMD_MENU, CMD_ADMIN, CMD_DATABASE);
         return validCommands.contains(subCommand);
     }
-    
+
     /**
      * Check if a command requires a player.
-     * 
+     *
      * @param subCommand The subcommand to check
      * @return true if the command requires a player
      */
@@ -257,10 +259,10 @@ public class JobCommand implements CommandExecutor, TabCompleter {
         Set<String> playerOnlyCommands = Set.of(CMD_JOIN, CMD_LEAVE, CMD_INFO, CMD_LIST, CMD_STATS, CMD_REWARDS, CMD_MENU);
         return playerOnlyCommands.contains(subCommand);
     }
-    
+
     /**
      * Send help message to a player.
-     * 
+     *
      * @param player The player to send help to
      */
     private void sendHelp(Player player) {
@@ -278,10 +280,10 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             }
         }
     }
-    
+
     /**
      * Send help message to console.
-     * 
+     *
      * @param sender The console sender
      */
     private void sendConsoleHelp(CommandSender sender) {
@@ -289,7 +291,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(line);
         }
     }
-    
+
     /**
      * Send help message based on sender type.
      */
@@ -300,7 +302,7 @@ public class JobCommand implements CommandExecutor, TabCompleter {
             sendConsoleHelp(sender);
         }
     }
-    
+
     /**
      * Validate player requirement for subcommand.
      */
