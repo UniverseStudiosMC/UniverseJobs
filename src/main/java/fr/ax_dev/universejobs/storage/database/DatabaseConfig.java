@@ -1,9 +1,10 @@
 package fr.ax_dev.universejobs.storage.database;
 
+import java.util.Objects;
 import org.bukkit.configuration.ConfigurationSection;
 
 public class DatabaseConfig {
-    
+
     private final boolean enabled;
     private final DatabaseType type;
     private final String host;
@@ -12,7 +13,7 @@ public class DatabaseConfig {
     private final String username;
     private final String password;
     private final String prefix;
-    
+
     private final int minConnections;
     private final int maxConnections;
     private final long connectionTimeoutMs;
@@ -20,17 +21,20 @@ public class DatabaseConfig {
 
     public DatabaseConfig(ConfigurationSection config) {
         this.enabled = config.getBoolean("enabled", false);
-        
+
         String typeString = config.getString("type", "sqlite");
         this.type = DatabaseType.fromString(typeString);
-        
-        this.host = config.getString("host", "localhost");
-        this.port = config.getInt("port", type.getDefaultPort());
-        this.database = config.getString("database", "universejobs");
-        this.username = config.getString("username", "root");
-        this.password = config.getString("password", "");
+
+        ConfigurationSection databaseConfig = Objects.requireNonNullElse(config.getConfigurationSection(typeString), config.createSection(typeString));
+
+        this.host = databaseConfig.getString("host", "localhost");
+        this.port = databaseConfig.getInt("port", type.getDefaultPort());
+        this.database = databaseConfig.getString("database", "universejobs");
+        this.username = databaseConfig.getString("username", "root");
+        this.password = databaseConfig.getString("password", "");
+
         this.prefix = config.getString("prefix", "universejobs_");
-        
+
         ConfigurationSection poolConfig = config.getConfigurationSection("pool");
         if (poolConfig != null) {
             this.minConnections = poolConfig.getInt("min-connections", 2);

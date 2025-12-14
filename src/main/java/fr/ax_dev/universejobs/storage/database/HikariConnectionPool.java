@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 public class HikariConnectionPool {
-    
+
     private final UniverseJobs plugin;
     private final DatabaseConfig config;
     private HikariDataSource dataSource;
@@ -27,10 +27,10 @@ public class HikariConnectionPool {
         }
 
         HikariConfig hikariConfig = new HikariConfig();
-        
+
         String jdbcUrl = config.buildJdbcUrl(plugin.getDataFolder().getAbsolutePath());
         hikariConfig.setJdbcUrl(jdbcUrl);
-        
+
         if (config.getType() == DatabaseType.MYSQL) {
             hikariConfig.setUsername(config.getUsername());
             hikariConfig.setPassword(config.getPassword());
@@ -44,11 +44,11 @@ public class HikariConnectionPool {
         hikariConfig.setConnectionTimeout(config.getConnectionTimeoutMs());
         hikariConfig.setValidationTimeout(TimeUnit.SECONDS.toMillis(5));
         hikariConfig.setLeakDetectionThreshold(TimeUnit.MINUTES.toMillis(1));
-        
+
         hikariConfig.addDataSourceProperty("cachePrepStmts", "true");
         hikariConfig.addDataSourceProperty("prepStmtCacheSize", "250");
         hikariConfig.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
-        
+
         if (config.getType() == DatabaseType.MYSQL) {
             hikariConfig.addDataSourceProperty("useServerPrepStmts", "true");
             hikariConfig.addDataSourceProperty("rewriteBatchedStatements", "true");
@@ -57,11 +57,11 @@ public class HikariConnectionPool {
 
         try {
             this.dataSource = new HikariDataSource(hikariConfig);
-            
+
             try (Connection connection = dataSource.getConnection()) {
                 plugin.getLogger().info("Database connection established successfully (" + config.getType().getName() + ")");
             }
-            
+
             this.initialized = true;
         } catch (SQLException e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to initialize database connection pool", e);
