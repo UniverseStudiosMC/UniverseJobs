@@ -382,20 +382,15 @@ public class MenuUtils {
                         }
 
                         if (targetUuid != null) {
-                            try {
-                                PlayerProfile cachedProfile = fr.ax_dev.universejobs.utils.PlayerTextureCache
-                                    .getPlayerProfile(targetUuid, playerHead)
-                                    .get(2, java.util.concurrent.TimeUnit.SECONDS);
+                            // Never block region threads waiting for skin/profile lookups.
+                            // Only use an already-cached profile; otherwise fall back to offline player.
+                            PlayerProfile cachedProfile = fr.ax_dev.universejobs.utils.PlayerTextureCache
+                                .getCachedProfile(targetUuid);
 
-                                if (cachedProfile != null && cachedProfile.getTextures().getSkin() != null) {
-                                    skullMeta.setOwnerProfile(cachedProfile);
-                                    metaModified = true;
-                                } else {
-                                    org.bukkit.OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(targetUuid);
-                                    skullMeta.setOwningPlayer(offlinePlayer);
-                                    metaModified = true;
-                                }
-                            } catch (Exception profileEx) {
+                            if (cachedProfile != null && cachedProfile.getTextures().getSkin() != null) {
+                                skullMeta.setOwnerProfile(cachedProfile);
+                                metaModified = true;
+                            } else {
                                 org.bukkit.OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(targetUuid);
                                 skullMeta.setOwningPlayer(offlinePlayer);
                                 metaModified = true;
@@ -406,20 +401,15 @@ public class MenuUtils {
                                 skullMeta.setOwningPlayer(offlinePlayer);
                                 metaModified = true;
                             } else {
-                                try {
-                                    PlayerProfile profile = fr.ax_dev.universejobs.utils.PlayerTextureCache
-                                        .getPlayerProfileByName(playerHead)
-                                        .get(5, java.util.concurrent.TimeUnit.SECONDS);
-                                    if (profile != null && profile.getTextures().getSkin() != null) {
-                                        skullMeta.setOwnerProfile(profile);
-                                    } else {
-                                        skullMeta.setOwningPlayer(offlinePlayer);
-                                    }
-                                    metaModified = true;
-                                } catch (Exception profileEx) {
+                                // Non-blocking fallback: only apply a texture if already cached.
+                                PlayerProfile profile = fr.ax_dev.universejobs.utils.PlayerTextureCache
+                                    .getCachedProfileByName(playerHead);
+                                if (profile != null && profile.getTextures().getSkin() != null) {
+                                    skullMeta.setOwnerProfile(profile);
+                                } else {
                                     skullMeta.setOwningPlayer(offlinePlayer);
-                                    metaModified = true;
                                 }
+                                metaModified = true;
                             }
                         }
                     }

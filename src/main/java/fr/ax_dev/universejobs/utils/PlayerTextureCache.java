@@ -37,6 +37,34 @@ public class PlayerTextureCache {
     private static Method paperCreateProfileMethod = null;
     private static Method paperFillFromCacheMethod = null;
 
+    /**
+     * Get a cached profile without triggering any network/profile lookups.
+     * Returns null if absent/expired or missing skin.
+     */
+    public static PlayerProfile getCachedProfile(UUID playerId) {
+        Long timestamp = CACHE_TIMESTAMPS.get(playerId);
+        if (timestamp == null || System.currentTimeMillis() - timestamp >= CACHE_DURATION) {
+            return null;
+        }
+
+        PlayerProfile cached = PROFILE_CACHE.get(playerId);
+        if (cached == null) {
+            return null;
+        }
+
+        return cached.getTextures().getSkin() != null ? cached : null;
+    }
+
+    /**
+     * Get a cached profile by name without triggering any network/profile lookups.
+     * Returns null if name/uuid not cached or profile is absent/expired.
+     */
+    public static PlayerProfile getCachedProfileByName(String playerName) {
+        loadUserCache();
+        UUID cachedUuid = NAME_TO_UUID_CACHE.get(playerName.toLowerCase());
+        return cachedUuid != null ? getCachedProfile(cachedUuid) : null;
+    }
+
     public static void init() {
         loadUserCache();
         detectPaperProfileApi();
