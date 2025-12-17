@@ -46,64 +46,60 @@ public class MaterialUtils {
         if (target == null || target.isEmpty()) {
             throw new IllegalArgumentException("Target cannot be null or empty");
         }
-        
-        // Normalize target to handle case-insensitivity
+
         String normalizedTarget = target.trim();
-        
-        // Handle MythicMobs (contains colon)
+
         if (normalizedTarget.contains(":")) {
-            String[] parts = normalizedTarget.split(":", 2); // Limit to 2 parts for safety
+            String[] parts = normalizedTarget.split(":", 2);
             String namespace = parts[0].toLowerCase();
-            
-            // MythicMobs detection
+
             if ("mythicmobs".equals(namespace) || "mm".equals(namespace)) {
                 return Material.WITHER_SKELETON_SKULL;
             }
-            
-            // CustomCrops or other plugins - try to get material from the second part
+
             if (parts.length > 1) {
                 String itemName = parts[1];
-                
-                // First try direct material lookup
+
                 Material material = fr.ax_dev.universejobs.utils.EnumUtils.parseMaterial(itemName, null);
                 if (material != null) {
                     return material;
                 } else {
-                    // Try entity lookup for namespaced entities
                     Material spawnEgg = getSpawnEggForEntity(itemName);
                     if (spawnEgg != null) {
                         return spawnEgg;
                     }
-                    
-                    // Fallback for custom items
+
                     return getGenericMaterialForNamespace(namespace);
                 }
             }
         }
-        
-        // Try to get material directly (for blocks) - case insensitive
+
+        if (actionType == ActionType.BREED || actionType == ActionType.TAME || actionType == ActionType.KILL
+                || actionType == ActionType.MILK || actionType == ActionType.SHEAR) {
+            Material spawnEgg = getSpawnEggForEntity(normalizedTarget);
+            if (spawnEgg != null) {
+                return spawnEgg;
+            }
+        }
+
         try {
             Material material = fr.ax_dev.universejobs.utils.EnumUtils.parseMaterial(normalizedTarget, null);
             if (material != null && material.isItem()) {
                 return material;
             }
         } catch (IllegalArgumentException e) {
-            // Not a valid material, might be an entity
         }
 
-        // Handle crop stems and non-item materials
         Material cropMaterial = getCropMaterialForStem(normalizedTarget);
         if (cropMaterial != null) {
             return cropMaterial;
         }
-        
-        // Try to get spawn egg for entities - case insensitive
+
         Material spawnEgg = getSpawnEggForEntity(normalizedTarget);
         if (spawnEgg != null) {
             return spawnEgg;
         }
-        
-        // Try ActionType-specific materials
+
         if (actionType != null) {
             Material actionMaterial = getMaterialForActionType(actionType, normalizedTarget);
             if (actionMaterial != null) {
@@ -222,6 +218,9 @@ public class MaterialUtils {
                 case WARDEN -> Material.SCULK_SHRIEKER;
                 case CAMEL -> Material.CAMEL_SPAWN_EGG;
                 case SNIFFER -> Material.SNIFFER_SPAWN_EGG;
+                case PANDA -> Material.PANDA_SPAWN_EGG;
+                case MOOSHROOM -> Material.MOOSHROOM_SPAWN_EGG;
+                case ARMADILLO -> Material.ARMADILLO_SPAWN_EGG;
                 default -> null;
             };
         } catch (IllegalArgumentException e) {
