@@ -14,15 +14,15 @@ import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RepairEventListener implements Listener {
 
     private final UniverseJobs plugin;
     private final ActionProcessor actionProcessor;
-    private final Map<UUID, ItemStack> pendingRepairs = new HashMap<>();
+    private final Map<UUID, ItemStack> pendingRepairs = new ConcurrentHashMap<>();
 
     public RepairEventListener(UniverseJobs plugin, ActionProcessor actionProcessor) {
         this.plugin = plugin;

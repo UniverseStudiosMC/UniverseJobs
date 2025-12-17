@@ -58,7 +58,7 @@ public class JobsRebornMigrationHandler {
                 JobsRebornConverter converter = new JobsRebornConverter(plugin);
                 JobsRebornConverter.ConversionResult result = converter.convertJobs(specificJob);
 
-                plugin.getFoliaManager().runNextTick(() -> {
+                plugin.getFoliaManager().runNextTickForSender(sender, () -> {
                     if (result.isSuccessful()) {
                         if (specificJob != null) {
                             sender.sendMessage("§aJob conversion completed successfully!");
@@ -85,7 +85,7 @@ public class JobsRebornMigrationHandler {
                 });
 
             } catch (Exception e) {
-                plugin.getFoliaManager().runNextTick(() -> {
+                plugin.getFoliaManager().runNextTickForSender(sender, () -> {
                     sender.sendMessage("§cJobs conversion failed: " + e.getMessage());
                 });
                 plugin.getLogger().log(Level.SEVERE, "Jobs conversion failed", e);
@@ -115,7 +115,7 @@ public class JobsRebornMigrationHandler {
             try {
                 JobsRebornDataMigrator.MigrationResult result = migrator.migrateAllData().join();
 
-                plugin.getFoliaManager().runNextTick(() -> {
+                plugin.getFoliaManager().runNextTickForSender(sender, () -> {
                     if (result.isSuccessful()) {
                         sender.sendMessage("§aData migration completed successfully!");
                         sender.sendMessage("§aPlayer data migrated: " + result.playerDataMigrated);
@@ -126,7 +126,7 @@ public class JobsRebornMigrationHandler {
                 });
 
             } catch (Exception e) {
-                plugin.getFoliaManager().runNextTick(() -> {
+                plugin.getFoliaManager().runNextTickForSender(sender, () -> {
                     sender.sendMessage("§cData migration failed: " + e.getMessage());
                 });
                 plugin.getLogger().log(Level.SEVERE, "Data migration failed", e);
@@ -161,7 +161,7 @@ public class JobsRebornMigrationHandler {
 
                 JobsRebornDataMigrator.MigrationResult dataResult = dataFuture.join();
 
-                plugin.getFoliaManager().runNextTick(() -> {
+                plugin.getFoliaManager().runNextTickForSender(sender, () -> {
                     sender.sendMessage("§a=== JobsReborn Migration Results ===");
 
                     if (jobsResult.isSuccessful()) {
@@ -204,7 +204,7 @@ public class JobsRebornMigrationHandler {
                 });
 
             } catch (Exception e) {
-                plugin.getFoliaManager().runNextTick(() -> {
+                plugin.getFoliaManager().runNextTickForSender(sender, () -> {
                     sender.sendMessage("§cFull migration failed: " + e.getMessage());
                 });
                 plugin.getLogger().log(Level.SEVERE, "Full migration failed", e);

@@ -72,7 +72,7 @@ public class DatabaseCommandHandler {
                     
                     DataMigrator.MigrationResult result = migrator.migrateAllData().join();
                     
-                    plugin.getFoliaManager().runNextTick(() -> {
+                    plugin.getFoliaManager().runNextTickForSender(sender, () -> {
                         if (result.isSuccessful()) {
                             sender.sendMessage("§aMigration completed successfully!");
                             sender.sendMessage("§aPlayer data migrated: " + result.playerDataMigrated);
@@ -84,13 +84,13 @@ public class DatabaseCommandHandler {
                         }
                     });
                 } else {
-                    plugin.getFoliaManager().runNextTick(() -> {
+                    plugin.getFoliaManager().runNextTickForSender(sender, () -> {
                         sender.sendMessage("§cDatabase is not enabled in configuration");
                     });
                 }
                 
             } catch (Exception e) {
-                plugin.getFoliaManager().runNextTick(() -> {
+                plugin.getFoliaManager().runNextTickForSender(sender, () -> {
                     sender.sendMessage("§cMigration failed: " + e.getMessage());
                 });
                 plugin.getLogger().log(Level.SEVERE, "Migration failed: " + e.getMessage(), e);

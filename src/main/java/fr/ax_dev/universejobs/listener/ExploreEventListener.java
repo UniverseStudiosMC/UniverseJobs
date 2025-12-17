@@ -11,7 +11,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,7 +20,7 @@ public class ExploreEventListener implements Listener {
     private final UniverseJobs plugin;
     private final ActionProcessor actionProcessor;
     private final Map<Long, Integer> chunkExplorationCount = new ConcurrentHashMap<>();
-    private final Map<UUID, Long> lastChunkMove = new HashMap<>();
+    private final Map<UUID, Long> lastChunkMove = new ConcurrentHashMap<>();
     private static final int MAX_EXPLORATIONS = 5;
     private static final long CHUNK_COOLDOWN_MS = 1000;
 

@@ -9,9 +9,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Event listener for CustomFishing plugin compatibility.
@@ -23,7 +23,7 @@ public class CustomFishingEventListener implements Listener {
     private final ActionProcessor actionProcessor;
     
     // Anti-double action protection for fishing events
-    private final Map<UUID, Long> lastFishingTime = new HashMap<>();
+    private final Map<UUID, Long> lastFishingTime = new ConcurrentHashMap<>();
     private static final long FISHING_COOLDOWN_MS = 100; // 100ms cooldown
     
     public CustomFishingEventListener(UniverseJobs plugin, ActionProcessor actionProcessor) {

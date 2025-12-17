@@ -19,7 +19,6 @@ import fr.ax_dev.universejobs.job.PlayerJobData;
 import fr.ax_dev.universejobs.levelup.SimpleLevelUpActionManager;
 import fr.ax_dev.universejobs.listener.JobActionListener;
 import fr.ax_dev.universejobs.listener.EnchantEventListener;
-import fr.ax_dev.universejobs.listener.BrewEventListener;
 import fr.ax_dev.universejobs.listener.RepairEventListener;
 import fr.ax_dev.universejobs.listener.ExploreEventListener;
 import fr.ax_dev.universejobs.protection.BlockProtectionManager;
@@ -179,7 +178,6 @@ public final class UniverseJobs extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(
             new JobActionListener(this, actionProcessor, protectionManager, mythicMobsHandler, configCache, playerCache), this);
         getServer().getPluginManager().registerEvents(new EnchantEventListener(this, actionProcessor), this);
-        getServer().getPluginManager().registerEvents(new BrewEventListener(this, actionProcessor), this);
         getServer().getPluginManager().registerEvents(new RepairEventListener(this, actionProcessor), this);
         this.exploreEventListener = new ExploreEventListener(this, actionProcessor);
         getServer().getPluginManager().registerEvents(exploreEventListener, this);

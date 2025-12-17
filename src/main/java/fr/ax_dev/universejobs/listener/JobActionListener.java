@@ -40,6 +40,8 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.block.BlockCookEvent;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.TileState;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.event.block.Action;
@@ -937,12 +939,20 @@ public class JobActionListener implements Listener {
         
         long currentTime = System.currentTimeMillis();
         
-        // Track this player as the owner of this inventory using NBT
+        // Track this player as the owner of this inventory using per-block TileState PDC (safe for multiple blocks per chunk)
         org.bukkit.block.Block furnaceBlock = inventoryLocation.getBlock();
-        furnaceBlock.getChunk().getPersistentDataContainer().set(furnaceOwnerKey, PersistentDataType.STRING, 
-            furnaceBlock.getX() + ":" + furnaceBlock.getY() + ":" + furnaceBlock.getZ() + ":" + player.getUniqueId().toString());
-        furnaceBlock.getChunk().getPersistentDataContainer().set(furnaceLastUseKey, PersistentDataType.STRING,
-            furnaceBlock.getX() + ":" + furnaceBlock.getY() + ":" + furnaceBlock.getZ() + ":" + currentTime);
+        BlockState state = furnaceBlock.getState();
+        if (state instanceof TileState tileState) {
+            tileState.getPersistentDataContainer().set(furnaceOwnerKey, PersistentDataType.STRING, player.getUniqueId().toString());
+            tileState.getPersistentDataContainer().set(furnaceLastUseKey, PersistentDataType.LONG, currentTime);
+            tileState.update();
+        } else {
+            // Legacy fallback (chunk-scoped, can be overwritten within a chunk)
+            furnaceBlock.getChunk().getPersistentDataContainer().set(furnaceOwnerKey, PersistentDataType.STRING,
+                furnaceBlock.getX() + ":" + furnaceBlock.getY() + ":" + furnaceBlock.getZ() + ":" + player.getUniqueId().toString());
+            furnaceBlock.getChunk().getPersistentDataContainer().set(furnaceLastUseKey, PersistentDataType.STRING,
+                furnaceBlock.getX() + ":" + furnaceBlock.getY() + ":" + furnaceBlock.getZ() + ":" + currentTime);
+        }
         
         if (plugin.getConfigManager().isDebugEnabled()) {
             String inventoryType = event.getInventory().getType().name();
@@ -980,18 +990,20 @@ public class JobActionListener implements Listener {
         }
         
         try {
+            ItemStack resultSnapshot = result.clone();
             // Create context with item information
             ConditionContext context = new ConditionContext()
-                    .setItem(result)
-                    .set(TARGET_KEY, detectItemTarget(result))
-                    .set("amount", result.getAmount())
+                    .setItem(resultSnapshot)
+                    .set(TARGET_KEY, detectItemTarget(resultSnapshot))
+                    .set("amount", resultSnapshot.getAmount())
                     .set("furnace_type", event.getBlock().getType().name());
             
             // Add source item information if available
             ItemStack source = event.getSource();
             if (source != null) {
-                context.set("source_target", detectItemTarget(source))
-                       .set("source_amount", source.getAmount());
+                ItemStack sourceSnapshot = source.clone();
+                context.set("source_target", detectItemTarget(sourceSnapshot))
+                       .set("source_amount", sourceSnapshot.getAmount());
             }
             
             if (plugin.getConfigManager().isDebugEnabled()) {
@@ -1000,8 +1012,12 @@ public class JobActionListener implements Listener {
                     " - source: " + context.get("source_target"));
             }
             
-            // Process the action
-            actionProcessor.processAction(player, ActionType.SMELT, event, context);
+            // Process on the player's region thread (Folia-safe). Conditions rely on context; event is not required here.
+            plugin.getFoliaManager().runAtEntity(player, () -> {
+                if (player.isOnline()) {
+                    actionProcessor.processAction(player, ActionType.SMELT, null, context);
+                }
+            });
             processedEvents.incrementAndGet();
             
         } catch (Exception e) {
@@ -1016,24 +1032,56 @@ public class JobActionListener implements Listener {
     private Player getFurnaceOwner(org.bukkit.Location furnaceLocation) {
         org.bukkit.block.Block furnaceBlock = furnaceLocation.getBlock();
         String blockCoords = furnaceBlock.getX() + ":" + furnaceBlock.getY() + ":" + furnaceBlock.getZ();
-        
-        // Get owner UUID from NBT
-        String ownerData = furnaceBlock.getChunk().getPersistentDataContainer().get(furnaceOwnerKey, PersistentDataType.STRING);
-        if (ownerData == null) {
-            return null; // No tracked owner
+
+        UUID ownerUUID = null;
+        long lastUse = 0L;
+
+        BlockState state = furnaceBlock.getState();
+        if (state instanceof TileState tileState) {
+            String ownerString = tileState.getPersistentDataContainer().get(furnaceOwnerKey, PersistentDataType.STRING);
+            Long lastUseValue = tileState.getPersistentDataContainer().get(furnaceLastUseKey, PersistentDataType.LONG);
+
+            if (ownerString != null) {
+                try {
+                    ownerUUID = UUID.fromString(ownerString);
+                } catch (IllegalArgumentException ignored) {
+                    ownerUUID = null;
+                }
+            }
+            if (lastUseValue != null) {
+                lastUse = lastUseValue;
+            }
         }
-        
-        // Parse owner data (format: x:y:z:uuid)
-        String[] ownerParts = ownerData.split(":");
-        if (ownerParts.length != 4 || !ownerData.startsWith(blockCoords + ":")) {
-            return null; // Invalid or wrong block data
-        }
-        
-        UUID ownerUUID;
-        try {
-            ownerUUID = UUID.fromString(ownerParts[3]);
-        } catch (IllegalArgumentException e) {
-            return null; // Invalid UUID
+
+        // Legacy fallback: chunk-scoped owner data
+        if (ownerUUID == null) {
+            String ownerData = furnaceBlock.getChunk().getPersistentDataContainer().get(furnaceOwnerKey, PersistentDataType.STRING);
+            if (ownerData == null) {
+                return null;
+            }
+
+            String[] ownerParts = ownerData.split(":");
+            if (ownerParts.length != 4 || !ownerData.startsWith(blockCoords + ":")) {
+                return null;
+            }
+
+            try {
+                ownerUUID = UUID.fromString(ownerParts[3]);
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
+
+            String lastUseData = furnaceBlock.getChunk().getPersistentDataContainer().get(furnaceLastUseKey, PersistentDataType.STRING);
+            if (lastUseData != null && lastUseData.startsWith(blockCoords + ":")) {
+                String[] useParts = lastUseData.split(":");
+                if (useParts.length == 4) {
+                    try {
+                        lastUse = Long.parseLong(useParts[3]);
+                    } catch (NumberFormatException ignored) {
+                        lastUse = 0L;
+                    }
+                }
+            }
         }
         
         Player owner = plugin.getServer().getPlayer(ownerUUID);
@@ -1044,23 +1092,9 @@ public class JobActionListener implements Listener {
         }
         
         // Check if the tracking is too old (30 minutes max)
-        String lastUseData = furnaceBlock.getChunk().getPersistentDataContainer().get(furnaceLastUseKey, PersistentDataType.STRING);
-        if (lastUseData != null && lastUseData.startsWith(blockCoords + ":")) {
-            String[] useParts = lastUseData.split(":");
-            if (useParts.length == 4) {
-                try {
-                    long lastUse = Long.parseLong(useParts[3]);
-                    if ((System.currentTimeMillis() - lastUse) > 30 * 60 * 1000L) {
-                        // Tracking expired, clean up
-                        cleanupFurnaceNBT(furnaceBlock, blockCoords);
-                        return null;
-                    }
-                } catch (NumberFormatException e) {
-                    // Invalid timestamp, clean up
-                    cleanupFurnaceNBT(furnaceBlock, blockCoords);
-                    return null;
-                }
-            }
+        if (lastUse > 0L && (System.currentTimeMillis() - lastUse) > 30 * 60 * 1000L) {
+            cleanupFurnaceNBT(furnaceBlock, blockCoords);
+            return null;
         }
         
         return owner;
@@ -1070,7 +1104,14 @@ public class JobActionListener implements Listener {
      * Clean up furnace NBT data for a specific block.
      */
     private void cleanupFurnaceNBT(org.bukkit.block.Block furnaceBlock, String blockCoords) {
-        // Remove NBT entries for this specific block
+        BlockState state = furnaceBlock.getState();
+        if (state instanceof TileState tileState) {
+            tileState.getPersistentDataContainer().remove(furnaceOwnerKey);
+            tileState.getPersistentDataContainer().remove(furnaceLastUseKey);
+            tileState.update();
+        }
+
+        // Legacy cleanup (chunk-scoped)
         furnaceBlock.getChunk().getPersistentDataContainer().remove(furnaceOwnerKey);
         furnaceBlock.getChunk().getPersistentDataContainer().remove(furnaceLastUseKey);
     }
@@ -1473,19 +1514,24 @@ public class JobActionListener implements Listener {
             for (int i = 0; i < 3; i++) { // Brewing stand has 3 bottle slots
                 ItemStack result = inventory.getItem(i);
                 if (result != null && !result.getType().isAir()) {
+                    ItemStack resultSnapshot = result.clone();
                     // Create context with brewing information
                     ConditionContext context = new ConditionContext()
-                            .setItem(result)
-                            .set(TARGET_KEY, detectItemTarget(result))
-                            .set("amount", result.getAmount());
+                            .setItem(resultSnapshot)
+                            .set(TARGET_KEY, detectItemTarget(resultSnapshot))
+                            .set("amount", resultSnapshot.getAmount());
                     
                     if (plugin.getConfigManager().isDebugEnabled()) {
                         plugin.getLogger().info("Processing BREW action for " + player.getName() + 
                             TARGET_SUFFIX + context.get(TARGET_KEY));
                     }
                     
-                    // Process the brewing action
-                    actionProcessor.processAction(player, ActionType.BREW, event, context);
+                    // Process on the player's region thread (Folia-safe). Conditions rely on context; event is not required here.
+                    plugin.getFoliaManager().runAtEntity(player, () -> {
+                        if (player.isOnline()) {
+                            actionProcessor.processAction(player, ActionType.BREW, null, context);
+                        }
+                    });
                     processedEvents.incrementAndGet();
                 }
             }

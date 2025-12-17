@@ -16,7 +16,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,7 +35,7 @@ public class CustomCropsEventListener implements Listener {
     private final BlockProtectionManager protectionManager;
     
     // Anti-double click protection for INTERACT actions
-    private final Map<UUID, Long> lastInteractTime = new HashMap<>();
+    private final Map<UUID, Long> lastInteractTime = new ConcurrentHashMap<>();
     private static final long INTERACT_COOLDOWN_MS = 50; // 50ms cooldown
     
     // Cache for interaction types from PlayerInteractEvent

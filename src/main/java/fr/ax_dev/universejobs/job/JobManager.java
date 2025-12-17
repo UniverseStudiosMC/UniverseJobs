@@ -720,10 +720,12 @@ public class JobManager {
                 // Clear and reload player cache to ensure consistency
                 if (cleanedPlayers.get() > 0 && plugin.getPlayerCache() != null) {
                     plugin.getFoliaManager().runNextTick(() -> {
-                        // Clear cache for online players to force reload of cleaned data
+                        // Clear cache for online players to force reload of cleaned data (run on each player's thread on Folia)
                         for (org.bukkit.entity.Player onlinePlayer : org.bukkit.Bukkit.getOnlinePlayers()) {
-                            plugin.getPlayerCache().cleanupPlayer(onlinePlayer.getUniqueId());
-                            plugin.getPlayerCache().preloadPlayer(onlinePlayer.getUniqueId());
+                            plugin.getFoliaManager().runAtEntity(onlinePlayer, () -> {
+                                plugin.getPlayerCache().cleanupPlayer(onlinePlayer.getUniqueId());
+                                plugin.getPlayerCache().preloadPlayer(onlinePlayer.getUniqueId());
+                            });
                         }
                         
                         if (removedJobs.get() > 0) {
