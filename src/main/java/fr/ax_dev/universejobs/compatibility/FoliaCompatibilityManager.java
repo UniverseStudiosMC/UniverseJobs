@@ -2,11 +2,13 @@ package fr.ax_dev.universejobs.compatibility;
 
 import fr.ax_dev.universejobs.UniverseJobs;
 import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 import com.tcoded.folialib.FoliaLib;
+import com.tcoded.folialib.wrapper.task.WrappedTask;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -61,6 +63,31 @@ public class FoliaCompatibilityManager {
     public void runNextTick(Runnable task) {
         foliaLib.getScheduler().runNextTick(wrappedTask -> task.run());
     }
+
+    /**
+     * Run a task on the next tick for a specific entity (preferred on Folia for player-related work).
+     */
+    public WrappedTask runNextTickAtEntity(Entity entity, Runnable task) {
+        return foliaLib.getScheduler().runAtEntityLater(entity, task, 1L);
+    }
+
+    /**
+     * Run a task on the next tick for a specific location (preferred on Folia for block/region-related work).
+     */
+    public WrappedTask runNextTickAtLocation(Location location, Runnable task) {
+        return foliaLib.getScheduler().runAtLocationLater(location, task, 1L);
+    }
+
+    /**
+     * Run a task on the next tick for a CommandSender (player -> entity region, otherwise -> global/main).
+     */
+    public void runNextTickForSender(CommandSender sender, Runnable task) {
+        if (sender instanceof Player player) {
+            runNextTickAtEntity(player, task);
+            return;
+        }
+        runNextTick(task);
+    }
     
     /**
      * Run a task asynchronously.
@@ -78,6 +105,31 @@ public class FoliaCompatibilityManager {
      */
     public void runLater(Runnable task, long delay) {
         foliaLib.getScheduler().runLater(wrappedTask -> task.run(), delay);
+    }
+
+    /**
+     * Run a task after a delay on an entity's thread/region.
+     */
+    public WrappedTask runLaterAtEntity(Entity entity, Runnable task, long delayTicks) {
+        return foliaLib.getScheduler().runAtEntityLater(entity, task, delayTicks);
+    }
+
+    /**
+     * Run a task after a delay on a location's thread/region.
+     */
+    public WrappedTask runLaterAtLocation(Location location, Runnable task, long delayTicks) {
+        return foliaLib.getScheduler().runAtLocationLater(location, task, delayTicks);
+    }
+
+    /**
+     * Run a task after a delay for a CommandSender (player -> entity region, otherwise -> global/main).
+     */
+    public void runLaterForSender(CommandSender sender, Runnable task, long delayTicks) {
+        if (sender instanceof Player player) {
+            runLaterAtEntity(player, task, delayTicks);
+            return;
+        }
+        runLater(task, delayTicks);
     }
     
     /**
@@ -100,6 +152,27 @@ public class FoliaCompatibilityManager {
      */
     public void runTimer(Runnable task, long initialDelay, long period) {
         foliaLib.getScheduler().runTimer(wrappedTask -> task.run(), initialDelay, period);
+    }
+
+    /**
+     * Run a repeating task on an entity's thread/region.
+     */
+    public WrappedTask runTimerAtEntity(Entity entity, Runnable task, long initialDelayTicks, long periodTicks) {
+        return foliaLib.getScheduler().runAtEntityTimer(entity, task, initialDelayTicks, periodTicks);
+    }
+
+    /**
+     * Run a repeating task on a location's thread/region.
+     */
+    public WrappedTask runTimerAtLocation(Location location, Runnable task, long initialDelayTicks, long periodTicks) {
+        return foliaLib.getScheduler().runAtLocationTimer(location, task, initialDelayTicks, periodTicks);
+    }
+
+    /**
+     * Run a repeating task asynchronously (not tied to any region).
+     */
+    public WrappedTask runTimerAsyncTask(Runnable task, long initialDelayTicks, long periodTicks) {
+        return foliaLib.getScheduler().runTimerAsync(task, initialDelayTicks, periodTicks);
     }
     
     /**
@@ -147,6 +220,16 @@ public class FoliaCompatibilityManager {
      */
     public void runAtEntity(Entity entity, Runnable task) {
         foliaLib.getScheduler().runAtEntity(entity, wrappedTask -> task.run());
+    }
+
+    /**
+     * Cancel a scheduled task.
+     */
+    public void cancelTask(WrappedTask task) {
+        if (task == null) {
+            return;
+        }
+        foliaLib.getScheduler().cancelTask(task);
     }
     
     /**

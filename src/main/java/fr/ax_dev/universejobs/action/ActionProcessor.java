@@ -533,7 +533,7 @@ public class ActionProcessor {
 
             if (xp > 0 && jobManager != null) {
                 int currentLevel = jobManager.getLevel(player, job.getId());
-                plugin.getFoliaManager().runLater(() -> {
+                plugin.getFoliaManager().runLaterAtEntity(player, () -> {
                     int newLevel = jobManager.getLevel(player, job.getId());
                     if (newLevel > currentLevel) {
                         handleLevelUp(player, job, currentLevel, newLevel);
@@ -1111,7 +1111,7 @@ public class ActionProcessor {
                     MessageUtils.sendActionBar(player, text);
                     // Schedule clear after duration
                     if (messageConfig.getDuration() > 0) {
-                        plugin.getFoliaManager().runLater(() -> {
+                        plugin.getFoliaManager().runLaterAtEntity(player, () -> {
                             if (player.isOnline()) {
                                 MessageUtils.sendActionBar(player, "");
                             }

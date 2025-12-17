@@ -45,20 +45,33 @@ public class BrewEventListener implements Listener {
             plugin.getLogger().info("BrewEvent: " + player.getName() + " brewing with " + ingredient.getType());
         }
 
-        plugin.getFoliaManager().runLater(() -> {
+        if (inventory.getLocation() == null) {
+            return;
+        }
+
+        plugin.getFoliaManager().runLaterAtLocation(inventory.getLocation(), () -> {
             for (int i = 0; i < 3; i++) {
                 ItemStack potion = inventory.getItem(i);
                 if (potion != null && potion.getType() != Material.AIR) {
-                    ConditionContext context = new ConditionContext()
-                            .set("target", potion.getType().name())
-                            .set("potion", potion.getType().name())
-                            .set("ingredient", ingredient.getType().name());
+                    String potionType = potion.getType().name();
+                    String ingredientType = ingredient.getType().name();
 
-                    actionProcessor.processAction(player, ActionType.BREW, event, context);
+                    plugin.getFoliaManager().runAtEntity(player, () -> {
+                        if (!player.isOnline()) {
+                            return;
+                        }
 
-                    if (plugin.getConfigManager().isDebugEnabled()) {
-                        plugin.getLogger().info("Processed brew: " + potion.getType() + " for " + player.getName());
-                    }
+                        ConditionContext context = new ConditionContext()
+                                .set("target", potionType)
+                                .set("potion", potionType)
+                                .set("ingredient", ingredientType);
+
+                        actionProcessor.processAction(player, ActionType.BREW, event, context);
+
+                        if (plugin.getConfigManager().isDebugEnabled()) {
+                            plugin.getLogger().info("Processed brew: " + potionType + " for " + player.getName());
+                        }
+                    });
                 }
             }
         }, 2L);

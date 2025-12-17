@@ -162,7 +162,7 @@ public abstract class AbstractCondition implements Condition {
                         MessageUtils.sendActionBar(player, text);
                         // Schedule clear after duration
                         if (messageConfig.getDuration() > 0) {
-                            UniverseJobs.getInstance().getFoliaManager().runLater(() -> {
+                            UniverseJobs.getInstance().getFoliaManager().runLaterAtEntity(player, () -> {
                                 if (player.isOnline()) {
                                     MessageUtils.sendActionBar(player, "");
                                 }
@@ -181,7 +181,7 @@ public abstract class AbstractCondition implements Condition {
                         
                         // Remove after duration
                         if (messageConfig.getDuration() > 0) {
-                            UniverseJobs.getInstance().getFoliaManager().runLater(() -> {
+                            UniverseJobs.getInstance().getFoliaManager().runLaterAtEntity(player, () -> {
                                 if (player.isOnline()) {
                                     bossBar.removePlayer(player);
                                 }

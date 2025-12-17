@@ -129,7 +129,7 @@ public class BatchedRewardManager {
         PlayerJobData data = jobManager.getPlayerData(player.getUniqueId());
         if (data != null) {
             data.addXp(jobId, xp);
-            jobManager.savePlayerData(player.getUniqueId());
+            plugin.getFoliaManager().runAsync(() -> jobManager.savePlayerData(player.getUniqueId()));
         }
     }
     
@@ -196,25 +196,54 @@ public class BatchedRewardManager {
         
         Map<String, BatchedReward> toProcess = new ConcurrentHashMap<>(xpBatch);
         xpBatch.clear();
-        
-        plugin.getFoliaManager().runNextTick(() -> {
-            for (BatchedReward reward : toProcess.values()) {
-                PlayerJobData data = jobManager.getPlayerData(reward.playerUuid);
-                if (data != null) {
-                    data.addXp(reward.jobId, reward.amount);
 
-                    if (plugin.getConfigManager().isDebugEnabled()) {
-                        plugin.getLogger().info("[BATCH] Processed " + reward.amount + " XP for " +
-                            reward.playerName + " in job " + reward.jobId);
+        // Aggregate by player to minimize per-entity scheduling overhead.
+        Map<UUID, Map<String, Double>> rewardsByPlayer = new ConcurrentHashMap<>();
+        for (BatchedReward reward : toProcess.values()) {
+            rewardsByPlayer
+                .computeIfAbsent(reward.playerUuid, k -> new ConcurrentHashMap<>())
+                .merge(reward.jobId, reward.amount, Double::sum);
+        }
+
+        for (Map.Entry<UUID, Map<String, Double>> entry : rewardsByPlayer.entrySet()) {
+            UUID playerUuid = entry.getKey();
+            Map<String, Double> jobRewards = entry.getValue();
+
+            Player onlinePlayer = Bukkit.getPlayer(playerUuid);
+            if (onlinePlayer != null && onlinePlayer.isOnline()) {
+                plugin.getFoliaManager().runAtEntity(onlinePlayer, () -> {
+                    PlayerJobData data = jobManager.getPlayerData(playerUuid);
+                    if (data != null) {
+                        for (Map.Entry<String, Double> jobEntry : jobRewards.entrySet()) {
+                            data.addXp(jobEntry.getKey(), jobEntry.getValue());
+
+                            if (plugin.getConfigManager().isDebugEnabled()) {
+                                plugin.getLogger().info("[BATCH] Processed " + jobEntry.getValue() + " XP for " +
+                                    onlinePlayer.getName() + " in job " + jobEntry.getKey());
+                            }
+                        }
+
+                        // Persist off-thread to avoid blocking the player's region thread.
+                        plugin.getFoliaManager().runAsync(() -> jobManager.savePlayerData(playerUuid));
                     }
+                });
+            } else {
+                // Offline player: safe to process without entity scheduler.
+                PlayerJobData data = jobManager.getPlayerData(playerUuid);
+                if (data != null) {
+                    for (Map.Entry<String, Double> jobEntry : jobRewards.entrySet()) {
+                        data.addXp(jobEntry.getKey(), jobEntry.getValue());
+
+                        if (plugin.getConfigManager().isDebugEnabled()) {
+                            plugin.getLogger().info("[BATCH] Processed " + jobEntry.getValue() + " XP for " +
+                                playerUuid + " in job " + jobEntry.getKey());
+                        }
+                    }
+
+                    plugin.getFoliaManager().runAsync(() -> jobManager.savePlayerData(playerUuid));
                 }
             }
-
-            toProcess.values().stream()
-                .map(r -> r.playerUuid)
-                .distinct()
-                .forEach(uuid -> jobManager.savePlayerData(uuid));
-        });
+        }
     }
     
     /**
@@ -225,27 +254,38 @@ public class BatchedRewardManager {
         
         Map<UUID, Double> toProcess = new ConcurrentHashMap<>(moneyBatch);
         moneyBatch.clear();
-        
-        plugin.getFoliaManager().runNextTick(() -> {
-            if (economy != null) {
-                for (Map.Entry<UUID, Double> entry : toProcess.entrySet()) {
-                    Player player = Bukkit.getPlayer(entry.getKey());
-                    if (player != null && player.isOnline()) {
-                        double amount = entry.getValue();
-                        if (amount > 0) {
-                            economy.depositPlayer(player, amount);
-                        } else if (amount < 0) {
-                            economy.withdrawPlayer(player, Math.abs(amount));
-                        }
 
-                        if (plugin.getConfigManager().isDebugEnabled()) {
-                            plugin.getLogger().info("[BATCH] Processed $" + entry.getValue() +
-                                " for " + player.getName());
-                        }
-                    }
-                }
+        if (economy == null) {
+            return;
+        }
+
+        for (Map.Entry<UUID, Double> entry : toProcess.entrySet()) {
+            Player player = Bukkit.getPlayer(entry.getKey());
+            if (player == null || !player.isOnline()) {
+                continue;
             }
-        });
+
+            double amount = entry.getValue();
+            if (amount == 0) {
+                continue;
+            }
+
+            plugin.getFoliaManager().runAtEntity(player, () -> {
+                if (!player.isOnline()) {
+                    return;
+                }
+
+                if (amount > 0) {
+                    economy.depositPlayer(player, amount);
+                } else {
+                    economy.withdrawPlayer(player, Math.abs(amount));
+                }
+
+                if (plugin.getConfigManager().isDebugEnabled()) {
+                    plugin.getLogger().info("[BATCH] Processed $" + amount + " for " + player.getName());
+                }
+            });
+        }
     }
     
     /**

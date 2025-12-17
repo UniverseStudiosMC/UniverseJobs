@@ -5,6 +5,7 @@ import fr.ax_dev.universejobs.bonus.BaseBonus;
 import fr.ax_dev.universejobs.bonus.MoneyBonus;
 import fr.ax_dev.universejobs.bonus.XpBonus;
 import fr.ax_dev.universejobs.menu.config.BoostMenuConfig;
+import com.tcoded.folialib.wrapper.task.WrappedTask;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -17,6 +18,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class BoostManagerGui implements InventoryHolder {
@@ -33,6 +35,7 @@ public class BoostManagerGui implements InventoryHolder {
     }
     
     private Inventory currentInventory;
+    private final Map<UUID, WrappedTask> autoUpdateTasks = new ConcurrentHashMap<>();
     
     public void openGui(Player player) {
         if (!player.hasPermission("universejobs.admin.boost")) {
@@ -308,16 +311,22 @@ public class BoostManagerGui implements InventoryHolder {
         }
 
         final long finalIntervalTicks = intervalTicks;
-        plugin.getFoliaManager().runTimer(() -> {
+        WrappedTask task = plugin.getFoliaManager().runTimerAtEntity(player, () -> {
             if (plugin.isEnabled() && player.isOnline() && player.getOpenInventory().getTopInventory().equals(gui)) {
                 updateGuiContent(gui);
             } else {
                 stopAutoUpdate(player);
             }
         }, finalIntervalTicks, finalIntervalTicks);
+
+        autoUpdateTasks.put(player.getUniqueId(), task);
     }
     
     private void stopAutoUpdate(Player player) {
+        WrappedTask task = autoUpdateTasks.remove(player.getUniqueId());
+        if (task != null) {
+            plugin.getFoliaManager().cancelTask(task);
+        }
     }
     
     public void handleClick(Player player, int slot, boolean isRightClick) {

@@ -539,14 +539,14 @@ public class JobActionsMenu extends BaseMenu {
                 );
             } else if (processedCommand.startsWith("[player]")) {
                 String playerCmd = processedCommand.substring(8).trim();
-                plugin.getFoliaManager().runNextTick(() -> 
+                plugin.getFoliaManager().runNextTickAtEntity(player, () ->
                     player.performCommand(playerCmd)
                 );
             } else if (processedCommand.startsWith("[close]")) {
                 close();
             } else {
                 // Default to player command
-                plugin.getFoliaManager().runNextTick(() -> 
+                plugin.getFoliaManager().runNextTickAtEntity(player, () ->
                     player.performCommand(processedCommand)
                 );
             }

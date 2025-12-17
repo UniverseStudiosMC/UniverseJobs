@@ -80,7 +80,7 @@ public class MenuManager {
         });
 
         // Create menu sync with optimized systems
-        scheduler.runSync(() -> {
+        scheduler.runSync(player, () -> {
             JobsMainMenu menu = new JobsMainMenu(plugin, player, menuConfig.getMainMenuConfig(), jobSlotManager);
             openMenus.put(player.getUniqueId(), menu);
             menu.open();
@@ -105,14 +105,16 @@ public class MenuManager {
         // Register player as having active menu for fast event filtering
         eventHandler.registerActivePlayer(player.getUniqueId());
 
-        try {
-            SingleJobMenu menu = new SingleJobMenu(plugin, player, jobId, menuConfig.getJobMenuConfig());
-            openMenus.put(player.getUniqueId(), menu);
-            menu.open();
-        } catch (IllegalArgumentException e) {
-            accessor.logWarning("Failed to create SingleJobMenu: " + e.getMessage());
-            // Menu creation failed silently - job was already validated above
-        }
+        scheduler.runSync(player, () -> {
+            try {
+                SingleJobMenu menu = new SingleJobMenu(plugin, player, jobId, menuConfig.getJobMenuConfig());
+                openMenus.put(player.getUniqueId(), menu);
+                menu.open();
+            } catch (IllegalArgumentException e) {
+                accessor.logWarning("Failed to create SingleJobMenu: " + e.getMessage());
+                // Menu creation failed silently - job was already validated above
+            }
+        });
     }
     
     /**
@@ -133,13 +135,15 @@ public class MenuManager {
         // Register player as having active menu for fast event filtering
         eventHandler.registerActivePlayer(player.getUniqueId());
 
-        try {
-            JobActionsMenu menu = new JobActionsMenu(plugin, player, jobId, menuConfig.getActionsMenuConfig());
-            openMenus.put(player.getUniqueId(), menu);
-            menu.open();
-        } catch (IllegalArgumentException e) {
-            accessor.logWarning("Failed to create JobActionsMenu: " + e.getMessage());
-        }
+        scheduler.runSync(player, () -> {
+            try {
+                JobActionsMenu menu = new JobActionsMenu(plugin, player, jobId, menuConfig.getActionsMenuConfig());
+                openMenus.put(player.getUniqueId(), menu);
+                menu.open();
+            } catch (IllegalArgumentException e) {
+                accessor.logWarning("Failed to create JobActionsMenu: " + e.getMessage());
+            }
+        });
     }
     
     /**
@@ -180,7 +184,7 @@ public class MenuManager {
         openMenus.put(player.getUniqueId(), menu);
 
         if (menu.isReady()) {
-            menu.open();
+            scheduler.runSync(player, menu::open);
         }
     }
     

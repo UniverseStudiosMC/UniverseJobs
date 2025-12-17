@@ -1,12 +1,20 @@
 package fr.ax_dev.universejobs.menu;
 
-import fr.ax_dev.universejobs.UniverseJobs;
-import org.bukkit.Bukkit;
-
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
+
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+
+import fr.ax_dev.universejobs.UniverseJobs;
 
 /**
  * Ultra-optimized scheduler dedicated to menu operations.
@@ -83,23 +91,48 @@ public class MenuScheduler {
      * Execute task on main thread with minimal delay.
      */
     public void runSync(Runnable task) {
-        if (Bukkit.isPrimaryThread()) {
+        if (!plugin.getFoliaManager().isFolia() && Bukkit.isPrimaryThread()) {
             task.run();
         } else {
             plugin.getFoliaManager().runNextTick(task);
         }
     }
 
+    public void runSync(Player player, Runnable task) {
+        if (player == null) {
+            runSync(task);
+            return;
+        }
+
+        plugin.getFoliaManager().runAtEntity(player, task);
+    }
+
     /**
      * Execute task on main thread and return result.
      */
     public <T> CompletableFuture<T> supplySync(Supplier<T> supplier) {
-        if (Bukkit.isPrimaryThread()) {
+        if (!plugin.getFoliaManager().isFolia() && Bukkit.isPrimaryThread()) {
             return CompletableFuture.completedFuture(supplier.get());
         }
 
         CompletableFuture<T> future = new CompletableFuture<>();
         plugin.getFoliaManager().runNextTick(() -> {
+            try {
+                future.complete(supplier.get());
+            } catch (Exception e) {
+                future.completeExceptionally(e);
+            }
+        });
+        return future;
+    }
+
+    public <T> CompletableFuture<T> supplySync(Player player, Supplier<T> supplier) {
+        if (player == null) {
+            return supplySync(supplier);
+        }
+
+        CompletableFuture<T> future = new CompletableFuture<>();
+        plugin.getFoliaManager().runAtEntity(player, () -> {
             try {
                 future.complete(supplier.get());
             } catch (Exception e) {
