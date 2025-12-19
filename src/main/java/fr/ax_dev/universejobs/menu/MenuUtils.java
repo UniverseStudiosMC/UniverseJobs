@@ -21,6 +21,7 @@ import java.util.UUID;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import net.kyori.adventure.text.Component;
 
@@ -33,6 +34,9 @@ public class MenuUtils {
     private static final Map<String, String> PLACEHOLDER_CACHE = new ConcurrentHashMap<>();
     private static final Map<String, List<Component>> LORE_CACHE = new ConcurrentHashMap<>();
     private static final int MAX_CACHE_SIZE = 1000;
+
+    private static final long MENU_INTERACTION_COOLDOWN_TICKS = 10L;
+    private static final Set<UUID> MENU_INTERACTION_COOLDOWN = ConcurrentHashMap.newKeySet();
     
     /**
      * Process PlaceholderAPI placeholders in a string.
@@ -472,6 +476,32 @@ public class MenuUtils {
     public static void clearCaches() {
         PLACEHOLDER_CACHE.clear();
         LORE_CACHE.clear();
+    }
+
+    /**
+     * Apply a global menu interaction cooldown for this player (all UniverseJobs menus).
+     *
+     * @return true if interaction is allowed, false if still on cooldown
+     */
+    public static boolean tryAcquireMenuInteraction(UniverseJobs plugin, Player player) {
+        if (plugin == null || player == null) {
+            return true;
+        }
+
+        UUID playerId = player.getUniqueId();
+        if (!MENU_INTERACTION_COOLDOWN.add(playerId)) {
+            return false;
+        }
+
+        plugin.getFoliaManager().runLaterAtEntity(player, () -> MENU_INTERACTION_COOLDOWN.remove(playerId), MENU_INTERACTION_COOLDOWN_TICKS);
+        return true;
+    }
+
+    public static void clearMenuInteractionCooldown(UUID playerId) {
+        if (playerId == null) {
+            return;
+        }
+        MENU_INTERACTION_COOLDOWN.remove(playerId);
     }
 
     /**

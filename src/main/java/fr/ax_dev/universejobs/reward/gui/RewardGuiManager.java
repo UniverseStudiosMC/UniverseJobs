@@ -103,6 +103,10 @@ public class RewardGuiManager implements Listener {
 
         event.setCancelled(true);
 
+        if (!MenuUtils.tryAcquireMenuInteraction(plugin, player)) {
+            return;
+        }
+
         if (guiObj instanceof CustomRewardGui customGui) {
             if (customGui.isInventory(event.getInventory())) {
                 customGui.handleClick(event.getSlot());
@@ -124,6 +128,8 @@ public class RewardGuiManager implements Listener {
     public void onInventoryClose(InventoryCloseEvent event) {
         if (!(event.getPlayer() instanceof Player player)) return;
         if (event.getInventory() == null) return;
+
+        MenuUtils.clearMenuInteractionCooldown(player.getUniqueId());
 
         Object guiObj = openGuis.get(player.getUniqueId());
         if (guiObj != null) {

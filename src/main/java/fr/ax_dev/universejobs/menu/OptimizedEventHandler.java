@@ -37,6 +37,12 @@ public class OptimizedEventHandler implements Listener {
 
         if (event.getInventory() == null) return;
 
+        // Global anti-spam cooldown for all UniverseJobs menu buttons
+        if (!MenuUtils.tryAcquireMenuInteraction(menuManager.getPlugin(), player)) {
+            event.setCancelled(true);
+            return;
+        }
+
         InventoryHolder holder = event.getInventory().getHolder();
 
         if (holder instanceof OptimizedMenuHolder menuHolder) {
@@ -76,6 +82,7 @@ public class OptimizedEventHandler implements Listener {
         UUID playerId = player.getUniqueId();
 
         activeMenuPlayers.remove(playerId);
+        MenuUtils.clearMenuInteractionCooldown(playerId);
 
         if (event.getInventory() == null) return;
 

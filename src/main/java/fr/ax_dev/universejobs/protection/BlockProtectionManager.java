@@ -1,6 +1,7 @@
 package fr.ax_dev.universejobs.protection;
 
 import fr.ax_dev.universejobs.UniverseJobs;
+import fr.ax_dev.universejobs.compatibility.FoliaCompatibilityManager;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
@@ -16,7 +17,9 @@ import org.bukkit.event.block.BlockPistonRetractEvent;
 import com.nexomc.nexo.api.NexoBlocks;
 import com.nexomc.nexo.mechanics.custom_block.CustomBlockMechanic;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 
@@ -25,14 +28,15 @@ public class BlockProtectionManager implements Listener {
     private static final String BLOCK_PREFIX = "block_";
 
     private final UniverseJobs plugin;
+    private final FoliaCompatibilityManager folia;
     private boolean enabled;
     private boolean nexoEnabled;
-    private List<String> blacklist;
+    private Set<String> blacklist;
 
 
     public BlockProtectionManager(UniverseJobs plugin) {
         this.plugin = plugin;
-        new NamespacedKey(plugin, "player_placed");
+        this.folia = plugin.getFoliaManager();
 
         loadConfiguration();
         checkNexoCompatibility();
@@ -44,7 +48,7 @@ public class BlockProtectionManager implements Listener {
 
     private void loadConfiguration() {
         this.enabled = plugin.getConfig().getBoolean("block-protection.enabled", true);
-        this.blacklist = plugin.getConfig().getStringList("block-protection.blacklist");
+        this.blacklist = new HashSet<>(plugin.getConfig().getStringList("block-protection.blacklist"));
     }
 
 
@@ -74,26 +78,43 @@ public class BlockProtectionManager implements Listener {
         }
 
         try {
-            NamespacedKey blockKey = new NamespacedKey(plugin, BLOCK_PREFIX + block.getX() + "_" + block.getY() + "_" + block.getZ());
-            String playerData = player.getUniqueId().toString();
-
-            if (nexoEnabled) {
-                String nexoBlockId = getNexoBlockId(block);
-                if (nexoBlockId != null) {
-                    playerData += "|NEXO:" + nexoBlockId;
-                    if (plugin.getConfigManager().isDebugEnabled()) {
-                        plugin.getLogger().info("Detected Nexo custom block: " + nexoBlockId + " at " + block.getLocation());
-                    }
-                }
+            if (!folia.isOwnedByCurrentRegion(player)) {
+                folia.runAtEntity(player, () -> recordBlockPlacement(player, block));
+                return;
             }
 
-            block.getChunk().getPersistentDataContainer().set(blockKey, PersistentDataType.STRING, playerData);
+            String playerId = player.getUniqueId().toString();
+            String playerName = player.getName();
 
-            if (plugin.getConfigManager().isDebugEnabled()) {
-                plugin.getLogger().info("TRACKED block placement by " + player.getName() + " at " + block.getLocation());
+            if (!folia.isOwnedByCurrentRegion(block.getLocation())) {
+                folia.runAtLocation(block.getLocation(), () -> recordBlockPlacementOwned(playerName, playerId, block));
+                return;
             }
+
+            recordBlockPlacementOwned(playerName, playerId, block);
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Failed to mark block as player-placed", e);
+        }
+    }
+
+    private void recordBlockPlacementOwned(String playerName, String playerId, Block block) {
+        NamespacedKey blockKey = getBlockKey(block);
+        String playerData = playerId;
+
+        if (nexoEnabled) {
+            String nexoBlockId = getNexoBlockId(block);
+            if (nexoBlockId != null) {
+                playerData += "|NEXO:" + nexoBlockId;
+                if (plugin.getConfigManager().isDebugEnabled()) {
+                    plugin.getLogger().info("Detected Nexo custom block: " + nexoBlockId + " at " + block.getLocation());
+                }
+            }
+        }
+
+        block.getChunk().getPersistentDataContainer().set(blockKey, PersistentDataType.STRING, playerData);
+
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("TRACKED block placement by " + playerName + " at " + block.getLocation());
         }
     }
 
@@ -104,6 +125,11 @@ public class BlockProtectionManager implements Listener {
                 plugin.getLogger().info("Block protection disabled - allowing XP for block at " + block.getLocation());
             }
             return false;
+        }
+
+        if (!folia.isOwnedByCurrentRegion(block.getLocation())) {
+            plugin.getLogger().warning("BlockProtectionManager.isPlayerPlacedBlock called off-region for " + block.getLocation() + " - defaulting to protected=true");
+            return true;
         }
 
         String blockType = block.getType().name();
@@ -138,7 +164,7 @@ public class BlockProtectionManager implements Listener {
 
     private String getBlockPlayerData(Block block) {
         try {
-            NamespacedKey blockKey = new NamespacedKey(plugin, BLOCK_PREFIX + block.getX() + "_" + block.getY() + "_" + block.getZ());
+            NamespacedKey blockKey = getBlockKey(block);
             return block.getChunk().getPersistentDataContainer().get(blockKey, PersistentDataType.STRING);
         } catch (Exception e) {
             return null;
@@ -148,7 +174,7 @@ public class BlockProtectionManager implements Listener {
 
     private void setBlockPlayerData(Block block, String playerData) {
         try {
-            NamespacedKey blockKey = new NamespacedKey(plugin, BLOCK_PREFIX + block.getX() + "_" + block.getY() + "_" + block.getZ());
+            NamespacedKey blockKey = getBlockKey(block);
             block.getChunk().getPersistentDataContainer().set(blockKey, PersistentDataType.STRING, playerData);
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Failed to set block player data", e);
@@ -160,7 +186,12 @@ public class BlockProtectionManager implements Listener {
         if (!enabled) return;
 
         try {
-            NamespacedKey blockKey = new NamespacedKey(plugin, BLOCK_PREFIX + block.getX() + "_" + block.getY() + "_" + block.getZ());
+            if (!folia.isOwnedByCurrentRegion(block.getLocation())) {
+                folia.runAtLocation(block.getLocation(), () -> removeTrackedBlock(block));
+                return;
+            }
+
+            NamespacedKey blockKey = getBlockKey(block);
             block.getChunk().getPersistentDataContainer().remove(blockKey);
 
             if (plugin.getConfigManager().isDebugEnabled()) {
@@ -184,27 +215,9 @@ public class BlockProtectionManager implements Listener {
             for (int i = blocks.size() - 1; i >= 0; i--) {
                 Block movedBlock = blocks.get(i);
 
-
-                String playerData = getBlockPlayerData(movedBlock);
-
-                if (playerData == null) {
-                    continue;
-                }
-
-
                 Location oldLoc = movedBlock.getLocation();
                 Location newLoc = oldLoc.clone().add(direction.getModX(), direction.getModY(), direction.getModZ());
-                Block newBlock = newLoc.getBlock();
-
-
-                setBlockPlayerData(newBlock, playerData);
-
-
-                removeTrackedBlock(movedBlock);
-
-                if (plugin.getConfigManager().isDebugEnabled()) {
-                    plugin.getLogger().info("Piston pushed tracked block from " + oldLoc + " to " + newLoc);
-                }
+                transferBlockTracking(oldLoc, newLoc, "pushed");
             }
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Error handling piston extend event", e);
@@ -224,33 +237,45 @@ public class BlockProtectionManager implements Listener {
             for (int i = blocks.size() - 1; i >= 0; i--) {
                 Block movedBlock = blocks.get(i);
 
-
-                String playerData = getBlockPlayerData(movedBlock);
-
-                if (playerData == null) {
-                    continue;
-                }
-
-
                 Location oldLoc = movedBlock.getLocation();
                 Location newLoc = oldLoc.clone().add(direction.getModX(), direction.getModY(), direction.getModZ());
-                Block newBlock = newLoc.getBlock();
-
-
-                setBlockPlayerData(newBlock, playerData);
-
-
-                removeTrackedBlock(movedBlock);
-
-                if (plugin.getConfigManager().isDebugEnabled()) {
-                    plugin.getLogger().info("Piston retracted tracked block from " + oldLoc + " to " + newLoc);
-                }
+                transferBlockTracking(oldLoc, newLoc, "retracted");
             }
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Error handling piston retract event", e);
         }
     }
 
+    private NamespacedKey getBlockKey(Block block) {
+        return new NamespacedKey(plugin, BLOCK_PREFIX + block.getX() + "_" + block.getY() + "_" + block.getZ());
+    }
+
+    private void transferBlockTracking(Location oldLoc, Location newLoc, String action) {
+        if (!folia.isOwnedByCurrentRegion(oldLoc)) {
+            folia.runAtLocation(oldLoc, () -> transferBlockTracking(oldLoc, newLoc, action));
+            return;
+        }
+
+        Block oldBlock = oldLoc.getBlock();
+        String playerData = getBlockPlayerData(oldBlock);
+        if (playerData == null) {
+            return;
+        }
+
+        NamespacedKey oldKey = getBlockKey(oldBlock);
+        oldBlock.getChunk().getPersistentDataContainer().remove(oldKey);
+
+        if (folia.isOwnedByCurrentRegion(newLoc)) {
+            Block newBlock = newLoc.getBlock();
+            setBlockPlayerData(newBlock, playerData);
+        } else {
+            folia.runAtLocation(newLoc, () -> setBlockPlayerData(newLoc.getBlock(), playerData));
+        }
+
+        if (plugin.getConfigManager().isDebugEnabled()) {
+            plugin.getLogger().info("Piston " + action + " tracked block from " + oldLoc + " to " + newLoc);
+        }
+    }
 
     private String getNexoBlockId(Block block) {
         if (!nexoEnabled) return null;
