@@ -298,7 +298,10 @@ public class AdminJobCommandHandler extends JobCommandHandler {
                         
                         // Send XP message to player with final values
                         String messageText = job.getXpMessageSettings().processMessage(finalValues[0], finalValues[1]);
-                        messageText = messageText.replace("{job}", job.getDisplayName());
+                        messageText = messageText
+                                .replace("{job}", job.getDisplayName())
+                                .replace("{prefix}", job.getPrefix())
+                                .replace("{suffix}", job.getSuffix());
                         
                         plugin.getMessageSender().sendXpMessage(onlinePlayer, job, finalValues[0], finalValues[1], playerData);
                     }

@@ -910,7 +910,9 @@ public class ActionProcessor {
         String message = plugin.getConfig().getString("messages.level-up", 
                 "&aCongratulations! You reached level {level} in {job}!")
                 .replace("{level}", String.valueOf(newLevel))
-                .replace("{job}", job.getName());
+                .replace("{job}", job.getName())
+                .replace("{prefix}", job.getPrefix())
+                .replace("{suffix}", job.getSuffix());
         
         MessageUtils.sendMessage(player, message);
         

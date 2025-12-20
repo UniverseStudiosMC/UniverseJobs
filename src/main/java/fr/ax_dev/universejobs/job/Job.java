@@ -18,6 +18,8 @@ public class Job {
     
     private final String id;
     private final String name;
+    private final String prefix;
+    private final String suffix;
     private final List<String> description;
     private final List<String> lore;
     private final String permission;
@@ -48,6 +50,8 @@ public class Job {
         this.id = id;
         this.config = config; // Store the config reference
         this.name = config.getString("name", id);
+        this.prefix = config.getString("prefix", "");
+        this.suffix = config.getString("suffix", "");
         // Handle both string and list descriptions
         if (config.isList("description")) {
             this.description = config.getStringList("description");
@@ -179,7 +183,15 @@ public class Job {
     public String getName() {
         return name;
     }
-    
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public String getSuffix() {
+        return suffix;
+    }
+
     /**
      * Get the description of this job.
      * 

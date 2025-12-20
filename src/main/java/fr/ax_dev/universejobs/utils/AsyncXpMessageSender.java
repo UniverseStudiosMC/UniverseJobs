@@ -100,6 +100,8 @@ public class AsyncXpMessageSender {
         // Build message once with all placeholders
         String message = settings.processMessage(displayXp, displayMoney)
                 .replace("{job}", job.getName())
+                .replace("{prefix}", job.getPrefix())
+                .replace("{suffix}", job.getSuffix())
                 .replace("{level}", String.valueOf(currentLevel))
                 .replace("{max_level}", String.valueOf(playerData.getMaxLevel(job.getId())))
                 .replace("{progress}", String.format("%.1f", progressPercent))

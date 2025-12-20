@@ -198,7 +198,10 @@ public class RewardGuiManager implements Listener {
             this.rewardsPerPage = config.getRewardsPerPage();
             this.guiSize = config.getSize();
             
-            String title = config.getTitleFormat().replace("{job}", job.getName());
+            String title = config.getTitleFormat()
+                    .replace("{job}", job.getName())
+                    .replace("{prefix}", job.getPrefix())
+                    .replace("{suffix}", job.getSuffix());
             title = MenuUtils.processPlaceholders(player, title);
             this.inventory = Bukkit.createInventory(this, guiSize, MessageUtils.colorize(title));
             
@@ -442,19 +445,25 @@ public class RewardGuiManager implements Listener {
                 List<String> loreLines = config.getNavigationLore(type);
                 
                 // Replace placeholders in name
-                name = name.replace("{current_page}", String.valueOf(page + 1))
-                          .replace("{total_pages}", String.valueOf(totalPages))
-                          .replace("{target_page}", String.valueOf(targetPage))
-                          .replace("{job}", job.getName());
+                name = name
+                        .replace("{current_page}", String.valueOf(page + 1))
+                        .replace("{total_pages}", String.valueOf(totalPages))
+                        .replace("{target_page}", String.valueOf(targetPage))
+                        .replace("{job}", job.getName())
+                        .replace("{prefix}", job.getPrefix())
+                        .replace("{suffix}", job.getSuffix());
                 name = MenuUtils.processPlaceholders(player, name);
                 
                 // Replace placeholders in lore
                 List<String> processedLore = new ArrayList<>();
                 for (String loreLine : loreLines) {
-                    String processed = loreLine.replace("{current_page}", String.valueOf(page + 1))
-                                              .replace("{total_pages}", String.valueOf(totalPages))
-                                              .replace("{target_page}", String.valueOf(targetPage))
-                                              .replace("{job}", job.getName());
+                    String processed = loreLine
+                            .replace("{current_page}", String.valueOf(page + 1))
+                            .replace("{total_pages}", String.valueOf(totalPages))
+                            .replace("{target_page}", String.valueOf(targetPage))
+                            .replace("{job}", job.getName())
+                            .replace("{prefix}", job.getPrefix())
+                            .replace("{suffix}", job.getSuffix());
                     processedLore.add(MenuUtils.processPlaceholders(player, processed));
                 }
                 

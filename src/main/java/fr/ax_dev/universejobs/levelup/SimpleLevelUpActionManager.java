@@ -321,11 +321,13 @@ public class SimpleLevelUpActionManager {
      */
     private String processPlaceholders(String text, Player player, Job job, int level, int oldLevel) {
         return text
-            .replace("{player}", player.getName())
-            .replace("{job}", job.getName())
-            .replace("{oldlevel}", String.valueOf(oldLevel))
-            .replace("{newlevel}", String.valueOf(level))
-            .replace("{level}", String.valueOf(level));
+                .replace("{player}", player.getName())
+                .replace("{job}", job.getName())
+                .replace("{prefix}", job.getPrefix())
+                .replace("{suffix}", job.getSuffix())
+                .replace("{oldlevel}", String.valueOf(oldLevel))
+                .replace("{newlevel}", String.valueOf(level))
+                .replace("{level}", String.valueOf(level));
     }
     
     /**

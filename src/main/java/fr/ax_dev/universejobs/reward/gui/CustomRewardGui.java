@@ -67,7 +67,10 @@ public class CustomRewardGui implements InventoryHolder {
      * Create the inventory with the configured size and title.
      */
     private void createInventory() {
-        String title = config.getTitle().replace("{job}", job.getName());
+        String title = config.getTitle()
+                .replace("{job}", job.getName())
+                .replace("{prefix}", job.getPrefix())
+                .replace("{suffix}", job.getSuffix());
         title = MenuUtils.processPlaceholders(player, title);
         this.inventory = Bukkit.createInventory(this, config.getSize(), MessageUtils.colorize(title));
     }

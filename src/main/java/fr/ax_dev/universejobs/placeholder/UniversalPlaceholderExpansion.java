@@ -7,12 +7,14 @@ import org.bukkit.OfflinePlayer;
 public class UniversalPlaceholderExpansion extends PlaceholderExpansion {
 
     private final UniverseJobs plugin;
+    private final SelectJobPlaceholder selectJobPlaceholder;
     private final JobsLeaderboardPlaceholder jobsLeaderboardPlaceholder;
     private final GlobalLeaderboardPlaceholder globalLeaderboardPlaceholder;
     private final BoostPlaceholder boostPlaceholder;
 
     public UniversalPlaceholderExpansion(UniverseJobs plugin) {
         this.plugin = plugin;
+        this.selectJobPlaceholder = new SelectJobPlaceholder(plugin);
         this.jobsLeaderboardPlaceholder = new JobsLeaderboardPlaceholder(plugin);
         this.globalLeaderboardPlaceholder = new GlobalLeaderboardPlaceholder(plugin);
         this.boostPlaceholder = new BoostPlaceholder(plugin);
@@ -59,6 +61,10 @@ public class UniversalPlaceholderExpansion extends PlaceholderExpansion {
         String[] args = params.split("_");
         if (args.length < 1) return null;
 
+        if (args[0].equalsIgnoreCase("select")) {
+            return selectJobPlaceholder.onRequest(player, params);
+        }
+
         if (args[0].equalsIgnoreCase("global")) {
             return globalLeaderboardPlaceholder.onRequest(player, params);
         }
@@ -95,6 +101,12 @@ public class UniversalPlaceholderExpansion extends PlaceholderExpansion {
                 }
                 if (args.length == 3 && args[2].equalsIgnoreCase("id")) {
                     return jobId;
+                }
+                if (args.length == 3 && args[2].equalsIgnoreCase("prefix")) {
+                    return job.getPrefix();
+                }
+                if (args.length == 3 && args[2].equalsIgnoreCase("suffix")) {
+                    return job.getSuffix();
                 }
             } catch (NumberFormatException e) {
                 return "";

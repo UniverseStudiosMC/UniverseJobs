@@ -354,10 +354,11 @@ public class RewardManager {
         // Execute commands
         if (reward.hasCommands()) {
             for (String command : reward.getCommands()) {
-                String processedCommand = command.replace("{player}", player.getName())
-                                                .replace("{job}", reward.getJobId())
-                                                .replace("{reward}", reward.getId())
-                                                .replace("%player_name%", player.getName());
+                String processedCommand = command
+                        .replace("{player}", player.getName())
+                        .replace("{job}", reward.getJobId())
+                        .replace("{reward}", reward.getId())
+                        .replace("%player_name%", player.getName());
                 
                 // Process PlaceholderAPI placeholders
                 processedCommand = MenuUtils.processPlaceholders(player, processedCommand);
